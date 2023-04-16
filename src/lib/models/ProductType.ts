@@ -3,8 +3,7 @@ import {
   DocumentData,
   getDoc,
   QueryDocumentSnapshot,
-} from "firebase/firestore";
-
+} from 'firebase/firestore';
 export interface ProductTypeObject {
   id: string;
   productType_name: string;
@@ -25,7 +24,7 @@ export default class ProductType {
     productType_name: string,
     productType_description: string,
     productType_image: string,
-    productType_isActive: boolean
+    productType_isActive: boolean,
   ) {
     this.id = id;
     this.productType_name = productType_name;
@@ -40,7 +39,7 @@ export default class ProductType {
       productTypeObject.productType_name,
       productTypeObject.productType_description,
       productTypeObject.productType_image,
-      productTypeObject.productType_isActive
+      productTypeObject.productType_isActive,
     );
   }
 }
@@ -65,7 +64,7 @@ export const ProductTypeConverter = {
       data.productType_name,
       data.productType_description,
       data.productType_image,
-      data.productType_isActive
+      data.productType_isActive,
     );
   },
 };
