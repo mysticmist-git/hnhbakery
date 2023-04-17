@@ -4,6 +4,7 @@ import {
   getDoc,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
+
 export interface ProductTypeObject {
   id: string;
   productType_name: string;
@@ -44,27 +45,27 @@ export default class ProductType {
   }
 }
 
-export const ProductTypeConverter = {
-  toFirestore(productType: ProductType): ProductTypeObject {
-    return {
-      id: productType.id,
-      productType_name: productType.productType_name,
-      productType_description: productType.productType_description,
-      productType_image: productType.productType_image,
-      productType_isActive: productType.productType_isActive,
-    };
-  },
-  fromFirestore(snapshot: QueryDocumentSnapshot): ProductType {
-    const data: ProductTypeObject = {
-      id: snapshot.id,
-      ...snapshot.data(),
-    } as ProductTypeObject;
-    return new ProductType(
-      data.id,
-      data.productType_name,
-      data.productType_description,
-      data.productType_image,
-      data.productType_isActive,
-    );
-  },
-};
+// export const ProductTypeConverter = {
+//   toFirestore(productType: ProductType): ProductTypeObject {
+//     return {
+//       id: productType.id,
+//       productType_name: productType.productType_name,
+//       productType_description: productType.productType_description,
+//       productType_image: productType.productType_image,
+//       productType_isActive: productType.productType_isActive,
+//     };
+//   },
+//   fromFirestore(snapshot: QueryDocumentSnapshot): ProductType {
+//     const data: ProductTypeObject = {
+//       id: snapshot.id,
+//       ...snapshot.data(),
+//     } as ProductTypeObject;
+//     return new ProductType(
+//       data.id,
+//       data.productType_name,
+//       data.productType_description,
+//       data.productType_image,
+//       data.productType_isActive,
+//     );
+//   },
+// };

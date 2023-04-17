@@ -1,130 +1,79 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import {
-  Autocomplete,
   Box,
   Button,
   Container,
+  Divider,
   FormControl,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
-  TextField,
 } from '@mui/material';
 import { db } from '@/firebase/config';
 import {
-  getDocs,
   collection,
   doc,
   updateDoc,
   deleteDoc,
   setDoc,
 } from 'firebase/firestore';
-import { ProductTypeObject } from '@/lib/models/ProductType';
-import { Router, useRouter } from 'next/router';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-import { BrandObject } from '@/lib/models/Brand';
+import { useRouter } from 'next/router';
 import { fetchData } from '@/lib/fetchData';
 import { Close } from '@mui/icons-material';
+import initialCrudTargets, { CrudTarget } from './manageTargets';
+import { CollectionName, CollectionObject } from '@/lib/models/utilities';
+import TargetDetail from '@/components/Manage/TargetDetail';
+import CustomInput from '@/components/CustomInput';
+import { FieldInfo } from './manageTargets';
 
 interface Row {
   id: string;
   [key: string]: any;
 }
 
-type FieldType = 'text' | 'isActive';
-
-interface FieldInfo {
-  fieldType: FieldType;
-  column: GridColDef;
-}
-
-interface CrudTarget {
-  name: string;
-  collectionName: string;
-  fieldInfos: FieldInfo[];
-}
-
-const initialCrudTargets: CrudTarget[] = [
-  {
-    name: 'Loại sản phẩm',
-    collectionName: 'productTypes',
-    fieldInfos: [
-      {
-        fieldType: 'text',
-        column: { field: 'id', headerName: 'ID', width: 200 },
-      },
-      {
-        fieldType: 'text',
-        column: {
-          field: 'productType_name',
-          headerName: 'Tên loại',
-          width: 130,
-        },
-      },
-      {
-        fieldType: 'text',
-        column: {
-          field: 'productType_description',
-          headerName: 'Miêu tả',
-          width: 130,
-        },
-      },
-      {
-        fieldType: 'text',
-        column: { field: 'productType_image', headerName: 'Ảnh', width: 90 },
-      },
-      {
-        fieldType: 'isActive',
-        column: {
-          field: 'productType_state',
-          headerName: 'Trạng thái',
-          width: 90,
-        },
-      },
-    ],
-  },
-  {
-    name: 'Thương hiệu',
-    collectionName: 'brands',
-    fieldInfos: [
-      {
-        fieldType: 'text',
-        column: { field: 'id', headerName: 'ID', width: 200 },
-      },
-      {
-        fieldType: 'text',
-        column: { field: 'brand_name', headerName: 'Tên loại', width: 200 },
-      },
-      {
-        fieldType: 'text',
-        column: {
-          field: 'brand_description',
-          headerName: 'Miêu tả',
-          width: 400,
-        },
-      },
-    ],
-  },
-];
-
-export default function Manage({ docs }: { docs: CollectionObject[] }) {
+export default function Manage({
+  docs,
+  referenceDocs,
+}: {
+  docs: CollectionObject[];
+  referenceDocs: ReferenceDocs[];
+}) {
   const [crudTargets] = useState(initialCrudTargets);
   const [selectedTarget, setSelectedTarget] = useState(crudTargets[0]);
   const [rows, setRows] = useState<Row[]>(docs);
   const [selectedRow, setSelectedRow] = useState<Row | null>(null);
+  const [selectedRowDetail, setSelectedRowDetail] = useState<Row | null>(null);
+
   const router = useRouter();
+
+  console.log('Item', selectedRow);
+  console.log('Detail', selectedRowDetail);
+
+  const pushPathOnTargetChanged = (crudTarget: CrudTarget) => {
+    // Check if it has any references
+    const references = JSON.stringify(
+      crudTarget.fieldInfos
+        .filter((fieldInfo: FieldInfo) => fieldInfo.fieldType === 'reference')
+        .map((fieldInfo: FieldInfo) => fieldInfo.reference),
+    );
+
+    const pushInfo = {
+      pathname: router.pathname,
+      query: {
+        collectionName: crudTarget.collectionName,
+        references: references,
+      },
+    };
+
+    router.push(pushInfo);
+  };
 
   useEffect(() => {
     if (!router.query.collectionName) {
-      router.push({
-        pathname: router.pathname,
-        query: { collectionName: crudTargets[0].collectionName },
-      });
-
-      return;
+      pushPathOnTargetChanged(crudTargets[0]);
     }
 
     setRows(docs);
@@ -137,57 +86,9 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
     setRows([]);
     setSelectedRow(null);
 
-    router.push({
-      pathname: router.pathname,
-      query: { collectionName: nextTarget.collectionName },
-    });
+    pushPathOnTargetChanged(nextTarget);
   };
 
-  const renderInput = (fieldInfo: FieldInfo) => {
-    switch (fieldInfo.fieldType) {
-      case 'text':
-        return (
-          <TextField
-            key={fieldInfo.column.field}
-            label={fieldInfo.column.headerName}
-            value={selectedRow?.[fieldInfo.column.field] || ''}
-            onChange={(event) =>
-              setSelectedRow({
-                ...selectedRow!,
-                [fieldInfo.column.field]: event.target.value,
-              })
-            }
-            sx={{ marginRight: '8px' }}
-          />
-        );
-      case 'isActive':
-        return (
-          <Autocomplete
-            disablePortal
-            options={[
-              { label: 'Còn cung cấp', value: true },
-              { label: 'Ngưng cung cấp', value: false },
-            ]}
-            value={selectedRow ? selectedRow[fieldInfo.column.field] : null}
-            sx={{ width: 200, display: 'inline-block' }}
-            onChange={(event, newValue) => {
-              if (newValue) {
-                setSelectedRow({
-                  ...selectedRow!,
-                  [fieldInfo.column.field]: newValue.value,
-                });
-                console.log(newValue);
-              } else {
-                // handle the case when newValue is null
-              }
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Trạng thái" />
-            )}
-          />
-        );
-    }
-  };
   const handleAddRow = async () => {
     if (!selectedRow) return;
 
@@ -208,10 +109,14 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
       setRows(
         rows.map((row) => (row.id === selectedRow.id ? selectedRow : row)),
       );
+      console.log(selectedRow);
+
+      // Convert selected row to suitable data
+      const data = { ...selectedRow };
 
       // update data on firebase
       const docRef = doc(db, 'productTypes', selectedRow.id as string);
-      await updateDoc(docRef, selectedRow);
+      await updateDoc(docRef, data);
     }
   };
 
@@ -227,7 +132,11 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
 
   return (
     <Container
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       <FormControl
         fullWidth
@@ -243,7 +152,7 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
           label="CRUD Target"
           onChange={handleSelectChange}
         >
-          {crudTargets.map((target) => (
+          {crudTargets.map((target: CrudTarget) => (
             <MenuItem key={target.name} value={target.name}>
               {target.name}
             </MenuItem>
@@ -254,7 +163,7 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
         <DataGrid
           rows={rows}
           columns={selectedTarget.fieldInfos.map(
-            (fieldInfo) => fieldInfo.column,
+            (fieldInfo: FieldInfo) => fieldInfo.column,
           )}
           initialState={{
             pagination: {
@@ -266,71 +175,117 @@ export default function Manage({ docs }: { docs: CollectionObject[] }) {
           pageSizeOptions={[5]}
           onRowClick={(param) => {
             setSelectedRow(param.row);
-            console.log(selectedRow);
           }}
         />
       </Box>
-      <Box sx={{ display: 'flex', marginTop: '16px', alignItems: 'center' }}>
-        {selectedTarget.fieldInfos.map((fieldInfo) =>
-          fieldInfo.column.field !== 'id' ? renderInput(fieldInfo) : null,
-        )}
-        <IconButton
-          disabled={selectedRow === null}
-          onClick={() => setSelectedRow(null)}
+      <Box>
+        <Box
           sx={{
-            ml: 1,
-            color: (theme) =>
-              selectedRow !== null
-                ? theme.palette.secondary.main
-                : theme.palette.common.gray,
-            '&:hover': {
-              color: (theme) =>
-                selectedRow !== null
-                  ? theme.palette.secondary.light
-                  : theme.palette.common.gray,
-            },
+            display: 'flex',
+            marginTop: '16px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'true',
           }}
         >
-          <Close />
-        </IconButton>
-      </Box>
-      <Box sx={{ marginTop: '16px' }}>
-        <Button variant="contained" onClick={handleAddRow}>
-          Add
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleUpdateRow}
-          sx={{ marginLeft: '8px' }}
-        >
-          Update
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleDeleteRow}
-          sx={{ marginLeft: '8px' }}
-        >
-          Delete
-        </Button>
+          {selectedTarget.fieldInfos.map((fieldInfo) =>
+            fieldInfo.column.field !== 'id'
+              ? CustomInput(
+                  fieldInfo,
+                  selectedRow,
+                  setSelectedRow,
+                  referenceDocs.filter(
+                    (docs) => docs.collectionName === fieldInfo.reference,
+                  )[0],
+                )
+              : null,
+          )}
+          <IconButton
+            disabled={selectedRow === null}
+            onClick={() => setSelectedRow(null)}
+            sx={{
+              ml: 1,
+              color: (theme) =>
+                selectedRow !== null
+                  ? theme.palette.secondary.main
+                  : theme.palette.common.gray,
+              '&:hover': {
+                color: (theme) =>
+                  selectedRow !== null
+                    ? theme.palette.secondary.light
+                    : theme.palette.common.gray,
+              },
+            }}
+          >
+            <Close />
+          </IconButton>
+        </Box>
+        <Box sx={{ marginTop: '16px' }}>
+          <Button variant="contained" onClick={handleAddRow}>
+            Add
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleUpdateRow}
+            sx={{ marginLeft: '8px' }}
+          >
+            Update
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteRow}
+            sx={{ marginLeft: '8px' }}
+          >
+            Delete
+          </Button>
+        </Box>
+        <Box mt={2}>
+          {selectedTarget.detail ? (
+            <>
+              <Divider />
+              <TargetDetail
+                detail={selectedTarget.detail}
+                sx={{
+                  marginTop: '1rem',
+                }}
+                value={selectedRowDetail}
+                setValue={setSelectedRowDetail}
+              />
+            </>
+          ) : null}
+        </Box>
       </Box>
     </Container>
   );
 }
 
-enum CollectionName {
-  ProductTypes = 'productTypes',
-  Brands = 'brands',
+export interface ReferenceDocs {
+  collectionName: CollectionName;
+  docs: CollectionObject[];
 }
-
-type CollectionObject = ProductTypeObject | BrandObject;
 
 export async function getServerSideProps(context: any) {
   const collectionName = context.query.collectionName;
+  const references = context.query.references
+    ? JSON.parse(context.query.references)
+    : [];
 
   const docs = await fetchData(collectionName);
+
+  const referenceDocs: ReferenceDocs[] = [];
+
+  for (const reference of references) {
+    const fetchedReferenceDocs = await fetchData(reference);
+    referenceDocs.push({
+      collectionName: reference,
+      docs: fetchedReferenceDocs as CollectionObject[],
+    });
+  }
+
   return {
     props: {
       docs,
+      referenceDocs,
     },
   };
 }
