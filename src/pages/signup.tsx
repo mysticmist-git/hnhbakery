@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { auth } from '@/firebase/config';
 import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
-import Copyright from '@/components/copyright';
-import SignUpForm from '@/components/signUpForm';
+import Copyright from '@/components/Copyright';
+import SignUpForm from '@/components/SignUpForm';
 import {
   NotifierType,
   SignUpProps,
@@ -30,7 +30,7 @@ export default function SignUp() {
       const user = userCredential.user;
       return { result: 'successful', userCredential: user };
     } catch (error: any) {
-      const errorCode = error.code;
+      const errorCode = error?.code;
       const errorMessage = error.message;
       const returnedError: AuthResult = {
         result: 'fail',

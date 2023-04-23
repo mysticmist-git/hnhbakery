@@ -1,5 +1,5 @@
 import CustomInput from '@/components/CustomInput';
-import { ReferenceDocs } from '@/pages/manager/manage';
+import { CollectionObj } from '@/pages/manager/manage';
 import { CrudTarget } from '@/pages/manager/manageTargets';
 import { Theme } from '@emotion/react';
 import styled from '@emotion/styled';

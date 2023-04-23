@@ -1,7 +1,7 @@
 import { CollectionName } from '@/lib/models/utilities';
 import { GridColDef } from '@mui/x-data-grid';
 
-export type FieldType = 'text' | 'isActive' | 'reference' | 'array';
+export type FieldType = 'text' | 'isActive' | 'reference' | 'array' | 'detail';
 
 export interface FieldInfo {
   fieldType: FieldType;
@@ -132,6 +132,14 @@ const initialCrudTargets: CrudTarget[] = [
           },
           headerName: 'Trạng thái',
           width: 120,
+        },
+      },
+      {
+        fieldType: 'detail',
+        column: {
+          field: 'productDetail_id',
+          headerName: '',
+          width: 0,
         },
       },
     ],

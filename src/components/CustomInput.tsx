@@ -1,4 +1,4 @@
-import { ReferenceDocs } from '@/pages/manager/manage';
+import { CollectionObj } from '@/pages/manager/manage';
 import { FieldInfo } from '@/pages/manager/manageTargets';
 import { Drafts, Inbox } from '@mui/icons-material';
 import {
@@ -17,7 +17,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { setSyntheticLeadingComments } from 'typescript';
-import { fetchData } from '../lib/fetchData';
+import { fetchCollection } from '../lib/fetchData';
 import { CollectionObject } from '../lib/models/utilities';
 import MultipleValueInput from './MultipleValueInput';
 
@@ -25,7 +25,7 @@ const CustomInput = (
   fieldInfo: FieldInfo,
   value: any,
   setValue: any,
-  referenceDocs?: ReferenceDocs,
+  referenceDocs?: CollectionObj,
 ) => {
   switch (fieldInfo.fieldType) {
     case 'text':
@@ -74,7 +74,7 @@ const CustomInput = (
           disablePortal
           // options={referenceDocs ? referenceDocs.docs : ['Không có lựa chọn']}
           options={referenceDocs ? referenceDocs.docs : []}
-          getOptionLabel={(option: CollectionObject) => {
+          getOptionLabel={(option: CollectionObj) => {
             if (!option) {
               return 'Không có lựa chọn';
             } else if ('productType_name' in option) {

@@ -1,5 +1,19 @@
-import { BrandObject } from './Brand';
-import { ProductTypeObject } from './ProductType';
+/**
+ * Document Object to represent data get from firestore
+ */
+export interface DocumentObj {
+  id: string;
+  [key: string]: any;
+}
+
+/**
+ * Define a general interface for all collection object
+ * Such as ProductTypeObjet
+ */
+export interface CollectionObj {
+  collectionName: string;
+  docs: DocumentObj[] | null;
+}
 
 export enum CollectionName {
   ProductTypes = 'productTypes',
@@ -22,5 +36,3 @@ export enum CollectionName {
   Right_Roles = 'right_Roles',
   Rights = 'rights',
 }
-
-export type CollectionObject = ProductTypeObject | BrandObject;
