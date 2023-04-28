@@ -22,7 +22,7 @@ const TargetDetail = React.forwardRef<HTMLDivElement, TargetDetailProps>(
     const { sx, ...other } = props;
     return (
       <StyledDiv ref={ref} sx={sx} {...other}>
-        <Typography variant="h6">{other.detail.name}</Typography>
+        <Typography variant="h6">{other.detail.label}</Typography>
         {other.detail.fieldInfos.map((fieldInfo) =>
           fieldInfo.column.field !== 'id'
             ? CustomInput(fieldInfo, other.value, other.setValue)

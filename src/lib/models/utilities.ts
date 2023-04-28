@@ -1,10 +1,9 @@
-/**
- * Document Object to represent data get from firestore
- */
-export interface DocumentObj {
-  id: string;
-  [key: string]: any;
-}
+import { DocumentData } from 'firebase/firestore';
+import Batch from './Batch';
+import Product from './Product';
+import ProductType from './ProductType';
+
+export type UnionType = Product | ProductType | Batch | null;
 
 /**
  * Define a general interface for all collection object
@@ -12,7 +11,7 @@ export interface DocumentObj {
  */
 export interface CollectionObj {
   collectionName: string;
-  docs: DocumentObj[] | null;
+  docs: DocumentData[];
 }
 
 export enum CollectionName {

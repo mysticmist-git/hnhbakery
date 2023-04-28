@@ -1,15 +1,17 @@
-export interface ProductObject {
+import { DocumentData } from 'firebase/firestore';
+
+export interface ProductObject extends DocumentData {
   id: string;
   productType_id: string;
   name: string;
   description: string;
   ingredients: string[];
+  materials: string[];
+  colors: string[];
+  sizes: string[];
   howToUse: string;
   preservation: string;
   images: string[];
-  colors: string[];
-  sizes: string[];
-  materials: string[];
   isActive: boolean;
 }
 
@@ -19,12 +21,12 @@ export default class Product {
   name: string;
   description: string;
   ingredients: string[];
+  materials: string[];
+  colors: string[];
+  sizes: string[];
   howToUse: string;
   preservation: string;
   images: string[];
-  colors: string[];
-  sizes: string[];
-  materials: string[];
   isActive: boolean;
 
   constructor(
@@ -33,12 +35,12 @@ export default class Product {
     name: string,
     description: string,
     ingredients: string[],
+    materials: string[],
+    colors: string[],
+    sizes: string[],
     howToUse: string,
     preservation: string,
     images: string[],
-    colors: string[],
-    sizes: string[],
-    materials: string[],
     isActive: boolean,
   ) {
     this.id = id;
@@ -46,12 +48,12 @@ export default class Product {
     this.name = name;
     this.description = description;
     this.ingredients = ingredients;
+    this.materials = materials;
     this.howToUse = howToUse;
     this.preservation = preservation;
     this.images = images;
     this.colors = colors;
     this.sizes = sizes;
-    this.materials = materials;
     this.isActive = isActive;
   }
 
@@ -62,12 +64,12 @@ export default class Product {
       productObject.name,
       productObject.description,
       productObject.ingredients,
+      productObject.materials,
+      productObject.colors,
+      productObject.sizes,
       productObject.howToUse,
       productObject.preservation,
       productObject.images,
-      productObject.colors,
-      productObject.sizes,
-      productObject.materials,
       productObject.isActive,
     );
   }

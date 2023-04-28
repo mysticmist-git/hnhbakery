@@ -16,6 +16,8 @@ const theme = createTheme({
     // success: {},
     common: {
       black: '#000000',
+      light: '#333',
+      veryLight: '#555',
       white: '#ffffff',
       gray: '#808080',
     },

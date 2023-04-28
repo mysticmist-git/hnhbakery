@@ -1,11 +1,6 @@
-import {
-  doc,
-  DocumentData,
-  getDoc,
-  QueryDocumentSnapshot,
-} from 'firebase/firestore';
+import { DocumentData } from 'firebase/firestore';
 
-export interface ProductTypeObject {
+export interface ProductTypeObject extends DocumentData {
   id: string;
   name: string;
   description: string;
