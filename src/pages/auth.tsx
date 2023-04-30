@@ -11,11 +11,12 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import { auth } from '@/firebase/config';
+import { auth, provider } from '@/firebase/config';
 import { default as NextLink } from 'next/link';
 import {
   AuthError,
   signInWithEmailAndPassword,
+  signInWithPopup,
   UserCredential,
 } from 'firebase/auth';
 import { CustomSnackbar } from '@/components/CustomSnackbar';
@@ -28,6 +29,8 @@ import {
   SignInPropsFromObject,
 } from '@/lib/signup';
 import { useRouter } from 'next/router';
+import { Google } from '@mui/icons-material';
+import { handleLoginWithGoogle } from './manager/lib/auth';
 
 function Copyright(props: any) {
   return (
@@ -203,6 +206,20 @@ export default function SignInSide() {
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </NextLink>
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  startIcon={<Google />}
+                  variant="outlined"
+                  color="secondary"
+                  sx={{
+                    mt: '1rem',
+                  }}
+                  onClick={handleLoginWithGoogle}
+                >
+                  Đăng nhập với Google
+                </Button>
               </Grid>
             </Grid>
             <Copyright sx={{ mt: 5 }} />

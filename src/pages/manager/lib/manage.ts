@@ -26,10 +26,3 @@ export interface ManageProps {
   mainCollection: CollectionObj;
   referenceCollections: CollectionObj[];
 }
-
-export interface CrudTarget {
-  label: string;
-  collectionName: CollectionName;
-  columns: GridColDef[];
-  references?: CollectionName[];
-}

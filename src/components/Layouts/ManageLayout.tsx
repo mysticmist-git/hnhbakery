@@ -7,6 +7,8 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Sidebar from './components/Sidebar';
+import Link from 'next/link';
+import { Typography } from '@mui/material';
 
 const drawerWidth: number = 240;
 
@@ -50,10 +52,33 @@ export default function Layout({ children }: { children: any }) {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               px: [1],
             }}
           >
+            {open && (
+              <Link
+                href="/"
+                style={{
+                  textDecoration: 'none',
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: 'common.black',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    ml: '3.5rem',
+                    '&:hover': {
+                      color: 'secondary.main',
+                    },
+                  }}
+                >
+                  Trang chủ
+                </Typography>
+              </Link>
+            )}
             <IconButton onClick={toggleDrawer}>
               <ChevronLeftIcon />
             </IconButton>

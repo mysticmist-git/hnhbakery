@@ -1,4 +1,7 @@
+import { auth, provider } from '@/firebase/config';
 import { NotifierType, SignUpProps, SignUpPropsFromObject } from '@/lib/signup';
+import { handleLoginWithGoogle } from '@/pages/manager/lib/auth';
+import { Google } from '@mui/icons-material';
 import {
   Grid,
   TextField,
@@ -6,9 +9,16 @@ import {
   Checkbox,
   Button,
   Link,
+  Divider,
 } from '@mui/material';
 import { Box } from '@mui/material';
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+} from 'firebase/auth';
 import { default as NextLink } from 'next/link';
+import router from 'next/router';
 
 export default function SignUpForm({
   handleSignUp,
@@ -46,7 +56,7 @@ export default function SignUpForm({
             required
             fullWidth
             id="firstName"
-            label="First Name"
+            label="Tên"
             autoFocus
           />
         </Grid>
@@ -57,7 +67,7 @@ export default function SignUpForm({
             id="lastName"
             label="Last Name"
             name="lastName"
-            autoComplete="family-name"
+            autoComplete="Họ"
           />
         </Grid>
         <Grid item xs={12}>
@@ -65,7 +75,7 @@ export default function SignUpForm({
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label="Địa chỉ Email"
             name="email"
             autoComplete="email"
           />
@@ -75,26 +85,53 @@ export default function SignUpForm({
             required
             fullWidth
             name="password"
-            label="Password"
+            label="Mật khẩu"
             type="password"
             id="password"
             autoComplete="new-password"
           />
         </Grid>
-        <Grid item xs={12}>
-          <FormControlLabel
-            control={<Checkbox value="allowExtraEmails" color="primary" />}
-            label="I want to receive inspiration, marketing promotions and updates via email."
-          />
-        </Grid>
       </Grid>
-      <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-        Sign Up
+      <Button
+        type="submit"
+        fullWidth
+        variant="contained"
+        sx={{
+          mt: 3,
+          mb: 2,
+          backgroundColor: 'secondary.main',
+          '&:hover': {
+            backgroundColor: 'secondary.dark',
+          },
+        }}
+      >
+        Đăng ký
       </Button>
+      <Grid
+        item
+        xs={12}
+        sx={{
+          mb: '1rem',
+        }}
+      >
+        <Divider />
+        <Button
+          fullWidth
+          startIcon={<Google />}
+          variant="outlined"
+          color="secondary"
+          sx={{
+            mt: '1rem',
+          }}
+          onClick={handleLoginWithGoogle}
+        >
+          Đăng ký với Google
+        </Button>
+      </Grid>
       <Grid container justifyContent="flex-end">
         <Grid item>
           <NextLink href="/auth" passHref legacyBehavior>
-            <Link variant="body2">Already have an account? Sign in</Link>
+            <Link variant="body2">Đã có tài khoản? Đăng nhập ngay!</Link>
           </NextLink>
         </Grid>
       </Grid>
