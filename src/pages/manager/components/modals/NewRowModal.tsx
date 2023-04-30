@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { DocumentData } from 'firebase/firestore';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ViewModalProps } from './ViewRowModal';
 
 export default function NewRowModal({
@@ -23,23 +23,38 @@ export default function NewRowModal({
   open,
   onClose,
 }: ViewModalProps) {
-  console.log(displayingData);
+  const [featuredImageFile, setFeaturedImageFile] = useState<any>(null);
+  const [featuredImageURL, setFeaturedImageURL] = useState<string>('');
 
   const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  // console.log(featuredImageFile);
+
+  useEffect(() => {
+    if (featuredImageFile) {
+      setFeaturedImageURL(URL.createObjectURL(featuredImageFile));
+    }
+  }, [featuredImageFile]);
 
   const handleUploadImage = (event: any) => {
     const file = event.target.files[0];
 
-    setDisplayingData({
-      ...displayingData,
-      image: URL.createObjectURL(file),
-    });
+    setFeaturedImageFile(file);
+  };
+
+  const handleModalClose = () => {
+    // Clear images data
+    setFeaturedImageFile(null);
+    setFeaturedImageURL('');
+
+    // Close
+    onClose();
   };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleModalClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
@@ -76,7 +91,7 @@ export default function NewRowModal({
                   gap: '1rem',
                 }}
               >
-                <IconButton onClick={onClose}>
+                <IconButton onClick={handleModalClose}>
                   <Close />
                 </IconButton>
               </Box>
@@ -97,7 +112,7 @@ export default function NewRowModal({
               flexDirection: 'column',
             }}
           >
-            <Avatar
+            {/* <Avatar
               src={
                 displayingData?.image &&
                 displayingData.image !== '' &&
@@ -107,13 +122,15 @@ export default function NewRowModal({
               sx={{ width: '100%', height: 240 }}
             >
               {(!displayingData?.image || displayingData?.image === '') && (
-                <Image
-                  sx={{
-                    width: '100%',
-                    heigth: '100%',
-                  }}
-                />
+                <Image />
               )}
+            </Avatar> */}
+            <Avatar
+              src={featuredImageURL}
+              variant="square"
+              sx={{ width: '100%', height: 240 }}
+            >
+              {(!featuredImageURL || featuredImageURL === '') && <Image />}
             </Avatar>
             <Button
               variant="contained"
@@ -221,7 +238,7 @@ export default function NewRowModal({
                   paddingX: '1.5rem',
                   borderRadius: '1rem',
                 }}
-                onClick={onClose}
+                onClick={handleModalClose}
               >
                 Thoát
               </Button>
