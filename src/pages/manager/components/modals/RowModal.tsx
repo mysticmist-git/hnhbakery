@@ -32,6 +32,8 @@ import { CollectionName } from '@/lib/models/utilities';
 import Image from 'next/image';
 
 import placeholderImage from '@/assets/placeholder-image.png';
+import ProductTypeForm from './components/ProductTypeForm';
+import Form from './components/Form';
 
 export type ModalMode = 'create' | 'update';
 
@@ -268,6 +270,19 @@ export default function RowModal({
     }
   };
 
+  const getTitle = () => {
+    switch (collectionName) {
+      case CollectionName.ProductTypes:
+        return mode === 'create' ? 'Thêm loại sản phẩm mới' : 'Loại sản phẩm';
+      case CollectionName.Products:
+        return mode === 'create' ? 'Thêm sản phẩm mới' : 'Sản phẩm';
+      case CollectionName.Batches:
+        return mode === 'create' ? 'Thêm lô hàng mới' : 'Lô hàng';
+      default:
+        return 'Error loading title';
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -288,145 +303,56 @@ export default function RowModal({
           p: 4,
         }}
       >
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Typography variant="h5" fontWeight={'bold'}>
+              {getTitle()}
+            </Typography>
             <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-              }}
-            >
-              <Typography variant="h5" fontWeight={'bold'}>
-                Thêm loại sản phẩm mới
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '1rem',
-                }}
-              >
-                <IconButton onClick={handleDeleteRow} color="secondary">
-                  <Delete />
-                </IconButton>
-                <IconButton onClick={handleModalClose}>
-                  <Close />
-                </IconButton>
-              </Box>
-            </Box>
-            <Divider
-              sx={{
-                mt: '1rem',
-              }}
-            />
-          </Grid>
-          <Grid
-            item
-            lg={6}
-            sx={{
-              display: 'flex',
-              justifyContent: 'start',
-              alignItems: 'center',
-              flexDirection: 'column',
-            }}
-          >
-            <Image
-              src={
-                featuredImageURL && featuredImageFile !== ''
-                  ? featuredImageURL
-                  : placeholderImage
-              }
-              alt="Featuring Image"
-              width={240}
-              height={240}
-              priority
-            />
-
-            <Button
-              variant="contained"
-              sx={{
-                borderRadius: '0 0 0.4rem 0.4rem',
-                backgroundColor: theme.palette.secondary.main,
-                '&:hover': {
-                  backgroundColor: theme.palette.secondary.dark,
-                },
-                textTransform: 'none',
-                width: '100%',
-              }}
-              onClick={() => {
-                if (uploadInputRef.current) uploadInputRef.current.click();
-              }}
-            >
-              Tải ảnh lên
-              <input
-                ref={uploadInputRef}
-                type="file"
-                onChange={handleUploadImage}
-                style={{
-                  display: 'none',
-                }}
-              />
-            </Button>
-          </Grid>
-          <Grid item lg={6}>
-            <Box
-              sx={{
-                display: 'flex',
                 gap: '1rem',
-                flexDirection: 'column',
               }}
             >
-              <TextField
-                label="Tên loại sản phẩm"
-                variant="standard"
-                color="secondary"
-                fullWidth
-                value={displayingData?.name}
-                onChange={(e) =>
-                  setDisplayingData({ ...displayingData, name: e.target.value })
-                }
-              />
-              <TextField
-                label="Miêu tả"
-                color="secondary"
-                multiline
-                fullWidth
-                value={displayingData?.description}
-                rows={5}
-                onChange={(e) =>
-                  setDisplayingData({
-                    ...displayingData,
-                    description: e.target.value,
-                  })
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    color="secondary"
-                    checked={displayingData?.isActive}
-                    onChange={(e) =>
-                      setDisplayingData({
-                        ...displayingData,
-                        isActive: e.target.checked,
-                      })
-                    }
-                  />
-                }
-                label={
-                  <Typography variant="body1" fontWeight="bold">
-                    Còn hoạt động
-                  </Typography>
-                }
-                labelPlacement="start"
-                sx={{
-                  alignSelf: 'end',
-                }}
-              />
+              <IconButton onClick={handleDeleteRow} color="secondary">
+                <Delete />
+              </IconButton>
+              <IconButton onClick={handleModalClose}>
+                <Close />
+              </IconButton>
             </Box>
-          </Grid>
+          </Box>
+          <Divider
+            sx={{
+              mt: '1rem',
+            }}
+          />
+        </Grid>
+
+        <Form
+          collectionName={collectionName}
+          placeholderImage={placeholderImage}
+          theme={theme}
+          displayingData={displayingData}
+          setDisplayingData={setDisplayingData}
+          featuredImageFile={featuredImageFile}
+          setFeaturedImageFile={setFeaturedImageFile}
+          featuredImageURL={featuredImageURL}
+          setFeaturedImageURL={setFeaturedImageURL}
+          uploadInputRef={uploadInputRef}
+          handleUploadImage={handleUploadImage}
+          handleDeleteRow={handleDeleteRow}
+          handleModalClose={handleModalClose}
+        />
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Divider
               sx={{
