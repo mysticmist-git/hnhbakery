@@ -1,5 +1,5 @@
 import theme from '@/styles/themes/lightTheme';
-import { Add, Close } from '@mui/icons-material';
+import { Add, Close, Delete } from '@mui/icons-material';
 import {
   Modal,
   Grid,
@@ -45,6 +45,7 @@ export interface ModalProps {
   setMainDocs: any;
   mode: 'create' | 'update';
   setMode: any;
+  handleDeleteRow: any;
 }
 export default function RowModal({
   collectionName,
@@ -56,6 +57,7 @@ export default function RowModal({
   setMainDocs,
   mode,
   setMode,
+  handleDeleteRow,
 }: ModalProps) {
   const [
     featuredImageFile,
@@ -306,19 +308,9 @@ export default function RowModal({
                   gap: '1rem',
                 }}
               >
-                {mode === 'update' && (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    sx={{
-                      borderRadius: '1rem',
-                      textTransform: 'none',
-                    }}
-                    onClick={handleUpdateRow}
-                  >
-                    Cập nhật
-                  </Button>
-                )}
+                <IconButton onClick={handleDeleteRow} color="secondary">
+                  <Delete />
+                </IconButton>
                 <IconButton onClick={handleModalClose}>
                   <Close />
                 </IconButton>
@@ -448,6 +440,19 @@ export default function RowModal({
                 gap: '0.7rem',
               }}
             >
+              {mode === 'update' && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  sx={{
+                    borderRadius: '1rem',
+                    textTransform: 'none',
+                  }}
+                  onClick={handleUpdateRow}
+                >
+                  Cập nhật
+                </Button>
+              )}
               <Button
                 variant="contained"
                 sx={{

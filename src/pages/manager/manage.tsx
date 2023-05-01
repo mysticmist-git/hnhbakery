@@ -1,7 +1,6 @@
 import { db } from '@/firebase/config';
 import {
   Autocomplete,
-  Avatar,
   Box,
   Button,
   Container,
@@ -11,18 +10,6 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Modal,
-  Paper,
-  Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
   useTheme,
@@ -30,42 +17,21 @@ import {
 import {
   getDocs,
   collection,
-  QuerySnapshot,
   DocumentData,
   Timestamp,
   doc,
-  setDoc,
-  addDoc,
   deleteDoc,
-  writeBatch,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import {
-  DataGrid,
-  GridRenderCellParams,
-  GridValueGetterParams,
-} from '@mui/x-data-grid';
-import FieldSet from '@/components/Manage/FieldSet';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { UnionType, isIdentifier } from 'typescript';
-import {
-  Add,
-  AutoAwesome,
-  Close,
-  Delete,
-  Edit,
-  Wysiwyg,
-} from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { CollectionName } from '@/lib/models/utilities';
-import { styled } from '@mui/material/styles';
-import Image from 'next/image';
-import { display } from '@mui/system';
 import RowModal, { ModalMode } from './components/modals/RowModal';
 import { getDocsFromQuerySnapshot } from '@/lib/firestore/firestoreLib';
 import { TableActionButton } from './components/tables/TableActionButton';
-import ProductTypeDataTable from './components/tables/ProductTypeTable';
+import { CustomDataTable } from './components/tables';
 
 const LOADING_TEXT = 'Loading...';
 const PATH = '/manager/manage';
@@ -129,10 +95,12 @@ const DEFAULT_ROW = {
 
 export default function Manage({
   mainDocs: paramMainDocs,
+  mainCollectionName,
 }: {
   mainDocs: DocumentData[];
+  mainCollectionName: CollectionName;
 }) {
-  const [mainDocs, setMainDocs] = useState(paramMainDocs);
+  const [mainDocs, setMainDocs] = useState<DocumentData[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<CrudTarget>(
     crudTargets[0],
   );
@@ -145,6 +113,9 @@ export default function Manage({
   // Modals states
   const [rowModalOpen, setRowModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>('create');
+
+  // Current table
+  const [currentTable, setCurrentTable] = useState<JSX.Element>();
 
   const theme = useTheme();
 
@@ -162,8 +133,29 @@ export default function Manage({
     }
   };
 
+  const generateAddNewRowText = () => {
+    switch (selectedTarget.collectionName) {
+      case CollectionName.ProductTypes:
+        return 'Thêm loại sản phẩm';
+      case CollectionName.Products:
+        return 'Thêm sản phẩm';
+      case CollectionName.Batches:
+        return 'Thêm lô hàng';
+    }
+  };
+
   useEffect(() => {
+    if (!rowModalOpen) return;
+
     resetDisplayingRow();
+  }, [selectedTarget]);
+
+  useEffect(() => {
+    setMainDocs(paramMainDocs);
+  }, [paramMainDocs]);
+
+  useEffect(() => {
+    router.push(`${PATH}?collectionName=${selectedTarget.collectionName}`);
   }, [selectedTarget]);
 
   /**
@@ -177,8 +169,6 @@ export default function Manage({
     if (!newValue) return;
 
     setSelectedTarget(newValue);
-
-    router.push(`${PATH}?collectionName=${newValue.collectionName}`);
   };
 
   const handleClickOpen = () => {
@@ -277,16 +267,17 @@ export default function Manage({
           }}
           onClick={handleNewRow}
         >
-          Loại sản phẩm mới
+          {generateAddNewRowText()}
         </TableActionButton>
       </Box>
 
       {/* Table */}
-      <ProductTypeDataTable
+      <CustomDataTable
         mainDocs={mainDocs}
+        mainCollectionName={mainCollectionName}
+        setModalMode={setModalMode}
         handleViewRow={handleViewRow}
         handleDeleteRow={handleDeleteRow}
-        setModalMode={setModalMode}
       />
 
       <Divider
@@ -316,17 +307,20 @@ export default function Manage({
       </Dialog>
 
       {/* Modals */}
-      <RowModal
-        open={rowModalOpen}
-        displayingData={displayingRow}
-        setDisplayingData={setDisplayingRow}
-        onClose={() => setRowModalOpen(false)}
-        mainDocs={mainDocs}
-        setMainDocs={setMainDocs}
-        collectionName={selectedTarget.collectionName}
-        mode={modalMode}
-        setMode={setModalMode}
-      />
+      {rowModalOpen && (
+        <RowModal
+          open={rowModalOpen}
+          displayingData={displayingRow}
+          setDisplayingData={setDisplayingRow}
+          onClose={() => setRowModalOpen(false)}
+          mainDocs={mainDocs}
+          setMainDocs={setMainDocs}
+          collectionName={selectedTarget.collectionName}
+          mode={modalMode}
+          setMode={setModalMode}
+          handleDeleteRow={handleDeleteRow}
+        />
+      )}
     </Container>
   );
 }
@@ -365,6 +359,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       mainDocs,
+      mainCollectionName: collectionName,
     },
   };
 };
