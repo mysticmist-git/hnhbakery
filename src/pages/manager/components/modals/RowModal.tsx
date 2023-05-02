@@ -49,6 +49,32 @@ export interface ModalProps {
   setMode: any;
   handleDeleteRow: any;
 }
+
+const formStyle = {
+  // These 4 below are positionings I used for larger
+  // height viewports - centered
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  // other styles...
+  width: 600,
+  bgcolor: 'background.paper',
+  borderRadius: '1rem',
+  boxShadow: 24,
+  p: 4,
+  marginTop: '2rem',
+  // media query @ the max height you want (my case is the
+  // height of the viewport before the cutoff phenomenon) -
+  // set the top to '0' and translate the previous 'y'
+  // positioning coordinate so the top of the modal is @ the
+  // top of the viewport
+  '@media(max-height: 890px)': {
+    top: '0',
+    transform: 'translate(-50%, 0%)',
+  },
+};
+
 export default function RowModal({
   collectionName,
   displayingData,
@@ -289,20 +315,12 @@ export default function RowModal({
       onClose={handleModalClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
+      sx={{
+        overflowY: 'scroll',
+      }}
+      disableScrollLock={false}
     >
-      <Box
-        sx={{
-          position: 'absolute' as 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 600,
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          borderRadius: '1rem',
-          p: 4,
-        }}
-      >
+      <Box sx={formStyle}>
         <Grid item xs={12}>
           <Box
             sx={{
@@ -332,7 +350,7 @@ export default function RowModal({
           </Box>
           <Divider
             sx={{
-              mt: '1rem',
+              my: '1rem',
             }}
           />
         </Grid>

@@ -119,6 +119,8 @@ export default function Manage({
 
   const theme = useTheme();
 
+  console.log(displayingRow);
+
   const resetDisplayingRow = () => {
     switch (selectedTarget.collectionName) {
       case CollectionName.ProductTypes:

@@ -34,7 +34,7 @@ const ProductTypeForm: React.FC<FormProps> = ({
     <Grid container>
       <Grid
         item
-        lg={6}
+        xs={6}
         sx={{
           display: 'flex',
           justifyContent: 'start',
@@ -80,7 +80,7 @@ const ProductTypeForm: React.FC<FormProps> = ({
           />
         </Button>
       </Grid>
-      <Grid item lg={6}>
+      <Grid item xs={6}>
         <Box
           sx={{
             display: 'flex',
