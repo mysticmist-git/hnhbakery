@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import ProductType from '@/lib/models/ProductType';
+import Home from './home';
+import Products from './products';
 
-export default function Home() {
+export default function nha() {
   const [productTypes, getProductTypes] = useState<ProductType[]>([]);
 
   const getData = async () => {
@@ -12,5 +14,5 @@ export default function Home() {
 
   getData();
 
-  return <div>Home</div>;
+  return <Home />;
 }

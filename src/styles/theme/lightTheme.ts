@@ -6,13 +6,59 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#556cd6',
+      main: '#EEEBDD',
     },
     secondary: {
-      main: '#19857b',
+      main: '#810000',
+      dark: '#470000',
+      contrastText: '#FFFFFF',
+    },
+    text: {
+      primary: '#FFFFFF',
+      secondary: '#757575',
     },
     error: {
       main: red.A400,
+    },
+    success: {
+      main: '#00A803',
+    },
+    common: {
+      black: '#000000',
+      white: '#FFFFFF',
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto',
+    h1: {
+      fontSize: '64px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
+    },
+    h2: {
+      fontSize: '48px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
+    },
+    h3: {
+      fontSize: '28px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
+    },
+    body1: {
+      fontSize: '20px',
+      fontWeight: '700',
+      textTransform: 'none',
+    },
+    body2: {
+      fontSize: '16px',
+      fontWeight: '500',
+      textTransform: 'none',
+    },
+    button: {
+      fontSize: '16px',
+      fontWeight: '700',
+      textTransform: 'none',
     },
   },
 });
