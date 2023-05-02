@@ -33,6 +33,11 @@ const GeneratedTableHead: React.FC<Props> = ({ mainCollectionName }) => {
       return (
         <>
           <TableCell align="center">STT</TableCell>
+          <TableCell align="center">Sản phẩm</TableCell>
+          <TableCell align="center">Đã bán</TableCell>
+          <TableCell align="center">Tổng</TableCell>
+          <TableCell align="center">Ngày sản xuất</TableCell>
+          <TableCell align="center">Ngày hết hạn</TableCell>
           <TableCell align="center">Hành động</TableCell>
         </>
       );

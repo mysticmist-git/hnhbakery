@@ -5,6 +5,8 @@ import React from 'react';
 import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 import GeneratedProductTableBody from './GeneratedProductBody';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
+import { BatchObject } from '@/lib/models/Batch';
 
 type Props = {
   mainDocs: DocumentData[];
@@ -24,8 +26,6 @@ const GeneratedTableBody = ({
   handleDeleteRow,
 }: Props) => {
   const props = {
-    mainDocs,
-    displayMainDocs,
     setModalMode,
     handleViewRow,
     handleDeleteRow,
@@ -33,11 +33,27 @@ const GeneratedTableBody = ({
 
   switch (mainCollectionName) {
     case CollectionName.ProductTypes:
-      return <GeneratedProductTypeTableBody {...props} />;
+      return (
+        <GeneratedProductTypeTableBody
+          {...props}
+          mainDocs={mainDocs as ProductTypeObject[]}
+        />
+      );
     case CollectionName.Products:
-      return <GeneratedProductTableBody {...props} />;
+      return (
+        <GeneratedProductTableBody
+          {...props}
+          mainDocs={mainDocs as ProductObject[]}
+          displayMainDocs={displayMainDocs as ProductObject[]}
+        />
+      );
     case CollectionName.Batches:
-      return <GeneratedBatchTableBody {...props} />;
+      return (
+        <GeneratedBatchTableBody
+          {...props}
+          mainDocs={mainDocs as BatchObject[]}
+        />
+      );
     default:
       return <TableRow>Error generating body</TableRow>;
   }

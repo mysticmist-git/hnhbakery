@@ -5,14 +5,13 @@ import { Box } from '@mui/system';
 import { DocumentData } from 'firebase/firestore';
 import React from 'react';
 import { TableActionButton } from '../TableActionButton';
+import { ProductObject } from '@/lib/models';
+import CustomTableBodyProps from '../lib/TableBodyProps';
 
-type Props = {
-  mainDocs: DocumentData[];
-  displayMainDocs: DocumentData[];
-  setModalMode: any;
-  handleViewRow: any;
-  handleDeleteRow: any;
-};
+interface ProductTableBodyProps extends CustomTableBodyProps {
+  mainDocs?: ProductObject[];
+  displayMainDocs?: ProductObject[];
+}
 
 const GeneratedProductTableBody = ({
   mainDocs,
@@ -20,10 +19,10 @@ const GeneratedProductTableBody = ({
   setModalMode,
   handleViewRow,
   handleDeleteRow,
-}: Props) => {
+}: ProductTableBodyProps) => {
   return (
     <>
-      {displayMainDocs.map((doc, index) => (
+      {displayMainDocs?.map((doc, index) => (
         <TableRow
           key={doc.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -83,7 +82,7 @@ const GeneratedProductTableBody = ({
             </Box>
           </TableCell>
         </TableRow>
-      ))}
+      )) ?? <TableRow>Error loading body</TableRow>}
     </>
   );
 };

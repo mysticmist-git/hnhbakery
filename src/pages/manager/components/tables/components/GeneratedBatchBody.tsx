@@ -5,29 +5,56 @@ import { Box } from '@mui/system';
 import { DocumentData } from 'firebase/firestore';
 import React from 'react';
 import { TableActionButton } from '../TableActionButton';
-
-type Props = {
-  mainDocs: DocumentData[];
-  setModalMode: any;
-  handleViewRow: any;
-  handleDeleteRow: any;
-};
+import CustomTableBodyProps from '../lib/TableBodyProps';
+import { BatchObject } from '@/lib/models/Batch';
+interface BatchTableBodyProps extends CustomTableBodyProps {
+  mainDocs?: BatchObject[];
+  displayMainDocs?: BatchObject[];
+}
 
 const GeneratedBatchTableBody = ({
   mainDocs,
+  displayMainDocs,
   setModalMode,
   handleViewRow,
   handleDeleteRow,
-}: Props) => {
+}: BatchTableBodyProps) => {
   return (
     <>
-      {mainDocs.map((doc, index) => (
+      {mainDocs?.map((doc, index) => (
         <TableRow
           key={doc.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
         >
           <TableCell>
             <Typography>{index + 1}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{doc.product_id}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{doc.soldQuantity}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{doc.totalQuantity}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>
+              {new Date(doc.MFG).toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>
+              {new Date(doc.EXP).toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
           </TableCell>
           <TableCell>
             <Box
@@ -63,7 +90,7 @@ const GeneratedBatchTableBody = ({
             </Box>
           </TableCell>
         </TableRow>
-      ))}
+      )) ?? <TableRow>Error loading body</TableRow>}
     </>
   );
 };

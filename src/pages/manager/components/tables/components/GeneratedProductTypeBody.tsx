@@ -3,19 +3,24 @@ import { Wysiwyg, Delete } from '@mui/icons-material';
 import { Box, TableCell, TableRow, Typography } from '@mui/material';
 import { DocumentData } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
+import { ProductTypeObject } from '@/lib/models';
+import CustomTableBodyProps from '../lib/TableBodyProps';
 
-interface TableBodyProps {
-  mainDocs: DocumentData[];
-  displayMainDocs: DocumentData[];
-  setModalMode: any;
-  handleViewRow: any;
-  handleDeleteRow: any;
+interface ProductTypeTableBodyProps extends CustomTableBodyProps {
+  mainDocs?: ProductTypeObject[];
+  displayMainDocs?: ProductTypeObject[];
 }
 
-const GeneratedProductTypeTableBody: React.FC<TableBodyProps> = (props) => {
+const GeneratedProductTypeTableBody: React.FC<ProductTypeTableBodyProps> = ({
+  mainDocs,
+  displayMainDocs,
+  setModalMode,
+  handleViewRow,
+  handleDeleteRow,
+}: ProductTypeTableBodyProps) => {
   return (
     <>
-      {props.mainDocs.map((doc, index) => (
+      {mainDocs?.map((doc, index) => (
         <TableRow
           key={doc.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -50,8 +55,8 @@ const GeneratedProductTypeTableBody: React.FC<TableBodyProps> = (props) => {
                 variant="contained"
                 startIcon={<Wysiwyg />}
                 onClick={() => {
-                  props.setModalMode('update');
-                  props.handleViewRow(doc);
+                  setModalMode('update');
+                  handleViewRow(doc);
                 }}
               >
                 Xem
@@ -65,14 +70,14 @@ const GeneratedProductTypeTableBody: React.FC<TableBodyProps> = (props) => {
                     backgroundColor: theme.palette.secondary.dark,
                   },
                 }}
-                onClick={() => props.handleDeleteRow(doc.id)}
+                onClick={() => handleDeleteRow(doc.id)}
               >
                 Xóa
               </TableActionButton>
             </Box>
           </TableCell>
         </TableRow>
-      ))}
+      )) ?? <TableRow>Error loading body</TableRow>}
     </>
   );
 };

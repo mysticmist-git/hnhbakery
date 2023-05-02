@@ -72,7 +72,6 @@ const CustomDataTable = ({
           <TableRow>
             <GeneratedTableHead mainCollectionName={mainCollectionName} />
           </TableRow>
-          ;
         </TableHead>
         <TableBody>
           <GeneratedTableBody
