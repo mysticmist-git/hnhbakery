@@ -276,7 +276,8 @@ const ProductForm: React.FC<FormProps> = ({
         </Grid>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <MyGallery title="Ảnh" />
+        <div>Gallery</div>
+        {/* <MyGallery title="Ảnh" srcs={} /> */}
       </TabPanel>
       <TabPanel value={value} index={2}>
         <Stack gap={1}>

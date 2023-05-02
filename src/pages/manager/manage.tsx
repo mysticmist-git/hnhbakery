@@ -321,6 +321,7 @@ export default function Manage({
           mode={modalMode}
           setMode={setModalMode}
           handleDeleteRow={handleDeleteRow}
+          resetDisplayingRow={resetDisplayingRow}
         />
       )}
     </Container>

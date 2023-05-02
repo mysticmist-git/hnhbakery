@@ -1,5 +1,5 @@
 import theme from '@/styles/themes/lightTheme';
-import { Add, Close, Delete } from '@mui/icons-material';
+import { Add, Close, Delete, RestartAlt } from '@mui/icons-material';
 import {
   Modal,
   Grid,
@@ -48,6 +48,7 @@ export interface ModalProps {
   mode: 'create' | 'update';
   setMode: any;
   handleDeleteRow: any;
+  resetDisplayingRow: any;
 }
 
 const formStyle = {
@@ -86,6 +87,7 @@ export default function RowModal({
   mode,
   setMode,
   handleDeleteRow,
+  resetDisplayingRow,
 }: ModalProps) {
   const [
     featuredImageFile,
@@ -309,6 +311,8 @@ export default function RowModal({
     }
   };
 
+  const handleResetForm = () => {};
+
   return (
     <Modal
       open={open}
@@ -340,9 +344,28 @@ export default function RowModal({
                 gap: '1rem',
               }}
             >
-              <IconButton onClick={handleDeleteRow} color="secondary">
-                <Delete />
-              </IconButton>
+              {mode === 'update' ? (
+                <IconButton onClick={handleDeleteRow} color="secondary">
+                  <Delete />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'common.gray',
+                    '&:hover': {
+                      backgroundColor: 'common.darkGray',
+                    },
+                    paddingX: '1rem',
+                    borderRadius: '1rem',
+                  }}
+                  onClick={() => resetDisplayingRow()}
+                  startIcon={<RestartAlt />}
+                >
+                  Đặt lại
+                </Button>
+              )}
               <IconButton onClick={handleModalClose}>
                 <Close />
               </IconButton>
