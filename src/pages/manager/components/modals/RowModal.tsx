@@ -7,9 +7,6 @@ import {
   Button,
   IconButton,
   Divider,
-  TextField,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import {
@@ -27,12 +24,13 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
-import { useUploadImage } from '@/lib/hooks/useUploadImage';
+import {
+  useUploadFeaturedImage,
+  useUploadGallery,
+} from '@/lib/hooks/useUploadImage';
 import { CollectionName } from '@/lib/models/utilities';
-import Image from 'next/image';
 
 import placeholderImage from '@/assets/placeholder-image.png';
-import ProductTypeForm from './components/ProductTypeForm';
 import Form from './components/Form';
 
 export type ModalMode = 'create' | 'update';
@@ -59,7 +57,7 @@ const formStyle = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   // other styles...
-  width: 600,
+  width: 840,
   bgcolor: 'background.paper',
   borderRadius: '1rem',
   boxShadow: 24,
@@ -89,24 +87,35 @@ export default function RowModal({
   handleDeleteRow,
   resetDisplayingRow,
 }: ModalProps) {
-  const [
+  const {
     featuredImageFile,
     setFeaturedImageFile,
     featuredImageURL,
     setFeaturedImageURL,
-    uploadInputRef,
-  ] = useUploadImage();
+  } = useUploadFeaturedImage();
+
+  const { galleryFiles, setGalleryFiles, galleryURLs, setGalleryURLs } =
+    useUploadGallery();
 
   const [originalData, setOriginalData] = useState<DocumentData>({});
   const [originalImageURL, setOriginalImageURL] = useState<string>('');
-
-  console.log(displayingData);
+  const [originalGalleryURLs, setOriginalGalleryURLs] = useState<string[]>([]);
 
   useEffect(() => {
     if (featuredImageFile) {
       setFeaturedImageURL(URL.createObjectURL(featuredImageFile));
     }
   }, [featuredImageFile]);
+
+  useEffect(() => {
+    if (galleryFiles) {
+      const urls = galleryFiles.map((file: any) => {
+        return URL.createObjectURL(file);
+      });
+
+      setGalleryURLs(urls);
+    }
+  }, [galleryFiles]);
 
   // Get image if there's any
   const memoize = (fn: any) => {
@@ -123,22 +132,50 @@ export default function RowModal({
   };
 
   useEffect(() => {
-    if (!open || mode !== 'update' || !displayingData.image) return;
+    if (
+      !open ||
+      mode !== 'update' ||
+      (!displayingData.image && !displayingData.images)
+    )
+      return;
 
     setOriginalData(displayingData);
 
-    const getDownloadUrlFromFirebaseStorage = memoize(async () => {
-      const imageRef = ref(storage, displayingData.image);
-      const url = await getDownloadURL(imageRef);
-
-      return url;
-    });
+    const getDownloadUrlsFromFirebaseStorage = memoize(
+      async (paths: string[]) => {
+        const promises = paths.map((path) =>
+          getDownloadURL(ref(storage, path)),
+        );
+        const urls = await Promise.all(promises);
+        return urls;
+      },
+    );
 
     const getImageUrl = async () => {
-      const url = await getDownloadUrlFromFirebaseStorage();
-      console.log('Update mode | image url got: ', url);
-      setFeaturedImageURL(url);
-      setOriginalImageURL(url);
+      // Depends on fetched data, it may have either image or images fields
+
+      if (displayingData.image) {
+        const featuredURL: string[] = await getDownloadUrlsFromFirebaseStorage([
+          displayingData.image,
+        ]);
+
+        if (featuredURL && featuredURL.length > 0) {
+          setFeaturedImageURL(featuredURL[0]);
+          setOriginalImageURL(featuredURL[0]);
+        }
+      }
+
+      if (displayingData.images) {
+        const galleryURLs: string[] = await getDownloadUrlsFromFirebaseStorage(
+          displayingData.images,
+        );
+
+        if (galleryURLs && galleryURLs.length > 0) {
+          console.log(galleryURLs);
+          setGalleryURLs(galleryURLs);
+          setOriginalGalleryURLs(galleryURLs);
+        }
+      }
     };
 
     getImageUrl();
@@ -207,20 +244,25 @@ export default function RowModal({
   };
 
   const handleAddNewRow = async () => {
-    // Upload image
-    const uploadImageResult = await uploadImageToFirebaseStorage(
-      featuredImageFile,
-    );
+    // Check if image upload needed
+    let data = { ...displayingData };
 
-    console.log('Upload image path:', uploadImageResult);
+    if (featuredImageFile) {
+      // Upload image
+      const uploadImageResult = await uploadImageToFirebaseStorage(
+        featuredImageFile,
+      );
 
-    // Get new row data
-    if (!uploadImageResult) return;
+      console.log('Upload image path:', uploadImageResult);
 
-    const data = {
-      ...displayingData,
-      image: uploadImageResult,
-    };
+      // Get new row data
+      if (!uploadImageResult) return;
+
+      data = {
+        ...displayingData,
+        image: uploadImageResult,
+      };
+    }
 
     // Upload to Firestore
     const docId = await addDocumentToFirestore(data);
@@ -381,17 +423,20 @@ export default function RowModal({
         <Form
           collectionName={collectionName}
           placeholderImage={placeholderImage}
-          theme={theme}
           displayingData={displayingData}
           setDisplayingData={setDisplayingData}
           featuredImageFile={featuredImageFile}
           setFeaturedImageFile={setFeaturedImageFile}
           featuredImageURL={featuredImageURL}
           setFeaturedImageURL={setFeaturedImageURL}
-          uploadInputRef={uploadInputRef}
+          galleryFiles={galleryFiles}
+          setGalleryFiles={setGalleryFiles}
+          galleryURLs={galleryURLs}
+          setGalleryURLs={setGalleryURLs}
           handleUploadImage={handleUploadImage}
           handleDeleteRow={handleDeleteRow}
           handleModalClose={handleModalClose}
+          mode={mode}
         />
         <Grid container spacing={2}>
           <Grid item xs={12}>

@@ -52,6 +52,7 @@ const GeneratedTableBody = ({
         <GeneratedBatchTableBody
           {...props}
           mainDocs={mainDocs as BatchObject[]}
+          displayMainDocs={displayMainDocs as BatchObject[]}
         />
       );
     default:

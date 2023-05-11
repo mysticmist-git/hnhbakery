@@ -1,19 +1,22 @@
-import { Theme } from '@mui/material';
 import { DocumentData } from 'firebase/firestore';
-import { StaticImageData } from 'next/image';
-import { RefObject } from 'react';
 
 export interface Props {
-  placeholderImage: StaticImageData;
-  theme: Theme;
+  placeholderImage: any;
   displayingData: DocumentData;
   setDisplayingData: any;
+
   featuredImageFile: any;
   setFeaturedImageFile: any;
   featuredImageURL: string;
   setFeaturedImageURL: any;
-  uploadInputRef: RefObject<HTMLInputElement>;
+
+  galleryFiles: any[];
+  setGalleryFiles: any;
+  galleryURLs: string[];
+  setGalleryURLs: any;
+
   handleUploadImage: any;
   handleDeleteRow: any;
   handleModalClose: any;
+  mode: 'create' | 'update';
 }

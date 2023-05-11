@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   Switch,
   Theme,
+  useTheme,
 } from '@mui/material';
 import { Delete, Close } from '@mui/icons-material';
 import Image, { StaticImageData } from 'next/image';
@@ -18,18 +19,16 @@ import { Props as FormProps } from './lib';
 
 const ProductTypeForm: React.FC<FormProps> = ({
   placeholderImage,
-  theme,
   displayingData,
   setDisplayingData,
   featuredImageFile,
-  setFeaturedImageFile,
   featuredImageURL,
-  setFeaturedImageURL,
-  uploadInputRef,
   handleUploadImage,
   handleDeleteRow,
   handleModalClose,
 }) => {
+  const theme = useTheme();
+
   return (
     <Grid container>
       <Grid
@@ -56,6 +55,7 @@ const ProductTypeForm: React.FC<FormProps> = ({
 
         <Button
           variant="contained"
+          component="label"
           sx={{
             borderRadius: '0 0 0.4rem 0.4rem',
             backgroundColor: theme.palette.secondary.main,
@@ -65,18 +65,14 @@ const ProductTypeForm: React.FC<FormProps> = ({
             textTransform: 'none',
             width: '100%',
           }}
-          onClick={() => {
-            if (uploadInputRef.current) (uploadInputRef.current as any).click();
-          }}
         >
           Tải ảnh lên
           <input
-            ref={uploadInputRef}
+            hidden
+            accept="image/*"
+            multiple
             type="file"
             onChange={handleUploadImage}
-            style={{
-              display: 'none',
-            }}
           />
         </Button>
       </Grid>

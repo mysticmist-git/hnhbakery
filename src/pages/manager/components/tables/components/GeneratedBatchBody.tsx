@@ -21,7 +21,7 @@ const GeneratedBatchTableBody = ({
 }: BatchTableBodyProps) => {
   return (
     <>
-      {mainDocs?.map((doc, index) => (
+      {displayMainDocs?.map((doc, index) => (
         <TableRow
           key={doc.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -30,7 +30,7 @@ const GeneratedBatchTableBody = ({
             <Typography>{index + 1}</Typography>
           </TableCell>
           <TableCell>
-            <Typography>{doc.product_id}</Typography>
+            <Typography>{doc.productName}</Typography>
           </TableCell>
           <TableCell>
             <Typography>{doc.soldQuantity}</Typography>

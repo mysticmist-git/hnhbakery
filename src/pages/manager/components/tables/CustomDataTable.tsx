@@ -43,7 +43,11 @@ const CustomDataTable = ({
       const docs = await Promise.all(
         mainDocs.map(async (document) => {
           console.log('Document received: ', document);
-          const docRef = doc(db, 'productTypes', document.productType_id);
+          const docRef = doc(
+            db,
+            CollectionName.ProductTypes,
+            document.productType_id,
+          );
           const docSnap = await getDoc(docRef);
           return {
             ...document,
@@ -58,11 +62,35 @@ const CustomDataTable = ({
       setDisplayMainDocs(docs);
     };
 
-    if (mainCollectionName !== CollectionName.Products) {
-      return;
-    }
+    // Load product names with productIds
+    const getProductNames = async () => {
+      const docs = await Promise.all(
+        mainDocs.map(async (document) => {
+          console.log('Document received: ', document);
+          const docRef = doc(db, CollectionName.Products, document.product_id);
+          const docSnap = await getDoc(docRef);
+          return {
+            ...document,
+            productName:
+              docSnap.exists() && docSnap.data() !== null
+                ? docSnap.data().name
+                : null,
+          };
+        }),
+      );
 
-    getProductTypeNames();
+      setDisplayMainDocs(docs);
+    };
+
+    switch (mainCollectionName) {
+      case CollectionName.Products:
+        getProductTypeNames();
+        break;
+      case CollectionName.Batches:
+        getProductNames();
+      default:
+        break;
+    }
   }, [mainDocs]);
 
   return (

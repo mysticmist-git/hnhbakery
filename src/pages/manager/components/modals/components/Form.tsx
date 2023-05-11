@@ -1,19 +1,3 @@
-import { useState, useRef, RefObject } from 'react';
-import {
-  Grid,
-  Box,
-  Typography,
-  Divider,
-  IconButton,
-  Button,
-  TextField,
-  FormControlLabel,
-  Switch,
-  Theme,
-} from '@mui/material';
-import { Delete, Close } from '@mui/icons-material';
-import Image, { StaticImageData } from 'next/image';
-import { DocumentData } from 'firebase/firestore';
 import { Props as FormProps } from './lib';
 import { CollectionName } from '@/lib/models/utilities';
 import ProductTypeForm from './ProductTypeForm';
@@ -27,31 +11,43 @@ export interface HubFormProps extends FormProps {
 const Form = ({
   collectionName,
   placeholderImage,
-  theme,
   displayingData,
   setDisplayingData,
+
   featuredImageFile,
   setFeaturedImageFile,
   featuredImageURL,
   setFeaturedImageURL,
-  uploadInputRef,
+
+  galleryFiles,
+  setGalleryFiles,
+  galleryURLs,
+  setGalleryURLs,
+
   handleUploadImage,
   handleDeleteRow,
   handleModalClose,
+  mode,
 }: HubFormProps) => {
   const props = {
     placeholderImage,
-    theme,
     displayingData,
     setDisplayingData,
+
     featuredImageFile,
     setFeaturedImageFile,
     featuredImageURL,
     setFeaturedImageURL,
-    uploadInputRef,
+
+    galleryFiles,
+    setGalleryFiles,
+    galleryURLs,
+    setGalleryURLs,
+
     handleUploadImage,
     handleDeleteRow,
     handleModalClose,
+    mode,
   };
 
   switch (collectionName) {

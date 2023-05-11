@@ -26,128 +26,83 @@ import { Props as FormProps } from './lib';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
-import { display } from '@mui/system';
-
-interface ProductStateProps {
-  id: string;
-  name: string;
-}
-
-const DEFAULT_PRODUCT_STATE = {
-  id: '',
-  name: '',
-};
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs, { Dayjs } from 'dayjs';
 
 const BatchForm: React.FC<FormProps> = ({
-  placeholderImage,
-  theme,
   displayingData,
   setDisplayingData,
-  featuredImageFile,
-  setFeaturedImageFile,
-  featuredImageURL,
-  setFeaturedImageURL,
-  uploadInputRef,
-  handleUploadImage,
-  handleDeleteRow,
-  handleModalClose,
+  mode,
 }) => {
-  const [products, setProducts] = useState<ProductStateProps[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<ProductStateProps>(
-    DEFAULT_PRODUCT_STATE,
+  const [products, setProducts] = useState<ProductObject[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
+    null,
   );
 
+  // Variants
   const [materials, setMaterials] = useState<string[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('');
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>('');
   const [colors, setColors] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string | null>('');
   const [sizes, setSizes] = useState<string[]>([]);
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string | null>('');
 
   useEffect(() => {
-    async function getProducts() {
-      try {
-        const collectionRef = collection(db, CollectionName.Products);
-        const snapshot = await getDocs(collectionRef);
-        const data = snapshot.docs.map((doc) => {
-          const docData = doc.data();
-          return {
-            id: doc.id,
-            name: docData.name,
-          };
-        });
+    const fetchData = async () => {
+      const justGetProducts = await getProducts();
+      setProducts(justGetProducts ?? []);
 
-        return data;
-      } catch (error) {
-        console.log('Error fetching product types: ', error);
-        return [];
-      }
-    }
-
-    async function getProduct() {
-      if (
-        !displayingData ||
-        !displayingData.product_id ||
-        displayingData.prduct_id === ''
-      )
-        return;
-
-      try {
-        const productRef = doc(
-          db,
-          CollectionName.Products,
-          displayingData.product_id,
+      if (mode === 'update') {
+        const referencedProduct = justGetProducts.find(
+          (product) => product.id === displayingData.product_id,
         );
-        const docSnap = await getDoc(productRef);
-        const data = { id: docSnap.id, ...docSnap.data() };
 
-        return data;
-      } catch (error) {
-        console.log('Error fetching product: ', error);
-        return [];
+        console.log(referencedProduct);
+
+        if (referencedProduct) setSelectedProduct(referencedProduct);
       }
-    }
-
-    function getVariants(product: ProductObject) {
-      return {
-        materials: product.materials,
-        colors: product.colors,
-        sizes: product.sizes,
-      };
-    }
-
-    async function fetchData() {
-      const products: ProductStateProps[] = await getProducts();
-      setProducts(products);
-
-      // set selected product type
-      if (displayingData) {
-        setSelectedProduct(
-          products.find((pt) => pt.id === displayingData.product_id) ??
-            products[0],
-        );
-      }
-
-      const referencedProduct = await getProduct();
-
-      // If there's no product then stop (in case of create-mode of something else)
-      if (!referencedProduct) return;
-
-      const { materials, colors, sizes } = getVariants(
-        referencedProduct as ProductObject,
-      );
-
-      setMaterials(materials);
-      setColors(colors);
-      setSizes(sizes);
-
-      setSelectedMaterial(materials[displayingData.material] ?? '');
-      setSelectedColor(colors[displayingData.color] ?? '');
-      setSelectedSize(sizes[displayingData.size] ?? '');
-    }
+    };
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const updateVariants = async () => {
+      if (!selectedProduct) return;
+
+      setMaterials(selectedProduct.materials);
+      setColors(selectedProduct.colors);
+      setSizes(selectedProduct.sizes);
+
+      if (mode === 'update') {
+        setSelectedMaterial(selectedProduct.materials[displayingData.material]);
+        setSelectedColor(selectedProduct.colors[displayingData.color]);
+        setSelectedSize(selectedProduct.sizes[displayingData.size]);
+      }
+    };
+
+    updateVariants();
+  }, [selectedProduct]);
+
+  async function getProducts(): Promise<ProductObject[]> {
+    try {
+      const collectionRef = collection(db, CollectionName.Products);
+      const snapshot = await getDocs(collectionRef);
+      const data = snapshot.docs.map((doc) => {
+        const docData = doc.data();
+        return {
+          id: doc.id,
+          ...docData,
+        };
+      });
+
+      return data as ProductObject[];
+    } catch (error) {
+      console.log('Error fetching product types: ', error);
+      return [];
+    }
+  }
+
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={6}>
@@ -221,21 +176,55 @@ const BatchForm: React.FC<FormProps> = ({
         </Stack>
       </Grid>
       <Grid item xs={6}>
-        <Stack gap={1}>
-          <TextField
-            label="Số lượng"
-            variant="standard"
-            color="secondary"
-            fullWidth
-            value={displayingData?.totalQuantity}
-            onChange={(e) =>
-              setDisplayingData({
-                ...displayingData,
-                totalQuantity: e.target.value,
-              })
+        <Stack gap={2}>
+          <Stack gap={1} direction="row">
+            <TextField
+              label="Đã bán"
+              variant="standard"
+              color="secondary"
+              fullWidth
+              value={displayingData?.soldQuantity}
+              type="number"
+              InputProps={{
+                readOnly: true,
+              }}
+              onChange={(e) =>
+                setDisplayingData({
+                  ...displayingData,
+                  totalQuantity: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Số lượng"
+              variant="standard"
+              color="secondary"
+              type="number"
+              fullWidth
+              value={displayingData?.totalQuantity}
+              onChange={(e) =>
+                setDisplayingData({
+                  ...displayingData,
+                  totalQuantity: e.target.value,
+                })
+              }
+            />
+          </Stack>
+          <DatePicker
+            label="Ngày sản xuất"
+            value={dayjs(displayingData?.MFG)}
+            onChange={(newValue: any) =>
+              setDisplayingData({ ...displayingData, MFG: newValue.toDate() })
             }
           />
-          <TextField
+          <DatePicker
+            label="Ngày hết hạn"
+            value={dayjs(displayingData?.EXP)}
+            onChange={(newValue: any) =>
+              setDisplayingData({ ...displayingData, EXP: newValue.toDate() })
+            }
+          />
+          {/* <TextField
             label="Ngày sản xuất"
             variant="standard"
             color="secondary"
@@ -254,7 +243,7 @@ const BatchForm: React.FC<FormProps> = ({
             onChange={(e) =>
               setDisplayingData({ ...displayingData, EXP: e.target.value })
             }
-          />
+          /> */}
         </Stack>
       </Grid>
     </Grid>

@@ -21,6 +21,7 @@ import {
   Input,
   ImageList,
   ImageListItem,
+  SxProps,
 } from '@mui/material';
 import { Delete, Close, Add } from '@mui/icons-material';
 import Image, { StaticImageData } from 'next/image';
@@ -80,17 +81,9 @@ const DEFAULT_PRODUCT_TYPE_STATE = {
 
 const ProductForm: React.FC<FormProps> = ({
   placeholderImage,
-  theme,
   displayingData,
   setDisplayingData,
-  featuredImageFile,
-  setFeaturedImageFile,
-  featuredImageURL,
-  setFeaturedImageURL,
-  uploadInputRef,
-  handleUploadImage,
-  handleDeleteRow,
-  handleModalClose,
+  galleryURLs,
 }) => {
   const [value, setValue] = useState(0);
   const [productTypes, setProductTypes] = useState<ProductTypeStateProps[]>([]);
@@ -136,6 +129,8 @@ const ProductForm: React.FC<FormProps> = ({
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  console.log(displayingData.images);
 
   return (
     <>
@@ -276,8 +271,11 @@ const ProductForm: React.FC<FormProps> = ({
         </Grid>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <div>Gallery</div>
-        {/* <MyGallery title="Ảnh" srcs={} /> */}
+        <MyGallery
+          srcs={galleryURLs}
+          onChange={() => console.log('This is my gallery on change callback')}
+          placeholderImage={placeholderImage}
+        />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <Stack gap={1}>
@@ -327,17 +325,115 @@ const ProductForm: React.FC<FormProps> = ({
   );
 };
 
+function MyGalleryImage({
+  src,
+  srcs,
+  setSrcs,
+}: {
+  src: any;
+  srcs: string[];
+  setSrcs: any;
+}) {
+  return (
+    <Box
+      position="relative"
+      sx={{
+        '&:hover > button': {
+          visibility: 'visible',
+          opacity: 1,
+        },
+      }}
+    >
+      <Image
+        src={src}
+        alt="Gallery Image"
+        width={172}
+        height={240}
+        priority
+        style={{ objectFit: 'cover', borderRadius: '1rem' }}
+      />
+      <IconButton
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          zIndex: 1,
+          color: 'common.white',
+          visibility: 'hidden',
+          opacity: 0,
+          transition: 'opacity 0.2s ease-in-out',
+        }}
+        onClick={() => setSrcs(srcs.filter((s) => s !== src))}
+      >
+        <Close />
+      </IconButton>
+    </Box>
+  );
+}
+
+function MyGalleryImageNewButton({
+  sx,
+  srcs,
+  setSrcs,
+}: {
+  sx?: SxProps;
+  srcs: string[];
+  setSrcs: any;
+}) {
+  const handleFileUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event: any) => {
+      const files = event.target.files;
+      // Add your file upload logic here
+      const file = files[0];
+      setSrcs([...srcs, URL.createObjectURL(file)]);
+    };
+    input.click();
+  };
+
+  return (
+    <Box
+      width={172}
+      height={240}
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        transition: 'background-color 0.2s ease-in-out',
+        '&:hover': {
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        },
+        '&:active': {
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        },
+        ...sx,
+      }}
+      onClick={handleFileUpload}
+    >
+      <Add
+        sx={{
+          width: '44px',
+          height: '44px',
+        }}
+      />
+    </Box>
+  );
+}
+
 function MyGallery({
   title: title,
   srcs: paramSrcs,
   onChange,
+  placeholderImage,
 }: {
-  title: string;
+  title?: string;
   srcs: string[];
   onChange: (values: string[]) => void;
+  placeholderImage: StaticImageData;
 }) {
   const [srcs, setSrcs] = useState<string[]>(paramSrcs);
-  const [newValue, setNewValue] = useState('');
 
   useEffect(() => {
     onChange(srcs);
@@ -348,32 +444,41 @@ function MyGallery({
   };
 
   const handleAddNewValue = () => {
-    if (!newValue || newValue === '') return;
-
-    setSrcs([...srcs, newValue]);
-    setNewValue('');
+    // ...
   };
 
   return (
     <Stack spacing={1}>
-      <Typography variant="body1" fontWeight="bold">
-        {title}
+      {title && (
+        <Typography variant="h6" fontWeight="bold">
+          {title}
+        </Typography>
+      )}
+      <Typography variant="h6" fontWeight="bold">
+        {'Tổng số ảnh: '}
+        <Typography variant="body1" display={'inline'}>
+          {srcs.length}
+        </Typography>
       </Typography>
       <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
-        {srcs.map((value) => (
-          <Chip
-            key={value}
-            label={value}
-            onDelete={() => handleDeleteValue(value)}
+        {srcs.map((src) => (
+          <MyGalleryImage
+            src={src && src !== '' ? src : placeholderImage}
+            srcs={srcs}
+            setSrcs={setSrcs}
           />
         ))}
-
-        <NewValueChip
-          value={newValue}
-          placeholder="Thêm mới"
-          width={'68px'}
-          onChange={(e: any) => setNewValue(e.target.value)}
-          onClick={handleAddNewValue}
+        <MyGalleryImageNewButton
+          sx={{
+            backgroundColor: '#ccc',
+            borderRadius: '1rem',
+            '&:hover': {
+              backgroundColor: '#bbb',
+            },
+            color: 'common.white',
+          }}
+          srcs={srcs}
+          setSrcs={setSrcs}
         />
       </Stack>
     </Stack>

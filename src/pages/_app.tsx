@@ -14,7 +14,8 @@ import initAuth from '@/next-firebase-auth/initAuth';
 import { useRouter } from 'next/router';
 import ManageLayout from '@/components/Layouts/ManageLayout';
 import DefaultLayout from '@/components/Layouts/DefaultLayout';
-
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 interface MyAppProps extends AppProps {
   emotionCache: EmotionCache;
 }
@@ -30,14 +31,16 @@ const MyApp = (props: MyAppProps) => {
     : DefaultLayout;
 
   return (
-    <CacheProvider value={emotionCache}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <CurrentLayout>
-          <Component {...pageProps} />
-        </CurrentLayout>
-      </ThemeProvider>
-    </CacheProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <CacheProvider value={emotionCache}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <CurrentLayout>
+            <Component {...pageProps} />
+          </CurrentLayout>
+        </ThemeProvider>
+      </CacheProvider>
+    </LocalizationProvider>
   );
 };
 
