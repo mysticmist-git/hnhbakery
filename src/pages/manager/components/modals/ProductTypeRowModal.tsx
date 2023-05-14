@@ -1,26 +1,20 @@
-import {
-  DocumentData,
-  addDoc,
-  collection,
-  doc,
-  updateDoc,
-} from 'firebase/firestore';
+import { DocumentData, doc, updateDoc } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
-import { deleteObject, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
-import { useUploadFeaturedImage } from '@/lib/hooks/useUploadImage';
-import { CollectionName } from '@/lib/models/utilities';
 
 import { ManageContextType, ManageActionType } from '../../lib/manage';
 import { ManageContext } from '../../manage';
-import ProductTypeForm from './ProductTypeForm';
+import ProductTypeForm from './forms/ProductTypeForm';
 import RowModalLayout from './RowModalLayout';
-import { RowModalContext } from './ProductRowModal';
+import { CollectionName } from '@/lib/models/utilities';
 import {
-  addDocumentToFirestore,
   getDownloadUrlsFromFirebaseStorage,
   uploadImageToFirebaseStorage,
-} from './lib';
+  addDocumentToFirestore,
+  updateDocument,
+} from '../../lib/firebaseLib';
+import { checkIfDataChanged, isDataChanged } from './lib';
 
 export default function ProductTypeRowModal() {
   //#region States
@@ -33,18 +27,54 @@ export default function ProductTypeRowModal() {
     resetDisplayingData,
   } = useContext<ManageContextType>(ManageContext);
 
-  const {
-    featuredImageFile,
-    setFeaturedImageFile,
-    featuredImageURL,
-    setFeaturedImageURL,
-  } = useUploadFeaturedImage();
-  const [originalImageURL, setOriginalImageURL] = useState<string>('');
-  const [originalData, setOriginalData] = useState<DocumentData>({});
+  /**
+   * This is used to stored URL of the featured on storage
+   * If this changed to local URL, that's mean we need to update the image
+   */
+  const [originalDisplayingData, setOriginalDisplayingData] =
+    useState<DocumentData | null>(null);
+  const [originalFeaturedImageURL, setOriginalFeaturedImageURL] = useState<
+    string | null
+  >(null);
+
+  // Image manage
+  const [featuredImageURL, setFeaturedImageURL] = useState<string | null>(null);
+  const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null);
+
+  //#endregion
+
+  //#region Hooks
 
   //#endregion
 
   //#region useEffects
+
+  useEffect(() => {
+    // Check if displaying data exist.
+    // If no then alert and close the modal
+    if (!state.displayingData) {
+      alert('No data passed to the modal');
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
+      return;
+    }
+
+    setOriginalDisplayingData(state.displayingData);
+
+    let downloadURL: string | null = null;
+
+    async function ExecuteGetDownloadURLAndLoadImageToView() {
+      downloadURL = await GetDownloadURLAndLoadImageToView(
+        state.displayingData!.image,
+      );
+    }
+
+    ExecuteGetDownloadURLAndLoadImageToView();
+
+    if (downloadURL) setOriginalFeaturedImageURL(downloadURL);
+  }, []);
 
   useEffect(() => {
     if (featuredImageFile) {
@@ -52,48 +82,109 @@ export default function ProductTypeRowModal() {
     }
   }, [featuredImageFile]);
 
-  // This useEffect load image
   useEffect(() => {
-    if (
-      state.crudModalOpen ||
-      state.crudModalMode !== 'update' ||
-      !state.displayingData?.image
-    )
-      return;
+    if (!featuredImageURL) return;
+  }, [featuredImageURL]);
 
-    setOriginalData(state.displayingData ?? {});
+  //#endregion
 
-    const getImageUrl = async () => {
-      // Depends on fetched data, it may have either image or images fields
+  //#region Functions
 
-      if (state.displayingData?.image) {
-        const featuredURL: string[] = await getDownloadUrlsFromFirebaseStorage([
-          state.displayingData.image,
-        ]);
+  function loadImageToView(image: string) {
+    if (!image || image.length === 0) return;
 
-        if (featuredURL && featuredURL.length > 0) {
-          setFeaturedImageURL(featuredURL[0]);
-          setOriginalImageURL(featuredURL[0]);
-        }
+    setFeaturedImageURL(image);
+  }
+
+  async function GetDownloadURLAndLoadImageToView(
+    image: string,
+  ): Promise<string | null> {
+    // Null check
+    if (!image || image.length === 0) return null;
+
+    const downloadURLs = await getDownloadUrlsFromFirebaseStorage([image]);
+
+    if (downloadURLs && downloadURLs.length > 0) {
+      loadImageToView(downloadURLs[0]);
+      return downloadURLs[0];
+    }
+
+    return null;
+  }
+
+  //#endregion
+
+  //#region Methods
+
+  function checkIfImageChanged(): boolean {
+    if (!originalFeaturedImageURL) {
+      alert('No original image URL found');
+      return false;
+    }
+
+    if (!featuredImageURL) {
+      alert('No image URL found');
+      return false;
+    }
+
+    return originalFeaturedImageURL !== featuredImageURL;
+  }
+
+  async function updateImageToFirebaseStorage() {
+    if (!checkIfImageChanged()) return;
+
+    // Remove old image from storage
+    if (state.displayingData?.image) {
+      try {
+        const imageRef = ref(storage, state.displayingData.image);
+        await deleteObject(imageRef);
+      } catch (error) {
+        console.log('Error: ', error);
       }
-    };
+    } else {
+      alert('No image found');
+      return;
+    }
 
-    getImageUrl();
-  }, [state.crudModalOpen]);
+    // Upload new image to storage
+    if (featuredImageFile) {
+      try {
+        const downloadURL = await uploadImageToFirebaseStorage(
+          featuredImageFile,
+        );
+
+        // Update document image
+        const docRef = doc(
+          db,
+          state.selectedTarget?.collectionName!,
+          state.displayingData.id,
+        );
+        await updateDoc(docRef, {
+          image: downloadURL,
+        });
+
+        // Update state
+        dispatch({
+          type: ManageActionType.SET_DISPLAYING_DATA,
+          payload: { ...state.displayingData, image: downloadURL },
+        });
+      } catch (error) {
+        console.log('Error: ', error);
+      }
+    } else {
+      alert('No image found');
+    }
+  }
 
   //#endregion
 
   //#region Hanlders
 
-  const handleUploadImage = (event: any) => {
+  const handleUploadImageToBrowser = (event: any) => {
     const file = event.target.files[0];
 
-    setFeaturedImageFile(file);
+    if (file) setFeaturedImageFile(file);
   };
-
-  //#endregion
-
-  // Handlers
 
   /**
    * Adds a new document to Firestore collection.
@@ -104,47 +195,89 @@ export default function ProductTypeRowModal() {
    */
 
   const handleAddNewRow = async () => {
-    const collectionName = state.displayingData?.collectionName;
+    if (state.crudModalMode !== 'create') {
+      alert('Wrong mode detected');
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
+      return;
+    }
+
+    const collectionName = state.selectedTarget?.collectionName;
 
     if (!collectionName) return;
 
-    // Check if image upload needed
-    let data = { ...state.displayingData };
-
-    if (featuredImageFile) {
-      // Upload image
-      const uploadImageResult = await uploadImageToFirebaseStorage(
-        featuredImageFile,
-      );
-
-      console.log('Upload image path:', uploadImageResult);
-
-      // Get new row data
-      if (!uploadImageResult) return;
-
-      data = {
-        ...state.displayingData,
-        image: uploadImageResult,
-      };
+    // Image existence check
+    if (!featuredImageFile) {
+      alert('No image received');
+      return;
     }
 
-    // Upload to Firestore
-    const docId = await addDocumentToFirestore(data, collectionName);
+    try {
+      // Upload image
+      const imageURL = await uploadImageToFirebaseStorage(featuredImageFile);
 
-    // Add new row to table data
+      // Image upload fail
+      if (!imageURL) {
+        alert('Image upload fial');
+        return;
+      }
+
+      const data = {
+        ...state.displayingData,
+        image: imageURL,
+      };
+
+      // Add new document to Firestore
+      const docId = await addDocumentToFirestore(data, collectionName);
+
+      // Add new row to table data
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: [...state.mainDocs, { id: docId, ...data }],
+      });
+    } catch (error) {
+      console.log('Error adding new document: ', error);
+    }
+
+    // Close modal
     dispatch({
-      type: ManageActionType.SET_MAIN_DOCS,
-      payload: [...state.mainDocs, { ...data, id: docId }],
+      type: ManageActionType.SET_CRUD_MODAL_OPEN,
+      payload: false,
     });
   };
 
   const handleUpdateRow = async () => {
+    if (state.crudModalMode !== 'create') {
+      alert('Wrong mode detected');
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
+      return;
+    }
+
     try {
-      const newData = {
-        ...state.displayingData,
-        image: featuredImageURL,
-      };
-      console.log('newData:', newData);
+      // Check if image changed
+      const imageChanged = checkIfImageChanged();
+
+      // Check if data changed
+      const dataChanged = checkIfDataChanged(
+        originalDisplayingData,
+        state.displayingData,
+      );
+
+      // Proceed to update things
+
+      if (!imageChanged && !dataChanged) {
+        alert('Vui lòng thay đổi thông tin');
+        return;
+      }
+
+      if (imageChanged) updateImageToFirebaseStorage();
+
+      if (!dataChanged) return;
 
       const collectionName = state.displayingData?.collectionName;
       const displayingData = state.displayingData;
@@ -154,66 +287,29 @@ export default function ProductTypeRowModal() {
         return;
       }
 
-      // Check if image changed
-      if (featuredImageURL !== originalImageURL) {
-        console.log('Imaged changed detected');
-        console.log('Current URL: ', featuredImageURL);
-        console.log('Original URL', originalImageURL);
-        if (state.displayingData?.image) {
-          // Delete old image
-          const oldImageRef = ref(storage, state.displayingData.image);
-          await deleteObject(oldImageRef);
-        } else {
-          alert('Errror at handleUpdateRow RowModal!');
-          return;
-        }
+      // Update document to firestore
+      updateDocument(displayingData, collectionName);
 
-        // Upload new image
-        const url = await uploadImageToFirebaseStorage(featuredImageFile);
-        newData.image = url;
-      }
+      // Update state
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: [
+          ...state.mainDocs.filter((doc) => doc.id !== displayingData.id),
+          displayingData,
+        ],
+      });
 
-      console.log('newData after image check:', newData);
-
-      /**
-       * Checks if any data in newData is different from displayingData.
-       *
-       * @param newData - An object containing new data.
-       * @param displayingData - An object containing data currently being displayed.
-       * @returns A boolean indicating if any data has changed.
-       */
-      const dataChanged = (
-        newData: Record<string, unknown>,
-        displayingData: Record<string, unknown>,
-      ): boolean => {
-        const changed = Object.keys(newData).some(
-          (key) => newData[key] !== displayingData[key],
-        );
-        console.log('dataChanged:', changed);
-        return changed;
-      };
-
-      if (dataChanged(newData, originalData)) {
-        // Update on Firestore
-        const docRef = doc(db, collectionName, displayingData.id);
-        console.log('docRef:', docRef);
-        await updateDoc(docRef, newData);
-
-        // Update on table
-        dispatch({
-          type: ManageActionType.SET_MAIN_DOCS,
-          payload: state.mainDocs.map((doc) => {
-            if (doc.id === displayingData.id) {
-              return { ...newData, id: doc.id };
-            }
-            return doc;
-          }),
-        });
-      }
+      // Close modal
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
     } catch (error) {
       console.log('Update row failed, error: ', error);
     }
   };
+
+  //#endregion
 
   return (
     <RowModalLayout
@@ -222,8 +318,7 @@ export default function ProductTypeRowModal() {
     >
       <ProductTypeForm
         featuredImageURL={featuredImageURL}
-        featuredImageFile={featuredImageFile}
-        handleUploadImage={handleUploadImage}
+        handleUploadImage={handleUploadImageToBrowser}
       />
     </RowModalLayout>
   );

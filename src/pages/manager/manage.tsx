@@ -32,6 +32,7 @@ import { getDocsFromQuerySnapshot } from '@/lib/firestore/firestoreLib';
 import { TableActionButton } from './components/tables/TableActionButton';
 import { CustomDataTable } from './components/tables';
 import {
+  DEFAULT_ROW,
   ManageActionType,
   ManageContextType,
   crudTargets,
@@ -40,50 +41,12 @@ import {
 } from './lib/manage';
 import RowModal from './components/modals/RowModal';
 
+//#region Constants
+
 const LOADING_TEXT = 'Loading...';
 const PATH = '/manager/manage';
 
-export interface CrudTarget {
-  collectionName: CollectionName;
-  label: string;
-}
-
-const DEFAULT_ROW = {
-  PRODUCT_TYPE: {
-    id: '',
-    name: '',
-    description: '',
-    image: '',
-    isActive: true,
-  },
-  PRODUCT: {
-    id: '',
-    productType_id: '',
-    name: '',
-    description: '',
-    ingredients: [],
-    materials: [],
-    colors: [],
-    sizes: [],
-    howToUse: '',
-    preservation: '',
-    images: [],
-    isActive: true,
-  },
-  BATCH: {
-    id: '',
-    totalQuantity: 0,
-    soldQuantity: 0,
-    MFG: Timestamp.fromDate(new Date()),
-    EXP: Timestamp.fromDate(new Date()),
-    material: 0,
-    size: 0,
-    color: 0,
-    price: 0,
-    discount: [],
-    product_id: '',
-  },
-};
+//#endregion
 
 export const ManageContext = createContext<ManageContextType>({
   state: initManageState,
@@ -98,9 +61,43 @@ export default function Manage({
 }: {
   mainDocs: DocumentData[];
 }) {
+  //#region States
+
   const [state, dispatch] = useReducer(manageReducer, initManageState);
 
+  //#endregion
+
+  //#region Hooks
+
   const theme = useTheme();
+  const router = useRouter();
+
+  //#endregion
+
+  //#region useEffects
+
+  useEffect(() => {
+    if (!state.crudModalOpen) return;
+
+    resetDisplayingData();
+  }, [state.selectedTarget]);
+
+  useEffect(() => {
+    dispatch({
+      type: ManageActionType.SET_MAIN_DOCS,
+      payload: paramMainDocs,
+    });
+  }, [paramMainDocs]);
+
+  useEffect(() => {
+    router.push(
+      `${PATH}?collectionName=${state.selectedTarget.collectionName}`,
+    );
+  }, [state.selectedTarget]);
+
+  //#endregion
+
+  //#region Functions
 
   const resetDisplayingData = () => {
     switch (state.selectedTarget.collectionName) {
@@ -136,24 +133,9 @@ export default function Manage({
     }
   };
 
-  useEffect(() => {
-    if (!state.crudModalOpen) return;
+  //#endregion
 
-    resetDisplayingData();
-  }, [state.selectedTarget]);
-
-  useEffect(() => {
-    dispatch({
-      type: ManageActionType.SET_MAIN_DOCS,
-      payload: paramMainDocs,
-    });
-  }, [paramMainDocs]);
-
-  useEffect(() => {
-    router.push(
-      `${PATH}?collectionName=${state.selectedTarget.collectionName}`,
-    );
-  }, [state.selectedTarget]);
+  //#region Handlers
 
   /**
    * Updates the targets state when the value of the CRUD target selection has changed.
@@ -187,12 +169,30 @@ export default function Manage({
     });
   };
 
-  const router = useRouter();
+  const handleNewRow = () => {
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_MODE,
+      payload: 'create',
+    });
+    resetDisplayingData();
+
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_OPEN,
+      payload: true,
+    });
+  };
+
+  const handleCloseModal = () => {
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_OPEN,
+      payload: false,
+    });
+  };
 
   const handleViewRow = (doc: DocumentData) => {
     dispatch({
       type: ManageActionType.SET_CRUD_MODAL_MODE,
-      payload: 'update',
+      payload: 'view',
     });
     dispatch({
       type: ManageActionType.SET_DISPLAYING_DATA,
@@ -252,25 +252,7 @@ export default function Manage({
     });
   };
 
-  const handleNewRow = () => {
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_MODE,
-      payload: 'create',
-    });
-    resetDisplayingData();
-
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: true,
-    });
-  };
-
-  const handleCloseModal = () => {
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: false,
-    });
-  };
+  //#endregion
 
   return (
     <ManageContext.Provider

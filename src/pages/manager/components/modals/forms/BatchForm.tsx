@@ -27,8 +27,8 @@ import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import { ManageActionType, ManageContextType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
+import { ManageActionType, ManageContextType } from '../../../lib/manage';
+import { ManageContext } from '../../../manage';
 
 const BatchForm = () => {
   // Context state

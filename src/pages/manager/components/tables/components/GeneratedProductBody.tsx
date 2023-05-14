@@ -13,6 +13,7 @@ import { ManageContext } from '@/pages/manager/manage';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
+import RowActionButtons from './RowActionButtons';
 
 const GeneratedProductTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);

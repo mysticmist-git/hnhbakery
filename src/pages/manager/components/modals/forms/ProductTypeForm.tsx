@@ -19,16 +19,21 @@ import { ManageContext } from '@/pages/manager/manage';
 
 const ProductTypeForm = ({
   featuredImageURL,
-  featuredImageFile,
   handleUploadImage,
 }: {
-  featuredImageURL: string;
-  featuredImageFile: any;
+  featuredImageURL: string | null;
   handleUploadImage: any;
 }) => {
-  const theme = useTheme();
+  //#region States
+
+  //#endregion
+
+  //#region Hooks
 
   const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+  const theme = useTheme();
+
+  //#endregion
 
   return (
     <Grid container>
@@ -44,7 +49,7 @@ const ProductTypeForm = ({
       >
         <Image
           src={
-            featuredImageURL && featuredImageFile !== ''
+            featuredImageURL && featuredImageURL.length > 0
               ? featuredImageURL
               : placeholderImage
           }
@@ -54,28 +59,30 @@ const ProductTypeForm = ({
           priority
         />
 
-        <Button
-          variant="contained"
-          component="label"
-          sx={{
-            borderRadius: '0 0 0.4rem 0.4rem',
-            backgroundColor: theme.palette.secondary.main,
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-            },
-            textTransform: 'none',
-            width: '100%',
-          }}
-        >
-          Tải ảnh lên
-          <input
-            hidden
-            accept="image/*"
-            multiple
-            type="file"
-            onChange={handleUploadImage}
-          />
-        </Button>
+        {state.crudModalMode === 'update' && (
+          <Button
+            variant="contained"
+            component="label"
+            sx={{
+              borderRadius: '0 0 0.4rem 0.4rem',
+              backgroundColor: theme.palette.secondary.main,
+              '&:hover': {
+                backgroundColor: theme.palette.secondary.dark,
+              },
+              textTransform: 'none',
+              width: '100%',
+            }}
+          >
+            Tải ảnh lên
+            <input
+              hidden
+              accept="image/*"
+              multiple
+              type="file"
+              onChange={handleUploadImage}
+            />
+          </Button>
+        )}
       </Grid>
       <Grid item xs={6}>
         <Box
@@ -91,6 +98,9 @@ const ProductTypeForm = ({
             color="secondary"
             fullWidth
             value={state.displayingData?.name}
+            InputProps={{
+              readOnly: state.crudModalMode === 'view',
+            }}
             onChange={(e) =>
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
@@ -103,6 +113,9 @@ const ProductTypeForm = ({
             color="secondary"
             multiline
             fullWidth
+            InputProps={{
+              readOnly: state.crudModalMode === 'view',
+            }}
             value={state.displayingData?.description}
             rows={5}
             onChange={(e) =>
@@ -118,6 +131,7 @@ const ProductTypeForm = ({
           <FormControlLabel
             control={
               <Switch
+                disabled
                 color="secondary"
                 checked={state.displayingData?.isActive}
                 onChange={(e) =>
@@ -133,7 +147,9 @@ const ProductTypeForm = ({
             }
             label={
               <Typography variant="body1" fontWeight="bold">
-                Còn hoạt động
+                {state.displayingData?.isActive
+                  ? 'Còn hoạt động'
+                  : 'Ngưng hoạt động'}
               </Typography>
             }
             labelPlacement="start"

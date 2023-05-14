@@ -1,74 +1,37 @@
-import theme from '@/styles/themes/lightTheme';
-import { Add, Close, Delete, RestartAlt } from '@mui/icons-material';
-import {
-  Modal,
-  Grid,
-  Typography,
-  Button,
-  IconButton,
-  Divider,
-} from '@mui/material';
-import { Box } from '@mui/system';
-import {
-  DocumentData,
-  addDoc,
-  collection,
-  doc,
-  updateDoc,
-} from 'firebase/firestore';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from 'firebase/storage';
+import { DocumentData, doc, updateDoc } from 'firebase/firestore';
+import React, { useContext, useEffect, useState } from 'react';
+import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
-import {
-  useUploadFeaturedImage,
-  useUploadGallery,
-} from '@/lib/hooks/useUploadImage';
-import { CollectionName } from '@/lib/models/utilities';
 
-import placeholderImage from '@/assets/placeholder-image.png';
 import { ManageContextType, ManageActionType } from '../../lib/manage';
 import { ManageContext } from '../../manage';
-import ProductForm from './ProductForm';
-
-const formStyle = {
-  // These 4 below are positionings I used for larger
-  // height viewports - centered
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  // other styles...
-  width: 840,
-  bgcolor: 'background.paper',
-  borderRadius: '1rem',
-  boxShadow: 24,
-  p: 4,
-  marginTop: '2rem',
-  // media query @ the max height you want (my case is the
-  // height of the viewport before the cutoff phenomenon) -
-  // set the top to '0' and translate the previous 'y'
-  // positioning coordinate so the top of the modal is @ the
-  // top of the viewport
-  '@media(max-height: 890px)': {
-    top: '0',
-    transform: 'translate(-50%, 0%)',
-  },
-};
-
-export interface RowModalContextType {
-  getDownloadUrlsFromFirebaseStorage: any;
-}
-
-export const RowModalContext = createContext<RowModalContextType>({
-  getDownloadUrlsFromFirebaseStorage: () => {},
-});
+import ProductForm from './forms/ProductForm';
+import RowModalLayout from './RowModalLayout';
+import {
+  getDownloadUrlsFromFirebaseStorage,
+  uploadImageToFirebaseStorage,
+  addDocumentToFirestore,
+  updateDocument,
+} from '../../lib/firebaseLib';
+import { checkIfDataChanged, isDataChanged } from './lib';
 
 export default function ProductRowModal() {
+  //#region States
+
+  const [originalGalleryURLs, setOriginalGalleryURLs] = useState<
+    string[] | null
+  >(null);
+  const [originalDisplayingData, setOriginalDisplayingData] =
+    useState<DocumentData | null>(null);
+
+  // Gallery
+  const [galleryFiles, setGalleryFiles] = useState<File[] | null>(null);
+  const [galleryURLs, setGalleryURLs] = useState<string[] | null>(null);
+
+  //#endregion
+
+  //#region Hooks
+
   const {
     state,
     dispatch,
@@ -77,120 +40,89 @@ export default function ProductRowModal() {
     resetDisplayingData,
   } = useContext<ManageContextType>(ManageContext);
 
-  const {
-    featuredImageFile,
-    setFeaturedImageFile,
-    featuredImageURL,
-    setFeaturedImageURL,
-  } = useUploadFeaturedImage();
-  const [originalImageURL, setOriginalImageURL] = useState<string>('');
-  const [originalData, setOriginalData] = useState<DocumentData>({});
-  const [originalGalleryURLs, setOriginalGalleryURLs] = useState<string[]>([]);
+  //#endregion
 
-  // Get image if there's any
-  const memoize = (fn: any) => {
-    const cache = new Map();
-    return async (...args: any[]) => {
-      const key = JSON.stringify(args);
-      if (cache.has(key)) {
-        return cache.get(key);
-      }
-      const result = await fn(...args);
-      cache.set(key, result);
-      return result;
-    };
-  };
-
-  const getDownloadUrlsFromFirebaseStorage = memoize(
-    async (paths: string[]) => {
-      const promises = paths.map((path) => getDownloadURL(ref(storage, path)));
-      const urls = await Promise.all(promises);
-      return urls;
-    },
-  );
+  //#region useEffects
 
   useEffect(() => {
-    if (featuredImageFile) {
-      setFeaturedImageURL(URL.createObjectURL(featuredImageFile));
+    // Check if displaying data exist.
+    // If no then alert and close the modal
+    if (!state.displayingData) {
+      alert('No data passed to the modal');
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
+      return;
     }
-  }, [featuredImageFile]);
+
+    setOriginalDisplayingData(state.displayingData);
+
+    let downloadURLs: string[] | null = null;
+
+    async function ExecuteGetDownloadURLsAndLoadGalleryToView() {
+      downloadURLs = await GetDownloadURLsAndLoadImagesToView(
+        state.displayingData!.image,
+      );
+    }
+
+    ExecuteGetDownloadURLsAndLoadGalleryToView();
+
+    if (downloadURLs) setOriginalGalleryURLs(downloadURLs);
+  }, []);
+
+  useEffect(() => {
+    if (galleryFiles) {
+      const temp: string[] = [];
+
+      for (const file of galleryFiles) {
+        temp.push(URL.createObjectURL(file));
+      }
+
+      setGalleryURLs(temp);
+    }
+  }, [galleryFiles]);
 
   // This useEffect load image
   useEffect(() => {
     if (
-      state.crudModalOpen ||
+      !state.crudModalOpen ||
       state.crudModalMode !== 'update' ||
-      !state.displayingData?.image
+      !state.displayingData?.images
     )
       return;
 
-    setOriginalData(state.displayingData ?? {});
+    setOriginalDisplayingData(state.displayingData ?? {});
 
-    const getImageUrl = async () => {
-      // Depends on fetched data, it may have either image or images fields
-
-      if (state.displayingData?.image) {
-        const featuredURL: string[] = await getDownloadUrlsFromFirebaseStorage([
-          state.displayingData.image,
+    const getImageUrls = async () => {
+      if (state.displayingData?.images) {
+        const galleryURLs: string[] = await getDownloadUrlsFromFirebaseStorage([
+          state.displayingData.images,
         ]);
 
-        if (featuredURL && featuredURL.length > 0) {
-          setFeaturedImageURL(featuredURL[0]);
-          setOriginalImageURL(featuredURL[0]);
+        if (galleryURLs && galleryURLs.length > 0) {
+          setGalleryURLs(galleryURLs);
+          setOriginalGalleryURLs(galleryURLs);
         }
       }
     };
 
-    getImageUrl();
+    getImageUrls();
   }, [state.crudModalOpen]);
 
-  const handleUploadImage = (event: any) => {
+  //#endregion
+
+  //#region Hanlders
+
+  const handleUploadImageToBrowser = (event: any) => {
     const file = event.target.files[0];
 
-    setFeaturedImageFile(file);
-  };
+    if (!galleryFiles) {
+      setGalleryFiles([file]);
+      return;
+    }
 
-  // useEffect(() => {
-  //   if (
-  //     !open ||
-  //     state.crudModalMode !== 'update' ||
-  //     (!state.displayingData?.image && !state.displayingData?.images)
-  //   )
-  //     return;
-
-  //   setOriginalData(state.displayingData ?? {});
-
-  //   const getImageUrl = async () => {
-  //     // Depends on fetched data, it may have either image or images fields
-
-  //     if (state.displayingData?.images) {
-  //       const galleryURLs: string[] = await getDownloadUrlsFromFirebaseStorage(
-  //         state.displayingData.images,
-  //       );
-
-  //       if (galleryURLs && galleryURLs.length > 0) {
-  //         console.log(galleryURLs);
-  //         setGalleryURLs(galleryURLs);
-  //         setOriginalGalleryURLs(galleryURLs);
-  //       }
-  //     }
-  //   };
-
-  //   getImageUrl();
-  // }, [open]);
-
-  // Handlers
-
-  const handleModalClose = () => {
-    // Clear images data
-    // setFeaturedImageFile(null);
-    // setFeaturedImageURL('');
-
-    // Close
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: false,
-    });
+    setGalleryFiles([...galleryFiles, file]);
   };
 
   /**
@@ -201,67 +133,33 @@ export default function ProductRowModal() {
    * @throws {Error} If there is an error adding the new document to Firestore.
    */
 
-  const addDocumentToFirestore = async (
-    data: DocumentData,
-    collectionName: CollectionName,
-  ): Promise<string> => {
-    try {
-      delete data.id;
-
-      const docRef = await addDoc(collection(db, collectionName), data);
-      console.log('Document written with ID: ', docRef.id);
-      return docRef.id;
-    } catch (e) {
-      console.log('Error adding new document to firestore: ', e);
-      return '';
-    }
-  };
-
-  /**
-   * Uploads an image file to Firebase storage.
-   *
-   * @param {any} imageFile - The image file to upload.
-   * @return {Promise<string>} - A promise that resolves with the full path of the uploaded image file in Firebase storage.
-   *    If the upload fails, the promise resolves with an empty string.
-   */
-
-  const uploadImageToFirebaseStorage = async (
-    imageFile: any,
-  ): Promise<string> => {
-    const storageRef = ref(storage, `images/${imageFile.name}`);
-    const file = imageFile;
-
-    try {
-      const uploadImage = await uploadBytes(storageRef, file);
-      return uploadImage.metadata.fullPath;
-    } catch (error) {
-      console.log('Image upload fail, error: ', error);
-      return '';
-    }
-  };
-
   const handleAddNewRow = async () => {
-    const collectionName = state.displayingData?.collectionName;
+    console.log('hello');
+    const collectionName = state.selectedTarget?.collectionName;
 
     if (!collectionName) return;
 
     // Check if image upload needed
     let data = { ...state.displayingData };
 
-    if (featuredImageFile) {
-      // Upload image
-      const uploadImageResult = await uploadImageToFirebaseStorage(
-        featuredImageFile,
-      );
+    if (galleryFiles) {
+      const imageResults = [];
 
-      console.log('Upload image path:', uploadImageResult);
+      for (const file of galleryFiles) {
+        // Upload image
+        const uploadImageResult = await uploadImageToFirebaseStorage(file);
 
-      // Get new row data
-      if (!uploadImageResult) return;
+        console.log('Upload image path:', uploadImageResult);
+
+        // Get new row data
+        if (!uploadImageResult) return;
+
+        imageResults.push(uploadImageResult);
+      }
 
       data = {
         ...state.displayingData,
-        image: uploadImageResult,
+        images: imageResults,
       };
     }
 
@@ -274,16 +172,42 @@ export default function ProductRowModal() {
       payload: [...state.mainDocs, { ...data, id: docId }],
     });
 
-    handleModalClose();
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_OPEN,
+      payload: false,
+    });
   };
 
   const handleUpdateRow = async () => {
+    if (state.crudModalMode !== 'create') {
+      alert('Wrong mode detected');
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
+      return;
+    }
+
     try {
-      const newData = {
-        ...state.displayingData,
-        image: featuredImageURL,
-      };
-      console.log('newData:', newData);
+      // Check if image changed
+      const imageChanged = checkIfImageChanged();
+
+      // Check if data changed
+      const dataChanged = checkIfDataChanged(
+        originalDisplayingData,
+        state.displayingData,
+      );
+
+      // Proceed to update things
+
+      if (!imageChanged && !dataChanged) {
+        alert('Vui lòng thay đổi thông tin');
+        return;
+      }
+
+      if (imageChanged) updateImagesToFirebaseStorage();
+
+      if (!dataChanged) return;
 
       const collectionName = state.displayingData?.collectionName;
       const displayingData = state.displayingData;
@@ -293,229 +217,150 @@ export default function ProductRowModal() {
         return;
       }
 
-      // Check if image changed
-      if (featuredImageURL !== originalImageURL) {
-        console.log('Imaged changed detected');
-        console.log('Current URL: ', featuredImageURL);
-        console.log('Original URL', originalImageURL);
-        if (state.displayingData?.image) {
-          // Delete old image
-          const oldImageRef = ref(storage, state.displayingData.image);
-          await deleteObject(oldImageRef);
-        } else {
-          alert('Errror at handleUpdateRow RowModal!');
-          return;
-        }
+      // Update document to firestore
+      updateDocument(displayingData, collectionName);
 
-        // Upload new image
-        const url = await uploadImageToFirebaseStorage(featuredImageFile);
-        newData.image = url;
-      }
+      // Update state
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: [
+          ...state.mainDocs.filter((doc) => doc.id !== displayingData.id),
+          displayingData,
+        ],
+      });
 
-      console.log('newData after image check:', newData);
-
-      /**
-       * Checks if any data in newData is different from displayingData.
-       *
-       * @param newData - An object containing new data.
-       * @param displayingData - An object containing data currently being displayed.
-       * @returns A boolean indicating if any data has changed.
-       */
-      const dataChanged = (
-        newData: Record<string, unknown>,
-        displayingData: Record<string, unknown>,
-      ): boolean => {
-        const changed = Object.keys(newData).some(
-          (key) => newData[key] !== displayingData[key],
-        );
-        console.log('dataChanged:', changed);
-        return changed;
-      };
-
-      if (dataChanged(newData, originalData)) {
-        // Update on Firestore
-        const docRef = doc(db, collectionName, displayingData.id);
-        console.log('docRef:', docRef);
-        await updateDoc(docRef, newData);
-
-        // Update on table
-        dispatch({
-          type: ManageActionType.SET_MAIN_DOCS,
-          payload: state.mainDocs.map((doc) => {
-            if (doc.id === displayingData.id) {
-              return { ...newData, id: doc.id };
-            }
-            return doc;
-          }),
-        });
-      }
-
-      handleModalClose();
+      // Close modal
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_OPEN,
+        payload: false,
+      });
     } catch (error) {
       console.log('Update row failed, error: ', error);
     }
   };
+  //#endregion
 
-  const getTitle = () => {
-    const collectionName = state.displayingData?.collectionName;
+  //#region Functions
 
-    if (!collectionName) return 'Error loading title';
+  function loadGalleryToView(images: string[]) {
+    if (!images || images.length === 0) return;
 
-    switch (collectionName) {
-      case CollectionName.ProductTypes:
-        return state.crudModalMode === 'create'
-          ? 'Thêm loại sản phẩm mới'
-          : 'Loại sản phẩm';
-      case CollectionName.Products:
-        return state.crudModalMode === 'create'
-          ? 'Thêm sản phẩm mới'
-          : 'Sản phẩm';
-      case CollectionName.Batches:
-        return state.crudModalMode === 'create'
-          ? 'Thêm lô hàng mới'
-          : 'Lô hàng';
-      default:
-        return 'Error loading title';
+    setGalleryURLs(images);
+  }
+
+  async function GetDownloadURLsAndLoadImagesToView(
+    images: string[],
+  ): Promise<string[] | null> {
+    // Null check
+    if (!images || images.length === 0) return null;
+
+    const downloadURLs: string[] = [];
+
+    for (const image of images) {
+      if (!image || !image) return null;
+
+      const downloadURL = await getDownloadUrlsFromFirebaseStorage(image);
+
+      downloadURLs.push(downloadURL);
     }
-  };
 
-  const handleResetForm = () => {};
+    loadGalleryToView(downloadURLs);
+    return downloadURLs;
+  }
+
+  //#endregion
+
+  //#region Methods
+
+  function checkIfImageChanged(): boolean {
+    if (!originalGalleryURLs || originalGalleryURLs.length === 0) {
+      alert('No original image URL found');
+      return false;
+    }
+
+    if (!galleryURLs || galleryURLs.length === 0) {
+      alert('No image URL found');
+      return false;
+    }
+
+    return originalGalleryURLs !== galleryURLs;
+  }
+
+  async function updateImagesToFirebaseStorage() {
+    if (!checkIfImageChanged()) return;
+
+    if (!galleryURLs || galleryURLs.length === 0) {
+      alert('No image URL found');
+      return false;
+    }
+
+    // Remove old images from storage
+    if (
+      state.displayingData?.images &&
+      state.displayingData.images.length > 0
+    ) {
+      try {
+        for (const image of state.displayingData.images) {
+          if (!galleryURLs.includes(image)) {
+            const oldImageRef = ref(storage, image);
+            await deleteObject(oldImageRef);
+          }
+        }
+      } catch (error) {
+        console.log('Error: ', error);
+      }
+    } else {
+      alert('No image found');
+      return;
+    }
+
+    // Upload new image to storage
+    if (!galleryFiles || galleryFiles.length === 0) {
+      return;
+    }
+
+    try {
+      const downloadURLs: string[] = [];
+
+      for (const file of galleryFiles) {
+        const downloadURL = await uploadImageToFirebaseStorage(file);
+
+        if (downloadURL && downloadURL !== '') {
+          downloadURLs.push(downloadURL);
+        }
+      }
+      // Update document image
+      const docRef = doc(
+        db,
+        state.selectedTarget?.collectionName!,
+        state.displayingData.id,
+      );
+      await updateDoc(docRef, {
+        images: downloadURLs,
+      });
+
+      // Update state
+      dispatch({
+        type: ManageActionType.SET_DISPLAYING_DATA,
+        payload: { ...state.displayingData, images: downloadURLs },
+      });
+    } catch (error) {
+      console.log('Error: ', error);
+    }
+  }
+
+  //#endregion
 
   return (
-    <RowModalContext.Provider
-      value={{
-        getDownloadUrlsFromFirebaseStorage,
-      }}
+    <RowModalLayout
+      handleAddNewRow={handleAddNewRow}
+      handleUpdateRow={handleUpdateRow}
     >
-      <Modal
-        open={state.crudModalOpen}
-        onClose={handleModalClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        sx={{
-          overflowY: 'scroll',
-        }}
-        disableScrollLock={false}
-      >
-        <Box sx={formStyle}>
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Typography variant="h5" fontWeight={'bold'}>
-                {getTitle()}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '1rem',
-                }}
-              >
-                {state.crudModalMode === 'update' ? (
-                  <IconButton onClick={handleDeleteRow} color="secondary">
-                    <Delete />
-                  </IconButton>
-                ) : (
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{
-                      backgroundColor: 'common.gray',
-                      '&:hover': {
-                        backgroundColor: 'common.darkGray',
-                      },
-                      paddingX: '1rem',
-                      borderRadius: '1rem',
-                    }}
-                    onClick={() => resetDisplayingData()}
-                    startIcon={<RestartAlt />}
-                  >
-                    Đặt lại
-                  </Button>
-                )}
-                <IconButton onClick={handleModalClose}>
-                  <Close />
-                </IconButton>
-              </Box>
-            </Box>
-            <Divider
-              sx={{
-                my: '1rem',
-              }}
-            />
-          </Grid>
-
-          <ProductForm />
-
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Divider
-                sx={{
-                  my: '1rem',
-                }}
-              />
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'end',
-                  gap: '0.7rem',
-                }}
-              >
-                {state.crudModalMode === 'update' && (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    sx={{
-                      borderRadius: '1rem',
-                      textTransform: 'none',
-                    }}
-                    onClick={handleUpdateRow}
-                  >
-                    Cập nhật
-                  </Button>
-                )}
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: theme.palette.common.gray,
-                    '&:hover': {
-                      backgroundColor: theme.palette.common.light,
-                    },
-                    paddingX: '1.5rem',
-                    borderRadius: '1rem',
-                  }}
-                  onClick={handleModalClose}
-                >
-                  Thoát
-                </Button>
-                {state.crudModalMode === 'create' && (
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: theme.palette.secondary.main,
-                      '&:hover': {
-                        backgroundColor: theme.palette.secondary.dark,
-                      },
-                      paddingX: '1.5rem',
-                      borderRadius: '1rem',
-                    }}
-                    onClick={handleAddNewRow}
-                    startIcon={<Add />}
-                  >
-                    Thêm
-                  </Button>
-                )}
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-      </Modal>
-    </RowModalContext.Provider>
+      <ProductForm
+        galleryURLs={galleryURLs}
+        galleryFiles={galleryFiles}
+        handleUploadImageToBrowser={handleUploadImageToBrowser}
+      />
+    </RowModalLayout>
   );
 }

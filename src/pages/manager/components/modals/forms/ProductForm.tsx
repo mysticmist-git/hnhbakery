@@ -1,76 +1,36 @@
-import { useState, useRef, RefObject, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import {
   Grid,
   Box,
   Typography,
   Divider,
   IconButton,
-  Button,
   TextField,
   FormControlLabel,
   Switch,
-  Theme,
   Tab,
   Tabs,
   Autocomplete,
   Stack,
   Chip,
-  useTheme,
-  styled,
   ButtonBase,
   Input,
-  ImageList,
-  ImageListItem,
   SxProps,
 } from '@mui/material';
-import { Delete, Close, Add } from '@mui/icons-material';
+import { Close, Add } from '@mui/icons-material';
 import Image, { StaticImageData } from 'next/image';
-import {
-  DocumentData,
-  Firestore,
-  collection,
-  getDocs,
-} from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
-import { ProductType } from '@/lib/models';
-import { useUploadGallery } from '@/lib/hooks/useUploadImage';
-import { ManageActionType, ManageContextType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
+import { ManageActionType, ManageContextType } from '../../../lib/manage';
+import { ManageContext } from '../../../manage';
 import placeholderImage from '@/assets/placeholder-image.png';
+import TabPanel from './components/TabPanel';
+import { a11yProps } from './lib';
+import MyGallery from './components/MyGallery';
+import MyMultiValueInput from './components/MyMultiValueInput';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
+//#region Types
 
 interface ProductTypeStateProps {
   id: string;
@@ -82,7 +42,19 @@ const DEFAULT_PRODUCT_TYPE_STATE = {
   name: '',
 };
 
-const ProductForm = () => {
+//#endregion
+
+const ProductForm = ({
+  galleryURLs,
+  galleryFiles,
+  handleUploadImageToBrowser: handleUploadImage,
+}: {
+  galleryURLs: string[] | null;
+  galleryFiles: any[] | null;
+  handleUploadImageToBrowser: any;
+}) => {
+  //#region States
+
   // Context state
   const { state, dispatch } = useContext<ManageContextType>(ManageContext);
 
@@ -91,18 +63,19 @@ const ProductForm = () => {
   const [selectedProductType, setSelectedProductType] =
     useState<ProductTypeStateProps>(DEFAULT_PRODUCT_TYPE_STATE);
 
-  const { galleryFiles, setGalleryFiles, galleryURLs, setGalleryURLs } =
-    useUploadGallery();
+  //#endregion
 
-  useEffect(() => {
-    if (galleryFiles) {
-      const urls = galleryFiles.map((file: any) => {
-        return URL.createObjectURL(file);
-      });
+  //#region useEffects
 
-      setGalleryURLs(urls);
-    }
-  }, [galleryFiles]);
+  // useEffect(() => {
+  //   if (galleryFiles) {
+  //     const urls = galleryFiles.map((file: any) => {
+  //       return URL.createObjectURL(file);
+  //     });
+
+  //     setGalleryURLs(urls);
+  //   }
+  // }, [galleryFiles]);
 
   useEffect(() => {
     async function getProductTypes() {
@@ -142,12 +115,15 @@ const ProductForm = () => {
 
     fetchData();
   }, []);
+  //#endregion
+
+  //#region Handlers
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  console.log(state.displayingData?.images ?? 'no images');
+  //#endregion
 
   return (
     <>
@@ -371,277 +347,5 @@ const ProductForm = () => {
     </>
   );
 };
-
-function MyGalleryImage({
-  src,
-  srcs,
-  setSrcs,
-}: {
-  src: any;
-  srcs: string[];
-  setSrcs: any;
-}) {
-  return (
-    <Box
-      position="relative"
-      sx={{
-        '&:hover > button': {
-          visibility: 'visible',
-          opacity: 1,
-        },
-      }}
-    >
-      <Image
-        src={src}
-        alt="Gallery Image"
-        width={172}
-        height={240}
-        priority
-        style={{ objectFit: 'cover', borderRadius: '1rem' }}
-      />
-      <IconButton
-        sx={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          zIndex: 1,
-          color: 'common.white',
-          visibility: 'hidden',
-          opacity: 0,
-          transition: 'opacity 0.2s ease-in-out',
-        }}
-        onClick={() => setSrcs(srcs.filter((s) => s !== src))}
-      >
-        <Close />
-      </IconButton>
-    </Box>
-  );
-}
-
-function MyGalleryImageNewButton({
-  sx,
-  srcs,
-  setSrcs,
-}: {
-  sx?: SxProps;
-  srcs: string[];
-  setSrcs: any;
-}) {
-  const handleFileUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (event: any) => {
-      const files = event.target.files;
-      // Add your file upload logic here
-      const file = files[0];
-      setSrcs([...srcs, URL.createObjectURL(file)]);
-    };
-    input.click();
-  };
-
-  return (
-    <Box
-      width={172}
-      height={240}
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        transition: 'background-color 0.2s ease-in-out',
-        '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        },
-        '&:active': {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        },
-        ...sx,
-      }}
-      onClick={handleFileUpload}
-    >
-      <Add
-        sx={{
-          width: '44px',
-          height: '44px',
-        }}
-      />
-    </Box>
-  );
-}
-
-function MyGallery({
-  title: title,
-  srcs: paramSrcs,
-  onChange,
-  placeholderImage,
-}: {
-  title?: string;
-  srcs: string[];
-  onChange: (values: string[]) => void;
-  placeholderImage: StaticImageData;
-}) {
-  const [srcs, setSrcs] = useState<string[]>(paramSrcs);
-
-  useEffect(() => {
-    onChange(srcs);
-  }, [srcs]);
-
-  const handleDeleteValue = (value: string) => {
-    setSrcs(srcs.filter((v) => v !== value));
-  };
-
-  const handleAddNewValue = () => {
-    // ...
-  };
-
-  return (
-    <Stack spacing={1}>
-      {title && (
-        <Typography variant="h6" fontWeight="bold">
-          {title}
-        </Typography>
-      )}
-      <Typography variant="h6" fontWeight="bold">
-        {'Tổng số ảnh: '}
-        <Typography variant="body1" display={'inline'}>
-          {srcs.length}
-        </Typography>
-      </Typography>
-      <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
-        {srcs.map((src) => (
-          <MyGalleryImage
-            src={src && src !== '' ? src : placeholderImage}
-            srcs={srcs}
-            setSrcs={setSrcs}
-          />
-        ))}
-        <MyGalleryImageNewButton
-          sx={{
-            backgroundColor: '#ccc',
-            borderRadius: '1rem',
-            '&:hover': {
-              backgroundColor: '#bbb',
-            },
-            color: 'common.white',
-          }}
-          srcs={srcs}
-          setSrcs={setSrcs}
-        />
-      </Stack>
-    </Stack>
-  );
-}
-
-const NewValueChip = ({
-  value,
-  placeholder,
-  width,
-  onChange,
-  onClick,
-}: {
-  value?: string;
-  placeholder?: string;
-  width?: string;
-  onChange?: any;
-  onClick?: any;
-}) => {
-  return (
-    <Box
-      sx={{
-        backgroundColor: '#eee',
-        borderRadius: '1rem',
-        height: '32px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingLeft: '12px',
-      }}
-    >
-      <Input
-        type="text"
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        sx={{
-          border: 'none',
-          backgroundColor: 'transparent',
-          width: width ?? '52px',
-        }}
-        disableUnderline
-      />
-      <Divider sx={{ height: 28, my: 0.5, ml: 0.5 }} orientation="vertical" />
-      <ButtonBase
-        onClick={onClick}
-        sx={{
-          border: 'none',
-          backgroundColor: '#ccc',
-          color: 'common.white',
-          paddingX: '4px',
-          borderRadius: '0 1rem 1rem 0',
-          marginY: '0',
-          height: '100%',
-          '&:hover': {
-            backgroundColor: '#bbb',
-          },
-        }}
-      >
-        <Add />
-      </ButtonBase>
-    </Box>
-  );
-};
-
-function MyMultiValueInput({
-  label,
-  values: paramValues,
-  onChange,
-}: {
-  label: string;
-  values: string[];
-  onChange: (values: string[]) => void;
-}) {
-  const [values, setValues] = useState<string[]>(paramValues);
-  const [newValue, setNewValue] = useState('');
-
-  useEffect(() => {
-    onChange(values);
-  }, [values]);
-
-  const handleDeleteValue = (value: string) => {
-    setValues(values.filter((v) => v !== value));
-  };
-
-  const handleAddNewValue = () => {
-    if (!newValue || newValue === '') return;
-
-    setValues([...values, newValue]);
-    setNewValue('');
-  };
-
-  return (
-    <Stack spacing={1}>
-      <Typography variant="body1" fontWeight="bold">
-        {label}
-      </Typography>
-      <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
-        {values.map((value) => (
-          <Chip
-            key={value}
-            label={value}
-            onDelete={() => handleDeleteValue(value)}
-          />
-        ))}
-
-        <NewValueChip
-          value={newValue}
-          placeholder="Thêm mới"
-          width={'68px'}
-          onChange={(e: any) => setNewValue(e.target.value)}
-          onClick={handleAddNewValue}
-        />
-      </Stack>
-    </Stack>
-  );
-}
 
 export default ProductForm;

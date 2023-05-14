@@ -1,11 +1,6 @@
-import { CollectionObj } from '@/lib/models/utilities';
 import { CollectionName } from '@/lib/models/utilities';
-import { Button } from '@mui/material';
-import { GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-import { DocumentData } from 'firebase/firestore';
-import { CrudTarget } from '../manage';
+import { DocumentData, Timestamp } from 'firebase/firestore';
 import { Dispatch } from 'react';
-import { ModalMode } from '../components/modals/lib';
 
 export const crudTargets: CrudTarget[] = [
   {
@@ -44,6 +39,8 @@ export enum ManageActionType {
   SET_CRUD_MODAL_MODE = 'SET_CRUD_MODAL_MODE',
   SET_DELETING_ID = 'SET_DELETING_ID',
 }
+
+export type ModalMode = 'create' | 'update' | 'view' | 'none';
 
 export interface ManageState {
   mainDocs: DocumentData[];
@@ -118,4 +115,46 @@ export const manageReducer = (state: ManageState, action: any) => {
     default:
       return state;
   }
+};
+
+export interface CrudTarget {
+  collectionName: CollectionName;
+  label: string;
+}
+
+export const DEFAULT_ROW = {
+  PRODUCT_TYPE: {
+    id: '',
+    name: '',
+    description: '',
+    image: '',
+    isActive: true,
+  },
+  PRODUCT: {
+    id: '',
+    productType_id: '',
+    name: '',
+    description: '',
+    ingredients: [],
+    materials: [],
+    colors: [],
+    sizes: [],
+    howToUse: '',
+    preservation: '',
+    images: [],
+    isActive: true,
+  },
+  BATCH: {
+    id: '',
+    totalQuantity: 0,
+    soldQuantity: 0,
+    MFG: Timestamp.fromDate(new Date()),
+    EXP: Timestamp.fromDate(new Date()),
+    material: 0,
+    size: 0,
+    color: 0,
+    price: 0,
+    discount: [],
+    product_id: '',
+  },
 };

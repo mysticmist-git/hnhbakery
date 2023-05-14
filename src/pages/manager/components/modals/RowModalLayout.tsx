@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useContext } from 'react';
-import ProductTypeForm from './ProductTypeForm';
+import ProductTypeForm from './forms/ProductTypeForm';
 import { CollectionName } from '@/lib/models/utilities';
 import { ManageActionType, ManageContextType } from '../../lib/manage';
 import { ManageContext } from '../../manage';
@@ -49,8 +49,14 @@ export default function RowModalLayout({
   handleAddNewRow: any;
   handleUpdateRow: any;
 }) {
+  //#region States
+
   const { state, dispatch, handleDeleteRow, resetDisplayingData } =
     useContext<ManageContextType>(ManageContext);
+
+  //#endregion
+
+  //#region Functions
 
   const getTitle = () => {
     const collectionName = state.selectedTarget?.collectionName;
@@ -75,6 +81,10 @@ export default function RowModalLayout({
     }
   };
 
+  //#endregion
+
+  //#region Handlers
+
   const handleModalClose = () => {
     // Clear images data
     // setFeaturedImageFile(null);
@@ -86,8 +96,6 @@ export default function RowModalLayout({
       payload: false,
     });
   };
-
-  //#region Handlers
 
   //#endregion
 
@@ -122,11 +130,12 @@ export default function RowModalLayout({
                 gap: '1rem',
               }}
             >
-              {state.crudModalMode === 'update' ? (
+              {['update', 'view'].includes(state.crudModalMode) && (
                 <IconButton onClick={handleDeleteRow} color="secondary">
                   <Delete />
                 </IconButton>
-              ) : (
+              )}
+              {['create'].includes(state.crudModalMode) && (
                 <Button
                   variant="contained"
                   size="small"

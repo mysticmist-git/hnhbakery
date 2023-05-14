@@ -5,7 +5,7 @@ import {
 import theme from '@/styles/themes/lightTheme';
 import { Wysiwyg, Delete } from '@mui/icons-material';
 import { Box } from '@mui/system';
-import { doc } from 'firebase/firestore';
+import { DocumentData, doc } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
 import { ManageContext } from '@/pages/manager/manage';
 import { useContext } from 'react';
