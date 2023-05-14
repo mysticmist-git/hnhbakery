@@ -14,7 +14,6 @@ import {
   useTheme,
 } from '@mui/material';
 import React from 'react';
-import Image from 'next/image';
 import logo from '../assets/Logo.png';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Menu from '@mui/icons-material/Menu';
