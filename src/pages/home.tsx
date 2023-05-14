@@ -10,11 +10,12 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
 import Image from 'next/image';
 import banh1 from '../assets/Carousel/3.jpg';
 import { alpha } from '@mui/system';
+import Skeleton_img from '@/components/skeleton_img';
 
 export default function Home() {
   //#region Style
@@ -40,40 +41,46 @@ export default function Home() {
   //#endregion
 
   //#region Ad carousel
-  function importAll(r: any) {
-    return r.keys().map(r);
-  }
-
-  const AdCarouselImages = importAll(
-    require.context('../assets/Carousel', false, /\.(png|jpe?g|svg)$/),
-  );
-
   function CustomCarousel(props: any) {
+    const [imagePaths, setImagePaths] = useState<any[]>([]);
+
+    useEffect(() => {
+      const importImages = async () => {
+        const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
+
+        const images = await Promise.all(
+          imagePaths.map((path) => import(`../assets/Carousel/${path}`)),
+        );
+
+        setImagePaths(images.map((image) => image.default));
+      };
+      importImages();
+    }, []);
+
+    console.log(imagePaths);
+
     return (
       <Carousel animation="slide" duration={props.duration}>
-        {AdCarouselImages.map((image: any, i: number) => (
-          <CarouselItem key={i} image={image} height={props.height} />
+        {imagePaths.map((image, i) => (
+          <Box
+            key={i}
+            sx={{ height: props.height, width: '100%', position: 'relative' }}
+          >
+            <Box
+              height={'100%'}
+              width={'100%'}
+              component={'img'}
+              loading="lazy"
+              alt=""
+              src={image.src}
+              sx={{ objectFit: 'cover' }}
+            />
+          </Box>
         ))}
       </Carousel>
     );
   }
 
-  function CarouselItem(props: any) {
-    return (
-      <>
-        <Box sx={{ height: props.height, width: '100%', position: 'relative' }}>
-          <Image
-            src={props.image}
-            alt=""
-            style={{ objectFit: 'cover' }}
-            fill
-            priority
-            unoptimized
-          />
-        </Box>
-      </>
-    );
-  }
   //#endregion
 
   //#region Card Slider carousel
@@ -160,7 +167,47 @@ export default function Home() {
       </Card>
     );
   }
-
+  const Products: {
+    image?: string;
+    name?: string;
+    descripton?: string;
+  }[] = [
+    {
+      image: '',
+      name: '1',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '2',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '3',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '4',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '5',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '6',
+      descripton: '',
+    },
+    {
+      image: '',
+      name: '7',
+      descripton: '',
+    },
+  ];
   function CardSliderItem(props: any) {
     const { listColumn } = props;
     return (
@@ -184,50 +231,35 @@ export default function Home() {
   }
 
   function CustomCardSlider(props: any) {
-    const Products: {
-      image?: string;
-      name?: string;
-      descripton?: string;
-    }[] = [
-      {
-        image: '',
-        name: '',
-        descripton: '',
-      },
-      {},
-      {},
-      {},
-      {},
-      {},
-    ];
-
+    const [products_display, setProducts_display] = useState<any[]>([]);
     const oneColumn = useMediaQuery(theme.breakpoints.down('sm'));
     const twoColumn = useMediaQuery(theme.breakpoints.up('sm'));
     const threeColumn = useMediaQuery(theme.breakpoints.up('md'));
-
-    let column = 1;
-    if (threeColumn) {
-      column = 3;
-    } else if (twoColumn) {
-      column = 2;
-    } else if (oneColumn) {
-      column = 1;
-    }
-
-    let listRow = [];
-    let listColumn: { image?: string; name?: string; descripton?: string }[] =
-      [];
-    for (let i = 0; i < Products.length; i++) {
-      listColumn.push({
-        image: Products[i].image,
-        name: Products[i].name,
-        descripton: Products[i].descripton,
-      });
-      if ((i + 1) % column == 0 || i + 1 == Products.length) {
-        listRow.push(listColumn);
-        listColumn = [];
+    useEffect(() => {
+      let column = 1;
+      if (threeColumn) {
+        column = 3;
+      } else if (twoColumn) {
+        column = 2;
+      } else if (oneColumn) {
+        column = 1;
       }
-    }
+      let listRow = [];
+      let listColumn: { image?: string; name?: string; descripton?: string }[] =
+        [];
+      for (let i = 0; i < Products.length; i++) {
+        listColumn.push({
+          image: Products[i].image,
+          name: Products[i].name,
+          descripton: Products[i].descripton,
+        });
+        if ((i + 1) % column == 0 || i + 1 == Products.length) {
+          listRow.push(listColumn);
+          listColumn = [];
+        }
+      }
+      setProducts_display(listRow);
+    }, [Products, oneColumn, twoColumn, threeColumn]);
 
     return (
       <>
@@ -235,13 +267,8 @@ export default function Home() {
           {props.title}
         </Typography>
         <Box>
-          <Carousel
-            animation="slide"
-            duration={props.duration}
-            sx={{ pt: 4 }}
-            cycleNavigation={false}
-          >
-            {listRow.map((listColumn, i) => (
+          <Carousel animation="slide" duration={props.duration} sx={{ pt: 4 }}>
+            {products_display.map((listColumn, i) => (
               <CardSliderItem
                 key={i}
                 listColumn={listColumn}

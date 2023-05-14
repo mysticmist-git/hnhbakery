@@ -130,10 +130,8 @@ export default function Footer() {
                     </Grid>
                     <Grid item>
                       {listItem.children.map((child, i) => (
-                        <a href={child.href}>
-                          <Typography key={i} variant="body2">
-                            {child.name}
-                          </Typography>
+                        <a key={i} href={child.href}>
+                          <Typography variant="body2">{child.name}</Typography>
                         </a>
                       ))}
                     </Grid>

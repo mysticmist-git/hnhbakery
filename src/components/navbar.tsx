@@ -6,6 +6,7 @@ import {
   Drawer,
   Grid,
   IconButton,
+  Skeleton,
   Tab,
   Tabs,
   Toolbar,
@@ -17,6 +18,9 @@ import Image from 'next/image';
 import logo from '../assets/Logo.png';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Menu from '@mui/icons-material/Menu';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Skeleton_img from './skeleton_img';
 
 export default function Navbar() {
   //#region Style
@@ -24,6 +28,9 @@ export default function Navbar() {
   const styles = {
     white: {
       color: theme.palette.common.white,
+    },
+    gray: {
+      color: theme.palette.text.secondary,
     },
     black: {
       color: theme.palette.common.black,
@@ -47,40 +54,39 @@ export default function Navbar() {
   //#endregion
 
   //#region Tab
-  class LinkTabProps {
-    label?: string;
-    href?: string;
+  interface LinkTabProps {
+    label: string;
+    href: string;
   }
 
   const listLinkTab: Array<LinkTabProps> = [
     { label: 'Trang chủ', href: '/' },
     { label: 'Sản phẩm', href: '/products' },
     { label: 'Tìm kiếm', href: '/search' },
-    { label: 'Giới thiệu', href: '' },
-    { label: 'Liên hệ', href: '' },
+    { label: 'Giới thiệu', href: '/introduce' },
+    { label: 'Liên hệ', href: '/contact' },
   ];
 
-  function LinkTab(props: LinkTabProps) {
-    return (
-      <Tab
-        component="a"
-        onClick={(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-          //event.preventDefault();
-        }}
-        {...props}
-      />
-    );
+  function initialTab() {
+    const router = useRouter();
+    const pathname = router.pathname;
+    let temp = listLinkTab.findIndex((item) => {
+      return item.href === pathname;
+    });
+    return temp;
   }
 
-  const [tabValue, settabValue] = React.useState(0);
-  const handletabValueChange = (
-    event: React.SyntheticEvent,
-    newValue: number,
-  ) => {
-    settabValue(newValue);
-  };
-
   function CustomTab(props: any) {
+    const [tabValue, settabValue] = React.useState(initialTab());
+    const handletabValueChange = (
+      event: React.SyntheticEvent,
+      newValue: number,
+    ) => {
+      settabValue(newValue);
+    };
+
+    const [hoveredIndex, setHoveredIndex] = React.useState(-1);
+
     return (
       <Tabs
         orientation={props.orientation ? props.orientation : 'horizontal'}
@@ -90,11 +96,24 @@ export default function Navbar() {
         onChange={handletabValueChange}
         centered
       >
-        {listLinkTab.map((linktab) => (
-          <LinkTab
-            key={linktab.href}
+        {listLinkTab.map((linktab, index) => (
+          <Tab
+            component={Link}
+            key={index}
             label={linktab.label}
             href={linktab.href}
+            sx={{
+              color: index === hoveredIndex ? styles.white : styles.gray,
+              '&.Mui-selected': {
+                color: styles.white,
+              },
+            }}
+            onMouseEnter={() => {
+              setHoveredIndex(index);
+            }}
+            onMouseLeave={() => {
+              setHoveredIndex(-1);
+            }}
           />
         ))}
       </Tabs>
@@ -200,6 +219,8 @@ export default function Navbar() {
   }
   //#endregion
 
+  //#region Logo
+
   return (
     <>
       <AppBar sx={styles.appBar} position="absolute">
@@ -212,7 +233,7 @@ export default function Navbar() {
           >
             <Grid item md={3} sx={styles.gridDesktop}>
               <Box sx={styles.boxLogo}>
-                <Image src={logo} alt="Picture of the author" fill priority />
+                <Skeleton_img src={logo.src} />
               </Box>
             </Grid>
 
