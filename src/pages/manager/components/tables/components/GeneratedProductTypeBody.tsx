@@ -5,22 +5,21 @@ import { DocumentData } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
 import { ProductTypeObject } from '@/lib/models';
 import CustomTableBodyProps from '../lib/TableBodyProps';
+import {
+  ManageActionType,
+  ManageContextType,
+} from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
+import { useContext } from 'react';
+import RowActionButtons from './RowActionButtons';
 
-interface ProductTypeTableBodyProps extends CustomTableBodyProps {
-  mainDocs?: ProductTypeObject[];
-  displayMainDocs?: ProductTypeObject[];
-}
+const GeneratedProductTypeTableBody = () => {
+  const { state, dispatch, handleDeleteRow, handleViewRow } =
+    useContext<ManageContextType>(ManageContext);
 
-const GeneratedProductTypeTableBody: React.FC<ProductTypeTableBodyProps> = ({
-  mainDocs,
-  displayMainDocs,
-  setModalMode,
-  handleViewRow,
-  handleDeleteRow,
-}: ProductTypeTableBodyProps) => {
   return (
     <>
-      {mainDocs?.map((doc, index) => (
+      {state.mainDocs?.map((doc, index) => (
         <TableRow
           key={doc.id}
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -44,37 +43,7 @@ const GeneratedProductTypeTableBody: React.FC<ProductTypeTableBodyProps> = ({
             </Typography>
           </TableCell>
           <TableCell>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <TableActionButton
-                variant="contained"
-                startIcon={<Wysiwyg />}
-                onClick={() => {
-                  setModalMode('update');
-                  handleViewRow(doc);
-                }}
-              >
-                Xem
-              </TableActionButton>
-              <TableActionButton
-                variant="contained"
-                startIcon={<Delete />}
-                sx={{
-                  backgroundColor: theme.palette.secondary.main,
-                  '&:hover': {
-                    backgroundColor: theme.palette.secondary.dark,
-                  },
-                }}
-                onClick={() => handleDeleteRow(doc.id)}
-              >
-                Xóa
-              </TableActionButton>
-            </Box>
+            <RowActionButtons doc={doc} />
           </TableCell>
         </TableRow>
       )) ?? <TableRow>Error loading body</TableRow>}

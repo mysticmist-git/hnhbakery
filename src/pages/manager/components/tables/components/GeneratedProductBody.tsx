@@ -2,24 +2,55 @@ import theme from '@/styles/themes/lightTheme';
 import { Wysiwyg, Delete } from '@mui/icons-material';
 import { TableRow, TableCell, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { DocumentData } from 'firebase/firestore';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TableActionButton } from '../TableActionButton';
-import { ProductObject } from '@/lib/models';
-import CustomTableBodyProps from '../lib/TableBodyProps';
+import { CustomDataTableContext } from '../CustomDataTable';
+import {
+  ManageActionType,
+  ManageContextType,
+} from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
+import { db } from '@/firebase/config';
+import { CollectionName } from '@/lib/models/utilities';
+import { DocumentData, doc, getDoc } from 'firebase/firestore';
 
-interface ProductTableBodyProps extends CustomTableBodyProps {
-  mainDocs?: ProductObject[];
-  displayMainDocs?: ProductObject[];
-}
+const GeneratedProductTableBody = () => {
+  const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
+  const { state, dispatch, handleViewRow, handleDeleteRow } =
+    useContext<ManageContextType>(ManageContext);
 
-const GeneratedProductTableBody = ({
-  mainDocs,
-  displayMainDocs,
-  setModalMode,
-  handleViewRow,
-  handleDeleteRow,
-}: ProductTableBodyProps) => {
+  useEffect(() => {
+    // Load product type names with productTypesIds
+    const getProductTypeNames = async () => {
+      try {
+        const docs = await Promise.all(
+          state.mainDocs.map(async (document) => {
+            console.log('Document received: ', document);
+            const docRef = doc(
+              db,
+              CollectionName.ProductTypes,
+              document.productType_id,
+            );
+            const docSnap = await getDoc(docRef);
+            return {
+              ...document,
+              productTypeName:
+                docSnap.exists() && docSnap.data() !== null
+                  ? docSnap.data().name
+                  : null,
+            };
+          }),
+        );
+
+        setDisplayMainDocs(docs);
+      } catch (err) {
+        console.log('Err', err);
+      }
+    };
+
+    getProductTypeNames();
+  }, [state.mainDocs]);
+
   return (
     <>
       {displayMainDocs?.map((doc, index) => (
@@ -49,37 +80,7 @@ const GeneratedProductTableBody = ({
             </Typography>
           </TableCell>
           <TableCell>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <TableActionButton
-                variant="contained"
-                startIcon={<Wysiwyg />}
-                onClick={() => {
-                  setModalMode('update');
-                  handleViewRow(doc);
-                }}
-              >
-                Xem
-              </TableActionButton>
-              <TableActionButton
-                variant="contained"
-                startIcon={<Delete />}
-                sx={{
-                  backgroundColor: theme.palette.secondary.main,
-                  '&:hover': {
-                    backgroundColor: theme.palette.secondary.dark,
-                  },
-                }}
-                onClick={() => handleDeleteRow(doc.id)}
-              >
-                Xóa
-              </TableActionButton>
-            </Box>
+            <RowActionButtons doc={doc} />
           </TableCell>
         </TableRow>
       )) ?? <TableRow>Error loading body</TableRow>}

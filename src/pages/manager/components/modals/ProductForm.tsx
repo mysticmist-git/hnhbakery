@@ -1,4 +1,4 @@
-import { useState, useRef, RefObject, useEffect } from 'react';
+import { useState, useRef, RefObject, useEffect, useContext } from 'react';
 import {
   Grid,
   Box,
@@ -31,10 +31,13 @@ import {
   collection,
   getDocs,
 } from 'firebase/firestore';
-import { Props as FormProps } from './lib';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { ProductType } from '@/lib/models';
+import { useUploadGallery } from '@/lib/hooks/useUploadImage';
+import { ManageActionType, ManageContextType } from '../../lib/manage';
+import { ManageContext } from '../../manage';
+import placeholderImage from '@/assets/placeholder-image.png';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -79,16 +82,27 @@ const DEFAULT_PRODUCT_TYPE_STATE = {
   name: '',
 };
 
-const ProductForm: React.FC<FormProps> = ({
-  placeholderImage,
-  displayingData,
-  setDisplayingData,
-  galleryURLs,
-}) => {
+const ProductForm = () => {
+  // Context state
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+
   const [value, setValue] = useState(0);
   const [productTypes, setProductTypes] = useState<ProductTypeStateProps[]>([]);
   const [selectedProductType, setSelectedProductType] =
     useState<ProductTypeStateProps>(DEFAULT_PRODUCT_TYPE_STATE);
+
+  const { galleryFiles, setGalleryFiles, galleryURLs, setGalleryURLs } =
+    useUploadGallery();
+
+  useEffect(() => {
+    if (galleryFiles) {
+      const urls = galleryFiles.map((file: any) => {
+        return URL.createObjectURL(file);
+      });
+
+      setGalleryURLs(urls);
+    }
+  }, [galleryFiles]);
 
   useEffect(() => {
     async function getProductTypes() {
@@ -114,6 +128,9 @@ const ProductForm: React.FC<FormProps> = ({
       const productTypes: ProductTypeStateProps[] = await getProductTypes();
       setProductTypes(productTypes);
 
+      const displayingData = state.displayingData;
+      if (!displayingData) return;
+
       // set selected product type
       if (displayingData) {
         setSelectedProductType(
@@ -130,7 +147,7 @@ const ProductForm: React.FC<FormProps> = ({
     setValue(newValue);
   };
 
-  console.log(displayingData.images);
+  console.log(state.displayingData?.images ?? 'no images');
 
   return (
     <>
@@ -165,9 +182,12 @@ const ProductForm: React.FC<FormProps> = ({
               variant="standard"
               color="secondary"
               fullWidth
-              value={displayingData?.name}
+              value={state.displayingData?.name}
               onChange={(e) =>
-                setDisplayingData({ ...displayingData, name: e.target.value })
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: { ...state.displayingData, name: e.target.value },
+                })
               }
             />
 
@@ -179,9 +199,12 @@ const ProductForm: React.FC<FormProps> = ({
 
                 setSelectedProductType(newValue);
 
-                setDisplayingData({
-                  ...displayingData,
-                  productType_id: newValue?.id,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    productType_id: newValue?.id,
+                  },
                 });
               }}
               options={productTypes}
@@ -197,12 +220,15 @@ const ProductForm: React.FC<FormProps> = ({
               color="secondary"
               multiline
               fullWidth
-              value={displayingData?.description}
+              value={state.displayingData?.description ?? ''}
               rows={5}
               onChange={(e) =>
-                setDisplayingData({
-                  ...displayingData,
-                  description: e.target.value,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    description: e.target.value,
+                  },
                 })
               }
             />
@@ -221,12 +247,15 @@ const ProductForm: React.FC<FormProps> = ({
               color="secondary"
               multiline
               fullWidth
-              value={displayingData?.howToUse}
+              value={state.displayingData?.howToUse ?? ''}
               rows={3}
               onChange={(e) =>
-                setDisplayingData({
-                  ...displayingData,
-                  howToUse: e.target.value,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    howToUse: e.target.value,
+                  },
                 })
               }
             />
@@ -235,12 +264,15 @@ const ProductForm: React.FC<FormProps> = ({
               color="secondary"
               multiline
               fullWidth
-              value={displayingData?.preservation}
+              value={state.displayingData?.preservation ?? ''}
               rows={3}
               onChange={(e) =>
-                setDisplayingData({
-                  ...displayingData,
-                  preservation: e.target.value,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    preservation: e.target.value,
+                  },
                 })
               }
             />
@@ -248,11 +280,14 @@ const ProductForm: React.FC<FormProps> = ({
               control={
                 <Switch
                   color="secondary"
-                  checked={displayingData?.isActive}
+                  checked={state.displayingData?.isActive ?? false}
                   onChange={(e) =>
-                    setDisplayingData({
-                      ...displayingData,
-                      isActive: e.target.checked,
+                    dispatch({
+                      type: ManageActionType.SET_DISPLAYING_DATA,
+                      payload: {
+                        ...state.displayingData,
+                        isActive: e.target.checked,
+                      },
                     })
                   }
                 />
@@ -281,41 +316,53 @@ const ProductForm: React.FC<FormProps> = ({
         <Stack gap={1}>
           <MyMultiValueInput
             label={'Nguyên liệu'}
-            values={displayingData?.ingredients}
+            values={state.displayingData?.ingredients || []}
             onChange={(values) => {
-              setDisplayingData({
-                ...displayingData,
-                ingredients: values,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  ingredients: values,
+                },
               });
             }}
           />
           <MyMultiValueInput
             label={'Vật liệu'}
-            values={displayingData?.materials}
+            values={state.displayingData?.materials ?? []}
             onChange={(values) => {
-              setDisplayingData({
-                ...displayingData,
-                materials: values,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  materials: values,
+                },
               });
             }}
           />
           <MyMultiValueInput
             label={'Màu sắc'}
-            values={displayingData?.colors}
+            values={state.displayingData?.colors ?? []}
             onChange={(values) => {
-              setDisplayingData({
-                ...displayingData,
-                colors: values,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  colors: values,
+                },
               });
             }}
           />
           <MyMultiValueInput
             label={'Kích cỡ'}
-            values={displayingData?.sizes}
+            values={state.displayingData?.sizes ?? []}
             onChange={(values) => {
-              setDisplayingData({
-                ...displayingData,
-                sizes: values,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  sizes: values,
+                },
               });
             }}
           />

@@ -1,60 +1,22 @@
 import { CollectionName } from '@/lib/models/utilities';
 import { TableRow } from '@mui/material';
-import { DocumentData } from 'firebase/firestore';
-import React from 'react';
+import React, { useContext } from 'react';
 import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 import GeneratedProductTableBody from './GeneratedProductBody';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
-import { ProductObject, ProductTypeObject } from '@/lib/models';
-import { BatchObject } from '@/lib/models/Batch';
+import { ManageContextType } from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 
-type Props = {
-  mainDocs: DocumentData[];
-  mainCollectionName: CollectionName;
-  displayMainDocs: DocumentData[];
-  setModalMode: any;
-  handleViewRow: any;
-  handleDeleteRow: any;
-};
+const GeneratedTableBody = () => {
+  const { state } = useContext<ManageContextType>(ManageContext);
 
-const GeneratedTableBody = ({
-  mainDocs,
-  mainCollectionName,
-  displayMainDocs,
-  setModalMode,
-  handleViewRow,
-  handleDeleteRow,
-}: Props) => {
-  const props = {
-    setModalMode,
-    handleViewRow,
-    handleDeleteRow,
-  };
-
-  switch (mainCollectionName) {
+  switch (state.selectedTarget?.collectionName) {
     case CollectionName.ProductTypes:
-      return (
-        <GeneratedProductTypeTableBody
-          {...props}
-          mainDocs={mainDocs as ProductTypeObject[]}
-        />
-      );
+      return <GeneratedProductTypeTableBody />;
     case CollectionName.Products:
-      return (
-        <GeneratedProductTableBody
-          {...props}
-          mainDocs={mainDocs as ProductObject[]}
-          displayMainDocs={displayMainDocs as ProductObject[]}
-        />
-      );
+      return <GeneratedProductTableBody />;
     case CollectionName.Batches:
-      return (
-        <GeneratedBatchTableBody
-          {...props}
-          mainDocs={mainDocs as BatchObject[]}
-          displayMainDocs={displayMainDocs as BatchObject[]}
-        />
-      );
+      return <GeneratedBatchTableBody />;
     default:
       return <TableRow>Error generating body</TableRow>;
   }

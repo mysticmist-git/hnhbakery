@@ -1,4 +1,4 @@
-import { useState, useRef, RefObject, useEffect } from 'react';
+import { useState, useRef, RefObject, useEffect, useContext } from 'react';
 import {
   Grid,
   Box,
@@ -22,18 +22,18 @@ import {
   getDoc,
   getDocs,
 } from 'firebase/firestore';
-import { Props as FormProps } from './lib';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
+import { ManageActionType, ManageContextType } from '../../lib/manage';
+import { ManageContext } from '../../manage';
 
-const BatchForm: React.FC<FormProps> = ({
-  displayingData,
-  setDisplayingData,
-  mode,
-}) => {
+const BatchForm = () => {
+  // Context state
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+
   const [products, setProducts] = useState<ProductObject[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
     null,
@@ -52,9 +52,12 @@ const BatchForm: React.FC<FormProps> = ({
       const justGetProducts = await getProducts();
       setProducts(justGetProducts ?? []);
 
-      if (mode === 'update') {
+      if (state.crudModalMode === 'update') {
+        const productId = state.displayingData?.product_id;
+        if (!productId) return;
+
         const referencedProduct = justGetProducts.find(
-          (product) => product.id === displayingData.product_id,
+          (product) => product.id === productId,
         );
 
         console.log(referencedProduct);
@@ -74,7 +77,12 @@ const BatchForm: React.FC<FormProps> = ({
       setColors(selectedProduct.colors);
       setSizes(selectedProduct.sizes);
 
-      if (mode === 'update') {
+      if (state.crudModalMode === 'update') {
+        // Check state.displayingData
+        const displayingData = state.displayingData;
+
+        if (!displayingData) return;
+
         setSelectedMaterial(selectedProduct.materials[displayingData.material]);
         setSelectedColor(selectedProduct.colors[displayingData.color]);
         setSelectedSize(selectedProduct.sizes[displayingData.size]);
@@ -115,9 +123,12 @@ const BatchForm: React.FC<FormProps> = ({
 
               setSelectedProduct(newValue);
 
-              setDisplayingData({
-                ...displayingData,
-                product_id: newValue?.id,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  product_id: newValue?.id,
+                },
               });
             }}
             options={products}
@@ -133,9 +144,12 @@ const BatchForm: React.FC<FormProps> = ({
 
               setSelectedMaterial(newValue);
 
-              setDisplayingData({
-                ...displayingData,
-                material: materials.indexOf(newValue),
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  material: materials.indexOf(newValue),
+                },
               });
             }}
             options={materials}
@@ -149,9 +163,12 @@ const BatchForm: React.FC<FormProps> = ({
 
               setSelectedColor(newValue);
 
-              setDisplayingData({
-                ...displayingData,
-                color: colors.indexOf(newValue),
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  color: colors.indexOf(newValue),
+                },
               });
             }}
             options={colors}
@@ -165,9 +182,12 @@ const BatchForm: React.FC<FormProps> = ({
 
               setSelectedSize(newValue);
 
-              setDisplayingData({
-                ...displayingData,
-                size: sizes.indexOf(newValue),
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  size: sizes.indexOf(newValue),
+                },
               });
             }}
             options={sizes}
@@ -183,15 +203,18 @@ const BatchForm: React.FC<FormProps> = ({
               variant="standard"
               color="secondary"
               fullWidth
-              value={displayingData?.soldQuantity}
+              value={state.displayingData?.soldQuantity ?? -1}
               type="number"
               InputProps={{
                 readOnly: true,
               }}
               onChange={(e) =>
-                setDisplayingData({
-                  ...displayingData,
-                  totalQuantity: e.target.value,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    totalQuantity: e.target.value,
+                  },
                 })
               }
             />
@@ -201,27 +224,36 @@ const BatchForm: React.FC<FormProps> = ({
               color="secondary"
               type="number"
               fullWidth
-              value={displayingData?.totalQuantity}
+              value={state.displayingData?.totalQuantity ?? -1}
               onChange={(e) =>
-                setDisplayingData({
-                  ...displayingData,
-                  totalQuantity: e.target.value,
+                dispatch({
+                  type: ManageActionType.SET_DISPLAYING_DATA,
+                  payload: {
+                    ...state.displayingData,
+                    totalQuantity: e.target.value,
+                  },
                 })
               }
             />
           </Stack>
           <DatePicker
             label="Ngày sản xuất"
-            value={dayjs(displayingData?.MFG)}
+            value={dayjs(state.displayingData?.MFG)}
             onChange={(newValue: any) =>
-              setDisplayingData({ ...displayingData, MFG: newValue.toDate() })
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: { ...state.displayingData, MFG: newValue.toDate() },
+              })
             }
           />
           <DatePicker
             label="Ngày hết hạn"
-            value={dayjs(displayingData?.EXP)}
+            value={dayjs(state.displayingData?.EXP)}
             onChange={(newValue: any) =>
-              setDisplayingData({ ...displayingData, EXP: newValue.toDate() })
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: { ...state.displayingData, EXP: newValue.toDate() },
+              })
             }
           />
           {/* <TextField

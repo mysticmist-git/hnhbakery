@@ -34,4 +34,5 @@ export enum CollectionName {
   Roles = 'roles',
   Right_Roles = 'right_Roles',
   Rights = 'rights',
+  None = 'None',
 }

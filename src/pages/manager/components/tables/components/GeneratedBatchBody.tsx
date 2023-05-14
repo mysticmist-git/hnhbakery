@@ -1,24 +1,56 @@
+import {
+  ManageActionType,
+  ManageContextType,
+} from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 import theme from '@/styles/themes/lightTheme';
 import { Wysiwyg, Delete } from '@mui/icons-material';
 import { TableRow, TableCell, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { DocumentData } from 'firebase/firestore';
-import React from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { CustomDataTableContext } from '../CustomDataTable';
 import { TableActionButton } from '../TableActionButton';
-import CustomTableBodyProps from '../lib/TableBodyProps';
-import { BatchObject } from '@/lib/models/Batch';
-interface BatchTableBodyProps extends CustomTableBodyProps {
-  mainDocs?: BatchObject[];
-  displayMainDocs?: BatchObject[];
-}
+import { db } from '@/firebase/config';
+import { CollectionName } from '@/lib/models/utilities';
+import { DocumentData, doc, getDoc } from 'firebase/firestore';
 
-const GeneratedBatchTableBody = ({
-  mainDocs,
-  displayMainDocs,
-  setModalMode,
-  handleViewRow,
-  handleDeleteRow,
-}: BatchTableBodyProps) => {
+const GeneratedBatchTableBody = () => {
+  const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
+  const { state, dispatch, handleViewRow, handleDeleteRow } =
+    useContext<ManageContextType>(ManageContext);
+
+  useEffect(() => {
+    // Load product names with productIds
+    const getProductNames = async () => {
+      try {
+        const docs = await Promise.all(
+          state.mainDocs.map(async (document) => {
+            console.log('Document received: ', document);
+            const docRef = doc(
+              db,
+              CollectionName.Products,
+              document.product_id,
+            );
+            const docSnap = await getDoc(docRef);
+            return {
+              ...document,
+              productName:
+                docSnap.exists() && docSnap.data() !== null
+                  ? docSnap.data().name
+                  : null,
+            };
+          }),
+        );
+
+        setDisplayMainDocs(docs);
+      } catch (err) {
+        console.log('Err', err);
+      }
+    };
+
+    getProductNames();
+  }, [state.mainDocs]);
+
   return (
     <>
       {displayMainDocs?.map((doc, index) => (
@@ -68,7 +100,10 @@ const GeneratedBatchTableBody = ({
                 variant="contained"
                 startIcon={<Wysiwyg />}
                 onClick={() => {
-                  setModalMode('update');
+                  dispatch({
+                    type: ManageActionType.SET_CRUD_MODAL_MODE,
+                    payload: 'update',
+                  });
                   handleViewRow(doc);
                 }}
               >

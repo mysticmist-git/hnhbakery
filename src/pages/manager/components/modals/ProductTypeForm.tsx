@@ -1,33 +1,34 @@
-import { useState, useRef, RefObject } from 'react';
+import { useContext } from 'react';
 import {
   Grid,
   Box,
   Typography,
-  Divider,
-  IconButton,
   Button,
   TextField,
   FormControlLabel,
   Switch,
-  Theme,
   useTheme,
 } from '@mui/material';
-import { Delete, Close } from '@mui/icons-material';
-import Image, { StaticImageData } from 'next/image';
-import { DocumentData } from 'firebase/firestore';
-import { Props as FormProps } from './lib';
+import Image from 'next/image';
+import placeholderImage from '@/assets/placeholder-image.png';
+import {
+  ManageActionType,
+  ManageContextType,
+} from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 
-const ProductTypeForm: React.FC<FormProps> = ({
-  placeholderImage,
-  displayingData,
-  setDisplayingData,
-  featuredImageFile,
+const ProductTypeForm = ({
   featuredImageURL,
+  featuredImageFile,
   handleUploadImage,
-  handleDeleteRow,
-  handleModalClose,
+}: {
+  featuredImageURL: string;
+  featuredImageFile: any;
+  handleUploadImage: any;
 }) => {
   const theme = useTheme();
+
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
 
   return (
     <Grid container>
@@ -89,9 +90,12 @@ const ProductTypeForm: React.FC<FormProps> = ({
             variant="standard"
             color="secondary"
             fullWidth
-            value={displayingData?.name}
+            value={state.displayingData?.name}
             onChange={(e) =>
-              setDisplayingData({ ...displayingData, name: e.target.value })
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: { ...state.displayingData, name: e.target.value },
+              })
             }
           />
           <TextField
@@ -99,12 +103,15 @@ const ProductTypeForm: React.FC<FormProps> = ({
             color="secondary"
             multiline
             fullWidth
-            value={displayingData?.description}
+            value={state.displayingData?.description}
             rows={5}
             onChange={(e) =>
-              setDisplayingData({
-                ...displayingData,
-                description: e.target.value,
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  description: e.target.value,
+                },
               })
             }
           />
@@ -112,11 +119,14 @@ const ProductTypeForm: React.FC<FormProps> = ({
             control={
               <Switch
                 color="secondary"
-                checked={displayingData?.isActive}
+                checked={state.displayingData?.isActive}
                 onChange={(e) =>
-                  setDisplayingData({
-                    ...displayingData,
-                    isActive: e.target.checked,
+                  dispatch({
+                    type: ManageActionType.SET_DISPLAYING_DATA,
+                    payload: {
+                      ...state.displayingData,
+                      isActive: e.target.checked,
+                    },
                   })
                 }
               />

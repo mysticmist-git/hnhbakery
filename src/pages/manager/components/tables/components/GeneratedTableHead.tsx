@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { TableCell } from '@mui/material';
 import { CollectionName } from '@/lib/models/utilities';
+import { ManageContextType } from '@/pages/manager/lib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 
-type Props = {
-  mainCollectionName: CollectionName;
-};
+const GeneratedTableHead = () => {
+  const { state } = useContext<ManageContextType>(ManageContext);
 
-const GeneratedTableHead: React.FC<Props> = ({ mainCollectionName }) => {
-  switch (mainCollectionName) {
+  switch (state.selectedTarget?.collectionName) {
     case CollectionName.ProductTypes:
       return (
         <>
