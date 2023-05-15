@@ -2,11 +2,8 @@ import {
   AppBar,
   Avatar,
   Box,
-  Button,
   Drawer,
   Grid,
-  IconButton,
-  Skeleton,
   Tab,
   Tabs,
   Toolbar,
@@ -20,6 +17,8 @@ import Menu from '@mui/icons-material/Menu';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Skeleton_img from './skeleton_img';
+import CustomIconButton from './customIconButton';
+import CustomButton from './customButton';
 
 //#region Tab
 interface TabItem {
@@ -141,15 +140,14 @@ function RightMenu(props: any) {
   const context = useContext(NavbarContext);
   return (
     <>
-      <IconButton
+      <CustomIconButton
         sx={{
           mr: props.orientation == 'vertical' ? 0 : 1,
           mb: props.orientation == 'vertical' ? 1 : 0,
           color: theme.palette.common.white,
         }}
-      >
-        <ShoppingCartIcon />
-      </IconButton>
+        children={() => <ShoppingCartIcon />}
+      />
 
       {context.isSignIn ? (
         <Avatar
@@ -161,15 +159,9 @@ function RightMenu(props: any) {
           }
         ></Avatar>
       ) : (
-        <Button
-          style={{
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.common.white,
-          }}
-          variant="contained"
-        >
-          <Typography variant="button">Đăng nhập</Typography>
-        </Button>
+        <CustomButton
+          children={() => <Typography variant="button">Đăng nhập</Typography>}
+        />
       )}
     </>
   );
@@ -198,7 +190,6 @@ export const NavbarContext =
 // #endregion
 
 export default function Navbar() {
-  //#region Style
   const theme = useTheme();
   const styles = {
     appBar: {
@@ -217,7 +208,6 @@ export default function Navbar() {
       height: 166,
     },
   };
-  //#endregion
 
   function initialTab() {
     const router = useRouter();
@@ -298,12 +288,12 @@ export default function Navbar() {
                   justifyContent="flex-end"
                   alignItems="center"
                 >
-                  <IconButton
+                  <CustomIconButton
                     sx={{ color: theme.palette.common.white }}
                     onClick={() => handleSetDrawerOpenState(true)}
-                  >
-                    <Menu />
-                  </IconButton>
+                    children={() => <Menu />}
+                  />
+
                   <CustomDrawer />
                 </Grid>
               </Grid>

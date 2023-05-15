@@ -1,11 +1,9 @@
 import {
   Box,
-  Button,
   Card,
   CardActionArea,
   CardActions,
   Grid,
-  TextField,
   Typography,
   useMediaQuery,
   useTheme,
@@ -14,6 +12,8 @@ import React, { useEffect, useState, createContext, useContext } from 'react';
 import Carousel from 'react-material-ui-carousel';
 import banh1 from '../assets/Carousel/3.jpg';
 import { alpha } from '@mui/system';
+import CustomTextField from '@/components/CustomTextField';
+import CustomButton from '@/components/customButton';
 
 // #region Carousel
 interface CarouselImageItem {
@@ -176,15 +176,12 @@ function CakeCard(props: any) {
       <CardActions
         sx={{ p: 2, bgcolor: theme.palette.common.white, zIndex: 1 }}
       >
-        <Button
+        <CustomButton
           sx={{ px: 2 }}
-          style={{
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.common.white,
-          }}
-        >
-          <Typography variant="button">Thêm vào giỏ hàng</Typography>
-        </Button>
+          children={() => (
+            <Typography variant="button">Thêm vào giỏ hàng</Typography>
+          )}
+        />
       </CardActions>
     </Card>
   );
@@ -425,36 +422,6 @@ function TypeCake(props: any) {
 //#endregion
 
 //#region Khuyến mãi
-function CustomTextField(props: any) {
-  const theme = useTheme();
-  return (
-    <>
-      <TextField
-        sx={{
-          borderRadius: '8px',
-          width: '350px',
-          bgcolor: theme.palette.common.white,
-        }}
-        inputProps={{
-          style: {
-            fontSize: theme.typography.body2.fontSize,
-            color: 'black',
-            fontWeight: theme.typography.body2.fontWeight,
-            fontFamily: theme.typography.body2.fontFamily,
-          },
-        }}
-        InputProps={{ disableUnderline: true }}
-        hiddenLabel
-        fullWidth
-        placeholder="Email của bạn"
-        type="email"
-        variant="filled"
-        maxRows="1"
-      />
-    </>
-  );
-}
-
 function DangKyKhuyenMai(props: any) {
   const theme = useTheme();
   return (
@@ -502,19 +469,25 @@ function DangKyKhuyenMai(props: any) {
               spacing={1}
             >
               <Grid item>
-                <CustomTextField />
+                <CustomTextField
+                  width={'350px'}
+                  placeholder="Email của bạn"
+                  type="email"
+                  borderColor={theme.palette.common.white}
+                />
               </Grid>
               <Grid item>
-                <Button
-                  sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
-                  style={{
-                    backgroundColor: theme.palette.secondary.main,
-                    color: theme.palette.common.white,
+                <CustomButton
+                  sx={{
+                    height: '100%',
+                    borderRadius: '8px',
+                    py: '12px',
+                    px: 3,
                   }}
-                  variant="contained"
-                >
-                  <Typography variant="button">Đăng ký</Typography>
-                </Button>
+                  children={() => (
+                    <Typography variant="button">Đăng ký</Typography>
+                  )}
+                />
               </Grid>
             </Grid>
           </Grid>

@@ -11,11 +11,9 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
-  IconButton,
   MenuItem,
   Select,
   Typography,
-  alpha,
   useTheme,
 } from '@mui/material';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -24,6 +22,9 @@ import banh1 from '../assets/Carousel/3.jpg';
 import GridView from '@mui/icons-material/GridView';
 import ListAlt from '@mui/icons-material/ListAlt';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import formatPrice from '@/utilities/formatCurrency';
+import ImageBackground from '@/components/imageBackground';
+import CustomIconButton from '@/components/customIconButton';
 
 // #region Filter
 interface BoLocItem {
@@ -224,12 +225,11 @@ function TypeView(props: any) {
 
         <Grid item>
           {ListTypeSort.map((item, i) => (
-            <IconButton
+            <CustomIconButton
               key={i}
               onClick={() => context.handleSetViewState(item.value)}
-            >
-              {item.Icon}
-            </IconButton>
+              children={() => item.Icon}
+            />
           ))}
         </Grid>
       </Grid>
@@ -369,11 +369,6 @@ const initProductList: ProductsItem[] = [
   },
 ];
 
-function formatPrice(price: number): string {
-  const formatter = new Intl.NumberFormat('vi-VN');
-  return formatter.format(price);
-}
-
 function CakeCard(props: any) {
   const theme = useTheme();
   const context = useContext(ProductsContext);
@@ -491,8 +486,8 @@ function CakeCard(props: any) {
                   </Grid>
                   <Grid item>
                     <Typography
-                      variant="button"
-                      color={theme.palette.text.primary}
+                      variant="body2"
+                      color={theme.palette.secondary.main}
                     >
                       {props.price
                         ? formatPrice(props.price)
@@ -504,30 +499,35 @@ function CakeCard(props: any) {
             </Grid>
           </Grid>
           <Grid item>
-            <IconButton
-              style={{
-                backgroundColor: theme.palette.secondary.main,
+            <Box
+              sx={{
+                bgcolor: theme.palette.secondary.main,
                 borderRadius: '8px',
               }}
-              sx={{
-                width: '100%',
-              }}
             >
-              <ShoppingCartIcon
-                sx={{
-                  color: theme.palette.common.white,
-                  display: isList ? 'none' : 'block',
-                }}
+              <CustomIconButton
+                children={() => (
+                  <>
+                    <ShoppingCartIcon
+                      sx={{
+                        color: theme.palette.common.white,
+                        display: isList ? 'none' : 'block',
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.common.white}
+                      display={isList ? 'block' : 'none'}
+                      sx={{
+                        px: 0.5,
+                      }}
+                    >
+                      Thêm vào giỏ hàng
+                    </Typography>
+                  </>
+                )}
               />
-              <Typography
-                variant="body2"
-                color={theme.palette.common.white}
-                display={isList ? 'block' : 'none'}
-                sx={{ px: 0.5 }}
-              >
-                Thêm vào giỏ hàng
-              </Typography>
-            </IconButton>
+            </Box>
           </Grid>
         </Grid>
       </CardActions>
@@ -653,22 +653,8 @@ export default function Products() {
         }}
       >
         <Box>
-          <Box
-            sx={{
-              width: '100%',
-              height: '320px',
-              backgroundImage: `url(${banh1.src})`,
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-            }}
-          >
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                bgcolor: alpha(theme.palette.common.black, 0.6),
-              }}
-            >
+          <ImageBackground
+            children={() => (
               <Grid
                 sx={{ px: 6 }}
                 height={'100%'}
@@ -695,8 +681,8 @@ export default function Products() {
                   </a>
                 </Grid>
               </Grid>
-            </Box>
-          </Box>
+            )}
+          />
 
           <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
             <Grid

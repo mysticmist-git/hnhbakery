@@ -59,6 +59,7 @@ const theme = createTheme({
       fontSize: '16px',
       fontWeight: '700',
       textTransform: 'none',
+      display: 'block',
     },
   },
 });
