@@ -38,6 +38,7 @@ export enum ManageActionType {
   SET_CRUD_MODAL_OPEN = 'SET_CRUD_MODAL_OPEN',
   SET_CRUD_MODAL_MODE = 'SET_CRUD_MODAL_MODE',
   SET_DELETING_ID = 'SET_DELETING_ID',
+  UPDATE_SPECIFIC_DOC = 'UPDATE_SPECIFIC_DOC',
 }
 
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
@@ -68,6 +69,24 @@ export const manageReducer = (state: ManageState, action: any) => {
       return {
         ...state,
         mainDocs: action.payload,
+      };
+
+    case ManageActionType.UPDATE_SPECIFIC_DOC:
+      const { id, data } = action.payload;
+
+      if (!id || !data) return state;
+
+      const copyMainDocs = [...state.mainDocs];
+
+      const doc = copyMainDocs.findIndex((doc) => doc.id === id);
+
+      if (doc === -1) return state;
+
+      copyMainDocs[doc] = data;
+
+      return {
+        ...state,
+        mainDocs: copyMainDocs,
       };
 
     case ManageActionType.SET_SELECTED_TARGET:

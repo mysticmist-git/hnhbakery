@@ -326,6 +326,7 @@ export default function Manage({
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
+          color="secondary"
         >
           <DialogTitle id="alert-dialog-title">{'Xóa đối tượng'}</DialogTitle>
           <DialogContent>
@@ -334,8 +335,10 @@ export default function Manage({
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Thoát</Button>
-            <Button onClick={handleDeleteDocument} autoFocus>
+            <Button onClick={handleClose} color="secondary">
+              Thoát
+            </Button>
+            <Button onClick={handleDeleteDocument} autoFocus color="secondary">
               Xóa
             </Button>
           </DialogActions>

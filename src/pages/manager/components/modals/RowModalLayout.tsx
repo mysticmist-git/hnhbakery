@@ -1,5 +1,12 @@
 import theme from '@/styles/themes/lightTheme';
-import { Delete, RestartAlt, Close, Add } from '@mui/icons-material';
+import {
+  Delete,
+  RestartAlt,
+  Close,
+  Add,
+  Edit,
+  Check,
+} from '@mui/icons-material';
 import {
   Modal,
   Grid,
@@ -23,7 +30,7 @@ const formStyle = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   // other styles...
-  width: 840,
+  width: 800,
   bgcolor: 'background.paper',
   borderRadius: '1rem',
   boxShadow: 24,
@@ -97,6 +104,15 @@ export default function RowModalLayout({
     });
   };
 
+  function handleToggleEditMode() {
+    if (state.crudModalMode !== 'view') return;
+
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_MODE,
+      payload: 'update',
+    });
+  }
+
   //#endregion
 
   return (
@@ -130,7 +146,22 @@ export default function RowModalLayout({
                 gap: '1rem',
               }}
             >
-              {['update', 'view'].includes(state.crudModalMode) && (
+              {['update'].includes(state.crudModalMode) && (
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  startIcon={<Check />}
+                  onClick={handleUpdateRow}
+                >
+                  Cập nhật
+                </Button>
+              )}
+              {['view'].includes(state.crudModalMode) && (
+                <IconButton onClick={handleToggleEditMode} color="secondary">
+                  <Edit />
+                </IconButton>
+              )}
+              {['view', 'update'].includes(state.crudModalMode) && (
                 <IconButton onClick={handleDeleteRow} color="secondary">
                   <Delete />
                 </IconButton>
@@ -165,6 +196,7 @@ export default function RowModalLayout({
           />
         </Grid>
 
+        {/* Children */}
         {children}
 
         <Grid container spacing={2}>
@@ -181,7 +213,7 @@ export default function RowModalLayout({
                 gap: '0.7rem',
               }}
             >
-              {state.crudModalMode === 'update' && (
+              {/* {state.crudModalMode === 'update' && (
                 <Button
                   variant="outlined"
                   color="secondary"
@@ -193,7 +225,7 @@ export default function RowModalLayout({
                 >
                   Cập nhật
                 </Button>
-              )}
+              )} */}
               <Button
                 variant="contained"
                 sx={{
@@ -202,7 +234,6 @@ export default function RowModalLayout({
                     backgroundColor: theme.palette.common.light,
                   },
                   paddingX: '1.5rem',
-                  borderRadius: '1rem',
                 }}
                 onClick={handleModalClose}
               >

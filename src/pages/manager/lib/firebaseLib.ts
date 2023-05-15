@@ -12,7 +12,10 @@ import { memoize } from '../components/modals/lib';
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
   async (paths: string[]) => {
-    if (!paths || !paths.length) return [];
+    if (!paths || !paths.length) {
+      console.log('No paths');
+      return [];
+    }
 
     try {
       const promises = paths.map((path) => getDownloadURL(ref(storage, path)));
@@ -20,6 +23,7 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
       return urls;
     } catch (error) {
       console.log('Error: ', error);
+      return [];
     }
   },
 );

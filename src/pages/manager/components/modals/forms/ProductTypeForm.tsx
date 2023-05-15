@@ -57,20 +57,22 @@ const ProductTypeForm = ({
           width={240}
           height={240}
           priority
+          style={{
+            borderRadius: '0.4rem',
+          }}
         />
 
-        {state.crudModalMode === 'update' && (
+        {['update', 'create'].includes(state.crudModalMode) && (
           <Button
             variant="contained"
             component="label"
             sx={{
-              borderRadius: '0 0 0.4rem 0.4rem',
+              mt: 1,
               backgroundColor: theme.palette.secondary.main,
               '&:hover': {
                 backgroundColor: theme.palette.secondary.dark,
               },
               textTransform: 'none',
-              width: '100%',
             }}
           >
             Tải ảnh lên
@@ -131,7 +133,7 @@ const ProductTypeForm = ({
           <FormControlLabel
             control={
               <Switch
-                disabled
+                disabled={state.crudModalMode === 'view'}
                 color="secondary"
                 checked={state.displayingData?.isActive}
                 onChange={(e) =>

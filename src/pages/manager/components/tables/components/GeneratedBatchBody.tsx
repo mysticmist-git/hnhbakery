@@ -13,6 +13,7 @@ import { TableActionButton } from '../TableActionButton';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
+import RowActionButtons from './RowActionButtons';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
@@ -89,40 +90,7 @@ const GeneratedBatchTableBody = () => {
             </Typography>
           </TableCell>
           <TableCell>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <TableActionButton
-                variant="contained"
-                startIcon={<Wysiwyg />}
-                onClick={() => {
-                  dispatch({
-                    type: ManageActionType.SET_CRUD_MODAL_MODE,
-                    payload: 'update',
-                  });
-                  handleViewRow(doc);
-                }}
-              >
-                Xem
-              </TableActionButton>
-              <TableActionButton
-                variant="contained"
-                startIcon={<Delete />}
-                sx={{
-                  backgroundColor: theme.palette.secondary.main,
-                  '&:hover': {
-                    backgroundColor: theme.palette.secondary.dark,
-                  },
-                }}
-                onClick={() => handleDeleteRow(doc.id)}
-              >
-                Xóa
-              </TableActionButton>
-            </Box>
+            <RowActionButtons doc={doc} />
           </TableCell>
         </TableRow>
       )) ?? <TableRow>Error loading body</TableRow>}
