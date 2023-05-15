@@ -19,13 +19,8 @@ import { useSnackbarService } from '@/pages/_app';
 export default function ProductTypeRowModal() {
   //#region States
 
-  const {
-    state,
-    dispatch,
-    handleDeleteRow,
-    handleViewRow,
-    resetDisplayingData,
-  } = useContext<ManageContextType>(ManageContext);
+  const { state, dispatch, resetDisplayingData } =
+    useContext<ManageContextType>(ManageContext);
 
   /**
    * This is used to stored URL of the featured on storage
@@ -87,10 +82,6 @@ export default function ProductTypeRowModal() {
       setFeaturedImageURL(URL.createObjectURL(featuredImageFile));
     }
   }, [featuredImageFile]);
-
-  useEffect(() => {
-    if (!featuredImageURL) return;
-  }, [featuredImageURL]);
 
   //#endregion
 
@@ -185,9 +176,15 @@ export default function ProductTypeRowModal() {
         console.log('Error: ', error);
       }
     } else {
-      alert('No image found');
+      handleSnackbarAlert('error', 'Không có hình ảnh nào');
     }
   }
+
+  const resetForm = () => {
+    resetDisplayingData();
+    setFeaturedImageFile(null);
+    setFeaturedImageURL(null);
+  };
 
   //#endregion
 
@@ -217,13 +214,26 @@ export default function ProductTypeRowModal() {
       return;
     }
 
+    // Check if displaying data is null
+    if (!state.displayingData) {
+      const errorMsg = 'Null data error';
+      handleSnackbarAlert('error', `Lỗi: ${errorMsg}`);
+      return;
+    }
+
+    // Check product type name if it is empty or not
+    if (!state.displayingData.name || state.displayingData.name === '') {
+      handleSnackbarAlert('error', 'Vui lòng nhập tên loại sản phẩm');
+      return;
+    }
+
     const collectionName = state.selectedTarget?.collectionName;
 
     if (!collectionName) return;
 
     // Image existence check
     if (!featuredImageFile) {
-      alert('No image received');
+      handleSnackbarAlert('error', 'Vui lòng chọn ảnh cho sản phẩm');
       return;
     }
 
@@ -233,7 +243,7 @@ export default function ProductTypeRowModal() {
 
       // Image upload fail
       if (!imageURL) {
-        alert('Image upload fial');
+        handleSnackbarAlert('error', 'Tải lên ảnh lên thất bại');
         return;
       }
 
@@ -252,6 +262,7 @@ export default function ProductTypeRowModal() {
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
+      handleSnackbarAlert('error', 'Thêm mới thất bại');
     }
 
     handleSnackbarAlert('success', 'Thêm mới thành công');
@@ -264,7 +275,7 @@ export default function ProductTypeRowModal() {
   };
 
   const handleUpdateRow = async () => {
-    //#region Local Methods
+    //#region Local functions
 
     function switchBackToViewMode() {
       dispatch({
@@ -293,6 +304,19 @@ export default function ProductTypeRowModal() {
     if (state.crudModalMode !== 'update') {
       alert('Wrong mode detected');
       handleUpdateFail();
+      return;
+    }
+
+    // Check if displaying data is null
+    if (!state.displayingData) {
+      const errorMsg = 'Null data error';
+      handleSnackbarAlert('error', `Lỗi: ${errorMsg}`);
+      return;
+    }
+
+    // Check product type name if it is empty or not
+    if (!state.displayingData.name || state.displayingData.name === '') {
+      handleSnackbarAlert('error', 'Vui lòng nhập tên loại sản phẩm');
       return;
     }
 
@@ -348,10 +372,12 @@ export default function ProductTypeRowModal() {
     <RowModalLayout
       handleAddNewRow={handleAddNewRow}
       handleUpdateRow={handleUpdateRow}
+      resetForm={resetForm}
     >
       <ProductTypeForm
         featuredImageURL={featuredImageURL}
-        handleUploadImage={handleUploadImageToBrowser}
+        handleUploadImageToBrowser={handleUploadImageToBrowser}
+        readOnly={state.crudModalMode === 'view'}
       />
     </RowModalLayout>
   );

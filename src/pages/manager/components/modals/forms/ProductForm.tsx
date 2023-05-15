@@ -3,8 +3,6 @@ import {
   Grid,
   Box,
   Typography,
-  Divider,
-  IconButton,
   TextField,
   FormControlLabel,
   Switch,
@@ -12,13 +10,7 @@ import {
   Tabs,
   Autocomplete,
   Stack,
-  Chip,
-  ButtonBase,
-  Input,
-  SxProps,
 } from '@mui/material';
-import { Close, Add } from '@mui/icons-material';
-import Image, { StaticImageData } from 'next/image';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
@@ -37,45 +29,37 @@ interface ProductTypeStateProps {
   name: string;
 }
 
-const DEFAULT_PRODUCT_TYPE_STATE = {
-  id: '',
-  name: '',
-};
-
 //#endregion
 
 const ProductForm = ({
-  galleryURLs,
-  galleryFiles,
-  handleUploadImageToBrowser: handleUploadImage,
+  imageURLs,
+  handleUploadGalleryToBrowser,
+  readOnly = false,
+  handleDeleteImage,
 }: {
-  galleryURLs: string[] | null;
-  galleryFiles: any[] | null;
-  handleUploadImageToBrowser: any;
+  imageURLs: (string | null)[] | null;
+  handleUploadGalleryToBrowser: any;
+  readOnly: boolean;
+  handleDeleteImage: any;
 }) => {
   //#region States
 
   // Context state
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
 
-  const [value, setValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
   const [productTypes, setProductTypes] = useState<ProductTypeStateProps[]>([]);
   const [selectedProductType, setSelectedProductType] =
-    useState<ProductTypeStateProps>(DEFAULT_PRODUCT_TYPE_STATE);
+    useState<ProductTypeStateProps | null>(null);
+
+  //#endregion
+
+  //#region Hooks
+
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
 
   //#endregion
 
   //#region useEffects
-
-  // useEffect(() => {
-  //   if (galleryFiles) {
-  //     const urls = galleryFiles.map((file: any) => {
-  //       return URL.createObjectURL(file);
-  //     });
-
-  //     setGalleryURLs(urls);
-  //   }
-  // }, [galleryFiles]);
 
   useEffect(() => {
     async function getProductTypes() {
@@ -101,6 +85,10 @@ const ProductForm = ({
       const productTypes: ProductTypeStateProps[] = await getProductTypes();
       setProductTypes(productTypes);
 
+      if (state.crudModalMode === 'create') return;
+
+      // Set current data selected product type
+
       const displayingData = state.displayingData;
       if (!displayingData) return;
 
@@ -115,12 +103,13 @@ const ProductForm = ({
 
     fetchData();
   }, []);
+
   //#endregion
 
   //#region Handlers
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    setTabValue(newValue);
   };
 
   //#endregion
@@ -129,7 +118,7 @@ const ProductForm = ({
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
-          value={value}
+          value={tabValue}
           onChange={handleChange}
           aria-label="basic tabs example"
           textColor="secondary"
@@ -142,7 +131,7 @@ const ProductForm = ({
       </Box>
 
       {/* First tab */}
-      <TabPanel value={value} index={0}>
+      <TabPanel value={tabValue} index={0}>
         <Grid container columnSpacing={2}>
           <Grid
             item
@@ -155,6 +144,9 @@ const ProductForm = ({
           >
             <TextField
               label="Tên sản phẩm"
+              InputProps={{
+                readOnly: readOnly,
+              }}
               variant="standard"
               color="secondary"
               fullWidth
@@ -170,6 +162,7 @@ const ProductForm = ({
             <Autocomplete
               disablePortal
               value={selectedProductType}
+              readOnly={readOnly}
               onChange={(event, newValue) => {
                 if (!newValue) return;
 
@@ -193,6 +186,9 @@ const ProductForm = ({
 
             <TextField
               label="Miêu tả"
+              InputProps={{
+                readOnly: readOnly,
+              }}
               color="secondary"
               multiline
               fullWidth
@@ -221,6 +217,9 @@ const ProductForm = ({
             <TextField
               label="Cách sử dụng"
               color="secondary"
+              InputProps={{
+                readOnly: readOnly,
+              }}
               multiline
               fullWidth
               value={state.displayingData?.howToUse ?? ''}
@@ -238,6 +237,9 @@ const ProductForm = ({
             <TextField
               label="Cách bảo quản"
               color="secondary"
+              InputProps={{
+                readOnly: readOnly,
+              }}
               multiline
               fullWidth
               value={state.displayingData?.preservation ?? ''}
@@ -256,6 +258,7 @@ const ProductForm = ({
               control={
                 <Switch
                   color="secondary"
+                  disabled={readOnly}
                   checked={state.displayingData?.isActive ?? false}
                   onChange={(e) =>
                     dispatch({
@@ -281,16 +284,20 @@ const ProductForm = ({
           </Grid>
         </Grid>
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={tabValue} index={1}>
         <MyGallery
-          srcs={galleryURLs}
+          readOnly={readOnly}
+          srcs={imageURLs}
           onChange={() => console.log('This is my gallery on change callback')}
           placeholderImage={placeholderImage}
+          handleUploadGalleryToBrowser={handleUploadGalleryToBrowser}
+          handleDeleteImage={handleDeleteImage}
         />
       </TabPanel>
-      <TabPanel value={value} index={2}>
+      <TabPanel value={tabValue} index={2}>
         <Stack gap={1}>
           <MyMultiValueInput
+            readOnly={readOnly}
             label={'Nguyên liệu'}
             values={state.displayingData?.ingredients || []}
             onChange={(values) => {
@@ -304,6 +311,7 @@ const ProductForm = ({
             }}
           />
           <MyMultiValueInput
+            readOnly={readOnly}
             label={'Vật liệu'}
             values={state.displayingData?.materials ?? []}
             onChange={(values) => {
@@ -317,6 +325,7 @@ const ProductForm = ({
             }}
           />
           <MyMultiValueInput
+            readOnly={readOnly}
             label={'Màu sắc'}
             values={state.displayingData?.colors ?? []}
             onChange={(values) => {
@@ -330,6 +339,7 @@ const ProductForm = ({
             }}
           />
           <MyMultiValueInput
+            readOnly={readOnly}
             label={'Kích cỡ'}
             values={state.displayingData?.sizes ?? []}
             onChange={(values) => {

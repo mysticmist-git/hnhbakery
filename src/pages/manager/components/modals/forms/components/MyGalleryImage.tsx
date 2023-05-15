@@ -5,12 +5,12 @@ import Image from 'next/image';
 
 export default function MyGalleryImage({
   src,
-  srcs,
-  setSrcs,
+  readOnly = false,
+  handleDeleteImage,
 }: {
   src: any;
-  srcs: string[];
-  setSrcs: any;
+  readOnly: boolean;
+  handleDeleteImage: any;
 }) {
   return (
     <Box
@@ -41,7 +41,10 @@ export default function MyGalleryImage({
           opacity: 0,
           transition: 'opacity 0.2s ease-in-out',
         }}
-        onClick={() => setSrcs(srcs.filter((s) => s !== src))}
+        onClick={() => {
+          handleDeleteImage(src);
+        }}
+        disabled={readOnly}
       >
         <Close />
       </IconButton>

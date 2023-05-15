@@ -59,7 +59,7 @@ export interface ManageContextType {
   state: ManageState;
   dispatch: Dispatch<any>;
   handleViewRow: any;
-  handleDeleteRow: any;
+  handleDeleteRowOnFirestore: any;
   resetDisplayingData: any;
 }
 
@@ -167,8 +167,10 @@ export const DEFAULT_ROW = {
     id: '',
     totalQuantity: 0,
     soldQuantity: 0,
-    MFG: Timestamp.fromDate(new Date()),
-    EXP: Timestamp.fromDate(new Date()),
+    MFG: Timestamp.now().toDate(),
+    EXP: Timestamp.now()
+      .toDate()
+      .setDate(Timestamp.now().toDate().getDate() + 1),
     material: 0,
     size: 0,
     color: 0,

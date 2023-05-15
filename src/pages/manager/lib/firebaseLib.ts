@@ -7,13 +7,42 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from 'firebase/storage';
 import { memoize } from '../components/modals/lib';
+
+export const getDownloadUrlFromFirebaseStorage = memoize(
+  async (path: string) => {
+    console.log(path);
+
+    if (!path) {
+      return null;
+    }
+
+    try {
+      const url = await getDownloadURL(ref(storage, path));
+      console.log(url);
+      return url;
+    } catch (error) {
+      console.log('Error: ', error);
+      return null;
+    }
+  },
+);
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
   async (paths: string[]) => {
-    if (!paths || !paths.length) {
-      console.log('No paths');
+    console.log(paths);
+
+    if (!paths) {
+      return null;
+    }
+
+    if (paths.length === 0) {
       return [];
     }
 
@@ -23,7 +52,7 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
       return urls;
     } catch (error) {
       console.log('Error: ', error);
-      return [];
+      return null;
     }
   },
 );
@@ -63,6 +92,17 @@ export const uploadImageToFirebaseStorage = async (
     return uploadImage.metadata.fullPath;
   } catch (error) {
     console.log('Image upload fail, error: ', error);
+    return '';
+  }
+};
+
+export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
+  const storageRef = ref(storage, `images/${imagePath}`);
+
+  try {
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.log('Error deleting storage object: ', error);
     return '';
   }
 };

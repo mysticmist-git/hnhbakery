@@ -7,39 +7,33 @@ import MyGalleryImageNewButton from './MyGalleryImageNewButton';
 
 export default function MyGallery({
   title: title,
-  srcs: paramSrcs,
-  onChange,
+  srcs,
   placeholderImage,
+  readOnly = false,
+  handleUploadGalleryToBrowser,
+  handleDeleteImage,
 }: {
   title?: string;
-  srcs: string[] | null;
-  onChange: (values: string[]) => void;
+  srcs: any[] | null;
+  onChange: (values: (string | null)[]) => void;
   placeholderImage: StaticImageData;
+  readOnly: boolean;
+  handleUploadGalleryToBrowser: any;
+  handleDeleteImage: any;
 }) {
   //#region States
-
-  const [srcs, setSrcs] = useState<string[] | null>(paramSrcs);
 
   //#endregion
 
   //#region UseEffects
 
-  useEffect(() => {
-    if (!srcs) return;
+  //#endregion
 
-    onChange(srcs);
-  }, [srcs]);
+  //#region Methods
 
   //#endregion
 
-  const handleDeleteValue = (value: string) => {
-    if (!srcs) return;
-    setSrcs(srcs.filter((v) => v !== value));
-  };
-
-  const handleAddNewValue = () => {
-    // ...
-  };
+  console.log(srcs);
 
   return (
     <Stack spacing={1}>
@@ -58,11 +52,12 @@ export default function MyGallery({
         {srcs?.map((src) => (
           <MyGalleryImage
             src={src && src !== '' ? src : placeholderImage}
-            srcs={srcs}
-            setSrcs={setSrcs}
+            handleDeleteImage={handleDeleteImage}
+            readOnly={readOnly}
           />
         ))}
         <MyGalleryImageNewButton
+          disabled={readOnly}
           sx={{
             backgroundColor: '#ccc',
             borderRadius: '1rem',
@@ -71,8 +66,7 @@ export default function MyGallery({
             },
             color: 'common.white',
           }}
-          srcs={srcs}
-          setSrcs={setSrcs}
+          handleUploadGalleryToBrowser={handleUploadGalleryToBrowser}
         />
       </Stack>
     </Stack>

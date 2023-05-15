@@ -30,9 +30,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import { ManageActionType, ManageContextType } from '../../../lib/manage';
 import { ManageContext } from '../../../manage';
 
-const BatchForm = () => {
-  // Context state
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
+  //#region States
 
   const [products, setProducts] = useState<ProductObject[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
@@ -47,20 +46,29 @@ const BatchForm = () => {
   const [sizes, setSizes] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState<string | null>('');
 
+  //#endregion
+
+  //#region Hooks
+
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+
+  //#endregion
+
+  //#region useEffects
+
   useEffect(() => {
     const fetchData = async () => {
       const justGetProducts = await getProducts();
       setProducts(justGetProducts ?? []);
 
-      if (state.crudModalMode === 'update') {
+      if (['update', 'view'].includes(state.crudModalMode)) {
         const productId = state.displayingData?.product_id;
+
         if (!productId) return;
 
         const referencedProduct = justGetProducts.find(
           (product) => product.id === productId,
         );
-
-        console.log(referencedProduct);
 
         if (referencedProduct) setSelectedProduct(referencedProduct);
       }
@@ -77,7 +85,7 @@ const BatchForm = () => {
       setColors(selectedProduct.colors);
       setSizes(selectedProduct.sizes);
 
-      if (state.crudModalMode === 'update') {
+      if (['update', 'view'].includes(state.crudModalMode)) {
         // Check state.displayingData
         const displayingData = state.displayingData;
 
@@ -86,11 +94,23 @@ const BatchForm = () => {
         setSelectedMaterial(selectedProduct.materials[displayingData.material]);
         setSelectedColor(selectedProduct.colors[displayingData.color]);
         setSelectedSize(selectedProduct.sizes[displayingData.size]);
+      } else if (state.crudModalMode === 'create') {
+        setSelectedMaterial(selectedProduct.materials[0]);
+        setSelectedColor(selectedProduct.colors[0]);
+        setSelectedSize(selectedProduct.sizes[0]);
       }
     };
 
     updateVariants();
   }, [selectedProduct]);
+
+  //#endregion
+
+  //#region Functions
+
+  //#endregion
+
+  //#region Methods
 
   async function getProducts(): Promise<ProductObject[]> {
     try {
@@ -111,11 +131,20 @@ const BatchForm = () => {
     }
   }
 
+  //#endregion
+
+  //#region Console.logs
+
+  console.log(state.displayingData);
+
+  //#endregion
+
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={6}>
-        <Stack gap={1}>
+        <Stack gap={2}>
           <Autocomplete
+            readOnly={readOnly}
             disablePortal
             value={selectedProduct}
             onChange={(event, newValue) => {
@@ -137,6 +166,7 @@ const BatchForm = () => {
             isOptionEqualToValue={(option, value) => option.id === value.id}
           />
           <Autocomplete
+            readOnly={readOnly}
             disablePortal
             value={selectedMaterial}
             onChange={(event, newValue) => {
@@ -156,6 +186,7 @@ const BatchForm = () => {
             renderInput={(params) => <TextField {...params} label="Vật liệu" />}
           />
           <Autocomplete
+            readOnly={readOnly}
             disablePortal
             value={selectedColor}
             onChange={(event, newValue) => {
@@ -175,6 +206,7 @@ const BatchForm = () => {
             renderInput={(params) => <TextField {...params} label="Màu sắc" />}
           />
           <Autocomplete
+            readOnly={readOnly}
             disablePortal
             value={selectedSize}
             onChange={(event, newValue) => {
@@ -198,47 +230,60 @@ const BatchForm = () => {
       <Grid item xs={6}>
         <Stack gap={2}>
           <Stack gap={1} direction="row">
-            <TextField
-              label="Đã bán"
-              variant="standard"
-              color="secondary"
-              fullWidth
-              value={state.displayingData?.soldQuantity ?? -1}
-              type="number"
-              InputProps={{
-                readOnly: true,
-              }}
-              onChange={(e) =>
-                dispatch({
-                  type: ManageActionType.SET_DISPLAYING_DATA,
-                  payload: {
-                    ...state.displayingData,
-                    totalQuantity: e.target.value,
-                  },
-                })
-              }
-            />
+            {['update', 'view'].includes(state.crudModalMode) && (
+              <TextField
+                label="Đã bán"
+                variant="standard"
+                color="secondary"
+                fullWidth
+                value={state.displayingData?.soldQuantity ?? -1}
+                type="number"
+                InputProps={{
+                  readOnly: readOnly,
+                }}
+                error={
+                  state.displayingData?.soldQuantity >
+                  state.displayingData?.totalQuantity
+                }
+                onChange={(e) =>
+                  dispatch({
+                    type: ManageActionType.SET_DISPLAYING_DATA,
+                    payload: {
+                      ...state.displayingData,
+                      soldQuantity: parseInt(e.target.value),
+                    },
+                  })
+                }
+              />
+            )}
+
             <TextField
               label="Số lượng"
               variant="standard"
               color="secondary"
               type="number"
               fullWidth
+              InputProps={{
+                readOnly: readOnly,
+              }}
               value={state.displayingData?.totalQuantity ?? -1}
               onChange={(e) =>
                 dispatch({
                   type: ManageActionType.SET_DISPLAYING_DATA,
                   payload: {
                     ...state.displayingData,
-                    totalQuantity: e.target.value,
+                    totalQuantity: parseInt(e.target.value),
                   },
                 })
               }
             />
           </Stack>
           <DatePicker
+            readOnly={readOnly}
             label="Ngày sản xuất"
             value={dayjs(state.displayingData?.MFG)}
+            disablePast={state.crudModalMode === 'create'}
+            format="DD/MM/YYYY"
             onChange={(newValue: any) =>
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
@@ -247,8 +292,14 @@ const BatchForm = () => {
             }
           />
           <DatePicker
+            readOnly={readOnly}
             label="Ngày hết hạn"
             value={dayjs(state.displayingData?.EXP)}
+            disablePast={state.crudModalMode === 'create'}
+            shouldDisableDate={(day) => {
+              return dayjs(state.displayingData?.MFG).isAfter(day);
+            }}
+            format="DD/MM/YYYY"
             onChange={(newValue: any) =>
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
@@ -256,26 +307,27 @@ const BatchForm = () => {
               })
             }
           />
-          {/* <TextField
-            label="Ngày sản xuất"
+
+          <TextField
+            label="Giá"
             variant="standard"
             color="secondary"
+            type="number"
             fullWidth
-            value={displayingData?.MFG}
+            InputProps={{
+              readOnly: readOnly,
+            }}
+            value={state.displayingData?.price ?? 0}
             onChange={(e) =>
-              setDisplayingData({ ...displayingData, MFG: e.target.value })
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  price: parseInt(e.target.value),
+                },
+              })
             }
           />
-          <TextField
-            label="Ngày hết hạn"
-            variant="standard"
-            color="secondary"
-            fullWidth
-            value={displayingData?.EXP}
-            onChange={(e) =>
-              setDisplayingData({ ...displayingData, EXP: e.target.value })
-            }
-          /> */}
         </Stack>
       </Grid>
     </Grid>

@@ -6,6 +6,8 @@ import {
   Alert,
   Snackbar,
   AlertColor,
+  Slide,
+  SlideProps,
 } from '@mui/material';
 
 import createEmotionCache from '@/utilities/createEmotionCache';
@@ -45,6 +47,10 @@ export const useSnackbarService = () => {
   return handleSnackbarAlert;
 };
 
+function TransitionUp(props: SlideProps) {
+  return <Slide {...props} direction="up" />;
+}
+
 const MyApp = (props: MyAppProps) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
   const router = useRouter();
@@ -78,6 +84,7 @@ const MyApp = (props: MyAppProps) => {
               open={snackbarOpen}
               autoHideDuration={6000}
               onClose={handleSnackbarClose}
+              TransitionComponent={TransitionUp}
             >
               <Alert
                 onClose={handleSnackbarClose}

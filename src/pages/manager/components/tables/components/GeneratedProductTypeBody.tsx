@@ -14,8 +14,12 @@ import { useContext } from 'react';
 import RowActionButtons from './RowActionButtons';
 
 const GeneratedProductTypeTableBody = () => {
-  const { state, dispatch, handleDeleteRow, handleViewRow } =
-    useContext<ManageContextType>(ManageContext);
+  const {
+    state,
+    dispatch,
+    handleDeleteRowOnFirestore: handleDeleteRow,
+    handleViewRow,
+  } = useContext<ManageContextType>(ManageContext);
 
   return (
     <>

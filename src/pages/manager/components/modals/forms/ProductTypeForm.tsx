@@ -19,10 +19,12 @@ import { ManageContext } from '@/pages/manager/manage';
 
 const ProductTypeForm = ({
   featuredImageURL,
-  handleUploadImage,
+  handleUploadImageToBrowser,
+  readOnly = false,
 }: {
   featuredImageURL: string | null;
-  handleUploadImage: any;
+  handleUploadImageToBrowser: any;
+  readOnly: boolean;
 }) => {
   //#region States
 
@@ -81,7 +83,7 @@ const ProductTypeForm = ({
               accept="image/*"
               multiple
               type="file"
-              onChange={handleUploadImage}
+              onChange={handleUploadImageToBrowser}
             />
           </Button>
         )}
@@ -96,12 +98,14 @@ const ProductTypeForm = ({
         >
           <TextField
             label="Tên loại sản phẩm"
+            error={state.displayingData?.name === ''}
+            placeholder="Tên loại sản phẩm"
             variant="standard"
             color="secondary"
             fullWidth
             value={state.displayingData?.name}
             InputProps={{
-              readOnly: state.crudModalMode === 'view',
+              readOnly: readOnly,
             }}
             onChange={(e) =>
               dispatch({
@@ -112,11 +116,12 @@ const ProductTypeForm = ({
           />
           <TextField
             label="Miêu tả"
+            placeholder="Miêu tả sản phẩm"
             color="secondary"
             multiline
             fullWidth
             InputProps={{
-              readOnly: state.crudModalMode === 'view',
+              readOnly: readOnly,
             }}
             value={state.displayingData?.description}
             rows={5}
@@ -133,7 +138,7 @@ const ProductTypeForm = ({
           <FormControlLabel
             control={
               <Switch
-                disabled={state.crudModalMode === 'view'}
+                disabled={readOnly}
                 color="secondary"
                 checked={state.displayingData?.isActive}
                 onChange={(e) =>

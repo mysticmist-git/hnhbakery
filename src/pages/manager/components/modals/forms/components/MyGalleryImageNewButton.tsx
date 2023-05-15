@@ -1,30 +1,32 @@
+import { useSnackbarService } from '@/pages/_app';
 import { Add } from '@mui/icons-material';
 import { SxProps, Box } from '@mui/system';
 
 export default function MyGalleryImageNewButton({
   sx,
-  srcs,
-  setSrcs,
+  disabled = false,
+  handleUploadGalleryToBrowser,
 }: {
   sx?: SxProps;
-  srcs: string[] | null;
-  setSrcs: any;
+  disabled: boolean;
+  handleUploadGalleryToBrowser: any;
 }) {
+  //#region Hooks
+
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
   const handleFileUpload = () => {
+    if (disabled) {
+      handleSnackbarAlert('error', 'Không thể thêm ảnh ở chế độ xem');
+      return;
+    }
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (event: any) => {
-      const files = event.target.files;
-      // Add your file upload logic here
-      const file = files[0];
-      if (!srcs) {
-        setSrcs([URL.createObjectURL(file)]);
-        return;
-      }
-
-      setSrcs([...srcs, URL.createObjectURL(file)]);
-    };
+    input.onchange = handleUploadGalleryToBrowser;
     input.click();
   };
 
@@ -37,11 +39,12 @@ export default function MyGalleryImageNewButton({
         justifyContent: 'center',
         alignItems: 'center',
         transition: 'background-color 0.2s ease-in-out',
+        cursor: 'pointer',
         '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: !disabled ? 'rgba(0, 0, 0, 0.1)' : undefined,
         },
         '&:active': {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          backgroundColor: !disabled ? 'rgba(0, 0, 0, 0.2)' : undefined,
         },
         ...sx,
       }}

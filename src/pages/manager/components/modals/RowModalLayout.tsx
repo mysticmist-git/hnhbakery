@@ -51,15 +51,21 @@ export default function RowModalLayout({
   children,
   handleAddNewRow,
   handleUpdateRow,
+  resetForm,
 }: {
   children: React.ReactNode;
   handleAddNewRow: any;
   handleUpdateRow: any;
+  resetForm: any;
 }) {
   //#region States
 
-  const { state, dispatch, handleDeleteRow, resetDisplayingData } =
-    useContext<ManageContextType>(ManageContext);
+  const {
+    state,
+    dispatch,
+    handleDeleteRowOnFirestore: handleDeleteRow,
+    resetDisplayingData,
+  } = useContext<ManageContextType>(ManageContext);
 
   //#endregion
 
@@ -178,7 +184,7 @@ export default function RowModalLayout({
                     paddingX: '1rem',
                     borderRadius: '1rem',
                   }}
-                  onClick={() => resetDisplayingData()}
+                  onClick={() => resetForm()}
                   startIcon={<RestartAlt />}
                 >
                   Đặt lại

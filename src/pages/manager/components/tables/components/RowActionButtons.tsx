@@ -11,8 +11,12 @@ import { ManageContext } from '@/pages/manager/manage';
 import { useContext } from 'react';
 
 export default function RowActionButtons({ doc }: { doc: DocumentData }) {
-  const { state, dispatch, handleViewRow, handleDeleteRow } =
-    useContext<ManageContextType>(ManageContext);
+  const {
+    state,
+    dispatch,
+    handleViewRow,
+    handleDeleteRowOnFirestore: handleDeleteRow,
+  } = useContext<ManageContextType>(ManageContext);
 
   return (
     <Box

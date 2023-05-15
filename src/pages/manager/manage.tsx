@@ -40,6 +40,7 @@ import {
   manageReducer,
 } from './lib/manage';
 import RowModal from './components/modals/RowModal';
+import { useSnackbarService } from '../_app';
 
 //#region Constants
 
@@ -51,19 +52,22 @@ const PATH = '/manager/manage';
 export const ManageContext = createContext<ManageContextType>({
   state: initManageState,
   dispatch: () => {},
-  handleDeleteRow: () => {},
+  handleDeleteRowOnFirestore: () => {},
   handleViewRow: () => {},
   resetDisplayingData: () => {},
 });
 
 export default function Manage({
   mainDocs: paramMainDocs,
+  collectionName: paramCollectionName,
 }: {
   mainDocs: DocumentData[];
+  collectionName: string;
 }) {
   //#region States
 
   const [state, dispatch] = useReducer(manageReducer, initManageState);
+  const [justLoaded, setJustLoaded] = useState(true);
 
   //#endregion
 
@@ -71,6 +75,7 @@ export default function Manage({
 
   const theme = useTheme();
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
 
@@ -94,6 +99,21 @@ export default function Manage({
       `${PATH}?collectionName=${state.selectedTarget.collectionName}`,
     );
   }, [state.selectedTarget]);
+
+  useEffect(() => {
+    if (!justLoaded) return;
+
+    if (!paramCollectionName) return;
+
+    dispatch({
+      type: ManageActionType.SET_SELECTED_TARGET,
+      payload: crudTargets.find(
+        (t) => t.collectionName === paramCollectionName,
+      ),
+    });
+
+    setJustLoaded(false);
+  }, [paramCollectionName]);
 
   //#endregion
 
@@ -123,13 +143,15 @@ export default function Manage({
   };
 
   const generateAddNewRowText = () => {
-    switch (state.selectedTarget.collectionName) {
+    switch (state.selectedTarget?.collectionName) {
       case CollectionName.ProductTypes:
         return 'Thêm loại sản phẩm';
       case CollectionName.Products:
         return 'Thêm sản phẩm';
       case CollectionName.Batches:
         return 'Thêm lô hàng';
+      default:
+        return 'Lỗi khi load text';
     }
   };
 
@@ -204,7 +226,7 @@ export default function Manage({
     });
   };
 
-  const handleDeleteRow = (id: string) => {
+  const handleDeleteRowOnFirestore = (id: string) => {
     // Display modal
     dispatch({
       type: ManageActionType.SET_DELETING_ID,
@@ -216,7 +238,7 @@ export default function Manage({
     });
   };
 
-  const handleDeleteDocument = async () => {
+  const handleDeleteDocumentOnFirestore = async () => {
     dispatch({
       type: ManageActionType.SET_LOADING,
       payload: true,
@@ -228,6 +250,7 @@ export default function Manage({
     try {
       await deleteDoc(doc(db, state.selectedTarget.collectionName, id));
       console.log('Document deleted successfully!');
+      handleSnackbarAlert('success', 'Xóa thành công');
     } catch (error) {
       console.log('Error deleting document:', error);
     }
@@ -259,7 +282,7 @@ export default function Manage({
       value={{
         state,
         dispatch,
-        handleDeleteRow,
+        handleDeleteRowOnFirestore,
         handleViewRow,
         resetDisplayingData,
       }}
@@ -280,7 +303,7 @@ export default function Manage({
         <Autocomplete
           disablePortal
           id="crudtarget-select"
-          inputValue={state.selectedTarget.label || LOADING_TEXT}
+          inputValue={state.selectedTarget?.label || LOADING_TEXT}
           value={state.selectedTarget}
           onChange={handleCrudTargetChanged}
           options={crudTargets}
@@ -338,7 +361,11 @@ export default function Manage({
             <Button onClick={handleClose} color="secondary">
               Thoát
             </Button>
-            <Button onClick={handleDeleteDocument} autoFocus color="secondary">
+            <Button
+              onClick={handleDeleteDocumentOnFirestore}
+              autoFocus
+              color="secondary"
+            >
               Xóa
             </Button>
           </DialogActions>
@@ -361,8 +388,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Extract the collection name from the query parameter of the URL.
   const collectionName = context.query && context.query.collectionName;
 
+  console.log(collectionName);
+
   // If the collection name is not present in the URL, redirect to the first collection.
-  if (!collectionName) {
+  if (!collectionName || collectionName === 'undefined') {
     const firstCollection = crudTargets[0].collectionName;
     return {
       redirect: {
@@ -381,6 +410,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       mainDocs,
+      collectionName,
     },
   };
 };

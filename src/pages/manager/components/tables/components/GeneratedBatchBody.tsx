@@ -17,8 +17,12 @@ import RowActionButtons from './RowActionButtons';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
-  const { state, dispatch, handleViewRow, handleDeleteRow } =
-    useContext<ManageContextType>(ManageContext);
+  const {
+    state,
+    dispatch,
+    handleViewRow,
+    handleDeleteRowOnFirestore: handleDeleteRow,
+  } = useContext<ManageContextType>(ManageContext);
 
   useEffect(() => {
     // Load product names with productIds
