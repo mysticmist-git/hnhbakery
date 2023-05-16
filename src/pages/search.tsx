@@ -1,20 +1,17 @@
 import {
   Box,
   Typography,
-  alpha,
   Grid,
   useTheme,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  TextField,
 } from '@mui/material';
 import React, { useState, createContext, useContext } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
 import formatPrice from '@/utilities/formatCurrency';
-import Skeleton_img from '@/components/skeleton_img';
 import ImageBackground from '@/components/imageBackground';
 import CustomTextField from '@/components/CustomTextField';
 import CustomButton from '@/components/customButton';
@@ -337,13 +334,6 @@ function ThongTinKhuyenMai(props: any) {
   );
 }
 
-interface BillInforItem {
-  isDivider?: boolean;
-  heading?: string;
-  content?: string | number;
-  color?: string;
-}
-
 const initBillInfor = [
   {
     heading: 'Chi tiết hóa đơn',
@@ -476,13 +466,403 @@ const initBillInfor = [
 ];
 //#endregion
 
+//#region Danh sách sản phẩm
+function ListProductItem(props: any) {
+  const theme = useTheme();
+  const context = useContext(SearchContext);
+
+  return (
+    <Grid
+      container
+      direction={'row'}
+      justifyContent={'center'}
+      alignItems={'center'}
+      width={'100%'}
+    >
+      <Grid item width={'100%'} sx={{ bgcolor: theme.palette.common.black }}>
+        {context.productInfor.map((item: any, i: number) => (
+          <Accordion
+            sx={{
+              '&.MuiPaper-root': {
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
+              },
+              width: '100%',
+            }}
+            disableGutters
+            defaultExpanded={item.isOpen ? true : false}
+          >
+            <AccordionSummary
+              sx={{
+                bgcolor: theme.palette.primary.main,
+                transition: 'opacity 0.2s',
+                '&:hover': {
+                  opacity: 0.85,
+                },
+              }}
+              expandIcon={
+                <ExpandMoreIcon sx={{ color: theme.palette.text.secondary }} />
+              }
+            >
+              <Grid container justifyContent={'center'} alignItems={'center'}>
+                <Grid item xs="auto">
+                  <Grid
+                    container
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    display={'inline'}
+                  >
+                    <Grid item xs={12}>
+                      <Typography
+                        variant="body1"
+                        color={theme.palette.common.black}
+                      >
+                        {item.heading.name}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                      >
+                        {item.heading.size} + {item.heading.material}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item xs={true} pr={2}>
+                  <Grid
+                    container
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                  >
+                    <Grid item xs={true}>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                        align="right"
+                        noWrap
+                      >
+                        x {item.heading.amount}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={'auto'} pl={{ sm: 4, xs: 2 }}>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                      >
+                        {formatPrice(item.heading.price)}/bánh
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </AccordionSummary>
+
+            <AccordionDetails
+              sx={{
+                bgcolor: theme.palette.common.white,
+              }}
+            >
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                spacing={1}
+              >
+                <ProductContent content={item.content} />
+                <Product item={item} />
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </Grid>
+    </Grid>
+  );
+}
+
+function ProductContent(props: any) {
+  const theme = useTheme();
+  const context = useContext(SearchContext);
+  return (
+    <>
+      {props.content.map((item: any, i: number) => (
+        <Grid key={i} item xs={12}>
+          <Grid
+            container
+            direction={'row'}
+            justifyContent={'space-between'}
+            alignItems={'center'}
+            sx={{
+              borderBottom: item.isDivider ? '1.5px solid' : 0,
+              borderColor: item.isDivider
+                ? theme.palette.text.secondary
+                : 'transparent',
+              my: item.isDivider ? 1.5 : 0,
+            }}
+          >
+            <Grid item>
+              <Typography variant="body2" color={theme.palette.common.black}>
+                {item.heading}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography
+                variant="button"
+                color={
+                  item.color == 'success'
+                    ? theme.palette.success.main
+                    : theme.palette.common.black
+                }
+              >
+                {typeof item.content === 'number'
+                  ? formatPrice(item.content)
+                  : item.content}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+      ))}
+    </>
+  );
+}
+
+function Product(props: any) {
+  const theme = useTheme();
+  const item = props.item;
+  return (
+    <>
+      <Grid item xs={12}>
+        <Grid
+          container
+          direction={'row'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          spacing={2}
+          height={'auto'}
+        >
+          <Grid item xs={5} alignSelf={'stretch'}>
+            <Box
+              height={'100%'}
+              component={'img'}
+              loading="lazy"
+              alt=""
+              src={item.product.image}
+              sx={{
+                objectFit: 'cover',
+              }}
+            />
+          </Grid>
+          <Grid item xs={7}>
+            <Grid
+              container
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={1}
+              py={2}
+            >
+              <Grid item xs={12}>
+                <Typography variant="h3" color={theme.palette.secondary.main}>
+                  {item.product.name}
+                </Typography>
+              </Grid>
+
+              {item.product.items.map((product_item: any, i: number) => (
+                <Grid key={i} item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'space-between'}
+                    alignItems={'center'}
+                    sx={{
+                      borderBottom: product_item.isDivider ? '1.5px solid' : 0,
+                      borderColor: product_item.isDivider
+                        ? theme.palette.text.secondary
+                        : 'transparent',
+                      my: product_item.isDivider ? 1.5 : 0,
+                    }}
+                  >
+                    <Grid item>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                      >
+                        {product_item.heading}
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      <Typography
+                        variant="button"
+                        color={
+                          product_item.color == 'success'
+                            ? theme.palette.success.main
+                            : theme.palette.common.black
+                        }
+                      >
+                        {typeof product_item.content === 'number'
+                          ? formatPrice(product_item.content)
+                          : product_item.content}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Grid item xs={12}>
+                <CustomButton
+                  children={() => (
+                    <a href={item.product.href}>
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
+                      >
+                        Xem chi tiết
+                      </Typography>
+                    </a>
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+const initProductInfor = [
+  {
+    heading: {
+      name: 'Bánh Croissant',
+      size: 'Size lớn',
+      material: 'Mức dâu',
+      amount: 1,
+      price: 150000,
+    },
+    isOpen: true,
+    content: [
+      {
+        heading: 'Ngày sản xuất:',
+        content: '07/01/2023',
+      },
+      {
+        heading: 'Hạn sử dụng:',
+        content: '07/01/2023',
+      },
+      {
+        heading: 'Khuyến mãi:',
+        content: 'Giảm 50.000 đồng (30%)/sản phẩm',
+      },
+      {
+        heading: 'Thành tiền:',
+        content: 200000,
+      },
+      {
+        isDivider: true,
+      },
+    ],
+    product: {
+      name: 'Bánh Croissant',
+      image: banh1.src,
+      href: '#',
+      items: [
+        {
+          heading: 'Giá tiền:',
+          content: 150000,
+        },
+        {
+          heading: 'Thương hiệu:',
+          content: 'H&H',
+        },
+        {
+          heading: 'Loại:',
+          content: 'Bánh mặn',
+        },
+        {
+          heading: 'Trạng thái:',
+          content: 'Còn hàng',
+          color: 'success',
+        },
+        {
+          heading: 'Mô tả:',
+          content:
+            'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+        },
+      ],
+    },
+  },
+  {
+    heading: {
+      name: 'Bánh Croissant',
+      size: 'Size lớn',
+      material: 'Mức dâu',
+      amount: 1,
+      price: 150000,
+    },
+    isOpen: false,
+    content: [
+      {
+        heading: 'Ngày sản xuất:',
+        content: '07/01/2023',
+      },
+      {
+        heading: 'Hạn sử dụng:',
+        content: '07/01/2023',
+      },
+      {
+        heading: 'Khuyến mãi:',
+        content: 'Giảm 50.000 đồng (30%)/sản phẩm',
+      },
+      {
+        heading: 'Thành tiền:',
+        content: 200000,
+      },
+      {
+        isDivider: true,
+      },
+    ],
+    product: {
+      name: 'Bánh Croissant',
+      image: banh1.src,
+      href: '#',
+      items: [
+        {
+          heading: 'Giá tiền:',
+          content: 150000,
+        },
+        {
+          heading: 'Thương hiệu:',
+          content: 'H&H',
+        },
+        {
+          heading: 'Loại:',
+          content: 'Bánh mặn',
+        },
+        {
+          heading: 'Trạng thái:',
+          content: 'Còn hàng',
+          color: 'success',
+        },
+        {
+          heading: 'Mô tả:',
+          content:
+            'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+        },
+      ],
+    },
+  },
+];
+//#endregion
+
 // #region Context
 export interface SearchContextType {
   billInfor: any;
+  productInfor: any;
 }
 
 const initSearchContext: SearchContextType = {
   billInfor: [],
+  productInfor: [],
 };
 
 export const SearchContext =
@@ -497,11 +877,14 @@ export default function Search() {
   };
 
   const [billInforState, setBillInforState] = useState<any>(initBillInfor);
+  const [productInforState, setProductInforState] =
+    useState<any>(initProductInfor);
 
   return (
     <SearchContext.Provider
       value={{
         billInfor: billInforState,
+        productInfor: productInforState,
       }}
     >
       <Box>
@@ -594,7 +977,10 @@ export default function Search() {
               />
             </Grid>
             <Grid item md={8} xs={12}>
-              {/*  */}
+              <CustomAccordion
+                heading="Danh sách sản phẩm"
+                content={ListProductItem}
+              />
             </Grid>
           </Grid>
         </Box>
