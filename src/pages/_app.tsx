@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 
 import createEmotionCache from '@/utilities/createEmotionCache';
-import '../styles/globals.css';
 
 const clientSideEmotionCache = createEmotionCache();
 
