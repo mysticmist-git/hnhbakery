@@ -4,21 +4,25 @@ import {
   Box,
   Drawer,
   Grid,
+  MenuItem,
   Tab,
   Tabs,
   Toolbar,
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import logo from '../assets/Logo.png';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Menu from '@mui/icons-material/Menu';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Skeleton_img from './skeleton_img';
-import CustomIconButton from './customIconButton';
-import CustomButton from './customButton';
+import CustomIconButton from './Inputs/Buttons/customIconButton';
+import CustomButton from './Inputs/Buttons/customButton';
+import Skeleton_img from './Skeletons/skeleton_img';
+import { useAuthUser, withAuthUser } from 'next-firebase-auth';
+import avatarGau from '@/assets/avatar-gau-cute.jpg';
+import NavbarAvatar from './NavbarAvatar';
 
 //#region Tab
 interface TabItem {
@@ -136,8 +140,16 @@ function CustomDrawer(props: any) {
 
 //#region RightMenu
 function RightMenu(props: any) {
+  //#region Hooks
+
   const theme = useTheme();
   const context = useContext(NavbarContext);
+  const router = useRouter();
+  const AuthUser = useAuthUser();
+  const { photoURL } = AuthUser;
+
+  //#endregion
+
   return (
     <>
       <CustomIconButton
@@ -148,19 +160,23 @@ function RightMenu(props: any) {
         }}
         children={() => <ShoppingCartIcon />}
       />
-
       {context.isSignIn ? (
-        <Avatar
-          src="/src/assets/avatar-gau-cute.jpg"
-          sx={
-            props.orientation == 'vertical'
-              ? { width: 56, height: 56 }
-              : { width: 40, height: 40 }
-          }
-        ></Avatar>
+        <NavbarAvatar photoURL={photoURL} />
       ) : (
+        // <Avatar
+        //   src={photoURL ? photoURL : undefined}
+        //   sx={
+        //     props.orientation == 'vertical'
+        //       ? { width: 56, height: 56 }
+        //       : { width: 40, height: 40 }
+        //   }
+        //   onClick={() => {}}
+        // />
         <CustomButton
           children={() => <Typography variant="button">Đăng nhập</Typography>}
+          onClick={() => {
+            router.push('/auth');
+          }}
         />
       )}
     </>
@@ -189,7 +205,26 @@ export const NavbarContext =
   createContext<NavbarContextType>(initNavbarContext);
 // #endregion
 
-export default function Navbar() {
+function Navbar() {
+  //#region States
+
+  const [tabState, setTabState] = useState({
+    ...initTabs,
+    value: initialTab(),
+  });
+
+  const [drawerOpenState, setDrawerOpenState] = useState(false);
+
+  const [isSignInState, setIsSignInState] = useState(false);
+
+  //#endregion
+
+  //#region Hooks
+
+  const router = useRouter();
+  const AuthUser = useAuthUser();
+  const { email } = AuthUser;
+
   const theme = useTheme();
   const styles = {
     appBar: {
@@ -209,6 +244,31 @@ export default function Navbar() {
     },
   };
 
+  //#endregion
+
+  //#region UseEffects
+
+  useEffect(() => {
+    setIsSignInState(Boolean(email));
+    console.log('User Signed In!');
+  }, [email]);
+
+  //#endregion
+
+  //#region Handlers
+
+  function handleSetTabState(value: number) {
+    setTabState({ ...tabState, value: value });
+  }
+
+  const handleSetDrawerOpenState = (open: boolean) => {
+    setDrawerOpenState(open);
+  };
+
+  //#endregion
+
+  //#region Functions
+
   function initialTab() {
     const router = useRouter();
     const pathname = router.pathname;
@@ -218,22 +278,7 @@ export default function Navbar() {
     return temp;
   }
 
-  const [tabState, setTabState] = useState({
-    ...initTabs,
-    value: initialTab(),
-  });
-
-  const [drawerOpenState, setDrawerOpenState] = useState(false);
-
-  const [isSignInState, setIsSignInState] = useState(false);
-
-  function handleSetTabState(value: number) {
-    setTabState({ ...tabState, value: value });
-  }
-
-  const handleSetDrawerOpenState = (open: boolean) => {
-    setDrawerOpenState(open);
-  };
+  //#endregion
 
   return (
     <>
@@ -304,3 +349,5 @@ export default function Navbar() {
     </>
   );
 }
+
+export default withAuthUser()(Navbar);

@@ -9,11 +9,11 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import Carousel from 'react-material-ui-carousel';
 import banh1 from '../assets/Carousel/3.jpg';
 import { alpha } from '@mui/system';
-import CustomTextField from '@/components/CustomTextField';
-import CustomButton from '@/components/customButton';
+import CustomButton from '@/components/Inputs/Buttons/customButton';
+import CustomTextField from '@/components/Inputs/CustomTextField';
+import Carousel from 'react-material-ui-carousel';
 
 // #region Carousel
 interface CarouselImageItem {

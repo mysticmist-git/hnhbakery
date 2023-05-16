@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
-import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
@@ -8,7 +7,6 @@ import Container from '@mui/material/Container';
 import { auth } from '@/firebase/config';
 import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import Copyright from '@/components/Copyright';
-import SignUpForm from '@/components/SignUpForm';
 import {
   NotifierType,
   SignUpProps,
@@ -18,10 +16,10 @@ import {
 import { useRouter } from 'next/router';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import { CustomSnackbar } from '@/components/CustomSnackbar';
+import SignUpForm from '@/components/Auths/SignUpForm';
 
 export default function SignUp() {
   const router = useRouter();
-  const { snackbarProps, setSnackbarProps, notifier } = useSnackbar();
 
   const signUpUser = async (props: SignUpProps): Promise<AuthResult> => {
     try {
@@ -76,7 +74,6 @@ export default function SignUp() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <CssBaseline />
       <Box
         sx={{
           marginTop: 8,
@@ -91,17 +88,9 @@ export default function SignUp() {
         <Typography component="h1" variant="h5" textTransform={'uppercase'}>
           Đăng ký
         </Typography>
-        <SignUpForm
-          handleSignUp={handleSignUp}
-          validate={validate}
-          notifier={notifier}
-        />
+        <SignUpForm handleSignUp={handleSignUp} validate={validate} />
       </Box>
       <Copyright sx={{ mt: 5 }} />
-      <CustomSnackbar
-        props={snackbarProps}
-        setSnackbarProps={setSnackbarProps}
-      />
     </Container>
   );
 }

@@ -17,10 +17,9 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useContext } from 'react';
-import ProductTypeForm from './forms/ProductTypeForm';
 import { CollectionName } from '@/lib/models/utilities';
-import { ManageActionType, ManageContextType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
+import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 
 const formStyle = {
   // These 4 below are positionings I used for larger

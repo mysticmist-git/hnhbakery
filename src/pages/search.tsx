@@ -13,8 +13,8 @@ import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
-import CustomTextField from '@/components/CustomTextField';
-import CustomButton from '@/components/customButton';
+import CustomButton from '@/components/Inputs/Buttons/customButton';
+import CustomTextField from '@/components/Inputs/CustomTextField';
 
 //#region Hóa đơn của bạn
 function CustomAccordion(props: any) {

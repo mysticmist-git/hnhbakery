@@ -1,23 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import { ManageActionType, ManageContextType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
-import BatchForm from './forms/BatchForm';
+import BatchForm from '../forms/BatchForm';
 import RowModalLayout from './RowModalLayout';
 import { storage, db } from '@/firebase/config';
 import { useSnackbarService } from '@/pages/_app';
 import { DocumentData, doc, updateDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
-import {
-  getDownloadUrlsFromFirebaseStorage,
-  uploadImageToFirebaseStorage,
-  addDocumentToFirestore,
-  updateDocument,
-} from '../../lib/firebaseLib';
-import ProductTypeForm from './forms/ProductTypeForm';
-import { checkIfDataChanged } from './lib';
+import ProductTypeForm from '../forms/ProductTypeForm';
 import { BatchObject } from '@/lib/models/Batch';
 import { tokenToString } from 'typescript';
+import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
+import {
+  addDocumentToFirestore,
+  updateDocument,
+} from '@/lib/firestore/firebaseLib';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { ManageContext } from '@/pages/manager/manage';
 
 export default function BatchRowModal() {
   //#region States

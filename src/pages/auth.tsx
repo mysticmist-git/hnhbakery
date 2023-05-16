@@ -1,7 +1,8 @@
+//#region Import
+
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -11,26 +12,27 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import { auth, provider } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import { default as NextLink } from 'next/link';
-import {
-  AuthError,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  UserCredential,
-} from 'firebase/auth';
+import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { CustomSnackbar } from '@/components/CustomSnackbar';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import {
   SignInProps,
   AuthErrorCode,
   AuthResult,
-  NotifierType,
   SignInPropsFromObject,
 } from '@/lib/signup';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
-import { handleLoginWithGoogle } from './manager/lib/auth';
+import { handleLoginWithGoogle } from '../lib/localLib/auth';
+import { useSnackbarService } from './_app';
+import { authMessages } from '@/lib/constants/authConstants';
+import { SxProps, Theme } from '@mui/system';
+
+//#endregion
+
+//#region Top
 
 function Copyright(props: any) {
   return (
@@ -75,51 +77,78 @@ const signUserIn = async (props: {
   }
 };
 
-export default function SignInSide() {
+//#endregion
+
+export default function Auth() {
+  //#region Hooks
+
   const { snackbarProps, setSnackbarProps, notifier } = useSnackbar();
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
 
-  const handleSignIn = async (props: SignInProps): Promise<NotifierType> => {
+  //#endregion
+
+  //#region Handlers
+
+  const handleSignIn = async (props: SignInProps) => {
     const result = await signUserIn(props);
 
     // console.log(result);
 
     if (result.result === 'successful') {
       router.push('/');
-      return NotifierType.SUCCESSFUL;
+      handleSnackbarAlert('success', authMessages.signInSucesful);
     } else {
       switch (result.errorCode) {
         case AuthErrorCode.EMAIL_ALREADY_IN_USE:
-          return NotifierType.EMAIL_EXISTED;
+          handleSnackbarAlert('error', authMessages.emailExisted);
+          break;
         case AuthErrorCode.NETWORK_REQUEST_FAILED:
-          return NotifierType.NETWORK_ERROR;
-        // case
+          handleSnackbarAlert('error', authMessages.networkError);
+          break;
         default:
-          return NotifierType.ERROR;
+          handleSnackbarAlert('error', authMessages.error);
+          break;
       }
+      return;
     }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const data = new FormData(event.currentTarget);
     const dataObject = Object.fromEntries(data.entries());
 
     const signInData = SignInPropsFromObject(dataObject);
 
     console.log(signInData);
+
     if (signInData.email === '' || signInData.password === '') {
-      notifier(NotifierType.EMPTY_FIELD);
+      handleSnackbarAlert('error', 'Vui lòng nhập đầy đủ thông tin');
       return;
     }
-    const result = await handleSignIn(signInData);
 
-    notifier(result);
+    // The notification will be handle by this function
+    await handleSignIn(signInData);
   };
+
+  //#endregion
+
+  //#region Styles
+
+  const linkSx: SxProps<Theme> = {
+    color: (theme) => theme.palette.secondary.main,
+    '&:hover': {
+      textDecoration: 'none',
+      fontWeight: 'bold',
+    },
+  };
+
+  //#endregion
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}>
-      <CssBaseline />
       <Grid
         item
         xs={false}
@@ -149,8 +178,14 @@ export default function SignInSide() {
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
             <LockOutlinedIcon />
           </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{
+              color: (theme) => theme.palette.secondary.main,
+            }}
+          >
+            Đăng nhập
           </Typography>
           <Box
             component="form"
@@ -163,46 +198,60 @@ export default function SignInSide() {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Địa chỉ Email"
               name="email"
               autoComplete="email"
               autoFocus
+              color="secondary"
             />
             <TextField
               margin="normal"
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Mật khẩu"
               type="password"
               id="password"
               autoComplete="current-password"
+              color="secondary"
             />
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
+              control={<Checkbox value="remember" />}
+              label={
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: (theme) => theme.palette.common.black,
+                  }}
+                >
+                  Ghi nhớ đăng nhập
+                </Typography>
+              }
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{
+              sx={(theme) => ({
                 mt: 3,
                 mb: 2,
-                backgroundColor: (theme) => theme.palette.secondary.main,
-              }}
+                backgroundnColor: theme.palette.secondary.main,
+                color: theme.palette.common.white,
+              })}
             >
-              Sign In
+              Đăng nhập
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
+                <NextLink href="/forgot-password" passHref legacyBehavior>
+                  <Link variant="body2" sx={linkSx}>
+                    Quên mật khẩu
+                  </Link>
+                </NextLink>
               </Grid>
               <Grid item>
                 <NextLink href="/signup" passHref legacyBehavior>
-                  <Link variant="body2">
+                  <Link variant="body2" sx={linkSx}>
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </NextLink>
@@ -218,7 +267,7 @@ export default function SignInSide() {
                   }}
                   onClick={handleLoginWithGoogle}
                 >
-                  Đăng nhập với Google
+                  <Typography variant="body2">Đăng nhập với Google</Typography>
                 </Button>
               </Grid>
             </Grid>

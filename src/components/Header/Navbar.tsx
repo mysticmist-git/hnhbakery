@@ -1,3 +1,5 @@
+//#region Imports
+
 import { ShoppingCart } from '@mui/icons-material';
 import {
   AppBar,
@@ -21,11 +23,16 @@ import {
 } from 'next-firebase-auth';
 import NavbarAvatar from '@/components/NavbarAvatar';
 
-function Navbar() {
-  const router = useRouter();
+//#endregion
 
+function Navbar() {
+  //#region Hooks
+
+  const router = useRouter();
   const AuthUser = useAuthUser();
   const { email, photoURL } = AuthUser;
+
+  //#endregion
 
   return (
     <AppBar

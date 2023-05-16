@@ -74,7 +74,7 @@ export function MainListItems() {
 
   //#endregion
 
-  //#region isActive
+  //#region States
 
   //#endregion
 

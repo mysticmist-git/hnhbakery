@@ -13,7 +13,7 @@ import {
   ref,
   uploadBytes,
 } from 'firebase/storage';
-import { memoize } from '../components/modals/lib';
+import { memoize } from '../localLib/manage-modal';
 
 export const getDownloadUrlFromFirebaseStorage = memoize(
   async (path: string) => {

@@ -1,6 +1,6 @@
-import '@mui/material/styles/createPalette';
+import '@mui/material/styles';
 
-declare module '@mui/material/styles/createPalette' {
+declare module '@mui/material/styles' {
   interface CommonColors {
     gray: string;
     darkGray: string;
@@ -8,12 +8,4 @@ declare module '@mui/material/styles/createPalette' {
     light: string;
     veryLight: string;
   }
-
-  // interface HoverColor {
-  //   gray: string;
-  // }
-
-  // interface PaletteOptions {
-  //   hover?: Partial<HoverColor>;
-  // }
 }

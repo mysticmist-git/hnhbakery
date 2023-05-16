@@ -126,12 +126,26 @@ export default function Footer() {
                     spacing={2}
                   >
                     <Grid item>
-                      <Typography variant="body1">{listItem.name}</Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          color: (theme) => theme.palette.common.white,
+                        }}
+                      >
+                        {listItem.name}
+                      </Typography>
                     </Grid>
                     <Grid item>
                       {listItem.children.map((child, i) => (
                         <a key={i} href={child.href}>
-                          <Typography variant="body2">{child.name}</Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: (theme) => theme.palette.common.white,
+                            }}
+                          >
+                            {child.name}
+                          </Typography>
                         </a>
                       ))}
                     </Grid>

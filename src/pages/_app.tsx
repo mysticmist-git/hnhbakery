@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 
 import createEmotionCache from '@/utilities/createEmotionCache';
-import theme from '../styles/themes/lightTheme';
 import '../styles/globals.css';
 
 const clientSideEmotionCache = createEmotionCache();
@@ -26,6 +25,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { createContext } from 'react';
 import useSnackbar2 from '@/lib/hooks/useSnackbar2';
+import theme from '@/styles/themes/lightTheme';
 
 //#region Top
 
@@ -57,12 +57,16 @@ function TransitionUp(props: SlideProps) {
 //#endregion
 
 const MyApp = (props: MyAppProps) => {
+  //#region Hooks
+
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
   const router = useRouter();
 
   const CurrentLayout = router.pathname.includes('/manager')
     ? ManageLayout
     : DefaultLayout;
+
+  //#endregion
 
   //#region Snackbar
 

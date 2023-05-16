@@ -1,6 +1,6 @@
 import { auth, provider } from '@/firebase/config';
 import { NotifierType, SignUpProps, SignUpPropsFromObject } from '@/lib/signup';
-import { handleLoginWithGoogle } from '@/pages/manager/lib/auth';
+import { handleLoginWithGoogle } from '@/lib/localLib/auth';
 import { Google } from '@mui/icons-material';
 import {
   Grid,
@@ -19,16 +19,21 @@ import {
 } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import router from 'next/router';
+import { useSnackbarService } from '@/pages/_app';
 
 export default function SignUpForm({
   handleSignUp,
   validate,
-  notifier,
 }: {
   handleSignUp: (props: SignUpProps) => Promise<NotifierType>;
   validate: (data: any) => boolean;
-  notifier: (type: NotifierType) => void;
 }) {
+  //#region Hooks
+
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -38,12 +43,10 @@ export default function SignUpForm({
 
     console.log(signUpData);
     if (!validate(signUpData)) {
-      notifier(NotifierType.EMPTY_FIELD);
+      handleSnackbarAlert('error', 'Vui lòng điền đủ thông tin');
       return;
     }
-    const result = await handleSignUp(signUpData);
-
-    notifier(result);
+    await handleSignUp(signUpData);
   };
 
   return (
@@ -58,6 +61,10 @@ export default function SignUpForm({
             id="firstName"
             label="Tên"
             autoFocus
+            color="secondary"
+            sx={{
+              color: (theme) => theme.palette.common.black,
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -68,6 +75,7 @@ export default function SignUpForm({
             label="Last Name"
             name="lastName"
             autoComplete="Họ"
+            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
@@ -78,6 +86,7 @@ export default function SignUpForm({
             label="Địa chỉ Email"
             name="email"
             autoComplete="email"
+            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
@@ -89,6 +98,7 @@ export default function SignUpForm({
             type="password"
             id="password"
             autoComplete="new-password"
+            color="secondary"
           />
         </Grid>
       </Grid>

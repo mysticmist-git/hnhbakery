@@ -3,18 +3,18 @@ import React, { useContext, useEffect, useState } from 'react';
 import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 
-import { ManageContextType, ManageActionType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
-import ProductTypeForm from './forms/ProductTypeForm';
 import RowModalLayout from './RowModalLayout';
+import { useSnackbarService } from '@/pages/_app';
 import {
   getDownloadUrlsFromFirebaseStorage,
   uploadImageToFirebaseStorage,
   addDocumentToFirestore,
   updateDocument,
-} from '../../lib/firebaseLib';
-import { checkIfDataChanged } from './lib';
-import { useSnackbarService } from '@/pages/_app';
+} from '@/lib/firestore/firebaseLib';
+import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { ManageContext } from '@/pages/manager/manage';
+import ProductTypeForm from '../forms/ProductTypeForm';
 
 export default function ProductTypeRowModal() {
   //#region States

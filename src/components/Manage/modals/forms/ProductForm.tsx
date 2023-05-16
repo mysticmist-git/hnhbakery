@@ -14,13 +14,13 @@ import {
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
-import { ManageActionType, ManageContextType } from '../../../lib/manage';
-import { ManageContext } from '../../../manage';
 import placeholderImage from '@/assets/placeholder-image.png';
 import TabPanel from './components/TabPanel';
 import { a11yProps } from './lib';
 import MyGallery from './components/MyGallery';
 import MyMultiValueInput from './components/MyMultiValueInput';
+import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
+import { ManageContext } from '@/pages/manager/manage';
 
 //#region Types
 

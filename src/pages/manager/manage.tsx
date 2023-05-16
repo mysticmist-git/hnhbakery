@@ -29,17 +29,17 @@ import React from 'react';
 import { Add } from '@mui/icons-material';
 import { CollectionName } from '@/lib/models/utilities';
 import { getDocsFromQuerySnapshot } from '@/lib/firestore/firestoreLib';
-import { TableActionButton } from './components/tables/TableActionButton';
-import { CustomDataTable } from './components/tables';
+import RowModal from '@/components/Manage/modals/rowModals/RowModal';
+import { CustomDataTable } from '@/components/Manage/tables';
+import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
 import {
-  DEFAULT_ROW,
-  ManageActionType,
   ManageContextType,
-  crudTargets,
   initManageState,
   manageReducer,
-} from './lib/manage';
-import RowModal from './components/modals/RowModal';
+  ManageActionType,
+  crudTargets,
+  DEFAULT_ROW,
+} from '@/lib/localLib/manage';
 import { useSnackbarService } from '../_app';
 
 //#region Constants

@@ -11,11 +11,8 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import placeholderImage from '@/assets/placeholder-image.png';
-import {
-  ManageActionType,
-  ManageContextType,
-} from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 
 const ProductTypeForm = ({
   featuredImageURL,

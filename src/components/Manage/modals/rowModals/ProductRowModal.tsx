@@ -3,21 +3,20 @@ import React, { useContext, useEffect, useState } from 'react';
 import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 
-import { ManageContextType, ManageActionType } from '../../lib/manage';
-import { ManageContext } from '../../manage';
-import ProductForm from './forms/ProductForm';
 import RowModalLayout from './RowModalLayout';
+import { useSnackbarService } from '@/pages/_app';
+import { ProductObject } from '@/lib/models';
 import {
-  getDownloadUrlsFromFirebaseStorage,
+  getDownloadUrlFromFirebaseStorage,
   uploadImageToFirebaseStorage,
   addDocumentToFirestore,
   updateDocument,
-  getDownloadUrlFromFirebaseStorage,
   deleteImageFromFirebaseStorage,
-} from '../../lib/firebaseLib';
-import { checkIfDataChanged, isDataChanged } from './lib';
-import { useSnackbarService } from '@/pages/_app';
-import { ProductObject } from '@/lib/models';
+} from '@/lib/firestore/firebaseLib';
+import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { ManageContext } from '@/pages/manager/manage';
+import ProductForm from '../forms/ProductForm';
 
 interface FirebaseImage {
   path: string;

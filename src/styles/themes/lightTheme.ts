@@ -1,56 +1,69 @@
 import { createTheme } from '@mui/material/styles';
+import { red } from '@mui/material/colors';
 
 // Create a theme instance.
 const theme = createTheme({
   palette: {
     mode: 'light',
-    // primary: {},
+    primary: {
+      main: '#EEEBDD',
+    },
     secondary: {
-      light: '#B10000',
       main: '#810000',
       dark: '#470000',
+      contrastText: '#FFFFFF',
     },
-    // error: {},
-    // warning: {},
-    // info: {},
-    // success: {},
+    text: {
+      primary: '#FFFFFF',
+      secondary: '#757575',
+    },
+    error: {
+      main: red.A400,
+    },
+    success: {
+      main: '#00A803',
+    },
     common: {
       black: '#000000',
       light: '#333',
+      white: '#FFFFFF',
       veryLight: '#555',
-      white: '#ffffff',
       gray: '#808080',
       darkGray: '#555',
     },
-    // text: {},
-    // action: {},
-    // background: {},
   },
   typography: {
-    fontSize: 14,
+    fontFamily: 'Roboto',
     h1: {
-      fontSize: '3rem',
+      fontSize: '64px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
     },
     h2: {
-      fontSize: '2.5rem',
+      fontSize: '48px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
     },
     h3: {
-      fontSize: '2rem',
-    },
-    h4: {
-      fontSize: '1.5rem',
-    },
-    h5: {
-      fontSize: '1.25rem',
-    },
-    h6: {
-      fontSize: '1rem',
+      fontSize: '28px',
+      fontWeight: '500',
+      fontFamily: 'Great Vibes',
     },
     body1: {
-      fontSize: '0.875rem',
+      fontSize: '20px',
+      fontWeight: '700',
+      textTransform: 'none',
     },
     body2: {
-      fontSize: '0.75rem',
+      fontSize: '16px',
+      fontWeight: '500',
+      textTransform: 'none',
+    },
+    button: {
+      fontSize: '16px',
+      fontWeight: '700',
+      textTransform: 'none',
+      display: 'block',
     },
   },
 });
