@@ -23,7 +23,6 @@ const theme = createTheme({
       darkGray: '#555',
     },
     // text: {},
-    // text: {},
     // action: {},
     // background: {},
   },

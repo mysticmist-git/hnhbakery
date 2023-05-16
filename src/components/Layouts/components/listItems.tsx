@@ -13,11 +13,30 @@ import { useRouter } from 'next/router';
 import { Check } from '@mui/icons-material';
 import { Typography, useTheme } from '@mui/material';
 
+//#region Constants
+
 const PATH = '/manager/';
+
+//#endregion
+
+//#region Functions
 
 function isActive(route: string) {
   const router = useRouter();
   return router.pathname === `${PATH}${route}`;
+}
+
+function itemSxProps(route: string) {
+  const theme = useTheme();
+
+  const sx = [
+    {},
+    isActive(route) && {
+      backgroundColor: '#eee',
+    },
+  ];
+
+  return sx;
 }
 
 function iconSxProps(route: string) {
@@ -47,6 +66,7 @@ function typographySxProps(route: string) {
   return sx;
 }
 
+//#endregion
 export function MainListItems() {
   //#region Hooks
 
@@ -114,7 +134,7 @@ export function MainListItems() {
         />
         {isActive('reports') && <Check color="secondary" />}
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton sx={itemSxProps('manage')}>
         <ListItemIcon>
           <LayersIcon sx={iconSxProps('manage')} />
         </ListItemIcon>

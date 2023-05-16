@@ -8,9 +8,12 @@ declare module '@mui/material/styles/createPalette' {
     light: string;
     veryLight: string;
   }
-}
 
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
+  // interface HoverColor {
+  //   gray: string;
+  // }
+
+  // interface PaletteOptions {
+  //   hover?: Partial<HoverColor>;
+  // }
 }

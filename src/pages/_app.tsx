@@ -26,6 +26,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { createContext } from 'react';
 import useSnackbar2 from '@/lib/hooks/useSnackbar2';
+
+//#region Top
+
 interface MyAppProps extends AppProps {
   emotionCache: EmotionCache;
 }
@@ -50,6 +53,8 @@ export const useSnackbarService = () => {
 function TransitionUp(props: SlideProps) {
   return <Slide {...props} direction="up" />;
 }
+
+//#endregion
 
 const MyApp = (props: MyAppProps) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
