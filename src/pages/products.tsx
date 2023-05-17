@@ -43,6 +43,7 @@ import {
 } from 'firebase/firestore';
 import {
   BatchPredictionSharp,
+  PanoramaVerticalSelectRounded,
   ProductionQuantityLimits,
 } from '@mui/icons-material';
 import { BatchObject } from '@/lib/models/Batch';
@@ -584,17 +585,18 @@ function ProductList(props: any) {
 
   useEffect(() => {
     const sortedProductList = sortProductList(context.ProductList);
+    const filteredProductList = filterProductList(sortedProductList);
 
-    console.log(sortedProductList);
+    console.log(filteredProductList);
 
-    setDisplayProducts(sortedProductList);
+    setDisplayProducts(filteredProductList);
   }, [context.ProductList, context.SortList, context.GroupBoLoc]);
 
   //#endregion
 
   //#region Functions
 
-  function sortProductList(productList: ProductItem[]) {
+  function sortProductList(productList: ProductItem[]): ProductItem[] {
     console.log('sorting...');
 
     const choosenSort: string = context.SortList.value;
@@ -640,6 +642,118 @@ function ProductList(props: any) {
         console.log('Option raised');
         return [...productList];
     }
+  }
+
+  function filterProductList(productList: ProductItem[]): ProductItem[] {
+    console.log(context.GroupBoLoc);
+
+    //#region Local Functions
+
+    function filterColor(productList: ProductItem[]): ProductItem[] {
+      return [...productList];
+    }
+
+    function filterSize(productList: ProductItem[]): ProductItem[] {
+      return [...productList];
+    }
+
+    function filterPrice(productList: ProductItem[]): ProductItem[] {
+      // Get price range
+      const priceFilter = context.GroupBoLoc.find(
+        (item) => item.heading_value === 'price',
+      );
+
+      if (!priceFilter) return [...productList];
+
+      const priceRanges = filterPriceRange(priceFilter);
+
+      if (priceRanges.length === 0) return [...productList];
+
+      return filterProductListBaseOnPriceRanges(productList, priceRanges);
+
+      //#region Local Functions
+
+      interface PriceRange {
+        min: number | 'infinity';
+        max: number | 'infinity';
+      }
+
+      function filterPriceRange(priceFilter: BoLocItem): PriceRange[] {
+        const priceRanges: PriceRange[] = [];
+
+        for (const filter of priceFilter.children) {
+          console.log(filter);
+
+          if (filter.isChecked) {
+            console.log('Find price checked, adding it');
+            priceRanges.push(processPriceRange(filter.value));
+          }
+        }
+
+        return priceRanges;
+      }
+
+      function processPriceRange(priceRangeValue: string): PriceRange {
+        if (priceRangeValue === '<100') {
+          return {
+            min: 0,
+            max: 100000,
+          };
+        } else if (priceRangeValue === '100-200') {
+          return {
+            min: 100000,
+            max: 200000,
+          };
+        } else if (priceRangeValue === '200-300') {
+          return {
+            min: 200000,
+            max: 300000,
+          };
+        } else if (priceRangeValue === '300-400') {
+          return {
+            min: 300000,
+            max: 400000,
+          };
+        } else if (priceRangeValue === '>500') {
+          return {
+            min: 500000,
+            max: Infinity,
+          };
+        } else {
+          throw new Error('Invalid price range value');
+        }
+      }
+
+      function filterProductListBaseOnPriceRanges(
+        productList: ProductItem[],
+        priceRanges: PriceRange[],
+      ): ProductItem[] {
+        return productList.filter((product) => {
+          return priceRanges.some((range) => {
+            const minInRange = range.min === 'infinity' ? -Infinity : range.min;
+            const maxInRange = range.max === 'infinity' ? Infinity : range.max;
+            return product.price >= minInRange && product.price <= maxInRange;
+          });
+        });
+      }
+
+      //#endregion
+    }
+
+    //#endregion
+
+    let filteredProductList: ProductItem[] = productList;
+
+    // Filter Color
+    filteredProductList = filterColor(filteredProductList);
+
+    // Filter Size
+    filteredProductList = filterSize(filteredProductList);
+
+    // Filter Price
+    filteredProductList = filterPrice(filteredProductList);
+
+    return filteredProductList;
   }
 
   //#endregion
