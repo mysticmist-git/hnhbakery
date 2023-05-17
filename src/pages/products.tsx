@@ -41,7 +41,10 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { BatchPredictionSharp } from '@mui/icons-material';
+import {
+  BatchPredictionSharp,
+  ProductionQuantityLimits,
+} from '@mui/icons-material';
 import { BatchObject } from '@/lib/models/Batch';
 
 // #region Filter
@@ -55,6 +58,7 @@ interface BoLocItem {
     isChecked: boolean;
   }[];
 }
+
 const initGroupBoLoc = [
   {
     heading: 'Thương hiệu',
@@ -358,34 +362,36 @@ interface ProductItem {
   name: string;
   price: number;
   description: string;
+  totalSoldQuantity: number;
   href: string;
 }
-const initProductList: ProductItem[] = [
-  {
-    id: '1',
-    image: banh1.src,
-    name: 'Product 1',
-    price: 250000, // 250,000 VND
-    description: 'This is product 1',
-    href: 'https://example.com/product1',
-  },
-  {
-    id: '2',
-    image: banh1.src,
-    name: 'Product 1',
-    price: 250000, // 250,000 VND
-    description: 'This is product 1',
-    href: 'https://example.com/product1',
-  },
-  {
-    id: '3',
-    image: banh1.src,
-    name: 'Product 1',
-    price: 250000, // 250,000 VND
-    description: 'This is product 1',
-    href: 'https://example.com/product1',
-  },
-];
+
+// const initProductList: ProductItem[] = [
+//   {
+//     id: '1',
+//     image: banh1.src,
+//     name: 'Product 1',
+//     price: 250000, // 250,000 VND
+//     description: 'This is product 1',
+//     href: 'https://example.com/product1',
+//   },
+//   {
+//     id: '2',
+//     image: banh1.src,
+//     name: 'Product 1',
+//     price: 250000, // 250,000 VND
+//     description: 'This is product 1',
+//     href: 'https://example.com/product1',
+//   },
+//   {
+//     id: '3',
+//     image: banh1.src,
+//     name: 'Product 1',
+//     price: 250000, // 250,000 VND
+//     description: 'This is product 1',
+//     href: 'https://example.com/product1',
+//   },
+// ];
 
 function CakeCard(props: any) {
   const theme = useTheme();
@@ -397,6 +403,7 @@ function CakeCard(props: any) {
     name: 'Bánh Quy',
     price: 100000,
     description: 'Bánh ngon dữ lắm bà ơi',
+    totalSoldQuantity: 15,
     href: '#',
   };
   var isList = context.View !== 'grid';
@@ -554,9 +561,89 @@ function CakeCard(props: any) {
 }
 
 function ProductList(props: any) {
+  //#region Defined Values
+
   const imageHeight = props.imageHeight ? props.imageHeight : '240px';
+
+  //#endregion
+
+  //#region States
+
+  const [displayProducts, setDisplayProducts] = useState<ProductItem[]>([]);
+
+  //#endregion
+
+  //#region Hooks
+
   const theme = useTheme();
   const context = useContext(ProductsContext);
+
+  //#endregion
+
+  //#region UseEffects
+
+  useEffect(() => {
+    const sortedProductList = sortProductList(context.ProductList);
+
+    console.log(sortedProductList);
+
+    setDisplayProducts(sortedProductList);
+  }, [context.ProductList, context.SortList, context.GroupBoLoc]);
+
+  //#endregion
+
+  //#region Functions
+
+  function sortProductList(productList: ProductItem[]) {
+    console.log('sorting...');
+
+    const choosenSort: string = context.SortList.value;
+
+    console.log(choosenSort);
+
+    switch (choosenSort) {
+      // Mặc định
+      case '0':
+        console.log('Option raised');
+        return [...productList];
+      // Giá tăng dần
+      case '1':
+        console.log('Option raised');
+        return [...productList].sort((a, b) => a.price - b.price);
+      // Giá giảm dần
+      case '2':
+        console.log('Option raised');
+        return [...productList].sort((a, b) => b.price - a.price);
+      // A - Z
+      case '3':
+        console.log('Option raised');
+        return [...productList].sort((a, b) => a.name.localeCompare(b.name));
+      // Z - A
+      case '4':
+        console.log('Option raised');
+        return [...productList].sort((a, b) => b.name.localeCompare(a.name));
+      // Cũ nhất
+      case '5':
+        console.log('Option raised');
+        return [...productList];
+      // Mới nhất
+      case '6':
+        console.log('Option raised');
+        return [...productList];
+      // Bán chạy nhất
+      case '7':
+        console.log('Option raised');
+        return [...productList].sort(
+          (a, b) => b.totalSoldQuantity - a.totalSoldQuantity,
+        );
+      default:
+        console.log('Option raised');
+        return [...productList];
+    }
+  }
+
+  //#endregion
+
   return (
     <>
       <Grid
@@ -566,7 +653,7 @@ function ProductList(props: any) {
         alignItems={'start'}
         spacing={{ md: 2, xs: 3 }}
       >
-        {context.ProductList.map((item, i) => (
+        {displayProducts.map((item, i) => (
           <Grid
             item
             key={i}
@@ -618,11 +705,34 @@ export default function Products({
 }: {
   products: ProductItem[];
 }) {
-  const theme = useTheme();
+  //#region States
+
   const [groupBoLocState, setGroupBoLocState] =
     useState<BoLocItem[]>(initGroupBoLoc);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
+  //#endregion
+
+  //#region Hooks
+
+  const theme = useTheme();
+
+  //#endregin
+
+  //#region UseEffects
+
+  useEffect(() => {
+    //Van Hen
+    console.log('thaydoi', groupBoLocState, sortListState);
+  }, [groupBoLocState, sortListState]);
+
+  //#endregion
+
+  //#region Functions
+
+  //#endregion
+
+  //#region Handlers
 
   function handdleCheckBox(heading_value: string, value: string) {
     setGroupBoLocState(
@@ -653,11 +763,7 @@ export default function Products({
   function handleSetSortList(value: any) {
     setSortListState({ ...sortListState, value: value });
   }
-
-  useEffect(() => {
-    //Van Hen
-    console.log('thaydoi', groupBoLocState, sortListState);
-  }, [groupBoLocState, sortListState]);
+  //#endregion
 
   return (
     <>
@@ -752,47 +858,116 @@ export default function Products({
   );
 }
 
-export async function getStaticProps() {
+//#region Local Functions
+
+async function fetchAvailableBatches(): Promise<BatchObject[]> {
+  try {
+    const batchesRef = collection(db, 'batches');
+    const batchesQuery = query(batchesRef, where('EXP', '>', Timestamp.now()));
+
+    const batchSnapshots = await getDocs(batchesQuery);
+    const batches = batchSnapshots.docs.map(
+      (batch) => ({ id: batch.id, ...batch.data() } as BatchObject),
+    );
+
+    return batches;
+  } catch (error) {
+    console.log('Error at fetchAvailableBatches:', error);
+    return [];
+  }
+}
+
+interface LowestPriceProductId {
+  id: string;
+  price: number;
+}
+
+async function fetchLowestPriceBatchProductIds(
+  batches: BatchObject[],
+): Promise<LowestPriceProductId[]> {
+  try {
+    const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
+      if (!acc[batch.product_id]) {
+        acc[batch.product_id] = [];
+      }
+      acc[batch.product_id].push(batch.price);
+      return acc;
+    }, {});
+
+    const lowestPrices: LowestPriceProductId[] = Object.keys(
+      groupedBatches,
+    ).map((product_id) => {
+      const prices = groupedBatches[product_id];
+      const lowestPrice = Math.min(...prices);
+      return { id: product_id, price: lowestPrice };
+    });
+
+    return lowestPrices;
+  } catch (error) {
+    console.log('Error at fetchLowestPriceBatchProductIds:', error);
+    return [];
+  }
+}
+
+async function getTotalSoldQuantity(productId: string): Promise<number> {
   const batchesRef = collection(db, 'batches');
-  const batchesQuery = query(batchesRef, where('EXP', '>', Timestamp.now()));
+  const batchesQuery = query(batchesRef, where('product_id', '==', productId));
+  const batchesSnapshot = await getDocs(batchesQuery);
 
-  const batchSnapshots = await getDocs(batchesQuery);
-  const batches = batchSnapshots.docs.map(
-    (batch) => ({ id: batch.id, ...batch.data() } as BatchObject),
+  const batches: BatchObject[] = batchesSnapshot.docs.map(
+    (doc) =>
+      ({
+        id: doc.id,
+        ...doc.data(),
+      } as BatchObject),
   );
 
-  const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
-    if (!acc[batch.product_id]) {
-      acc[batch.product_id] = [];
-    }
-    acc[batch.product_id].push(batch.price);
-    return acc;
-  }, {});
+  const totalSoldQuantity: number = batches.reduce((acc, batch) => {
+    return acc + batch.soldQuantity;
+  }, 0);
 
-  const lowestPrices = Object.keys(groupedBatches).map((product_id) => {
-    const prices = groupedBatches[product_id];
-    const lowestPrice = Math.min(...prices);
-    return { product_id, lowestPrice };
-  });
+  return totalSoldQuantity;
+}
 
-  const products = await Promise.all(
-    lowestPrices.map(async ({ product_id, lowestPrice }) => {
-      const productDoc = await getDoc(doc(db, 'products', product_id));
-      const productData = {
-        id: productDoc.id,
-        ...productDoc.data(),
-      } as ProductObject;
+async function fetchProductTypesWithLowestPrices(
+  lowestPrices: LowestPriceProductId[],
+): Promise<ProductItem[]> {
+  try {
+    const products = await Promise.all(
+      lowestPrices.map(async ({ id, price }) => {
+        const productDoc = await getDoc(doc(db, 'products', id));
+        const productData = {
+          id: productDoc.id,
+          ...productDoc.data(),
+        } as ProductObject;
 
-      return {
-        id: productData.id,
-        name: productData.name,
-        description: productData.description,
-        price: lowestPrice,
-        image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
-        href: productData.id,
-      };
-    }),
-  );
+        return {
+          id: productData.id,
+          name: productData.name,
+          description: productData.description,
+          price: price,
+          image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
+          href: productData.id,
+          totalSoldQuantity: await getTotalSoldQuantity(productData.id),
+        } as ProductItem;
+      }),
+    );
+
+    return products;
+  } catch (error) {
+    console.log('Error at fetchProductTypesWithLowestPrices:', error);
+    return [];
+  }
+}
+
+//#endregion
+
+export async function getStaticProps() {
+  const batches = await fetchAvailableBatches();
+
+  const lowestPrices = await fetchLowestPriceBatchProductIds(batches);
+
+  const products = await fetchProductTypesWithLowestPrices(lowestPrices);
 
   return {
     props: {
