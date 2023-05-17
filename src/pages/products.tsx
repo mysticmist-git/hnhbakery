@@ -362,6 +362,7 @@ interface ProductItem {
   image: string;
   name: string;
   price: number;
+  MFG: Date;
   description: string;
   totalSoldQuantity: number;
   href: string;
@@ -403,6 +404,7 @@ function CakeCard(props: any) {
     image: banh1.src,
     name: 'Bánh Quy',
     price: 100000,
+    MFG: new Date(),
     description: 'Bánh ngon dữ lắm bà ơi',
     totalSoldQuantity: 15,
     href: '#',
@@ -584,12 +586,12 @@ function ProductList(props: any) {
   //#region UseEffects
 
   useEffect(() => {
-    const sortedProductList = sortProductList(context.ProductList);
-    const filteredProductList = filterProductList(sortedProductList);
+    const filteredProductList = filterProductList(context.ProductList);
+    const sortedProductList = sortProductList(filteredProductList);
 
-    console.log(filteredProductList);
+    console.log(sortedProductList);
 
-    setDisplayProducts(filteredProductList);
+    setDisplayProducts(sortedProductList);
   }, [context.ProductList, context.SortList, context.GroupBoLoc]);
 
   //#endregion
@@ -602,6 +604,10 @@ function ProductList(props: any) {
     const choosenSort: string = context.SortList.value;
 
     console.log(choosenSort);
+
+    console.log(productList);
+
+    console.log(productList.map((item) => item.MFG.valueOf()));
 
     switch (choosenSort) {
       // Mặc định
@@ -627,11 +633,15 @@ function ProductList(props: any) {
       // Cũ nhất
       case '5':
         console.log('Option raised');
-        return [...productList];
+        return [...productList].sort(
+          (a, b) => a.MFG.valueOf() - b.MFG.valueOf(),
+        );
       // Mới nhất
       case '6':
         console.log('Option raised');
-        return [...productList];
+        return [...productList].sort(
+          (a, b) => b.MFG.valueOf() - a.MFG.valueOf(),
+        );
       // Bán chạy nhất
       case '7':
         console.log('Option raised');
@@ -814,17 +824,18 @@ export const ProductsContext =
   createContext<ProductsContextType>(initProductsContext);
 // #endregion
 
-export default function Products({
-  products: productListState,
-}: {
-  products: ProductItem[];
-}) {
+export default function Products({ products }: { products: string }) {
   //#region States
 
   const [groupBoLocState, setGroupBoLocState] =
     useState<BoLocItem[]>(initGroupBoLoc);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
+
+  const [productListState, setProductListState] = useState<ProductItem[]>(
+    JSON.parse(products),
+  );
+
   //#endregion
 
   //#region Hooks
@@ -974,6 +985,13 @@ export default function Products({
 
 //#region Local Functions
 
+function firestoreTimestampToISOString(timestamp: Timestamp): string {
+  const jsDate = timestamp.toDate();
+  const isoString = jsDate.toISOString();
+
+  return isoString;
+}
+
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
     const batchesRef = collection(db, 'batches');
@@ -981,7 +999,13 @@ async function fetchAvailableBatches(): Promise<BatchObject[]> {
 
     const batchSnapshots = await getDocs(batchesQuery);
     const batches = batchSnapshots.docs.map(
-      (batch) => ({ id: batch.id, ...batch.data() } as BatchObject),
+      (batch) =>
+        ({
+          id: batch.id,
+          ...batch.data(),
+          MFG: batch.data().MFG.toDate(),
+          EXP: batch.data().MFG.toDate(),
+        } as BatchObject),
     );
 
     return batches;
@@ -991,29 +1015,37 @@ async function fetchAvailableBatches(): Promise<BatchObject[]> {
   }
 }
 
-interface LowestPriceProductId {
+interface LowestPriceAndItsMFGProductId {
   id: string;
   price: number;
+  MFG: Date;
 }
 
-async function fetchLowestPriceBatchProductIds(
+async function fetchLowestPriceAndMFGBatchProductIds(
   batches: BatchObject[],
-): Promise<LowestPriceProductId[]> {
+): Promise<LowestPriceAndItsMFGProductId[]> {
   try {
     const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
       if (!acc[batch.product_id]) {
         acc[batch.product_id] = [];
       }
-      acc[batch.product_id].push(batch.price);
+      acc[batch.product_id].push({ price: batch.price, MFG: batch.MFG });
       return acc;
     }, {});
 
-    const lowestPrices: LowestPriceProductId[] = Object.keys(
+    const lowestPrices: LowestPriceAndItsMFGProductId[] = Object.keys(
       groupedBatches,
     ).map((product_id) => {
-      const prices = groupedBatches[product_id];
-      const lowestPrice = Math.min(...prices);
-      return { id: product_id, price: lowestPrice };
+      const pricesAndMFGs = groupedBatches[product_id];
+      const priceAndMFGThatHasTheLowestPrice = pricesAndMFGs.find(
+        (priceAndMFG: any) => priceAndMFG.price === pricesAndMFGs[0].price,
+      );
+      // const lowestPrice = Math.min(...pricesAndMFGs.map((priceAndMFG) => priceAndMFG.price));
+      return {
+        id: product_id,
+        price: priceAndMFGThatHasTheLowestPrice.price,
+        MFG: priceAndMFGThatHasTheLowestPrice.MFG,
+      };
     });
 
     return lowestPrices;
@@ -1044,11 +1076,11 @@ async function getTotalSoldQuantity(productId: string): Promise<number> {
 }
 
 async function fetchProductTypesWithLowestPrices(
-  lowestPrices: LowestPriceProductId[],
+  lowestPricesAndTheirMFGs: LowestPriceAndItsMFGProductId[],
 ): Promise<ProductItem[]> {
   try {
     const products = await Promise.all(
-      lowestPrices.map(async ({ id, price }) => {
+      lowestPricesAndTheirMFGs.map(async ({ id, price, MFG }) => {
         const productDoc = await getDoc(doc(db, 'products', id));
         const productData = {
           id: productDoc.id,
@@ -1060,6 +1092,7 @@ async function fetchProductTypesWithLowestPrices(
           name: productData.name,
           description: productData.description,
           price: price,
+          MFG: MFG,
           image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
           href: productData.id,
           totalSoldQuantity: await getTotalSoldQuantity(productData.id),
@@ -1079,13 +1112,17 @@ async function fetchProductTypesWithLowestPrices(
 export async function getStaticProps() {
   const batches = await fetchAvailableBatches();
 
-  const lowestPrices = await fetchLowestPriceBatchProductIds(batches);
+  const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(
+    batches,
+  );
 
-  const products = await fetchProductTypesWithLowestPrices(lowestPrices);
+  const products = await fetchProductTypesWithLowestPrices(
+    lowestPricesAndTheirMFGs,
+  );
 
   return {
     props: {
-      products,
+      products: JSON.stringify(products),
     },
   };
 }
