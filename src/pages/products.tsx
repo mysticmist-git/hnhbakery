@@ -25,6 +25,24 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
 import CustomIconButton from '@/components/Inputs/Buttons/customIconButton';
+import {
+  getCollection,
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
+import { ProductObject } from '@/lib/models';
+import { db } from '@/firebase/config';
+import {
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { BatchPredictionSharp } from '@mui/icons-material';
+import { BatchObject } from '@/lib/models/Batch';
 
 // #region Filter
 interface BoLocItem {
@@ -334,7 +352,7 @@ function TypeSort(props: any) {
 //#endregion
 
 // #region Products
-interface ProductsItem {
+interface ProductItem {
   id: string;
   image: string;
   name: string;
@@ -342,7 +360,7 @@ interface ProductsItem {
   description: string;
   href: string;
 }
-const initProductList: ProductsItem[] = [
+const initProductList: ProductItem[] = [
   {
     id: '1',
     image: banh1.src,
@@ -373,7 +391,7 @@ function CakeCard(props: any) {
   const theme = useTheme();
   const context = useContext(ProductsContext);
   const imageHeight = props.imageHeight;
-  const productDefault: ProductsItem = {
+  const productDefault: ProductItem = {
     id: '1',
     image: banh1.src,
     name: 'Bánh Quy',
@@ -577,7 +595,7 @@ export interface ProductsContextType {
   handleSetViewState: any;
   SortList: any;
   handleSetSortList: any;
-  ProductList: ProductsItem[];
+  ProductList: ProductItem[];
 }
 
 const initProductsContext: ProductsContextType = {
@@ -595,14 +613,16 @@ export const ProductsContext =
   createContext<ProductsContextType>(initProductsContext);
 // #endregion
 
-export default function Products() {
+export default function Products({
+  products: productListState,
+}: {
+  products: ProductItem[];
+}) {
   const theme = useTheme();
   const [groupBoLocState, setGroupBoLocState] =
     useState<BoLocItem[]>(initGroupBoLoc);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
-  const [productListState, setProductListState] =
-    useState<ProductsItem[]>(initProductList);
 
   function handdleCheckBox(heading_value: string, value: string) {
     setGroupBoLocState(
@@ -730,4 +750,53 @@ export default function Products() {
       </ProductsContext.Provider>
     </>
   );
+}
+
+export async function getStaticProps() {
+  const batchesRef = collection(db, 'batches');
+  const batchesQuery = query(batchesRef, where('EXP', '>', Timestamp.now()));
+
+  const batchSnapshots = await getDocs(batchesQuery);
+  const batches = batchSnapshots.docs.map(
+    (batch) => ({ id: batch.id, ...batch.data() } as BatchObject),
+  );
+
+  const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
+    if (!acc[batch.product_id]) {
+      acc[batch.product_id] = [];
+    }
+    acc[batch.product_id].push(batch.price);
+    return acc;
+  }, {});
+
+  const lowestPrices = Object.keys(groupedBatches).map((product_id) => {
+    const prices = groupedBatches[product_id];
+    const lowestPrice = Math.min(...prices);
+    return { product_id, lowestPrice };
+  });
+
+  const products = await Promise.all(
+    lowestPrices.map(async ({ product_id, lowestPrice }) => {
+      const productDoc = await getDoc(doc(db, 'products', product_id));
+      const productData = {
+        id: productDoc.id,
+        ...productDoc.data(),
+      } as ProductObject;
+
+      return {
+        id: productData.id,
+        name: productData.name,
+        description: productData.description,
+        price: lowestPrice,
+        image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
+        href: productData.id,
+      };
+    }),
+  );
+
+  return {
+    props: {
+      products,
+    },
+  };
 }

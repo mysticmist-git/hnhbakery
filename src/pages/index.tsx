@@ -14,6 +14,24 @@ import { alpha } from '@mui/system';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 import Carousel from 'react-material-ui-carousel';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
+import {
+  getBestSellterProducts,
+  getCollection,
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
+import { db } from '@/firebase/config';
+import {
+  Query,
+  collection,
+  documentId,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { BusinessCenterOutlined } from '@mui/icons-material';
 
 // #region Carousel
 interface CarouselImageItem {
@@ -163,12 +181,10 @@ function CakeCard(props: any) {
               variant="body1"
               color={theme.palette.common.black}
             >
-              {props.name ? props.name : defaultInformation.name}
+              {props.name ?? defaultInformation.name}
             </Typography>
             <Typography variant="body2" color={theme.palette.text.secondary}>
-              {props.description
-                ? props.description
-                : defaultInformation.description}
+              {props.description ?? defaultInformation.description}
             </Typography>
           </Grid>
         </Grid>
@@ -198,7 +214,7 @@ function CardSliderItem(props: any) {
               <props.card
                 image={_item.image}
                 name={_item.name}
-                descripton={_item.descripton}
+                description={_item.description}
                 imageHeight={props.imageHeight}
               ></props.card>
             </Grid>
@@ -210,15 +226,28 @@ function CardSliderItem(props: any) {
 }
 
 function CustomCardSlider(props: any) {
-  const theme = useTheme();
-  const context = useContext(HomeContext);
+  //#region States
 
   const [bestSellerDisplay, setBestSellerDisplay] = useState<any[]>([]);
+
+  //endregion
+
+  //#region Hooks
+
+  const theme = useTheme();
+  const context = useContext<HomeContextType>(HomeContext);
+
+  //#endregion
+
+  //#region UseEffects
+
   const oneColumn = useMediaQuery(theme.breakpoints.down('sm'));
   const twoColumn = useMediaQuery(theme.breakpoints.up('sm'));
   const threeColumn = useMediaQuery(theme.breakpoints.up('md'));
+
   useEffect(() => {
     let column = 1;
+
     if (threeColumn) {
       column = 3;
     } else if (twoColumn) {
@@ -226,22 +255,25 @@ function CustomCardSlider(props: any) {
     } else if (oneColumn) {
       column = 1;
     }
+
     let listRow = [];
     let listColumn: BestSellerItem[] = [];
-    for (let i = 0; i < context.bestSeller.length; i++) {
-      listColumn.push({
-        image: context.bestSeller[i].image,
-        name: context.bestSeller[i].name,
-        description: context.bestSeller[i].description,
-        href: context.bestSeller[i].href,
-      });
+
+    const bestSellerCount = context.bestSeller.length;
+
+    for (let i = 0; i < bestSellerCount; i++) {
+      listColumn.push({ ...context.bestSeller[i] } as BestSellerItem);
+
       if ((i + 1) % column == 0 || i + 1 == context.bestSeller.length) {
         listRow.push(listColumn);
         listColumn = [];
       }
     }
+
     setBestSellerDisplay(listRow);
   }, [context.bestSeller, oneColumn, twoColumn, threeColumn]);
+
+  //#endregion
 
   return (
     <>
@@ -267,6 +299,7 @@ function CustomCardSlider(props: any) {
     </>
   );
 }
+
 // #endregion
 
 //#region Loại bánh
@@ -331,6 +364,9 @@ function TypeCakeCard(props: any) {
   };
 
   const [cardHover, setCardHover] = useState(false);
+
+  console.log(props);
+
   return (
     <>
       <Card
@@ -339,9 +375,7 @@ function TypeCakeCard(props: any) {
         raised={cardHover}
         sx={{ borderRadius: '16px' }}
       >
-        <CardActionArea
-          href={props.href ? props.href : defaultInformation.href}
-        >
+        <CardActionArea href={props.href ?? defaultInformation.href}>
           <Grid container direction={'column'}>
             <Grid item width={'100%'} height={imageHeight}>
               <Box
@@ -350,7 +384,7 @@ function TypeCakeCard(props: any) {
                   cardHover ? imageStyles.cardHovered : imageStyles.cardNormal
                 }
                 alt=""
-                src={props.image ? props.image : defaultInformation.image}
+                src={props.image ?? defaultInformation.image}
                 loading="lazy"
               />
             </Grid>
@@ -368,16 +402,14 @@ function TypeCakeCard(props: any) {
                 color={theme.palette.secondary.main}
                 align="center"
               >
-                {props.name ? props.name : defaultInformation.name}
+                {props.name ?? defaultInformation.name}
               </Typography>
               <Typography
                 variant="body2"
                 color={theme.palette.text.secondary}
                 align="center"
               >
-                {props.descripton
-                  ? props.descripton
-                  : defaultInformation.description}
+                {props.description ?? defaultInformation.description}
               </Typography>
             </Grid>
           </Grid>
@@ -389,7 +421,7 @@ function TypeCakeCard(props: any) {
 
 function TypeCake(props: any) {
   const theme = useTheme();
-  const context = useContext(HomeContext);
+  const context = useContext<HomeContextType>(HomeContext);
   return (
     <>
       <Typography
@@ -514,18 +546,32 @@ const initHomeContext: HomeContextType = {
 export const HomeContext = createContext<HomeContextType>(initHomeContext);
 // #endregion
 
-export default function Home() {
-  const theme = useTheme();
+export default function Home({
+  productTypes,
+  bestSellerProducts,
+}: {
+  productTypes: ProductTypeObject[];
+  bestSellerProducts: ProductObject[];
+}) {
+  //#region States
 
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
 
-  const [bestSellerState, setBestSellerState] =
-    useState<BestSellerItem[]>(initBestSeller);
+  const [bestSellerState, setBestSellerState] = useState<BestSellerItem[]>([]);
 
-  const [typeCakeState, setTypeCakeState] =
-    useState<TypeCakeItem[]>(initTypeCake);
+  const [typeCakeState, setTypeCakeState] = useState<TypeCakeItem[]>([]);
+
+  //#endregion
+
+  //#region Hooks
+
+  const theme = useTheme();
+
+  //#endregion
+
+  //#region UseEffects
 
   useEffect(() => {
     const importImages = async () => {
@@ -547,6 +593,68 @@ export default function Home() {
     };
     importImages();
   }, []);
+
+  useEffect(() => {
+    async function fetchTypeCakesAndGetTheirImagesToo() {
+      // Get image
+      const promises = productTypes.map(async (type) => ({
+        ...type,
+        url: (await getDownloadUrlFromFirebaseStorage(type.image)) as string,
+      }));
+
+      const imageFetchedProductTypes = await Promise.all(promises);
+
+      setTypeCakeState(
+        imageFetchedProductTypes.map(
+          (type) =>
+            ({
+              image: type.url,
+              name: type.name,
+              description: type.description,
+              href: type.id,
+            } as TypeCakeItem),
+        ),
+      );
+    }
+
+    fetchTypeCakesAndGetTheirImagesToo();
+  }, [productTypes]);
+
+  useEffect(() => {
+    async function fetchBestSellerProductsAndTheirImagesToo() {
+      // Get images
+      const promises = bestSellerProducts.map(async (product) => ({
+        ...product,
+        url: (await getDownloadUrlFromFirebaseStorage(
+          product.images[0],
+        )) as string,
+      }));
+
+      const imageFetchedProductTypes = await Promise.all(promises);
+
+      setBestSellerState(
+        imageFetchedProductTypes.map(
+          (product) =>
+            ({
+              image: product.url,
+              name: product.name,
+              description: product.description,
+              href: product.id,
+            } as BestSellerItem),
+        ),
+      );
+    }
+
+    fetchBestSellerProductsAndTheirImagesToo();
+  }, [bestSellerProducts]);
+
+  //#endregion
+
+  //#region Logs
+
+  console.log(productTypes);
+
+  //#endregion
 
   return (
     <>
@@ -573,4 +681,16 @@ export default function Home() {
       </HomeContext.Provider>
     </>
   );
+}
+
+export async function getStaticProps() {
+  const productTypes = await getCollection<ProductTypeObject>('productTypes');
+  const bestSellerProducts = await getBestSellterProducts();
+
+  return {
+    props: {
+      productTypes,
+      bestSellerProducts,
+    },
+  };
 }
