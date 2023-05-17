@@ -547,21 +547,17 @@ export const HomeContext = createContext<HomeContextType>(initHomeContext);
 // #endregion
 
 export default function Home({
-  productTypes,
-  bestSellerProducts,
+  productTypesWithImageFetched: typeCakeState,
+  bestSellerProductsWithImageFetched: bestSellerState,
 }: {
-  productTypes: ProductTypeObject[];
-  bestSellerProducts: ProductObject[];
+  productTypesWithImageFetched: TypeCakeItem[];
+  bestSellerProductsWithImageFetched: BestSellerItem[];
 }) {
   //#region States
 
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
-
-  const [bestSellerState, setBestSellerState] = useState<BestSellerItem[]>([]);
-
-  const [typeCakeState, setTypeCakeState] = useState<TypeCakeItem[]>([]);
 
   //#endregion
 
@@ -594,65 +590,12 @@ export default function Home({
     importImages();
   }, []);
 
-  useEffect(() => {
-    async function fetchTypeCakesAndGetTheirImagesToo() {
-      // Get image
-      const promises = productTypes.map(async (type) => ({
-        ...type,
-        url: (await getDownloadUrlFromFirebaseStorage(type.image)) as string,
-      }));
-
-      const imageFetchedProductTypes = await Promise.all(promises);
-
-      setTypeCakeState(
-        imageFetchedProductTypes.map(
-          (type) =>
-            ({
-              image: type.url,
-              name: type.name,
-              description: type.description,
-              href: type.id,
-            } as TypeCakeItem),
-        ),
-      );
-    }
-
-    fetchTypeCakesAndGetTheirImagesToo();
-  }, [productTypes]);
-
-  useEffect(() => {
-    async function fetchBestSellerProductsAndTheirImagesToo() {
-      // Get images
-      const promises = bestSellerProducts.map(async (product) => ({
-        ...product,
-        url: (await getDownloadUrlFromFirebaseStorage(
-          product.images[0],
-        )) as string,
-      }));
-
-      const imageFetchedProductTypes = await Promise.all(promises);
-
-      setBestSellerState(
-        imageFetchedProductTypes.map(
-          (product) =>
-            ({
-              image: product.url,
-              name: product.name,
-              description: product.description,
-              href: product.id,
-            } as BestSellerItem),
-        ),
-      );
-    }
-
-    fetchBestSellerProductsAndTheirImagesToo();
-  }, [bestSellerProducts]);
-
   //#endregion
 
   //#region Logs
 
-  console.log(productTypes);
+  console.log(typeCakeState);
+  console.log(bestSellerState);
 
   //#endregion
 
@@ -683,14 +626,72 @@ export default function Home({
   );
 }
 
+//#region Local Functions
+
+async function fetchTypeCakesAndGetTheirImagesToo(
+  productTypes: ProductTypeObject[],
+): Promise<TypeCakeItem[]> {
+  // Get image
+  const promises = productTypes.map(async (type) => ({
+    ...type,
+    url: (await getDownloadUrlFromFirebaseStorage(type.image)) as string,
+  }));
+
+  const imageFetchedProductTypes = await Promise.all(promises);
+
+  return imageFetchedProductTypes.map(
+    (type) =>
+      ({
+        image: type.url,
+        name: type.name,
+        description: type.description,
+        href: type.id,
+      } as TypeCakeItem),
+  );
+}
+
+async function fetchBestSellerProductsAndTheirImagesToo(
+  bestSellerProducts: ProductObject[],
+): Promise<BestSellerItem[]> {
+  // Get images
+  const promises = bestSellerProducts.map(async (product) => ({
+    ...product,
+    url: (await getDownloadUrlFromFirebaseStorage(product.images[0])) as string,
+  }));
+
+  const imageFetchedProductTypes = await Promise.all(promises);
+
+  return imageFetchedProductTypes.map(
+    (product) =>
+      ({
+        image: product.url,
+        name: product.name,
+        description: product.description,
+        href: product.id,
+      } as BestSellerItem),
+  );
+}
+
+//#endregion
+
 export async function getStaticProps() {
   const productTypes = await getCollection<ProductTypeObject>('productTypes');
   const bestSellerProducts = await getBestSellterProducts();
 
+  const productTypesWithImageFetched = await fetchTypeCakesAndGetTheirImagesToo(
+    productTypes,
+  );
+
+  const bestSellerProductsWithImageFetched =
+    await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
+
+  console.log(productTypesWithImageFetched);
+  console.log(bestSellerProductsWithImageFetched);
+
   return {
     props: {
-      productTypes,
-      bestSellerProducts,
+      productTypesWithImageFetched,
+      bestSellerProductsWithImageFetched,
     },
   };
 }

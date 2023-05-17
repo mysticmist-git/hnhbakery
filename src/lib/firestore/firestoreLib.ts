@@ -236,7 +236,7 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   );
   const productsSnapshot = await getDocs(productQuery);
   const products = productsSnapshot.docs.map(
-    (doc) => ({ ...doc.data() } as ProductObject),
+    (doc) => ({ id: doc.id, ...doc.data() } as ProductObject),
   );
   // Do something with the productTypes
 
