@@ -10,12 +10,12 @@ import ProductTypeForm from '../forms/ProductTypeForm';
 import { BatchObject } from '@/lib/models/Batch';
 import { tokenToString } from 'typescript';
 import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
-import {
-  addDocumentToFirestore,
-  updateDocument,
-} from '@/lib/firestore/firebaseLib';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
 import { ManageContext } from '@/pages/manager/manage';
+import {
+  addDocumentToFirestore,
+  updateDocumentToFirestore,
+} from '@/lib/firestore/firestoreLib';
 
 export default function BatchRowModal() {
   //#region States
@@ -281,7 +281,7 @@ export default function BatchRowModal() {
       }
 
       // Update document to firestore
-      updateDocument(displayingData, collectionName);
+      updateDocumentToFirestore(displayingData, collectionName);
 
       // Update state
       dispatch({

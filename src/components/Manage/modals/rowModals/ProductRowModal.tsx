@@ -6,17 +6,17 @@ import { db, storage } from '@/firebase/config';
 import RowModalLayout from './RowModalLayout';
 import { useSnackbarService } from '@/pages/_app';
 import { ProductObject } from '@/lib/models';
-import {
-  getDownloadUrlFromFirebaseStorage,
-  uploadImageToFirebaseStorage,
-  addDocumentToFirestore,
-  updateDocument,
-  deleteImageFromFirebaseStorage,
-} from '@/lib/firestore/firebaseLib';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
 import { ManageContext } from '@/pages/manager/manage';
 import ProductForm from '../forms/ProductForm';
+import {
+  getDownloadUrlFromFirebaseStorage,
+  uploadImageToFirebaseStorage,
+  addDocumentToFirestore,
+  deleteImageFromFirebaseStorage,
+  updateDocumentToFirestore,
+} from '@/lib/firestore/firestoreLib';
 
 interface FirebaseImage {
   path: string;
@@ -302,7 +302,7 @@ export default function ProductRowModal() {
       }
 
       // Update document to firestore
-      updateDocument(displayingData, collectionName);
+      updateDocumentToFirestore(displayingData, collectionName);
 
       // Update state
       dispatch({

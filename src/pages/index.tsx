@@ -21,16 +21,6 @@ import {
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
 import { db } from '@/firebase/config';
-import {
-  Query,
-  collection,
-  documentId,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
 import { BusinessCenterOutlined } from '@mui/icons-material';
 
 // #region Carousel
@@ -376,7 +366,14 @@ function TypeCakeCard(props: any) {
         sx={{ borderRadius: '16px' }}
       >
         <CardActionArea href={props.href ?? defaultInformation.href}>
-          <Grid container direction={'column'}>
+          <Grid
+            container
+            direction={'column'}
+            sx={{
+              maxWidth: 345,
+              minWidth: 320,
+            }}
+          >
             <Grid item width={'100%'} height={imageHeight}>
               <Box
                 component={'img'}

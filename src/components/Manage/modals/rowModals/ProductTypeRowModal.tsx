@@ -5,16 +5,16 @@ import { db, storage } from '@/firebase/config';
 
 import RowModalLayout from './RowModalLayout';
 import { useSnackbarService } from '@/pages/_app';
-import {
-  getDownloadUrlsFromFirebaseStorage,
-  uploadImageToFirebaseStorage,
-  addDocumentToFirestore,
-  updateDocument,
-} from '@/lib/firestore/firebaseLib';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
 import { ManageContext } from '@/pages/manager/manage';
 import ProductTypeForm from '../forms/ProductTypeForm';
+import {
+  getDownloadUrlsFromFirebaseStorage,
+  uploadImageToFirebaseStorage,
+  addDocumentToFirestore,
+  updateDocumentToFirestore,
+} from '@/lib/firestore/firestoreLib';
 
 export default function ProductTypeRowModal() {
   //#region States
@@ -350,7 +350,7 @@ export default function ProductTypeRowModal() {
       }
 
       // Update document to firestore
-      updateDocument(displayingData, collectionName);
+      updateDocumentToFirestore(displayingData, collectionName);
 
       // Update state
       dispatch({
