@@ -1,2 +1,2 @@
 export { default as useSnackbar } from './useSnackbar';
-export { default as useSnackbar2 } from './useSnackbar2';
+export { default as useSnackbar2 } from './useSnackbar';

@@ -568,6 +568,8 @@ export default function Home({
 
   useEffect(() => {
     const importImages = async () => {
+      console.log('image importing...');
+
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
       const images = await Promise.all(

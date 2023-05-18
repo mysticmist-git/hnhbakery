@@ -12,18 +12,15 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import { auth } from '@/firebase/config';
 import { default as NextLink } from 'next/link';
-import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
-import { CustomSnackbar } from '@/components/CustomSnackbar';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
-import { useSnackbarService } from '../_app';
 import { authMessages } from '@/lib/constants/authConstants';
 import { SxProps, Theme } from '@mui/system';
 import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
 import { handleLoginWithGoogle } from '@/lib/auth';
 import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
+import { useSnackbarService } from '@/lib/contexts';
 
 //#endregion
 
