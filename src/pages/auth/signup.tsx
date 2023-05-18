@@ -5,28 +5,64 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { auth } from '@/firebase/config';
-import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
-import Copyright from '@/components/Copyright';
 import {
-  NotifierType,
-  SignUpProps,
-  AuthResult,
-  AuthErrorCode,
-} from '@/lib/signup';
+  createUserWithEmailAndPassword,
+  User,
+  UserCredential,
+} from 'firebase/auth';
+import Copyright from '@/components/Copyright';
 import { useRouter } from 'next/router';
-import useSnackbar from '@/lib/hooks/useSnackbar';
-import { CustomSnackbar } from '@/components/CustomSnackbar';
 import SignUpForm from '@/components/Auths/SignUpForm';
+import { useSnackbarService } from '../_app';
+import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 
 export default function SignUp() {
+  //region Hooks
+
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  //#region Handlers
+
+  const handleSignUp = async (
+    props: SignUpProps,
+  ): Promise<UserCredential | undefined> => {
+    const result: AuthResult = await signUpUser(props);
+
+    if (result.result === 'successful') {
+      router.push('/');
+      handleSnackbarAlert('success', 'Đăng ký thành công');
+      addUser(result.userCredential!);
+      return result.userCredential;
+    }
+
+    console.log(result.errorCode);
+
+    switch (result.errorCode) {
+      case AuthErrorCode.EMAIL_ALREADY_IN_USE:
+        handleSnackbarAlert('error', 'Email đã được sử dụng');
+      case AuthErrorCode.NETWORK_REQUEST_FAILED:
+        handleSnackbarAlert('error', 'Lỗi mạng');
+      default:
+        handleSnackbarAlert('error', `Đã có lỗi xảy ra: ${result.errorCode}`);
+    }
+  };
+
+  //#endregion
+
+  //#region Functions
 
   const signUpUser = async (props: SignUpProps): Promise<AuthResult> => {
     try {
       const userCredential: UserCredential =
         await createUserWithEmailAndPassword(auth, props.email, props.password);
-      const user = userCredential.user;
-      return { result: 'successful', userCredential: user };
+      const result: AuthResult = {
+        result: 'successful',
+        userCredential: userCredential,
+      };
+      return result;
     } catch (error: any) {
       const errorCode = error?.code;
       const errorMessage = error.message;
@@ -35,27 +71,7 @@ export default function SignUp() {
         errorCode,
         errorMessage,
       };
-      console.log(returnedError);
       return returnedError;
-    }
-  };
-
-  const handleSignUp = async (props: SignUpProps): Promise<NotifierType> => {
-    const result = await signUpUser(props);
-
-    if (result.result === 'successful') {
-      router.push('/');
-      return NotifierType.SUCCESSFUL;
-    } else {
-      switch (result.errorCode) {
-        case AuthErrorCode.EMAIL_ALREADY_IN_USE:
-          return NotifierType.EMAIL_EXISTED;
-        case AuthErrorCode.NETWORK_REQUEST_FAILED:
-          return NotifierType.NETWORK_ERROR;
-        // case
-        default:
-          return NotifierType.ERROR;
-      }
     }
   };
 
@@ -71,6 +87,8 @@ export default function SignUp() {
 
     return true;
   };
+
+  //#endregion
 
   return (
     <Container component="main" maxWidth="xs">

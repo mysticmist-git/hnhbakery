@@ -16,19 +16,14 @@ import { auth } from '@/firebase/config';
 import { default as NextLink } from 'next/link';
 import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { CustomSnackbar } from '@/components/CustomSnackbar';
-import useSnackbar from '@/lib/hooks/useSnackbar';
-import {
-  SignInProps,
-  AuthErrorCode,
-  AuthResult,
-  SignInPropsFromObject,
-} from '@/lib/signup';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
-import { handleLoginWithGoogle } from '../lib/localLib/auth';
-import { useSnackbarService } from './_app';
+import { useSnackbarService } from '../_app';
 import { authMessages } from '@/lib/constants/authConstants';
 import { SxProps, Theme } from '@mui/system';
+import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
+import { handleLoginWithGoogle } from '@/lib/auth';
+import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
 
 //#endregion
 
@@ -52,37 +47,11 @@ function Copyright(props: any) {
   );
 }
 
-const signUserIn = async (props: {
-  email: string;
-  password: string;
-}): Promise<AuthResult> => {
-  try {
-    const userCredential: UserCredential = await signInWithEmailAndPassword(
-      auth,
-      props.email,
-      props.password,
-    );
-    const user = userCredential.user;
-    return { result: 'successful', userCredential: user };
-  } catch (error: any) {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    const returnedError: AuthResult = {
-      result: 'fail',
-      errorCode,
-      errorMessage,
-    };
-    console.log(returnedError);
-    return returnedError;
-  }
-};
-
 //#endregion
 
-export default function Auth() {
+export default function Login() {
   //#region Hooks
 
-  const { snackbarProps, setSnackbarProps, notifier } = useSnackbar();
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
@@ -91,7 +60,7 @@ export default function Auth() {
   //#region Handlers
 
   const handleSignIn = async (props: SignInProps) => {
-    const result = await signUserIn(props);
+    const result = await signUserInWithEmailAndPassword(props);
 
     // console.log(result);
 
@@ -149,6 +118,7 @@ export default function Auth() {
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}>
+      {/* Left picture */}
       <Grid
         item
         xs={false}
@@ -165,6 +135,7 @@ export default function Auth() {
           backgroundPosition: 'center',
         }}
       />
+      {/* Right form */}
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <Box
           sx={{
@@ -243,16 +214,16 @@ export default function Auth() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <NextLink href="/forgot-password" passHref legacyBehavior>
+                <NextLink href="/auth/forgot-password" passHref legacyBehavior>
                   <Link variant="body2" sx={linkSx}>
                     Quên mật khẩu
                   </Link>
                 </NextLink>
               </Grid>
               <Grid item>
-                <NextLink href="/signup" passHref legacyBehavior>
+                <NextLink href="/auth/signup" passHref legacyBehavior>
                   <Link variant="body2" sx={linkSx}>
-                    {"Don't have an account? Sign Up"}
+                    {'Không có tài khoản? Đăng ký ngay'}
                   </Link>
                 </NextLink>
               </Grid>
@@ -275,10 +246,6 @@ export default function Auth() {
           </Box>
         </Box>
       </Grid>
-      <CustomSnackbar
-        setSnackbarProps={setSnackbarProps}
-        props={snackbarProps}
-      />
     </Grid>
   );
 }
