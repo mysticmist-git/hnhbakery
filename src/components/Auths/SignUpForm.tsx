@@ -1,16 +1,23 @@
-import { NotifierType, SignUpProps, SignUpPropsFromObject } from '@/lib/signup';
-import { handleLoginWithGoogle } from '@/lib/localLib/auth';
+import {
+  NotifierType,
+  SignUpProps,
+  SignUpPropsFromObject,
+  addUser,
+  handleLoginWithGoogle,
+  updateUserLogin,
+} from '@/lib/auth/auth';
 import { Google } from '@mui/icons-material';
 import { Grid, TextField, Button, Link, Divider } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
-import { useSnackbarService } from '@/pages/_app';
+import { UserCredential } from 'firebase/auth';
+import { useSnackbarService } from '@/lib/contexts';
 
 export default function SignUpForm({
   handleSignUp,
   validate,
 }: {
-  handleSignUp: (props: SignUpProps) => Promise<NotifierType>;
+  handleSignUp: (props: SignUpProps) => Promise<UserCredential | undefined>;
   validate: (data: any) => boolean;
 }) {
   //#region Hooks
@@ -18,6 +25,8 @@ export default function SignUpForm({
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
+
+  //#region Handlers
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,12 +36,21 @@ export default function SignUpForm({
     const signUpData = SignUpPropsFromObject(dataObject);
 
     console.log(signUpData);
+
     if (!validate(signUpData)) {
       handleSnackbarAlert('error', 'Vui lòng điền đủ thông tin');
       return;
     }
-    await handleSignUp(signUpData);
+
+    const userCredential = await handleSignUp(signUpData);
+
+    if (userCredential) {
+      addUser(userCredential);
+      updateUserLogin(userCredential);
+    }
   };
+
+  //#endregion
 
   return (
     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -125,7 +143,7 @@ export default function SignUpForm({
       </Grid>
       <Grid container justifyContent="flex-end">
         <Grid item>
-          <NextLink href="/auth" passHref legacyBehavior>
+          <NextLink href="/auth/login" passHref legacyBehavior>
             <Link variant="body2">Đã có tài khoản? Đăng nhập ngay!</Link>
           </NextLink>
         </Grid>

@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { auth } from '@/firebase/config';
 import { SxProps, Theme, Typography } from '@mui/material';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
-import { useSnackbarService } from '@/pages/_app';
+import { useSnackbarService } from '@/lib/contexts';
 
 interface Props {
   photoURL: string | null;

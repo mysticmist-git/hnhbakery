@@ -25,7 +25,7 @@ import ListAlt from '@mui/icons-material/ListAlt';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
-import CustomIconButton from '@/components/Inputs/Buttons/customIconButton';
+import CustomIconButton from '@/components/Inputs/Buttons/CustomIconButton';
 import {
   getCollection,
   getDownloadUrlFromFirebaseStorage,
@@ -42,11 +42,6 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import {
-  BatchPredictionSharp,
-  PanoramaVerticalSelectRounded,
-  ProductionQuantityLimits,
-} from '@mui/icons-material';
 import { BatchObject } from '@/lib/models/Batch';
 
 // #region Filter

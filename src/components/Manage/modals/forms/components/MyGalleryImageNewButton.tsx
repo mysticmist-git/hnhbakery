@@ -1,4 +1,4 @@
-import { useSnackbarService } from '@/pages/_app';
+import { useSnackbarService } from '@/lib/contexts';
 import { Add } from '@mui/icons-material';
 import { SxProps, Box } from '@mui/system';
 
