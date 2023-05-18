@@ -5,13 +5,10 @@ import { DocumentData } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
 import { ProductTypeObject } from '@/lib/models';
 import CustomTableBodyProps from '../lib/TableBodyProps';
-import {
-  ManageActionType,
-  ManageContextType,
-} from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
 import { useContext } from 'react';
 import RowActionButtons from './RowActionButtons';
+import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedProductTypeTableBody = () => {
   const {

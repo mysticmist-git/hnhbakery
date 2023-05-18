@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { TableCell } from '@mui/material';
 import { CollectionName } from '@/lib/models/utilities';
-import { ManageContextType } from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedTableHead = () => {
   const { state } = useContext<ManageContextType>(ManageContext);

@@ -1,24 +1,9 @@
-import { auth, provider } from '@/firebase/config';
 import { NotifierType, SignUpProps, SignUpPropsFromObject } from '@/lib/signup';
 import { handleLoginWithGoogle } from '@/lib/localLib/auth';
 import { Google } from '@mui/icons-material';
-import {
-  Grid,
-  TextField,
-  FormControlLabel,
-  Checkbox,
-  Button,
-  Link,
-  Divider,
-} from '@mui/material';
+import { Grid, TextField, Button, Link, Divider } from '@mui/material';
 import { Box } from '@mui/material';
-import {
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth';
 import { default as NextLink } from 'next/link';
-import router from 'next/router';
 import { useSnackbarService } from '@/pages/_app';
 
 export default function SignUpForm({

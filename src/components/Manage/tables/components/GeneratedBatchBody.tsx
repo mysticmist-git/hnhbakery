@@ -1,7 +1,3 @@
-import {
-  ManageActionType,
-  ManageContextType,
-} from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
 import theme from '@/styles/themes/lightTheme';
 import { Wysiwyg, Delete } from '@mui/icons-material';
@@ -14,6 +10,7 @@ import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
 import RowActionButtons from './RowActionButtons';
+import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);

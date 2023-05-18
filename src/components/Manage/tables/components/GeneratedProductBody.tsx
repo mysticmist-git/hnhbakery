@@ -1,19 +1,11 @@
-import theme from '@/styles/themes/lightTheme';
-import { Wysiwyg, Delete } from '@mui/icons-material';
 import { TableRow, TableCell, Typography } from '@mui/material';
-import { Box } from '@mui/system';
 import React, { useContext, useEffect, useState } from 'react';
-import { TableActionButton } from '../TableActionButton';
-import { CustomDataTableContext } from '../CustomDataTable';
-import {
-  ManageActionType,
-  ManageContextType,
-} from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
 import RowActionButtons from './RowActionButtons';
+import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedProductTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);

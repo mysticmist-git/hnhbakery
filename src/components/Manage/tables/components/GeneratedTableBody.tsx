@@ -4,8 +4,8 @@ import React, { useContext } from 'react';
 import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 import GeneratedProductTableBody from './GeneratedProductBody';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
-import { ManageContextType } from '@/pages/manager/lib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedTableBody = () => {
   const { state } = useContext<ManageContextType>(ManageContext);
