@@ -4,6 +4,7 @@ import {
   Box,
   Drawer,
   Grid,
+  Link,
   MenuItem,
   Tab,
   Tabs,
@@ -16,7 +17,6 @@ import logo from '../assets/Logo.png';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Menu from '@mui/icons-material/Menu';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import CustomIconButton from './Inputs/Buttons/customIconButton';
 import CustomButton from './Inputs/Buttons/customButton';
 import Skeleton_img from './Skeletons/skeleton_img';
@@ -228,9 +228,8 @@ function Navbar() {
   const theme = useTheme();
   const styles = {
     appBar: {
-      top: 16,
-      left: 0,
-      right: 0,
+      top: { lg: 16, xs: 0 },
+      px: { xs: 2, sm: 2, md: 4, lg: 8 },
       bgcolor: theme.palette.secondary.dark,
     },
     gridDesktop: { display: { xs: 'none', lg: 'block' } },
@@ -238,7 +237,7 @@ function Navbar() {
     boxLogo: {
       position: 'absolute',
       top: -16,
-      left: 44,
+      left: 0,
       width: 117,
       height: 166,
     },
@@ -292,12 +291,18 @@ function Navbar() {
         }}
       >
         <AppBar sx={styles.appBar} position="absolute">
-          <Toolbar>
+          <Toolbar
+            style={{
+              paddingLeft: '0px',
+              paddingRight: '0px',
+            }}
+          >
             <Grid
               container
               direction="row"
               justifyContent="center"
               alignItems="center"
+              sx={{ px: 0 }}
             >
               <Grid item md={3} sx={styles.gridDesktop}>
                 <Box sx={styles.boxLogo}>
@@ -322,7 +327,7 @@ function Navbar() {
 
               <Grid item xs={6} sx={styles.gridPhone}>
                 <Typography variant="h3" color={theme.palette.common.white}>
-                  <a href="#">H&H Bakery</a>
+                  <Link href="#">H&H Bakery</Link>
                 </Typography>
               </Grid>
 

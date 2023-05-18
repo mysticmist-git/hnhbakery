@@ -3,6 +3,22 @@ import { red } from '@mui/material/colors';
 
 // Create a theme instance.
 const theme = createTheme({
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#eeebdd',
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          textDecoration: 'none',
+        },
+      },
+    },
+  },
   palette: {
     mode: 'light',
     primary: {
