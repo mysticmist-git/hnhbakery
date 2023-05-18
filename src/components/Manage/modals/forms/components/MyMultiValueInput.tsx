@@ -2,7 +2,7 @@ import { Typography, Chip } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useState, useEffect } from 'react';
 import NewValueChip from './NewValueChip';
-import { useSnackbarService } from '@/pages/_app';
+import { useSnackbarService } from '@/lib/contexts';
 import { Close } from '@mui/icons-material';
 
 export default function MyMultiValueInput({

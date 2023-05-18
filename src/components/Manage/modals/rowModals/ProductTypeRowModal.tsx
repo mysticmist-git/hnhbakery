@@ -4,7 +4,7 @@ import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 
 import RowModalLayout from './RowModalLayout';
-import { useSnackbarService } from '@/pages/_app';
+import { useSnackbarService } from '@/lib/contexts';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
 import { ManageContext } from '@/pages/manager/manage';
