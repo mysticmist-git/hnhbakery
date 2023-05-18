@@ -40,7 +40,7 @@ import {
   crudTargets,
   DEFAULT_ROW,
 } from '@/lib/localLib/manage';
-import { useSnackbarService } from '../_app';
+import { useSnackbarService } from '@/lib/contexts';
 
 //#region Constants
 

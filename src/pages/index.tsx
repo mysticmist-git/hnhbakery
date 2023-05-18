@@ -20,8 +20,8 @@ import {
   getCollection,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import { db } from '@/firebase/config';
-import { BusinessCenterOutlined } from '@mui/icons-material';
+import Link from 'next/link';
+import Image from 'next/image';
 
 // #region Carousel
 interface CarouselImageItem {
@@ -33,6 +33,7 @@ interface CarouselImageItem {
 function CustomCarousel(props: any) {
   const theme = useTheme();
   const context = useContext(HomeContext);
+
   return (
     <Carousel animation="slide" duration={props.duration}>
       {context.carouselImages.map((image, i) => (
@@ -40,7 +41,18 @@ function CustomCarousel(props: any) {
           key={i}
           sx={{ height: props.height, width: '100%', position: 'relative' }}
         >
-          <a href={image.href}>
+          <Link href={image.href}>
+            <Image
+              fill={true}
+              src={image.src}
+              alt={image.alt}
+              loading="lazy"
+              style={{
+                objectFit: 'cover',
+              }}
+            />
+          </Link>
+          {/* <a href={image.href}>
             <Box
               height={'100%'}
               width={'100%'}
@@ -50,7 +62,7 @@ function CustomCarousel(props: any) {
               src={image.src}
               sx={{ objectFit: 'cover' }}
             />
-          </a>
+          </a> */}
         </Box>
       ))}
     </Carousel>
@@ -568,8 +580,6 @@ export default function Home({
 
   useEffect(() => {
     const importImages = async () => {
-      console.log('image importing...');
-
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
       const images = await Promise.all(

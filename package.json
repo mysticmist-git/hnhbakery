@@ -31,6 +31,7 @@
     "firebase": "^9.19.1",
     "next": "13.3.0",
     "next-firebase-auth": "^1.0.0-canary.19",
+    "nprogress": "^0.2.0",
     "postcss": "8.4.21",
     "react": "^18.2.0",
     "react-dom": "18.2.0",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nprogress": "^0.2.0",
     "@types/react": "^17.0.0",
     "@types/webpack-env": "^1.18.0",
     "eslint": "latest",

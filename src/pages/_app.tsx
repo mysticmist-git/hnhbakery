@@ -1,5 +1,5 @@
 import React from 'react';
-import { CacheProvider, EmotionCache } from '@emotion/react';
+// import { CacheProvider, EmotionCache } from '@emotion/react';
 import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 
 // import createEmotionCache from '@/utilities/createEmotionCache';
@@ -8,7 +8,7 @@ import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 
 import { AppProps } from 'next/app';
 import initAuth from '@/next-firebase-auth/initAuth';
-import { useRouter } from 'next/router';
+import { Router, useRouter } from 'next/router';
 import ManageLayout from '@/components/Layouts/ManageLayout';
 import DefaultLayout from '@/components/Layouts/DefaultLayout';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -16,18 +16,29 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
 import { SnackbarService, TransitionUp } from '@/lib/contexts';
+import NProgress from 'nprogress';
+
+//Binding events.
+
+Router.events.on('routeChangeStart', () => NProgress.start());
+Router.events.on('routeChangeComplete', () => NProgress.done());
+Router.events.on('routeChangeError', () => NProgress.done());
 
 //#region Top
 
-interface MyAppProps extends AppProps {
-  emotionCache: EmotionCache;
-}
+// interface MyAppProps extends AppProps {
+//   emotionCache: EmotionCache;
+// }
 
 initAuth();
 
 //#endregion
 
 const MyApp = (props: AppProps) => {
+  // #region States
+
+  // #endregion
+
   //#region Hooks
 
   const { Component, pageProps } = props;
@@ -36,6 +47,10 @@ const MyApp = (props: AppProps) => {
   const CurrentLayout = router.pathname.includes('/manager')
     ? ManageLayout
     : DefaultLayout;
+
+  //#endregion
+
+  //#region useEffects
 
   //#endregion
 
@@ -60,6 +75,7 @@ const MyApp = (props: AppProps) => {
           <CurrentLayout>
             <Component {...pageProps} />
           </CurrentLayout>
+          )
           <Snackbar
             open={snackbarOpen}
             autoHideDuration={6000}
