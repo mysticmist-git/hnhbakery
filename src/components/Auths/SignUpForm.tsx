@@ -10,8 +10,8 @@ import { Google } from '@mui/icons-material';
 import { Grid, TextField, Button, Link, Divider } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
+import { useSnackbarService } from '@/pages/_app';
 import { UserCredential } from 'firebase/auth';
-import { useSnackbarService } from '@/lib/contexts';
 
 export default function SignUpForm({
   handleSignUp,

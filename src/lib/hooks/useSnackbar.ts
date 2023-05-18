@@ -1,7 +1,7 @@
 import { AlertColor } from '@mui/material';
 import React from 'react';
 
-export default function useSnackbar() {
+export default function useSnackbar2() {
   //#region States
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
@@ -23,6 +23,8 @@ export default function useSnackbar() {
   }
   function handleSnackbarClose() {
     setSnackbarOpen(false);
+    setSnackbarText(null);
+    setSnackbarSeverity('success');
   }
 
   //#endregion
