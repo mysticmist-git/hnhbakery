@@ -1,4 +1,3 @@
-export { handleLoginWithGoogle } from './auth';
 export {
   DEFAULT_ROW,
   crudTargets,

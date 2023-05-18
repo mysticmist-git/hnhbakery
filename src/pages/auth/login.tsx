@@ -1,39 +1,27 @@
 //#region Import
 
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import { auth } from '@/firebase/config';
 import { default as NextLink } from 'next/link';
-import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
-import { CustomSnackbar } from '@/components/CustomSnackbar';
-import useSnackbar from '@/lib/hooks/useSnackbar';
-import {
-  SignInProps,
-  AuthErrorCode,
-  AuthResult,
-  SignInPropsFromObject,
-} from '@/lib/signup';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
-import { handleLoginWithGoogle } from '../lib/localLib/auth';
-import { useSnackbarService } from './_app';
-import { authMessages } from '@/lib/constants/authConstants';
-import { alpha, color, SxProps, Theme } from '@mui/system';
+import { authMessages } from '@/lib/constants';
+import { alpha } from '@mui/system';
 import banh1 from '../assets/Carousel/3.jpg';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
 import CustomTextField from '@/components/Inputs/CustomTextField';
-import CustomButton from '@/components/Inputs/Buttons/customButton';
+import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
+import { handleLoginWithGoogle } from '@/lib/auth';
+import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
+import { useSnackbarService } from '@/lib/contexts';
+import { CustomButton } from '@/components/Inputs/Buttons';
 
 //#endregion
 
@@ -57,37 +45,11 @@ function Copyright(props: any) {
   );
 }
 
-const signUserIn = async (props: {
-  email: string;
-  password: string;
-}): Promise<AuthResult> => {
-  try {
-    const userCredential: UserCredential = await signInWithEmailAndPassword(
-      auth,
-      props.email,
-      props.password,
-    );
-    const user = userCredential.user;
-    return { result: 'successful', userCredential: user };
-  } catch (error: any) {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    const returnedError: AuthResult = {
-      result: 'fail',
-      errorCode,
-      errorMessage,
-    };
-    console.log(returnedError);
-    return returnedError;
-  }
-};
-
 //#endregion
 
-export default function Auth() {
+export default function Login() {
   //#region Hooks
 
-  const { snackbarProps, setSnackbarProps, notifier } = useSnackbar();
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
@@ -96,7 +58,7 @@ export default function Auth() {
   //#region Handlers
 
   const handleSignIn = async (props: SignInProps) => {
-    const result = await signUserIn(props);
+    const result = await signUserInWithEmailAndPassword(props);
 
     // console.log(result);
 
@@ -415,11 +377,6 @@ export default function Auth() {
               </Grid>
             </Grid>
           </Grid>
-
-          <CustomSnackbar
-            setSnackbarProps={setSnackbarProps}
-            props={snackbarProps}
-          />
         </Grid>
       </Box>
     </Box>

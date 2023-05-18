@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import BatchForm from '../forms/BatchForm';
 import RowModalLayout from './RowModalLayout';
 import { storage, db } from '@/firebase/config';
-import { useSnackbarService } from '@/pages/_app';
+import { useSnackbarService } from '@/lib/contexts';
 import { DocumentData, doc, updateDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import ProductTypeForm from '../forms/ProductTypeForm';
