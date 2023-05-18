@@ -46,6 +46,7 @@
     "@types/node": "latest",
     "@types/nprogress": "^0.2.0",
     "@types/react": "^17.0.0",
+    "@types/sharp": "^0.32.0",
     "@types/webpack-env": "^1.18.0",
     "eslint": "latest",
     "eslint-config-next": "latest",
