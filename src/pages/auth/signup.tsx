@@ -14,7 +14,7 @@ import Copyright from '@/components/Copyright';
 import { useRouter } from 'next/router';
 import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 import { useSnackbarService } from '@/lib/contexts';
-import { SignUpForm } from '@/components/Auth';
+import { SignUpForm } from '@/components/Auths';
 
 export default function SignUp() {
   //region Hooks
