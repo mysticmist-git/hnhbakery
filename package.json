@@ -50,6 +50,7 @@
     "eslint": "latest",
     "eslint-config-next": "latest",
     "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
     "prettier": "^2.8.7",
     "typescript": "latest"
   }

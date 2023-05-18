@@ -41,11 +41,6 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import {
-  BatchPredictionSharp,
-  PanoramaVerticalSelectRounded,
-  ProductionQuantityLimits,
-} from '@mui/icons-material';
 import { BatchObject } from '@/lib/models/Batch';
 
 // #region Filter
