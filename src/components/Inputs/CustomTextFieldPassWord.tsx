@@ -1,15 +1,33 @@
 import { TextField, alpha, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-export default function CustomTextField(props: any) {
+export default function CustomTextFieldPassWord(props: any) {
   const theme = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleTogglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
   return (
     <>
       <TextField
         {...props}
         placeholder={props.placeholder ? props.placeholder : ''}
-        type={props.type ? props.type : 'text'}
-        InputProps={{ disableUnderline: true }}
+        type={showPassword ? 'text' : 'password'}
+        InputProps={{
+          disableUnderline: true,
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={handleTogglePassword}>
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
         variant="filled"
         maxRows="1"
         style={{

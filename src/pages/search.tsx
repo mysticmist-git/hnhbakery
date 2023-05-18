@@ -6,6 +6,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Link,
 } from '@mui/material';
 import React, { useState, createContext, useContext } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -644,12 +645,14 @@ function Product(props: any) {
           <Grid item xs={5} alignSelf={'stretch'}>
             <Box
               height={'100%'}
+              width={'100%'}
               component={'img'}
               loading="lazy"
               alt=""
               src={item.product.image}
               sx={{
                 objectFit: 'cover',
+                borderRadius: '16px',
               }}
             />
           </Grid>
@@ -711,14 +714,14 @@ function Product(props: any) {
               <Grid item xs={12}>
                 <CustomButton
                   children={() => (
-                    <a href={item.product.href}>
+                    <Link href={item.product.href}>
                       <Typography
                         variant="button"
                         color={theme.palette.common.white}
                       >
                         Xem chi tiết
                       </Typography>
-                    </a>
+                    </Link>
                   )}
                 />
               </Grid>
@@ -900,7 +903,7 @@ export default function Search() {
               spacing={2}
             >
               <Grid item>
-                <a href="#">
+                <Link href="#">
                   <Typography
                     align="center"
                     variant="h1"
@@ -913,13 +916,13 @@ export default function Search() {
                   >
                     Tìm kiếm
                   </Typography>
-                </a>
+                </Link>
               </Grid>
             </Grid>
           )}
         />
 
-        <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
+        <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
           <Typography
             align="center"
             variant="h1"
@@ -955,7 +958,7 @@ export default function Search() {
               <CustomButton
                 sx={{ height: '100%', borderRadius: '8px', py: '12px', px: 3 }}
                 children={() => (
-                  <Typography variant="button">Đăng ký</Typography>
+                  <Typography variant="button">Tìm kiếm</Typography>
                 )}
               />
             </Grid>

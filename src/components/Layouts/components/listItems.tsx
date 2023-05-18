@@ -12,6 +12,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import { useRouter } from 'next/router';
 import { Check } from '@mui/icons-material';
 import { Typography, useTheme } from '@mui/material';
+import theme from '@/styles/themes/lightTheme';
 
 //#region Constants
 
@@ -56,7 +57,7 @@ function typographySxProps(route: string) {
   const theme = useTheme();
 
   const sx = [
-    {},
+    { color: theme.palette.text.secondary },
     isActive(route) && {
       color: theme.palette.secondary.main,
       fontWeight: 'bold',
@@ -159,19 +160,28 @@ export function SecondaryListItems() {
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Tháng này" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Tháng này"
+        />
       </ListItemButton>
       <ListItemButton>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Quý trước" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Quý trước"
+        />
       </ListItemButton>
       <ListItemButton>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Year-end sale" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Year-end sale"
+        />
       </ListItemButton>
     </React.Fragment>
   );
