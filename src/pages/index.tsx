@@ -203,7 +203,12 @@ function CakeCard(props: any) {
         <CustomButton
           sx={{ px: 2 }}
           children={() => (
-            <Typography variant="button">Thêm vào giỏ hàng</Typography>
+            <Typography
+              sx={{ color: theme.palette.common.white }}
+              variant="button"
+            >
+              Thêm vào giỏ hàng
+            </Typography>
           )}
         />
       </CardActions>

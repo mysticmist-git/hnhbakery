@@ -17,6 +17,7 @@ import { useRouter } from 'next/router';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import { CustomSnackbar } from '@/components/CustomSnackbar';
 import SignUpForm from '@/components/Auths/SignUpForm';
+import theme from '@/styles/themes/lightTheme';
 
 export default function SignUp() {
   const router = useRouter();
@@ -85,7 +86,12 @@ export default function SignUp() {
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5" textTransform={'uppercase'}>
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          component="h1"
+          variant="h5"
+          textTransform={'uppercase'}
+        >
           Đăng ký
         </Typography>
         <SignUpForm handleSignUp={handleSignUp} validate={validate} />

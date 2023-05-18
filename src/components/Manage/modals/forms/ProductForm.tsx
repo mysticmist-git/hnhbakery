@@ -21,6 +21,7 @@ import MyGallery from './components/MyGallery';
 import MyMultiValueInput from './components/MyMultiValueInput';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import theme from '@/styles/themes/lightTheme';
 
 //#region Types
 
@@ -272,7 +273,11 @@ const ProductForm = ({
                 />
               }
               label={
-                <Typography variant="body1" fontWeight="bold">
+                <Typography
+                  sx={{ color: theme.palette.success.main }}
+                  variant="body1"
+                  fontWeight="bold"
+                >
                   Còn hoạt động
                 </Typography>
               }

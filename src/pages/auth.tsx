@@ -192,10 +192,18 @@ export default function Auth() {
                   width={'100%'}
                   height={'100%'}
                 >
-                  <Typography variant="h2" align="center">
+                  <Typography
+                    sx={{ color: theme.palette.common.white }}
+                    variant="h2"
+                    align="center"
+                  >
                     H&H
                   </Typography>
-                  <Typography variant="h2" align="center">
+                  <Typography
+                    sx={{ color: theme.palette.common.white }}
+                    variant="h2"
+                    align="center"
+                  >
                     Barkery
                   </Typography>
                 </Grid>
@@ -329,7 +337,12 @@ export default function Auth() {
                         borderRadius: '8px',
                       }}
                       children={() => (
-                        <Typography variant="body2">Đăng nhập</Typography>
+                        <Typography
+                          sx={{ color: theme.palette.common.white }}
+                          variant="body2"
+                        >
+                          Đăng nhập
+                        </Typography>
                       )}
                     />
                   </Grid>

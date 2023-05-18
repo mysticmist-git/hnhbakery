@@ -61,19 +61,27 @@ const GeneratedBatchTableBody = () => {
           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
         >
           <TableCell>
-            <Typography>{index + 1}</Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
+              {index + 1}
+            </Typography>
           </TableCell>
           <TableCell>
-            <Typography>{doc.productName}</Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
+              {doc.productName}
+            </Typography>
           </TableCell>
           <TableCell>
-            <Typography>{doc.soldQuantity}</Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
+              {doc.soldQuantity}
+            </Typography>
           </TableCell>
           <TableCell>
-            <Typography>{doc.totalQuantity}</Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
+              {doc.totalQuantity}
+            </Typography>
           </TableCell>
           <TableCell>
-            <Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
               {new Date(doc.MFG).toLocaleDateString('vi-VN', {
                 year: 'numeric',
                 month: 'long',
@@ -82,7 +90,7 @@ const GeneratedBatchTableBody = () => {
             </Typography>
           </TableCell>
           <TableCell>
-            <Typography>
+            <Typography sx={{ color: theme.palette.common.black }}>
               {new Date(doc.EXP).toLocaleDateString('vi-VN', {
                 year: 'numeric',
                 month: 'long',

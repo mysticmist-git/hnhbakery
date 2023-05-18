@@ -1,3 +1,4 @@
+import theme from '@/styles/themes/lightTheme';
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
@@ -21,7 +22,9 @@ export default function TabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
+          <Typography sx={{ color: theme.palette.common.black }}>
+            {children}
+          </Typography>
         </Box>
       )}
     </div>

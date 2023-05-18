@@ -41,7 +41,6 @@ import {
   DEFAULT_ROW,
 } from '@/lib/localLib/manage';
 import { useSnackbarService } from '../_app';
-
 //#region Constants
 
 const LOADING_TEXT = 'Loading...';
@@ -293,7 +292,9 @@ export default function Manage({
         }}
       >
         {/* Title */}
-        <Typography variant="h4">Quản lý kho</Typography>
+        <Typography sx={{ color: theme.palette.common.black }} variant="h4">
+          Quản lý kho
+        </Typography>
         <Divider
           sx={{
             mt: 2,
@@ -307,9 +308,17 @@ export default function Manage({
           value={state.selectedTarget}
           onChange={handleCrudTargetChanged}
           options={crudTargets}
+          ListboxProps={{
+            sx: { bgcolor: theme.palette.text.secondary },
+          }}
           sx={{ mt: 4, width: 300 }}
           renderInput={(params) => (
-            <TextField {...params} color="secondary" label="Kho" />
+            <TextField
+              {...params}
+              label="Kho"
+              variant="filled"
+              sx={{ bgcolor: theme.palette.secondary.main }}
+            />
           )}
         />
         {/* Manage Buttons */}

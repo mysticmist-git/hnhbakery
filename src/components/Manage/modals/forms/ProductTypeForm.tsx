@@ -150,7 +150,15 @@ const ProductTypeForm = ({
               />
             }
             label={
-              <Typography variant="body1" fontWeight="bold">
+              <Typography
+                sx={{
+                  color: state.displayingData?.isActive
+                    ? theme.palette.success.main
+                    : theme.palette.error.main,
+                }}
+                variant="body1"
+                fontWeight="bold"
+              >
                 {state.displayingData?.isActive
                   ? 'Còn hoạt động'
                   : 'Ngưng hoạt động'}
