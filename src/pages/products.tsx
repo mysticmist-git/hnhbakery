@@ -301,6 +301,7 @@ function TypeSort(props: any) {
                 '& .MuiSvgIcon-root': {
                   color: theme.palette.common.white,
                 },
+                color: theme.palette.common.white,
                 fontFamily: theme.typography.body2.fontFamily,
                 fontSize: theme.typography.body2.fontSize,
                 fontWeight: theme.typography.body2.fontWeight,

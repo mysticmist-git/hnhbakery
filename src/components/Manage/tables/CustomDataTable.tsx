@@ -20,7 +20,7 @@ const CustomDataTable = () => {
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead sx={{ backgroundColor: theme.palette.secondary.main }}>
+        <TableHead>
           <TableRow>
             <GeneratedTableHead />
           </TableRow>

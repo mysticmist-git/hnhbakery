@@ -78,6 +78,9 @@ export default function MyMultiValueInput({
             label={value}
             deleteIcon={readOnly ? <></> : <Close></Close>}
             onDelete={() => handleDeleteValue(value)}
+            sx={{
+              color: theme.palette.common.black,
+            }}
           />
         ))}
 

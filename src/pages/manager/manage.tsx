@@ -308,18 +308,8 @@ export default function Manage({
           value={state.selectedTarget}
           onChange={handleCrudTargetChanged}
           options={crudTargets}
-          ListboxProps={{
-            sx: { bgcolor: theme.palette.text.secondary },
-          }}
           sx={{ mt: 4, width: 300 }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Kho"
-              variant="filled"
-              sx={{ bgcolor: theme.palette.secondary.main }}
-            />
-          )}
+          renderInput={(params) => <TextField {...params} label="Kho" />}
         />
         {/* Manage Buttons */}
         <Box

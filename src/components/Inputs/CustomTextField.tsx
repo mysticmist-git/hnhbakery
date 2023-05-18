@@ -9,35 +9,39 @@ export default function CustomTextField(props: any) {
         {...props}
         placeholder={props.placeholder ? props.placeholder : ''}
         type={props.type ? props.type : 'text'}
-        InputProps={{ disableUnderline: true }}
+        hiddenLabel
         variant="filled"
         maxRows="1"
-        style={{
-          border: `3px solid ${
-            props.borderColor ? props.borderColor : theme.palette.secondary.main
-          }`,
-          borderRadius: '8px',
-          borderColor: props.borderColor
-            ? props.borderColor
-            : theme.palette.secondary.main,
-          borderStyle: 'solid',
-          overflow: 'hidden',
+        InputProps={{
+          disableUnderline: true,
         }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.boxShadow = `0px 0px 5px 2px ${alpha(
-            theme.palette.secondary.main,
-            0.3,
-          )}`)
-        }
-        onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
         inputProps={{
           sx: {
             fontSize: theme.typography.body2.fontSize,
             color: theme.palette.common.black,
             fontWeight: theme.typography.body2.fontWeight,
             fontFamily: theme.typography.body2.fontFamily,
-            padding: '11.5px',
             backgroundColor: theme.palette.common.white,
+            border: 3,
+            borderColor: props.borderColor
+              ? props.borderColor
+              : theme.palette.secondary.main,
+            py: props.py ? props.py : 1.5,
+            borderRadius: '8px',
+            '&:hover': {
+              backgroundColor: theme.palette.common.white,
+              boxShadow: `0px 0px 5px 2px ${alpha(
+                theme.palette.secondary.main,
+                0.3,
+              )}`,
+            },
+            '&:focus': {
+              backgroundColor: theme.palette.common.white,
+              boxShadow: `0px 0px 5px 2px ${alpha(
+                theme.palette.secondary.main,
+                0.3,
+              )}`,
+            },
           },
         }}
       />

@@ -18,6 +18,14 @@ const theme = createTheme({
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: '#FFFFFF',
+          backgroundColor: '#810000',
+        },
+      },
+    },
   },
   palette: {
     mode: 'light',
@@ -30,7 +38,7 @@ const theme = createTheme({
       contrastText: '#FFFFFF',
     },
     text: {
-      primary: '#FFFFFF',
+      primary: '#000000',
       secondary: '#757575',
     },
     error: {

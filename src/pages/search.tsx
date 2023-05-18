@@ -950,13 +950,14 @@ export default function Search() {
           >
             <Grid item xs={true}>
               <CustomTextField
+                fullWidth
                 placeholder="Loại bánh, tên bánh, mã hóa đơn,..."
                 type="email"
               />
             </Grid>
             <Grid item>
               <CustomButton
-                sx={{ height: '100%', borderRadius: '8px', py: '12px', px: 3 }}
+                sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
                 children={() => (
                   <Typography variant="button">Tìm kiếm</Typography>
                 )}

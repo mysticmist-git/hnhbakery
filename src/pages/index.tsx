@@ -522,10 +522,18 @@ function DangKyKhuyenMai(props: any) {
           spacing={2}
         >
           <Grid item>
-            <Typography align="center" variant="h2">
+            <Typography
+              align="center"
+              color={theme.palette.common.white}
+              variant="h2"
+            >
               Khuyến mãi mỗi ngày
             </Typography>
-            <Typography variant="body2" align="center">
+            <Typography
+              variant="body2"
+              color={theme.palette.common.white}
+              align="center"
+            >
               Đăng ký email để nhận ưu đãi và thông tin các chương trình khuyến
               mãi
             </Typography>
@@ -540,7 +548,9 @@ function DangKyKhuyenMai(props: any) {
             >
               <Grid item>
                 <CustomTextField
-                  width={'350px'}
+                  sx={{
+                    width: '350px',
+                  }}
                   placeholder="Email của bạn"
                   type="email"
                   borderColor={theme.palette.common.white}
@@ -551,7 +561,7 @@ function DangKyKhuyenMai(props: any) {
                   sx={{
                     height: '100%',
                     borderRadius: '8px',
-                    py: '12px',
+                    py: 1.5,
                     px: 3,
                   }}
                   children={() => (

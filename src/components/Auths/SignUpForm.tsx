@@ -5,6 +5,8 @@ import { Grid, TextField, Button, Link, Divider } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { useSnackbarService } from '@/pages/_app';
+import theme from '@/styles/themes/lightTheme';
+import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
 
 export default function SignUpForm({
   handleSignUp,
@@ -38,7 +40,7 @@ export default function SignUpForm({
     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
-          <TextField
+          <CustomTextFieldWithLabel
             autoComplete="given-name"
             name="firstName"
             required
@@ -46,36 +48,30 @@ export default function SignUpForm({
             id="firstName"
             label="Tên"
             autoFocus
-            color="secondary"
-            sx={{
-              color: (theme) => theme.palette.common.black,
-            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             id="lastName"
             label="Last Name"
             name="lastName"
             autoComplete="Họ"
-            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             id="email"
             label="Địa chỉ Email"
             name="email"
             autoComplete="email"
-            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             name="password"
@@ -83,7 +79,6 @@ export default function SignUpForm({
             type="password"
             id="password"
             autoComplete="new-password"
-            color="secondary"
           />
         </Grid>
       </Grid>

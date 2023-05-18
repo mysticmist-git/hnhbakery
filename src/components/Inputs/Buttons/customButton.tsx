@@ -10,6 +10,7 @@ export default function CustomButton(props: any) {
         color: theme.palette.common.white,
         transition: 'opacity 0.2s',
       }}
+      py={props.py ? props.py : 1.5}
       variant="contained"
       {...props}
       onMouseOver={(e) => (e.currentTarget.style.opacity = '0.7')}

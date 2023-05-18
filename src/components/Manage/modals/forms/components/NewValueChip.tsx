@@ -36,6 +36,7 @@ const NewValueChip = ({
           border: 'none',
           backgroundColor: 'transparent',
           width: width ?? '52px',
+          color: 'common.black',
         }}
         disableUnderline
       />
