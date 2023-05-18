@@ -30,7 +30,7 @@ const theme = createTheme({
       contrastText: '#FFFFFF',
     },
     text: {
-      primary: '#000',
+      primary: '#FFFFFF',
       secondary: '#757575',
     },
     error: {

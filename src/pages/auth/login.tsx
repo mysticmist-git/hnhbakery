@@ -1,31 +1,27 @@
 //#region Import
 
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
 import { authMessages } from '@/lib/constants';
-import { alpha, color, SxProps, Theme } from '@mui/system';
+import { alpha } from '@mui/system';
 import banh1 from '../assets/Carousel/3.jpg';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
 import CustomTextField from '@/components/Inputs/CustomTextField';
-import CustomButton from '@/components/Inputs/Buttons/customButton';
 import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
 import { handleLoginWithGoogle } from '@/lib/auth';
 import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
 import { useSnackbarService } from '@/lib/contexts';
+import { CustomButton } from '@/components/Inputs/Buttons';
 
 //#endregion
 
