@@ -12,9 +12,9 @@ import {
 } from 'firebase/auth';
 import Copyright from '@/components/Copyright';
 import { useRouter } from 'next/router';
-import SignUpForm from '@/components/Auths/SignUpForm';
-import { useSnackbarService } from '../_app';
 import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
+import { useSnackbarService } from '@/lib/contexts';
+import { SignUpForm } from '@/components/Auth';
 
 export default function SignUp() {
   //region Hooks
