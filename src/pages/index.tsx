@@ -751,7 +751,7 @@ async function fetchBestSellerProductsAndTheirImagesToo(
 
 //#endregion
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const productTypes = await getCollection<ProductTypeObject>('productTypes');
   const bestSellerProducts = await getBestSellterProducts();
 
