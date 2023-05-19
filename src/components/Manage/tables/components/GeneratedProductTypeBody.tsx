@@ -1,12 +1,7 @@
 import theme from '@/styles/themes/lightTheme';
-import { Wysiwyg, Delete } from '@mui/icons-material';
-import { Box, TableCell, TableRow, Typography } from '@mui/material';
-import { DocumentData } from 'firebase/firestore';
-import { TableActionButton } from '../TableActionButton';
-import { ProductTypeObject } from '@/lib/models';
-import CustomTableBodyProps from '../lib/TableBodyProps';
+import { TableCell, TableRow, Typography } from '@mui/material';
 import { ManageContext } from '@/pages/manager/manage';
-import { useContext } from 'react';
+import { memo, useContext } from 'react';
 import RowActionButtons from './RowActionButtons';
 import { ManageContextType } from '@/lib/localLib/manage';
 
@@ -60,4 +55,4 @@ const GeneratedProductTypeTableBody = () => {
   );
 };
 
-export default GeneratedProductTypeTableBody;
+export default memo(GeneratedProductTypeTableBody);

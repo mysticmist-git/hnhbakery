@@ -1,7 +1,7 @@
 import { TextField, alpha, useTheme } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function CustomTextField(props: any) {
+const CustomTextField = (props: any) => {
   const theme = useTheme();
   return (
     <>
@@ -47,4 +47,5 @@ export default function CustomTextField(props: any) {
       />
     </>
   );
-}
+};
+export default memo(CustomTextField);

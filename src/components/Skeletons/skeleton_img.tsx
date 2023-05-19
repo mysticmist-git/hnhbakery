@@ -1,12 +1,13 @@
 import { Box, Skeleton } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function Skeleton_img(props: any) {
+const Skeleton_img = (props: any) => {
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   const handleImageLoad = () => {
     setIsLoaded(true);
   };
+
   return (
     <>
       {!isLoaded && (
@@ -24,4 +25,6 @@ export default function Skeleton_img(props: any) {
       />
     </>
   );
-}
+};
+
+export default memo(Skeleton_img);

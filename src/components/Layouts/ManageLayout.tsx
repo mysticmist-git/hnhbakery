@@ -9,6 +9,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Sidebar from './components/Sidebar';
 import Link from 'next/link';
 import { Typography } from '@mui/material';
+import { memo } from 'react';
 
 const drawerWidth: number = 240;
 
@@ -38,7 +39,7 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-export default function Layout({ children }: { children: any }) {
+const Layout = ({ children }: { children: any }) => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -90,4 +91,6 @@ export default function Layout({ children }: { children: any }) {
       </Box>
     </>
   );
-}
+};
+
+export default memo(Layout);

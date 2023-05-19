@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { DocumentData } from 'firebase/firestore';
-import { createContext } from 'react';
+import { createContext, memo } from 'react';
 import GeneratedTableHead from './components/GeneratedTableHead';
 import GeneratedTableBody from './components/GeneratedTableBody';
 import theme from '@/styles/themes/lightTheme';
@@ -33,4 +33,4 @@ const CustomDataTable = () => {
   );
 };
 
-export default CustomDataTable;
+export default memo(CustomDataTable);

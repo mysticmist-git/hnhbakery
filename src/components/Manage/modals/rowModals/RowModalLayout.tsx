@@ -16,7 +16,7 @@ import {
   Divider,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import { CollectionName } from '@/lib/models/utilities';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
@@ -46,7 +46,7 @@ const formStyle = {
   },
 };
 
-export default function RowModalLayout({
+const RowModalLayout = ({
   children,
   handleAddNewRow,
   handleUpdateRow,
@@ -56,7 +56,7 @@ export default function RowModalLayout({
   handleAddNewRow: any;
   handleUpdateRow: any;
   resetForm: any;
-}) {
+}) => {
   //#region States
 
   const {
@@ -271,4 +271,6 @@ export default function RowModalLayout({
       </Box>
     </Modal>
   );
-}
+};
+
+export default memo(RowModalLayout);

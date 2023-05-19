@@ -36,15 +36,19 @@ export async function addUser(userCredential: UserCredential) {
 }
 
 export async function updateUserLogin(userCredential: UserCredential) {
-  const user = userCredential.user;
+  try {
+    const user = userCredential.user;
 
-  // Add/update user info to Firestore
-  const userRef = doc(db, 'users', user.uid);
-  const data: User = {
-    lastLogin: Timestamp.now(),
-  };
+    // Add/update user info to Firestore
+    const userRef = doc(db, 'users', user.uid);
+    const data: User = {
+      lastLogin: Timestamp.now(),
+    };
 
-  setDoc(userRef, data, { merge: true });
+    setDoc(userRef, data, { merge: true });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export const handleLoginWithGoogle = async () => {

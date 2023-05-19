@@ -1,5 +1,5 @@
 import { DocumentData, collection, doc, updateDoc } from 'firebase/firestore';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 
@@ -17,6 +17,7 @@ import {
   deleteImageFromFirebaseStorage,
   updateDocumentToFirestore,
 } from '@/lib/firestore/firestoreLib';
+import { NewValueChip } from '../forms/components';
 
 interface FirebaseImage {
   path: string;
@@ -28,7 +29,7 @@ interface UploadedImage {
   url: string | null;
 }
 
-export default function ProductRowModal() {
+const ProductRowModal = () => {
   //#region States
 
   const [originalDisplayingData, setOriginalDisplayingData] =
@@ -78,7 +79,7 @@ export default function ProductRowModal() {
       return;
     }
 
-    setOriginalDisplayingData(state.displayingData);
+    setOriginalDisplayingData(() => state.displayingData);
 
     let _firebaseStorageImages: FirebaseImage[] =
       state.displayingData.images.map(
@@ -103,8 +104,8 @@ export default function ProductRowModal() {
 
       console.log(_firebaseStorageImages);
 
-      setFirebaseStorageImages(_firebaseStorageImages);
-      setOriginalFirebaseStorageImages(_firebaseStorageImages);
+      setFirebaseStorageImages(() => _firebaseStorageImages);
+      setOriginalFirebaseStorageImages(() => _firebaseStorageImages);
     }
 
     GetDownloadURLs();
@@ -131,7 +132,13 @@ export default function ProductRowModal() {
       return;
     }
 
-    setGalleryImages([...galleryImages, newImage]);
+    setGalleryImages((prevState: UploadedImage[] | null) => {
+      if (prevState) {
+        return [...prevState, newImage];
+      }
+
+      return prevState;
+    });
   };
 
   /**
@@ -320,9 +327,10 @@ export default function ProductRowModal() {
 
   const handleDeleteImage = (url: string) => {
     if (firebaseStorageImages?.map((image) => image.url).includes(url)) {
-      setFirebaseStorageImages(
-        firebaseStorageImages.filter((image) => image.url !== url),
-      );
+      setFirebaseStorageImages((prevState) => {
+        if (prevState) return prevState.filter((image) => image.url !== url);
+        else return prevState;
+      });
       return;
     }
 
@@ -579,4 +587,6 @@ export default function ProductRowModal() {
       />
     </RowModalLayout>
   );
-}
+};
+
+export default memo(ProductRowModal);

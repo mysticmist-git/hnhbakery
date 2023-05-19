@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 
 import BatchForm from '../forms/BatchForm';
 import RowModalLayout from './RowModalLayout';
@@ -17,7 +17,7 @@ import {
   updateDocumentToFirestore,
 } from '@/lib/firestore/firestoreLib';
 
-export default function BatchRowModal() {
+const BatchRowModal = () => {
   //#region States
 
   const [originalDisplayingData, setOriginalDisplayingData] =
@@ -47,7 +47,7 @@ export default function BatchRowModal() {
       return;
     }
 
-    setOriginalDisplayingData(state.displayingData);
+    setOriginalDisplayingData(() => state.displayingData);
   }, []);
 
   //#endregion
@@ -308,4 +308,6 @@ export default function BatchRowModal() {
       <BatchForm readOnly={state.crudModalMode === 'view'} />
     </RowModalLayout>
   );
-}
+};
+
+export default memo(BatchRowModal);

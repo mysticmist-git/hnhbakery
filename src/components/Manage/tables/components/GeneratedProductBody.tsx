@@ -1,5 +1,5 @@
 import { TableRow, TableCell, Typography } from '@mui/material';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { ManageContext } from '@/pages/manager/manage';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
@@ -96,4 +96,4 @@ const GeneratedProductTableBody = () => {
   );
 };
 
-export default GeneratedProductTableBody;
+export default memo(GeneratedProductTableBody);

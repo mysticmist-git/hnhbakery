@@ -13,6 +13,7 @@ import { useRouter } from 'next/router';
 import { Check } from '@mui/icons-material';
 import { Typography, useTheme } from '@mui/material';
 import theme from '@/styles/themes/lightTheme';
+import { memo } from 'react';
 
 //#region Constants
 
@@ -68,7 +69,7 @@ function typographySxProps(route: string) {
 }
 
 //#endregion
-export function MainListItems() {
+export const MainListItems = memo(() => {
   //#region Hooks
 
   const router = useRouter();
@@ -148,9 +149,9 @@ export function MainListItems() {
       </ListItemButton>
     </React.Fragment>
   );
-}
+});
 
-export function SecondaryListItems() {
+export const SecondaryListItems = memo(() => {
   return (
     <React.Fragment>
       <ListSubheader component="div" inset>
@@ -185,4 +186,4 @@ export function SecondaryListItems() {
       </ListItemButton>
     </React.Fragment>
   );
-}
+});

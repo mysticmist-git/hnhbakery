@@ -22,12 +22,13 @@ import { handleLoginWithGoogle } from '@/lib/auth';
 import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { CustomButton } from '@/components/Inputs/Buttons';
+import { memo } from 'react';
 
 //#endregion
 
 //#region Top
 
-function Copyright(props: any) {
+const Copyright = (props: any) => {
   return (
     <Typography
       variant="body2"
@@ -47,11 +48,11 @@ function Copyright(props: any) {
       {'.'}
     </Typography>
   );
-}
+};
 
 //#endregion
 
-export default function Login() {
+const Login = () => {
   //#region Hooks
 
   const router = useRouter();
@@ -386,4 +387,6 @@ export default function Login() {
       </Box>
     </Box>
   );
-}
+};
+
+export default memo(Login);

@@ -1,11 +1,7 @@
 import { ManageContext } from '@/pages/manager/manage';
 import theme from '@/styles/themes/lightTheme';
-import { Wysiwyg, Delete } from '@mui/icons-material';
 import { TableRow, TableCell, Typography } from '@mui/material';
-import { Box } from '@mui/system';
-import { useContext, useEffect, useState } from 'react';
-import { CustomDataTableContext } from '../CustomDataTable';
-import { TableActionButton } from '../TableActionButton';
+import { memo, useContext, useEffect, useState } from 'react';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
@@ -44,7 +40,7 @@ const GeneratedBatchTableBody = () => {
           }),
         );
 
-        setDisplayMainDocs(docs);
+        setDisplayMainDocs(() => docs);
       } catch (err) {
         console.log('Err', err);
       }
@@ -107,4 +103,4 @@ const GeneratedBatchTableBody = () => {
   );
 };
 
-export default GeneratedBatchTableBody;
+export default memo(GeneratedBatchTableBody);

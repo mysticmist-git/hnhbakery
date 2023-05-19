@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, memo } from 'react';
 import {
   Grid,
   Box,
@@ -85,7 +85,7 @@ const ProductForm = ({
 
     async function fetchData() {
       const productTypes: ProductTypeStateProps[] = await getProductTypes();
-      setProductTypes(productTypes);
+      setProductTypes(() => productTypes);
 
       if (state.crudModalMode === 'create') return;
 
@@ -97,8 +97,10 @@ const ProductForm = ({
       // set selected product type
       if (displayingData) {
         setSelectedProductType(
-          productTypes.find((pt) => pt.id === displayingData.productType_id) ??
-            productTypes[0],
+          () =>
+            productTypes.find(
+              (pt) => pt.id === displayingData.productType_id,
+            ) ?? productTypes[0],
         );
       }
     }
@@ -111,7 +113,7 @@ const ProductForm = ({
   //#region Handlers
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+    setTabValue(() => newValue);
   };
 
   //#endregion
@@ -408,4 +410,4 @@ const ProductForm = ({
   );
 };
 
-export default ProductForm;
+export default memo(ProductForm);

@@ -8,6 +8,7 @@ import { auth } from '@/firebase/config';
 import { SxProps, Theme, Typography } from '@mui/material';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
 import { useSnackbarService } from '@/lib/contexts';
+import { memo } from 'react';
 
 interface Props {
   photoURL: string | null;
@@ -21,11 +22,7 @@ const menuItemSx: SxProps<Theme> = {
   gap: 1,
 };
 
-export default function NavbarAvatar({
-  photoURL,
-}: {
-  photoURL: string | null;
-}) {
+const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   //#region States
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -42,16 +39,16 @@ export default function NavbarAvatar({
   //#region Handlers
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(() => event.currentTarget);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setAnchorEl(() => null);
   };
 
   const handleOpenManagement = () => {
     router.push('/manager/manage');
-    setAnchorEl(null);
+    setAnchorEl(() => null);
   };
 
   const handleLogout = async () => {
@@ -85,4 +82,6 @@ export default function NavbarAvatar({
       </Menu>
     </>
   );
-}
+};
+
+export default memo(NavbarAvatar);

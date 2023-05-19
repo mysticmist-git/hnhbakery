@@ -1,8 +1,9 @@
 import { useSnackbarService } from '@/lib/contexts';
 import { Add } from '@mui/icons-material';
 import { SxProps, Box } from '@mui/system';
+import { memo } from 'react';
 
-export default function MyGalleryImageNewButton({
+const MyGalleryImageNewButton = ({
   sx,
   disabled = false,
   handleUploadGalleryToBrowser,
@@ -10,7 +11,7 @@ export default function MyGalleryImageNewButton({
   sx?: SxProps;
   disabled: boolean;
   handleUploadGalleryToBrowser: any;
-}) {
+}) => {
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -58,4 +59,6 @@ export default function MyGalleryImageNewButton({
       />
     </Box>
   );
-}
+};
+
+export default memo(MyGalleryImageNewButton);

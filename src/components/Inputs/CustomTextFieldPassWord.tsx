@@ -1,10 +1,10 @@
 import { IconButton, TextField, alpha, useTheme } from '@mui/material';
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-export default function CustomTextFieldPassWord(props: any) {
+const CustomTextFieldPassWord = (props: any) => {
   const theme = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -60,4 +60,5 @@ export default function CustomTextFieldPassWord(props: any) {
       />
     </>
   );
-}
+};
+export default memo(CustomTextFieldPassWord);

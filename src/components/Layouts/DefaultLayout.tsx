@@ -1,8 +1,9 @@
 import { Box } from '@mui/material';
+import { memo } from 'react';
 import Footer from '../footer';
 import { Navbar } from '@/components/Header';
 
-export default function Layout({ children }: { children: any }) {
+const Layout = ({ children }: { children: any }) => {
   return (
     <>
       <Navbar />
@@ -10,4 +11,6 @@ export default function Layout({ children }: { children: any }) {
       <Footer />
     </>
   );
-}
+};
+
+export default memo(Layout);
