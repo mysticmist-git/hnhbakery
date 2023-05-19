@@ -48,7 +48,7 @@ const CustomCarousel = memo((props: any) => {
           key={i}
           sx={{ height: props.height, width: '100%', position: 'relative' }}
         >
-          <Link href={image.href}>
+          <Link href={image.href} style={{ textDecoration: 'none' }}>
             <Image
               fill={true}
               src={image.src}

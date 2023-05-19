@@ -12,8 +12,8 @@ import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
 import { authMessages } from '@/lib/constants';
-import { SxProps, Theme, alpha } from '@mui/system';
-import banh1 from '@/assets/Carousel/3.jpg';
+import { alpha } from '@mui/system';
+import banh1 from '../../assets/Carousel/3.jpg';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
 import CustomTextField from '@/components/Inputs/CustomTextField';
@@ -37,7 +37,11 @@ const Copyright = (props: any) => {
       {...props}
     >
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
+      <Link
+        style={{ textDecoration: 'none' }}
+        color="inherit"
+        href="https://mui.com/"
+      >
         H&H Barkery
       </Link>{' '}
       {new Date().getFullYear()}
@@ -279,6 +283,7 @@ const Login = () => {
                           legacyBehavior
                         >
                           <Link
+                            style={{ textDecoration: 'none' }}
                             variant="body2"
                             sx={{
                               color: theme.palette.secondary.main,
@@ -353,7 +358,7 @@ const Login = () => {
                       </Grid>
                       <Grid item>
                         <NextLink href="/signup" passHref legacyBehavior>
-                          <Link>
+                          <Link style={{ textDecoration: 'none' }}>
                             <Typography
                               variant="body2"
                               sx={{

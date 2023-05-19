@@ -1,7 +1,6 @@
-import { TextField, alpha, useTheme } from '@mui/material';
+import { IconButton, TextField, alpha, useTheme } from '@mui/material';
 import React, { memo, useState } from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 

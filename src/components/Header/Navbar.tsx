@@ -2,8 +2,13 @@ import {
   AppBar,
   Box,
   Grid,
+  Slide,
+  Tab,
+  Tabs,
   Toolbar,
   Typography,
+  alpha,
+  useScrollTrigger,
   useTheme,
 } from '@mui/material';
 import logo from '@/assets/Logo.png';
@@ -22,6 +27,7 @@ import { CustomIconButton } from '../Inputs/Buttons';
 import { CustomTab, NavbarContextType } from '.';
 import CustomDrawer from './CustomDrawer';
 import RightMenu from './RightMenu';
+import Link from 'next/link';
 
 //#region Tab
 
@@ -79,17 +85,12 @@ function Navbar() {
   const { email } = useMemo(() => AuthUser, [AuthUser]);
   const styles = useMemo(
     () => ({
-      appBar: {
-        top: 16,
-        left: 0,
-        right: 0,
-        bgcolor: theme.palette.secondary.dark,
-      },
+      appBar: {},
       gridDesktop: { display: { xs: 'none', lg: 'block' } },
       gridPhone: { display: { xs: 'block', lg: 'none' } },
       boxLogo: {
         position: 'absolute',
-        top: -16,
+        top: 0,
         left: 44,
         width: 117,
         height: 166,
@@ -133,7 +134,21 @@ function Navbar() {
   }
 
   //#endregion
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  const handleScroll = () => {
+    const currentScrollPos = window.pageYOffset;
+    if (currentScrollPos > 310) {
+      setIsScrolled(true);
+    } else {
+      setIsScrolled(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   return (
     <>
       <NavbarContext.Provider
@@ -145,60 +160,167 @@ function Navbar() {
           isSignIn: isSignInState,
         }}
       >
-        <AppBar sx={styles.appBar} position="absolute">
-          <Toolbar>
-            <Grid
-              container
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Grid item md={3} sx={styles.gridDesktop}>
-                <Box sx={styles.boxLogo}>
-                  <Skeleton_img src={logo.src} />
-                </Box>
-              </Grid>
+        <Slide appear={false} direction="down" in={!isScrolled}>
+          <AppBar
+            sx={{
+              top: 0,
+              left: 0,
+              right: 0,
+              background: `linear-gradient(to bottom, ${alpha(
+                theme.palette.common.black,
+                0.5,
+              )}, ${alpha(theme.palette.common.black, 0)})`,
+              boxShadow: 'none',
+            }}
+            position="fixed"
+          >
+            <Toolbar>
+              <Grid
+                container
+                direction="row"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Grid item md={3} sx={styles.gridDesktop}>
+                  <Box sx={styles.boxLogo}>
+                    <Skeleton_img src={logo.src} />
+                  </Box>
+                </Grid>
 
-              <Grid item md={6} sx={styles.gridDesktop}>
-                <CustomTab />
-              </Grid>
+                <Grid item md={6} sx={styles.gridDesktop}>
+                  <CustomTab down={isScrolled} />
+                </Grid>
 
-              <Grid item md={3} sx={styles.gridDesktop}>
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="flex-end"
-                  alignItems="center"
-                >
-                  <RightMenu />
+                <Grid item md={3} sx={styles.gridDesktop}>
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                  >
+                    <RightMenu down={isScrolled} />
+                  </Grid>
+                </Grid>
+
+                <Grid item xs={6} sx={styles.gridPhone}>
+                  <Link href="#" style={{ textDecoration: 'none' }}>
+                    <Typography
+                      variant="h3"
+                      color={
+                        isScrolled
+                          ? theme.palette.secondary.main
+                          : theme.palette.common.white
+                      }
+                    >
+                      H&H Bakery
+                    </Typography>
+                  </Link>
+                </Grid>
+
+                <Grid item xs={6} sx={styles.gridPhone}>
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                  >
+                    <CustomIconButton
+                      sx={{
+                        color: isScrolled
+                          ? theme.palette.secondary.main
+                          : theme.palette.common.white,
+                      }}
+                      onClick={() => handleSetDrawerOpenState(true)}
+                      children={() => <Menu />}
+                    />
+
+                    <CustomDrawer />
+                  </Grid>
                 </Grid>
               </Grid>
+            </Toolbar>
+          </AppBar>
+        </Slide>
+        <Slide appear={false} direction="down" in={isScrolled}>
+          <AppBar
+            sx={{
+              top: { lg: 0, xs: 0 },
+              left: 0,
+              right: 0,
+              background: theme.palette.common.white,
+              borderBottom: 1,
+              borderColor: theme.palette.text.secondary,
+              boxShadow: isScrolled ? 'none' : 3,
+            }}
+            position="fixed"
+          >
+            <Toolbar>
+              <Grid
+                container
+                direction="row"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Grid item md={3} sx={styles.gridDesktop}>
+                  <Box sx={styles.boxLogo}>
+                    <Skeleton_img src={logo.src} />
+                  </Box>
+                </Grid>
 
-              <Grid item xs={6} sx={styles.gridPhone}>
-                <Typography variant="h3" color={theme.palette.common.white}>
-                  <a href="#">H&H Bakery</a>
-                </Typography>
-              </Grid>
+                <Grid item md={6} sx={styles.gridDesktop}>
+                  <CustomTab down={isScrolled} />
+                </Grid>
 
-              <Grid item xs={6} sx={styles.gridPhone}>
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="flex-end"
-                  alignItems="center"
-                >
-                  <CustomIconButton
-                    sx={{ color: theme.palette.common.white }}
-                    onClick={() => handleSetDrawerOpenState(true)}
-                    children={() => <Menu />}
-                  />
+                <Grid item md={3} sx={styles.gridDesktop}>
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                  >
+                    <RightMenu down={isScrolled} />
+                  </Grid>
+                </Grid>
 
-                  <CustomDrawer />
+                <Grid item xs={6} sx={styles.gridPhone}>
+                  <Link href="#" style={{ textDecoration: 'none' }}>
+                    <Typography
+                      variant="h3"
+                      color={
+                        isScrolled
+                          ? theme.palette.secondary.main
+                          : theme.palette.common.white
+                      }
+                    >
+                      H&H Bakery
+                    </Typography>
+                  </Link>
+                </Grid>
+
+                <Grid item xs={6} sx={styles.gridPhone}>
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                  >
+                    <CustomIconButton
+                      sx={{
+                        color: isScrolled
+                          ? theme.palette.secondary.main
+                          : theme.palette.common.white,
+                      }}
+                      onClick={() => handleSetDrawerOpenState(true)}
+                      children={() => <Menu />}
+                    />
+
+                    <CustomDrawer />
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          </Toolbar>
-        </AppBar>
+            </Toolbar>
+          </AppBar>
+        </Slide>
       </NavbarContext.Provider>
     </>
   );
