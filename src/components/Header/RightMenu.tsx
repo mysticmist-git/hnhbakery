@@ -32,7 +32,9 @@ const RightMenu = (props: any) => {
         sx={{
           mr: props.orientation == 'vertical' ? 0 : 1,
           mb: props.orientation == 'vertical' ? 1 : 0,
-          color: theme.palette.common.white,
+          color: props.down
+            ? theme.palette.secondary.main
+            : theme.palette.common.white,
         }}
         children={() => <ShoppingCart />}
       />

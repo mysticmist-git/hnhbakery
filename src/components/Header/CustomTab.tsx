@@ -28,15 +28,20 @@ const CustomTab = (props: any) => {
           key={i}
           label={item.label}
           href={item.href}
-          sx={{
-            color: (theme) =>
-              i === hoveredIndex
-                ? theme.palette.common.white
-                : theme.palette.text.secondary,
-            '&.Mui-selected': (theme) => ({
-              color: theme.palette.common.white,
-            }),
-          }}
+          sx={(theme) => ({
+            color: props.down
+              ? i === hoveredIndex
+                ? theme.palette.secondary.main
+                : theme.palette.primary.dark
+              : i === hoveredIndex
+              ? theme.palette.common.white
+              : theme.palette.primary.light,
+            '&.Mui-selected': {
+              color: props.down
+                ? theme.palette.secondary.main
+                : theme.palette.common.white,
+            },
+          })}
           onMouseEnter={() => {
             setHoveredIndex(() => i);
           }}
