@@ -23,8 +23,6 @@ export default function useSnackbar2() {
   }
   function handleSnackbarClose() {
     setSnackbarOpen(false);
-    setSnackbarText(null);
-    setSnackbarSeverity('success');
   }
 
   //#endregion
