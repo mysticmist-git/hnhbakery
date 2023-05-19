@@ -6,8 +6,9 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Link,
 } from '@mui/material';
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, memo } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
@@ -17,7 +18,7 @@ import CustomButton from '@/components/Inputs/Buttons/CustomButton';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 
 //#region Hóa đơn của bạn
-function CustomAccordion(props: any) {
+const CustomAccordion = memo((props: any) => {
   const theme = useTheme();
   const heading = props.heading;
   const Content = props.content;
@@ -63,9 +64,9 @@ function CustomAccordion(props: any) {
       </AccordionDetails>
     </Accordion>
   );
-}
+});
 
-function CustomAccordionItem(props: any) {
+const CustomAccordionItem = memo((props: any) => {
   const theme = useTheme();
   const heading = props.heading;
   const Content = props.content;
@@ -107,9 +108,9 @@ function CustomAccordionItem(props: any) {
       </AccordionDetails>
     </Accordion>
   );
-}
+});
 
-function ListBillItem(props: any) {
+const ListBillItem = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -137,9 +138,9 @@ function ListBillItem(props: any) {
       </Grid>
     </Grid>
   );
-}
+});
 
-function ChiTietHoaDon(props: any) {
+const ChiTietHoaDon = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'billDetail';
@@ -186,9 +187,9 @@ function ChiTietHoaDon(props: any) {
         ))}
     </Grid>
   );
-}
+});
 
-function ThongTinGiaoHang(props: any) {
+const ThongTinGiaoHang = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'delivery';
@@ -235,9 +236,9 @@ function ThongTinGiaoHang(props: any) {
         ))}
     </Grid>
   );
-}
+});
 
-function ThongTinKhuyenMai(props: any) {
+const ThongTinKhuyenMai = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'sale';
@@ -332,7 +333,7 @@ function ThongTinKhuyenMai(props: any) {
       ))}
     </Grid>
   );
-}
+});
 
 const initBillInfor = [
   {
@@ -467,7 +468,7 @@ const initBillInfor = [
 //#endregion
 
 //#region Danh sách sản phẩm
-function ListProductItem(props: any) {
+const ListProductItem = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -579,9 +580,9 @@ function ListProductItem(props: any) {
       </Grid>
     </Grid>
   );
-}
+});
 
-function ProductContent(props: any) {
+const ProductContent = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   return (
@@ -625,9 +626,9 @@ function ProductContent(props: any) {
       ))}
     </>
   );
-}
+});
 
-function Product(props: any) {
+const Product = memo((props: any) => {
   const theme = useTheme();
   const item = props.item;
   return (
@@ -644,12 +645,14 @@ function Product(props: any) {
           <Grid item xs={5} alignSelf={'stretch'}>
             <Box
               height={'100%'}
+              width={'100%'}
               component={'img'}
               loading="lazy"
               alt=""
               src={item.product.image}
               sx={{
                 objectFit: 'cover',
+                borderRadius: '16px',
               }}
             />
           </Grid>
@@ -711,14 +714,14 @@ function Product(props: any) {
               <Grid item xs={12}>
                 <CustomButton
                   children={() => (
-                    <a href={item.product.href}>
+                    <Link href={item.product.href}>
                       <Typography
                         variant="button"
                         color={theme.palette.common.white}
                       >
                         Xem chi tiết
                       </Typography>
-                    </a>
+                    </Link>
                   )}
                 />
               </Grid>
@@ -728,7 +731,7 @@ function Product(props: any) {
       </Grid>
     </>
   );
-}
+});
 
 const initProductInfor = [
   {
@@ -869,7 +872,7 @@ export const SearchContext =
   createContext<SearchContextType>(initSearchContext);
 // #endregion
 
-export default function Search() {
+const Search = () => {
   const theme = useTheme();
   const styles = {
     gridDesktop: { display: { xs: 'none', lg: 'block' } },
@@ -900,7 +903,7 @@ export default function Search() {
               spacing={2}
             >
               <Grid item>
-                <a href="#">
+                <Link href="#">
                   <Typography
                     align="center"
                     variant="h1"
@@ -913,13 +916,13 @@ export default function Search() {
                   >
                     Tìm kiếm
                   </Typography>
-                </a>
+                </Link>
               </Grid>
             </Grid>
           )}
         />
 
-        <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
+        <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
           <Typography
             align="center"
             variant="h1"
@@ -947,15 +950,16 @@ export default function Search() {
           >
             <Grid item xs={true}>
               <CustomTextField
+                fullWidth
                 placeholder="Loại bánh, tên bánh, mã hóa đơn,..."
                 type="email"
               />
             </Grid>
             <Grid item>
               <CustomButton
-                sx={{ height: '100%', borderRadius: '8px', py: '12px', px: 3 }}
+                sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
                 children={() => (
-                  <Typography variant="button">Đăng ký</Typography>
+                  <Typography variant="button">Tìm kiếm</Typography>
                 )}
               />
             </Grid>
@@ -987,4 +991,6 @@ export default function Search() {
       </Box>
     </SearchContext.Provider>
   );
-}
+};
+
+export default memo(Search);

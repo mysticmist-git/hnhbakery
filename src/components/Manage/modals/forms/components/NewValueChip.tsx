@@ -1,6 +1,7 @@
 import { Add } from '@mui/icons-material';
 import { Divider, ButtonBase, Input } from '@mui/material';
 import { Box } from '@mui/system';
+import { memo } from 'react';
 
 const NewValueChip = ({
   value,
@@ -36,6 +37,7 @@ const NewValueChip = ({
           border: 'none',
           backgroundColor: 'transparent',
           width: width ?? '52px',
+          color: 'common.black',
         }}
         disableUnderline
       />
@@ -61,4 +63,4 @@ const NewValueChip = ({
   );
 };
 
-export default NewValueChip;
+export default memo(NewValueChip);

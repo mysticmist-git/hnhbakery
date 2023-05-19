@@ -1,8 +1,8 @@
-import React from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import React, { memo } from 'react';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import logo from '../assets/Logo.png';
 
-export default function Footer() {
+const Footer = () => {
   //#region Style
   const theme = useTheme();
   const styles = {
@@ -85,7 +85,6 @@ export default function Footer() {
     <>
       <Box
         sx={{
-          mt: 8,
           bgcolor: theme.palette.secondary.dark,
           height: 'auto',
           width: '100%',
@@ -137,7 +136,7 @@ export default function Footer() {
                     </Grid>
                     <Grid item>
                       {listItem.children.map((child, i) => (
-                        <a key={i} href={child.href}>
+                        <Link key={i} href={child.href}>
                           <Typography
                             variant="body2"
                             sx={{
@@ -146,7 +145,7 @@ export default function Footer() {
                           >
                             {child.name}
                           </Typography>
-                        </a>
+                        </Link>
                       ))}
                     </Grid>
                   </Grid>
@@ -158,4 +157,6 @@ export default function Footer() {
       </Box>
     </>
   );
-}
+};
+
+export default memo(Footer);

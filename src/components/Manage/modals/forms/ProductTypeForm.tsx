@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { memo, useContext } from 'react';
 import {
   Grid,
   Box,
@@ -103,6 +103,18 @@ const ProductTypeForm = ({
             value={state.displayingData?.name}
             InputProps={{
               readOnly: readOnly,
+              sx: { color: theme.palette.common.black },
+            }}
+            sx={{
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.common.black,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                color: theme.palette.common.black,
+                border: 2,
+                borderRadius: '8px',
+              },
             }}
             onChange={(e) =>
               dispatch({
@@ -119,6 +131,17 @@ const ProductTypeForm = ({
             fullWidth
             InputProps={{
               readOnly: readOnly,
+              sx: { color: theme.palette.common.black },
+            }}
+            sx={{
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.common.black,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                border: 2,
+                borderRadius: '8px',
+              },
             }}
             value={state.displayingData?.description}
             rows={5}
@@ -150,7 +173,15 @@ const ProductTypeForm = ({
               />
             }
             label={
-              <Typography variant="body1" fontWeight="bold">
+              <Typography
+                sx={{
+                  color: state.displayingData?.isActive
+                    ? theme.palette.success.main
+                    : theme.palette.error.main,
+                }}
+                variant="body1"
+                fontWeight="bold"
+              >
                 {state.displayingData?.isActive
                   ? 'Còn hoạt động'
                   : 'Ngưng hoạt động'}
@@ -167,4 +198,4 @@ const ProductTypeForm = ({
   );
 };
 
-export default ProductTypeForm;
+export default memo(ProductTypeForm);

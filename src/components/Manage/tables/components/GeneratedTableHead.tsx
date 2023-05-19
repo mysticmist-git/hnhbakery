@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import { TableCell } from '@mui/material';
 import { CollectionName } from '@/lib/models/utilities';
 import { ManageContext } from '@/pages/manager/manage';
@@ -46,4 +46,4 @@ const GeneratedTableHead = () => {
   }
 };
 
-export default GeneratedTableHead;
+export default memo(GeneratedTableHead);

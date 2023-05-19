@@ -1,11 +1,12 @@
 import { Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { StaticImageData } from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import MyGalleryImage from './MyGalleryImage';
 import MyGalleryImageNewButton from './MyGalleryImageNewButton';
+import theme from '@/styles/themes/lightTheme';
 
-export default function MyGallery({
+const MyGallery = ({
   title: title,
   srcs,
   placeholderImage,
@@ -20,7 +21,7 @@ export default function MyGallery({
   readOnly: boolean;
   handleUploadGalleryToBrowser: any;
   handleDeleteImage: any;
-}) {
+}) => {
   //#region States
 
   //#endregion
@@ -38,13 +39,25 @@ export default function MyGallery({
   return (
     <Stack spacing={1}>
       {title && (
-        <Typography variant="h6" fontWeight="bold">
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          variant="h6"
+          fontWeight="bold"
+        >
           {title}
         </Typography>
       )}
-      <Typography variant="h6" fontWeight="bold">
+      <Typography
+        sx={{ color: theme.palette.common.black }}
+        variant="h6"
+        fontWeight="bold"
+      >
         {'Tổng số ảnh: '}
-        <Typography variant="body1" display={'inline'}>
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          variant="body1"
+          display={'inline'}
+        >
           {srcs?.length || 0}
         </Typography>
       </Typography>
@@ -71,4 +84,6 @@ export default function MyGallery({
       </Stack>
     </Stack>
   );
-}
+};
+
+export default memo(MyGallery);

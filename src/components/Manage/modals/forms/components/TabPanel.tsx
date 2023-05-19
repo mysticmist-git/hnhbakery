@@ -1,6 +1,7 @@
+import theme from '@/styles/themes/lightTheme';
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React from 'react';
+import React, { memo } from 'react';
 
 export interface TabPanelProps {
   children?: React.ReactNode;
@@ -8,7 +9,7 @@ export interface TabPanelProps {
   value: number;
 }
 
-export default function TabPanel(props: TabPanelProps) {
+const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -21,9 +22,13 @@ export default function TabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
+          <Typography sx={{ color: theme.palette.common.black }}>
+            {children}
+          </Typography>
         </Box>
       )}
     </div>
   );
-}
+};
+
+export default memo(TabPanel);

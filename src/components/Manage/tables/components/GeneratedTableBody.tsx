@@ -1,6 +1,6 @@
 import { CollectionName } from '@/lib/models/utilities';
 import { TableRow } from '@mui/material';
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 import GeneratedProductTableBody from './GeneratedProductBody';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
@@ -22,4 +22,4 @@ const GeneratedTableBody = () => {
   }
 };
 
-export default GeneratedTableBody;
+export default memo(GeneratedTableBody);

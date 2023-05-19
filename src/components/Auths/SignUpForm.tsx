@@ -12,14 +12,17 @@ import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { UserCredential } from 'firebase/auth';
 import { useSnackbarService } from '@/lib/contexts';
+import { memo } from 'react';
+import theme from '@/styles/themes/lightTheme';
+import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
 
-export default function SignUpForm({
+const SignUpForm = ({
   handleSignUp,
   validate,
 }: {
   handleSignUp: (props: SignUpProps) => Promise<UserCredential | undefined>;
   validate: (data: any) => boolean;
-}) {
+}) => {
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -56,7 +59,7 @@ export default function SignUpForm({
     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
-          <TextField
+          <CustomTextFieldWithLabel
             autoComplete="given-name"
             name="firstName"
             required
@@ -64,36 +67,30 @@ export default function SignUpForm({
             id="firstName"
             label="Tên"
             autoFocus
-            color="secondary"
-            sx={{
-              color: (theme) => theme.palette.common.black,
-            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             id="lastName"
             label="Last Name"
             name="lastName"
             autoComplete="Họ"
-            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             id="email"
             label="Địa chỉ Email"
             name="email"
             autoComplete="email"
-            color="secondary"
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
+          <CustomTextFieldWithLabel
             required
             fullWidth
             name="password"
@@ -101,7 +98,6 @@ export default function SignUpForm({
             type="password"
             id="password"
             autoComplete="new-password"
-            color="secondary"
           />
         </Grid>
       </Grid>
@@ -150,4 +146,6 @@ export default function SignUpForm({
       </Grid>
     </Box>
   );
-}
+};
+
+export default memo(SignUpForm);

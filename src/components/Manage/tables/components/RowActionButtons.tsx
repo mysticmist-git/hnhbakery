@@ -4,10 +4,10 @@ import { Box } from '@mui/system';
 import { DocumentData, doc } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
 import { ManageContext } from '@/pages/manager/manage';
-import { useContext } from 'react';
+import { memo, useContext } from 'react';
 import { ManageContextType } from '@/lib/localLib/manage';
 
-export default function RowActionButtons({ doc }: { doc: DocumentData }) {
+const RowActionButtons = ({ doc }: { doc: DocumentData }) => {
   const {
     state,
     dispatch,
@@ -47,4 +47,6 @@ export default function RowActionButtons({ doc }: { doc: DocumentData }) {
       </TableActionButton>
     </Box>
   );
-}
+};
+
+export default memo(RowActionButtons);

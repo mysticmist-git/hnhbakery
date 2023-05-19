@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 // import { CacheProvider, EmotionCache } from '@emotion/react';
 import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 
@@ -44,9 +44,10 @@ const MyApp = (props: AppProps) => {
   const { Component, pageProps } = props;
   const router = useRouter();
 
-  const CurrentLayout = router.pathname.includes('/manager')
-    ? ManageLayout
-    : DefaultLayout;
+  const CurrentLayout = useMemo(
+    () => (router.pathname.includes('/manager') ? ManageLayout : DefaultLayout),
+    [router.pathname],
+  );
 
   //#endregion
 

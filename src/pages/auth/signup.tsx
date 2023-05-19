@@ -12,11 +12,12 @@ import {
 } from 'firebase/auth';
 import Copyright from '@/components/Copyright';
 import { useRouter } from 'next/router';
+import theme from '@/styles/themes/lightTheme';
 import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { SignUpForm } from '@/components/Auths';
 
-export default function SignUp() {
+const SignUp = () => {
   //region Hooks
 
   const router = useRouter();
@@ -103,7 +104,12 @@ export default function SignUp() {
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5" textTransform={'uppercase'}>
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          component="h1"
+          variant="h5"
+          textTransform={'uppercase'}
+        >
           Đăng ký
         </Typography>
         <SignUpForm handleSignUp={handleSignUp} validate={validate} />
@@ -111,4 +117,6 @@ export default function SignUp() {
       <Copyright sx={{ mt: 5 }} />
     </Container>
   );
-}
+};
+
+export default React.memo(SignUp);

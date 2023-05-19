@@ -1,5 +1,5 @@
 import { DocumentData, collection, doc, updateDoc } from 'firebase/firestore';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 
@@ -16,7 +16,7 @@ import {
   updateDocumentToFirestore,
 } from '@/lib/firestore/firestoreLib';
 
-export default function ProductTypeRowModal() {
+const ProductTypeRowModal = () => {
   //#region States
 
   const { state, dispatch, resetDisplayingData } =
@@ -60,7 +60,7 @@ export default function ProductTypeRowModal() {
 
     console.log(state.displayingData);
 
-    setOriginalDisplayingData(state.displayingData);
+    setOriginalDisplayingData(() => state.displayingData);
 
     let downloadURL: string | null = null;
 
@@ -71,7 +71,7 @@ export default function ProductTypeRowModal() {
 
       console.log('Download URL: ', downloadURL);
 
-      if (downloadURL) setOriginalFeaturedImageURL(downloadURL);
+      if (downloadURL) setOriginalFeaturedImageURL(() => downloadURL);
     }
 
     ExecuteGetDownloadURLAndLoadImageToView();
@@ -79,7 +79,7 @@ export default function ProductTypeRowModal() {
 
   useEffect(() => {
     if (featuredImageFile) {
-      setFeaturedImageURL(URL.createObjectURL(featuredImageFile));
+      setFeaturedImageURL(() => URL.createObjectURL(featuredImageFile));
     }
   }, [featuredImageFile]);
 
@@ -90,7 +90,7 @@ export default function ProductTypeRowModal() {
   function loadImageToView(image: string) {
     if (!image || image.length === 0) return;
 
-    setFeaturedImageURL(image);
+    setFeaturedImageURL(() => image);
   }
 
   async function GetDownloadURLAndLoadImageToView(
@@ -182,8 +182,8 @@ export default function ProductTypeRowModal() {
 
   const resetForm = () => {
     resetDisplayingData();
-    setFeaturedImageFile(null);
-    setFeaturedImageURL(null);
+    setFeaturedImageFile(() => null);
+    setFeaturedImageURL(() => null);
   };
 
   //#endregion
@@ -193,7 +193,7 @@ export default function ProductTypeRowModal() {
   const handleUploadImageToBrowser = (event: any) => {
     const file = event.target.files[0];
 
-    if (file) setFeaturedImageFile(file);
+    if (file) setFeaturedImageFile(() => file);
   };
 
   /**
@@ -381,4 +381,6 @@ export default function ProductTypeRowModal() {
       />
     </RowModalLayout>
   );
-}
+};
+
+export default memo(ProductTypeRowModal);

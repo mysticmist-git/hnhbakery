@@ -11,12 +11,20 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
+  Link,
   MenuItem,
   Select,
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import GridView from '@mui/icons-material/GridView';
@@ -57,14 +65,6 @@ interface BoLocItem {
 
 const initGroupBoLoc = [
   {
-    heading: 'Thương hiệu',
-    heading_value: 'brand',
-    children: [
-      { display: 'Bbang House', value: 'bbang', isChecked: false },
-      { display: 'Khiết Minh', value: 'km', isChecked: false },
-    ],
-  },
-  {
     heading: 'Màu sắc',
     heading_value: 'color',
     children: [
@@ -94,10 +94,16 @@ const initGroupBoLoc = [
     ],
   },
 ];
-function CustomAccordion(props: any) {
+
+const CustomAccordion = memo((props: any) => {
   const context = useContext(ProductsContext);
   const theme = useTheme();
-  const head_Information = props.head_Information;
+
+  const head_Information = useMemo(
+    () => props.head_Information,
+    [props.head_Information],
+  );
+
   return (
     <Accordion
       sx={{
@@ -175,8 +181,9 @@ function CustomAccordion(props: any) {
       </AccordionDetails>
     </Accordion>
   );
-}
-function Filter(props: any) {
+});
+
+const Filter = memo((props: any) => {
   const context = useContext(ProductsContext);
   return (
     <>
@@ -189,43 +196,56 @@ function Filter(props: any) {
       </Grid>
     </>
   );
-}
+});
+
 // #endregion
 
 // #region View
-function TypeView(props: any) {
+const TypeView = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(ProductsContext);
-  const buttonStyles = {
-    nonFill: {
-      bgcolor: theme.palette.common.black,
-      color: theme.palette.common.white,
-      borderRadius: '4px',
-    },
-    fill: {
-      bgcolor: theme.palette.secondary.main,
-      color: theme.palette.common.white,
-      borderRadius: '4px',
-    },
-  };
-  const ListTypeSort = [
-    {
-      value: 'grid',
-      Icon: (
-        <GridView
-          sx={context.View == 'grid' ? buttonStyles.fill : buttonStyles.nonFill}
-        />
-      ),
-    },
-    {
-      value: 'list',
-      Icon: (
-        <ListAlt
-          sx={context.View == 'list' ? buttonStyles.fill : buttonStyles.nonFill}
-        />
-      ),
-    },
-  ];
+
+  const buttonStyles = useMemo(
+    () => ({
+      nonFill: {
+        bgcolor: theme.palette.common.black,
+        color: theme.palette.common.white,
+        borderRadius: '4px',
+      },
+      fill: {
+        bgcolor: theme.palette.secondary.main,
+        color: theme.palette.common.white,
+        borderRadius: '4px',
+      },
+    }),
+    [],
+  );
+
+  const ListTypeSort = useMemo(() => {
+    return [
+      {
+        value: 'grid',
+        Icon: (
+          <GridView
+            sx={
+              context.View == 'grid' ? buttonStyles.fill : buttonStyles.nonFill
+            }
+          />
+        ),
+      },
+      {
+        value: 'list',
+        Icon: (
+          <ListAlt
+            sx={
+              context.View == 'list' ? buttonStyles.fill : buttonStyles.nonFill
+            }
+          />
+        ),
+      },
+    ];
+  }, [context.View, buttonStyles]);
+
   return (
     <>
       <Grid
@@ -253,7 +273,7 @@ function TypeView(props: any) {
       </Grid>
     </>
   );
-}
+});
 // #endregion
 
 // #region Sort
@@ -276,7 +296,7 @@ const initSortList = {
   ],
 };
 
-function TypeSort(props: any) {
+const TypeSort = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(ProductsContext);
   return (
@@ -303,6 +323,7 @@ function TypeSort(props: any) {
                 '& .MuiSvgIcon-root': {
                   color: theme.palette.common.white,
                 },
+                color: theme.palette.common.white,
                 fontFamily: theme.typography.body2.fontFamily,
                 fontSize: theme.typography.body2.fontSize,
                 fontWeight: theme.typography.body2.fontWeight,
@@ -348,7 +369,7 @@ function TypeSort(props: any) {
       </Grid>
     </>
   );
-}
+});
 //#endregion
 
 // #region Products
@@ -390,36 +411,68 @@ interface ProductItem {
 //   },
 // ];
 
-function CakeCard(props: any) {
+const productDefault: ProductItem = {
+  id: '1',
+  image: banh1.src,
+  name: 'Bánh Quy',
+  price: 100000,
+  MFG: new Date(),
+  description: 'Bánh ngon dữ lắm bà ơi',
+  totalSoldQuantity: 15,
+  href: '#',
+};
+
+const imageStyles = {
+  cardNormal: {
+    width: '100%',
+    height: '100%',
+    transition: 'transform 0.25s ease-in-out',
+    objectFit: 'cover',
+  },
+  cardHovered: {
+    width: '100%',
+    height: '100%',
+    transition: 'transform 0.4s ease-in-out',
+    transform: 'scale(1.5)',
+    objectFit: 'cover',
+  },
+};
+
+const CakeCard = memo((props: any) => {
+  // #region States
+
+  const [cardHover, setCardHover] = useState(false);
+
+  // #endregion
+
+  // #region Hooks
+
   const theme = useTheme();
   const context = useContext(ProductsContext);
-  const imageHeight = props.imageHeight;
-  const productDefault: ProductItem = {
-    id: '1',
-    image: banh1.src,
-    name: 'Bánh Quy',
-    price: 100000,
-    MFG: new Date(),
-    description: 'Bánh ngon dữ lắm bà ơi',
-    totalSoldQuantity: 15,
-    href: '#',
-  };
-  var isList = context.View !== 'grid';
 
+  // #endregion
+
+  // #region useEffects
+
+  // #endregion
+
+  const isList = useMemo(() => context.View === 'list', [context.View]);
+  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
   const imageStyles = {
     cardNormal: {
       width: '100%',
       height: '100%',
       transition: 'transform 0.25s ease-in-out',
+      objectFit: 'cover',
     },
     cardHovered: {
       width: '100%',
       height: '100%',
       transition: 'transform 0.4s ease-in-out',
       transform: 'scale(1.5)',
+      objectFit: 'cover',
     },
   };
-  const [cardHover, setCardHover] = useState(false);
 
   return (
     <Card
@@ -430,14 +483,15 @@ function CakeCard(props: any) {
         borderRadius: '16px',
         display: 'flex',
         flexDirection: isList ? 'row' : 'column',
+        width: '100%',
+        height: 'auto',
       }}
     >
       <CardActionArea
         href={props.href ? props.href : productDefault.href}
-        sx={{ width: isList ? '50%' : '100%' }}
+        sx={{ width: isList ? '50%' : '100%', height: imageHeight }}
       >
         <Box
-          height={imageHeight}
           component={'img'}
           sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
           alt=""
@@ -556,21 +610,9 @@ function CakeCard(props: any) {
       </CardActions>
     </Card>
   );
-}
+});
 
-function ProductList(props: any) {
-  //#region Defined Values
-
-  const imageHeight = props.imageHeight ? props.imageHeight : '240px';
-
-  //#endregion
-
-  //#region States
-
-  const [displayProducts, setDisplayProducts] = useState<ProductItem[]>([]);
-
-  //#endregion
-
+const ProductList = memo((props: any) => {
   //#region Hooks
 
   const theme = useTheme();
@@ -580,13 +622,20 @@ function ProductList(props: any) {
 
   //#region UseEffects
 
-  useEffect(() => {
+  //#endregion
+
+  //#region useMemo
+
+  const imageHeight = useMemo(
+    () => props.imageHeight ?? '240px',
+    [props.imageHeight],
+  );
+
+  const displayProducts: ProductItem[] = useMemo(() => {
     const filteredProductList = filterProductList(context.ProductList);
     const sortedProductList = sortProductList(filteredProductList);
 
-    console.log(sortedProductList);
-
-    setDisplayProducts(sortedProductList);
+    return sortedProductList;
   }, [context.ProductList, context.SortList, context.GroupBoLoc]);
 
   //#endregion
@@ -768,7 +817,7 @@ function ProductList(props: any) {
       <Grid
         container
         direction={'row'}
-        justifyContent={'space-between'}
+        justifyContent={'flex-start'}
         alignItems={'start'}
         spacing={{ md: 2, xs: 3 }}
       >
@@ -776,12 +825,10 @@ function ProductList(props: any) {
           <Grid
             item
             key={i}
-            sx={{
-              width:
-                context.View != 'grid'
-                  ? '100%'
-                  : { md: '33.33%', sm: '50%', xs: '100%' },
-            }}
+            xs={context.View != 'grid' ? 12 : 12}
+            sm={context.View != 'grid' ? 12 : 6}
+            md={context.View != 'grid' ? 12 : 6}
+            lg={context.View != 'grid' ? 12 : 4}
           >
             <CakeCard {...item} imageHeight={imageHeight} />
           </Grid>
@@ -789,7 +836,7 @@ function ProductList(props: any) {
       </Grid>
     </>
   );
-}
+});
 
 //#endregion
 
@@ -819,7 +866,7 @@ export const ProductsContext =
   createContext<ProductsContextType>(initProductsContext);
 // #endregion
 
-export default function Products({ products }: { products: string }) {
+const Products = ({ products }: { products: string }) => {
   //#region States
 
   const [groupBoLocState, setGroupBoLocState] =
@@ -827,17 +874,13 @@ export default function Products({ products }: { products: string }) {
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
 
-  const [productListState, setProductListState] = useState<ProductItem[]>(
-    JSON.parse(products),
-  );
-
   //#endregion
 
   //#region Hooks
 
   const theme = useTheme();
 
-  //#endregin
+  //#endregion
 
   //#region UseEffects
 
@@ -848,6 +891,15 @@ export default function Products({ products }: { products: string }) {
 
   //#endregion
 
+  // #region useMemos
+
+  const productListState: ProductItem[] = useMemo(
+    () => JSON.parse(products),
+    [products],
+  );
+
+  // #endregion
+
   //#region Functions
 
   //#endregion
@@ -855,8 +907,8 @@ export default function Products({ products }: { products: string }) {
   //#region Handlers
 
   function handdleCheckBox(heading_value: string, value: string) {
-    setGroupBoLocState(
-      groupBoLocState.map((item) => {
+    setGroupBoLocState((currentGroupBoLocState) =>
+      currentGroupBoLocState.map((item) => {
         if (item.heading_value === heading_value) {
           return {
             ...item,
@@ -877,12 +929,16 @@ export default function Products({ products }: { products: string }) {
   }
 
   function handleSetViewState(value: 'grid' | 'list') {
-    setViewState(value);
+    setViewState(() => value);
   }
 
   function handleSetSortList(value: any) {
-    setSortListState({ ...sortListState, value: value });
+    setSortListState((currentSortListState: any) => ({
+      ...currentSortListState,
+      value: value,
+    }));
   }
+
   //#endregion
 
   return (
@@ -911,7 +967,7 @@ export default function Products({ products }: { products: string }) {
                 spacing={2}
               >
                 <Grid item>
-                  <a href="#">
+                  <Link href="#">
                     <Typography
                       align="center"
                       variant="h1"
@@ -924,13 +980,13 @@ export default function Products({ products }: { products: string }) {
                     >
                       Tất cả sản phẩm
                     </Typography>
-                  </a>
+                  </Link>
                 </Grid>
               </Grid>
             )}
           />
 
-          <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
+          <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
@@ -966,7 +1022,7 @@ export default function Products({ products }: { products: string }) {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <ProductList imageHeight={'240px'} />
+                    <ProductList imageHeight={'184px'} />
                   </Grid>
                 </Grid>
               </Grid>
@@ -976,7 +1032,7 @@ export default function Products({ products }: { products: string }) {
       </ProductsContext.Provider>
     </>
   );
-}
+};
 
 //#region Local Functions
 
@@ -1121,3 +1177,5 @@ export async function getStaticProps() {
     },
   };
 }
+
+export default memo(Products);
