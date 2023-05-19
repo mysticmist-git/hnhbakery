@@ -11,7 +11,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
@@ -22,9 +22,9 @@ import Image from 'next/image';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import theme from '@/styles/themes/lightTheme';
 
-const product = {
+const initProduct = {
+  id: 1,
   name: 'Bánh Croissant',
-
   type: 'Bánh mặn',
   state: {
     content: 'Còn hàng',
@@ -34,6 +34,10 @@ const product = {
     'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
   rating: 4.5,
   numReviews: 123,
+  ingredients: 'Bột mì, trứng, sữa, đường, muối',
+  howToUse: 'Dùng ngay khi mở túi',
+  preservation: 'Bảo quản ở nhiệt độ dưới 30 độ C',
+  maxQuantity: 10,
   prices: {
     //Mỗi object trong sizes ứng với 1 button của phần chọn size
     min: 150000,
@@ -99,7 +103,7 @@ function ProductCarousel(props: any) {
         index={activeIndex}
         onChange={handleChange}
       >
-        {product.images.map((image, i) => (
+        {initProduct.images.map((image, i) => (
           <Box
             key={i}
             sx={{
@@ -153,7 +157,7 @@ function ProductCarousel(props: any) {
             )}, ${alpha(theme.palette.common.white, 0.5)})`,
           }}
         >
-          {product.images.map((image, i: number) => (
+          {initProduct.images.map((image, i: number) => (
             <Grid key={i} item>
               <Box
                 sx={{
@@ -350,11 +354,26 @@ function NumberInputWithButtons({ min, max }: any) {
                 0.3,
               )}`,
             },
+            '& .MuiInputBase-root': {
+              p: 0,
+            },
+            '& .MuiInputAdornment-root': {
+              m: 0,
+            },
           }}
           InputProps={{
             disableUnderline: true,
             endAdornment: (
-              <InputAdornment position="end">
+              <InputAdornment
+                position="end"
+                sx={{
+                  backgroundColor: theme.palette.common.white,
+                  maxHeight: 'none',
+                  height: 'auto',
+                  alignSelf: 'stretch',
+                  pr: 1,
+                }}
+              >
                 <Typography
                   variant="body1"
                   color={theme.palette.secondary.main}
@@ -373,6 +392,7 @@ function NumberInputWithButtons({ min, max }: any) {
           }}
           inputProps={{
             sx: {
+              textAlign: 'center',
               fontSize: theme.typography.body1.fontSize,
               color: theme.palette.common.black,
               fontWeight: theme.typography.body1.fontWeight,
@@ -414,6 +434,11 @@ function NumberInputWithButtons({ min, max }: any) {
 
 function ProductDetailInfo(props: any) {
   const theme = useTheme();
+
+  const [product, setProduct] = useState(initProduct);
+
+  const [readyState, setReadyState] = useState(false);
+
   return (
     <Grid
       container
@@ -552,6 +577,71 @@ function ProductDetailInfo(props: any) {
                 </Grid>
               </Grid>
             </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.text.secondary}
+                  >
+                    Nguyên liệu:
+                  </Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography variant="body1">{product.ingredients}</Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.text.secondary}
+                  >
+                    Cách dùng:
+                  </Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography variant="body1">{product.howToUse}</Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.text.secondary}
+                  >
+                    Bảo quản:
+                  </Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography variant="body1">
+                    {product.preservation}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
         </Box>
       </Grid>
@@ -648,6 +738,33 @@ function ProductDetailInfo(props: any) {
                 justifyContent={'center'}
                 alignItems={'start'}
               >
+                <Grid item xs={3}></Grid>
+                <Grid item xs={9}>
+                  <Box
+                    sx={{
+                      bgcolor: alpha(theme.palette.secondary.main, 0.9),
+                      p: 1,
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.white}
+                    >
+                      Hạn sử dụng: 07/01/2023
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
                 <Grid item xs={3}>
                   <Typography
                     variant="body1"
@@ -657,7 +774,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <NumberInputWithButtons min={0} max={10} />
+                  <NumberInputWithButtons min={0} max={product.maxQuantity} />
                 </Grid>
               </Grid>
             </Grid>
@@ -667,7 +784,19 @@ function ProductDetailInfo(props: any) {
     </Grid>
   );
 }
-
+function Comments(props: any) {
+  return (
+    <>
+      <Grid
+        container
+        direction={'row'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        spacing={2}
+      ></Grid>
+    </>
+  );
+}
 export default function productDetail() {
   const theme = useTheme();
   return (
@@ -735,7 +864,9 @@ export default function productDetail() {
               <ProductDetailInfo />
             </Grid>
 
-            <Grid item xs={12}></Grid>
+            <Grid item xs={12}>
+              <Comments />
+            </Grid>
 
             <Grid item xs={12}></Grid>
           </Grid>
