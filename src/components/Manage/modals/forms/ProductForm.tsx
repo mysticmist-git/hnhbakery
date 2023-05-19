@@ -21,6 +21,8 @@ import MyGallery from './components/MyGallery';
 import MyMultiValueInput from './components/MyMultiValueInput';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import theme from '@/styles/themes/lightTheme';
+import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 
 //#region Types
 
@@ -148,6 +150,17 @@ const ProductForm = ({
               label="Tên sản phẩm"
               InputProps={{
                 readOnly: readOnly,
+                sx: { color: theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
               }}
               variant="standard"
               color="secondary"
@@ -181,7 +194,7 @@ const ProductForm = ({
               options={productTypes}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
-                <TextField {...params} label="Loại sản phẩm" />
+                <CustomTextFieldWithLabel {...params} label="Loại sản phẩm" />
               )}
               isOptionEqualToValue={(option, value) => option.id === value.id}
             />
@@ -190,6 +203,17 @@ const ProductForm = ({
               label="Miêu tả"
               InputProps={{
                 readOnly: readOnly,
+                sx: { color: theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
               }}
               color="secondary"
               multiline
@@ -221,6 +245,17 @@ const ProductForm = ({
               color="secondary"
               InputProps={{
                 readOnly: readOnly,
+                sx: { color: theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
               }}
               multiline
               fullWidth
@@ -241,6 +276,17 @@ const ProductForm = ({
               color="secondary"
               InputProps={{
                 readOnly: readOnly,
+                sx: { color: theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
               }}
               multiline
               fullWidth
@@ -274,7 +320,11 @@ const ProductForm = ({
                 />
               }
               label={
-                <Typography variant="body1" fontWeight="bold">
+                <Typography
+                  sx={{ color: theme.palette.success.main }}
+                  variant="body1"
+                  fontWeight="bold"
+                >
                   Còn hoạt động
                 </Typography>
               }

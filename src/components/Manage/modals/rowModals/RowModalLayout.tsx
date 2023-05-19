@@ -140,7 +140,11 @@ const RowModalLayout = ({
               alignItems: 'center',
             }}
           >
-            <Typography variant="h5" fontWeight={'bold'}>
+            <Typography
+              sx={{ color: theme.palette.common.black }}
+              variant="h5"
+              fontWeight={'bold'}
+            >
               {getTitle()}
             </Typography>
             <Box

@@ -11,6 +11,7 @@ import {
 import { Box } from '@mui/system';
 import { selectedIdsLookupSelector } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
+import CustomTextFieldWithLabel from './CustomTextFieldWithLabel';
 
 const BasicList = ({
   header,
@@ -128,10 +129,10 @@ export default function MultipleValueInput({
             Delete
           </Button>
         </Box>
-        <TextField
+        <CustomTextFieldWithLabel
           label="Giá trị"
           value={selectedItem?.value || ''}
-          onChange={(event) => {
+          onChange={(event: any) => {
             console.log(selectedItem);
             setSelectedItem({
               ...selectedItem,

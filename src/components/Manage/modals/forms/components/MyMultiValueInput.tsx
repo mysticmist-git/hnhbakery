@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from 'react';
 import NewValueChip from './NewValueChip';
 import { useSnackbarService } from '@/lib/contexts';
 import { Close } from '@mui/icons-material';
+import theme from '@/styles/themes/lightTheme';
 
 const MyMultiValueInput = ({
   label,
@@ -63,7 +64,11 @@ const MyMultiValueInput = ({
 
   return (
     <Stack spacing={1}>
-      <Typography variant="body1" fontWeight="bold">
+      <Typography
+        sx={{ color: theme.palette.common.black }}
+        variant="body1"
+        fontWeight="bold"
+      >
         {label}
       </Typography>
       <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
@@ -73,6 +78,9 @@ const MyMultiValueInput = ({
             label={value}
             deleteIcon={readOnly ? <></> : <Close></Close>}
             onDelete={() => handleDeleteValue(value)}
+            sx={{
+              color: theme.palette.common.black,
+            }}
           />
         ))}
 

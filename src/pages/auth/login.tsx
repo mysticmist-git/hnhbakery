@@ -1,16 +1,12 @@
 //#region Import
 
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
@@ -42,7 +38,7 @@ const Copyright = (props: any) => {
     >
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        H&H Barkery
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -107,149 +103,284 @@ const Login = () => {
 
   //#endregion
 
-  //#region Styles
-
-  const linkSx: SxProps<Theme> = {
-    color: (theme) => theme.palette.secondary.main,
-    '&:hover': {
-      textDecoration: 'none',
-      fontWeight: 'bold',
-    },
-  };
-
-  //#endregion
-
   return (
-    <Grid container component="main" sx={{ height: '100vh' }}>
-      {/* Left picture */}
-      <Grid
-        item
-        xs={false}
-        sm={4}
-        md={7}
+    <Box
+      sx={{
+        py: 8,
+        px: { xs: 3, sm: 3, md: 5, lg: 9 },
+      }}
+    >
+      <Box
         sx={{
-          backgroundImage: 'url(https://source.unsplash.com/random)',
-          backgroundRepeat: 'no-repeat',
-          backgroundColor: (t) =>
-            t.palette.mode === 'light'
-              ? t.palette.grey[50]
-              : t.palette.grey[900],
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          bgcolor: theme.palette.common.white,
         }}
-      />
-      {/* Right form */}
-      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-        <Box
-          sx={{
-            my: 8,
-            mx: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
+      >
+        <Grid
+          container
+          justifyContent={'center'}
+          alignItems={'center'}
+          direction={'row'}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography
-            component="h1"
-            variant="h5"
-            sx={{
-              color: (theme) => theme.palette.secondary.main,
-            }}
+          <Grid
+            item
+            xs={0}
+            md={6}
+            alignSelf={'stretch'}
+            display={{ xs: 'none', md: 'block' }}
           >
-            Đăng nhập
-          </Typography>
-          <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 1 }}
-          >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Địa chỉ Email"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              color="secondary"
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Mật khẩu"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              color="secondary"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" />}
-              label={
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: (theme) => theme.palette.common.black,
-                  }}
-                >
-                  Ghi nhớ đăng nhập
-                </Typography>
-              }
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={(theme) => ({
-                mt: 3,
-                mb: 2,
-                backgroundnColor: theme.palette.secondary.main,
-                color: theme.palette.common.white,
-              })}
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${banh1.src})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
             >
-              Đăng nhập
-            </Button>
-            <Grid container>
-              <Grid item xs>
-                <NextLink href="/auth/forgot-password" passHref legacyBehavior>
-                  <Link variant="body2" sx={linkSx}>
-                    Quên mật khẩu
-                  </Link>
-                </NextLink>
-              </Grid>
-              <Grid item>
-                <NextLink href="/auth/signup" passHref legacyBehavior>
-                  <Link variant="body2" sx={linkSx}>
-                    {'Không có tài khoản? Đăng ký ngay'}
-                  </Link>
-                </NextLink>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  fullWidth
-                  startIcon={<Google />}
-                  variant="outlined"
-                  color="secondary"
-                  sx={{
-                    mt: '1rem',
-                  }}
-                  onClick={handleLoginWithGoogle}
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  bgcolor: alpha(theme.palette.common.black, 0.6),
+                }}
+              >
+                <Grid
+                  container
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  direction={'column'}
+                  width={'100%'}
+                  height={'100%'}
                 >
-                  <Typography variant="body2">Đăng nhập với Google</Typography>
-                </Button>
+                  <Typography
+                    sx={{ color: theme.palette.common.white }}
+                    variant="h2"
+                    align="center"
+                  >
+                    H&H
+                  </Typography>
+                  <Typography
+                    sx={{ color: theme.palette.common.white }}
+                    variant="h2"
+                    align="center"
+                  >
+                    Barkery
+                  </Typography>
+                </Grid>
+              </Box>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Grid
+              container
+              justifyContent={'center'}
+              alignItems={'center'}
+              direction={'row'}
+              sx={{
+                py: 8,
+                px: 4,
+              }}
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  direction={'column'}
+                >
+                  <Typography
+                    variant="h2"
+                    align="center"
+                    color={theme.palette.secondary.main}
+                  >
+                    Hello
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    align="center"
+                    color={theme.palette.text.secondary}
+                  >
+                    Mời bạn một miếng bánh ngon, một tách trà nóng, một ngày an
+                    yên.
+                  </Typography>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  direction={'row'}
+                  component="form"
+                  noValidate
+                  onSubmit={handleSubmit}
+                  spacing={1}
+                >
+                  <Grid item xs={12}>
+                    <CustomTextField
+                      required
+                      fullWidth
+                      id="email"
+                      placeholder="Địa chỉ Email"
+                      name="email"
+                      autoComplete="email"
+                      autoFocus
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <CustomTextFieldPassWord
+                      required
+                      fullWidth
+                      name="password"
+                      placeholder="Mật khẩu"
+                      type="password"
+                      id="password"
+                      autoComplete="current-password"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Grid
+                      container
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      direction={'row'}
+                    >
+                      <Grid item xs={7}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              value="remember"
+                              sx={{ color: theme.palette.secondary.main }}
+                              color="secondary"
+                            />
+                          }
+                          label={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: theme.palette.secondary.main,
+                              }}
+                            >
+                              Ghi nhớ đăng nhập
+                            </Typography>
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={5} textAlign={'right'}>
+                        <NextLink
+                          href="/forgot-password"
+                          passHref
+                          legacyBehavior
+                        >
+                          <Link
+                            variant="body2"
+                            sx={{
+                              color: theme.palette.secondary.main,
+                              '&:hover': { textDecoration: 'underline' },
+                            }}
+                          >
+                            Quên mật khẩu
+                          </Link>
+                        </NextLink>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <CustomButton
+                      type="submit"
+                      fullWidth
+                      sx={{
+                        py: 1.5,
+                        borderRadius: '8px',
+                      }}
+                      children={() => (
+                        <Typography
+                          sx={{ color: theme.palette.common.white }}
+                          variant="body2"
+                        >
+                          Đăng nhập
+                        </Typography>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      fullWidth
+                      startIcon={<Google />}
+                      variant="outlined"
+                      sx={{
+                        py: 1.5,
+                        display: 'inline-flex',
+                        borderRadius: '8px',
+                        borderColor: theme.palette.secondary.main,
+                        color: theme.palette.secondary.main,
+                        bgcolor: theme.palette.common.white,
+                        borderWidth: 3,
+                        '&:hover': {
+                          color: theme.palette.common.white,
+                          bgcolor: theme.palette.secondary.main,
+                          borderWidth: 3,
+                        },
+                      }}
+                      onClick={handleLoginWithGoogle}
+                    >
+                      <Typography variant="body2" color={'inherit'}>
+                        Đăng nhập với Google
+                      </Typography>
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Grid
+                      container
+                      direction={'row'}
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      spacing={1}
+                    >
+                      <Grid item>
+                        <Typography
+                          variant="body2"
+                          color={theme.palette.text.secondary}
+                        >
+                          Bạn chưa có tài khoản?
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <NextLink href="/signup" passHref legacyBehavior>
+                          <Link>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 'bold',
+                                color: theme.palette.secondary.main,
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                },
+                              }}
+                            >
+                              Đăng ký ngay
+                            </Typography>
+                          </Link>
+                        </NextLink>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Copyright sx={{ pt: 5 }} />
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
-            <Copyright sx={{ mt: 5 }} />
-          </Box>
-        </Box>
-      </Grid>
-    </Grid>
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
   );
 };
 

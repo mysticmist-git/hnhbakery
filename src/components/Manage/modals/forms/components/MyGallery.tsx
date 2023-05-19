@@ -4,6 +4,7 @@ import { StaticImageData } from 'next/image';
 import { useState, useEffect, memo } from 'react';
 import MyGalleryImage from './MyGalleryImage';
 import MyGalleryImageNewButton from './MyGalleryImageNewButton';
+import theme from '@/styles/themes/lightTheme';
 
 const MyGallery = ({
   title: title,
@@ -38,13 +39,25 @@ const MyGallery = ({
   return (
     <Stack spacing={1}>
       {title && (
-        <Typography variant="h6" fontWeight="bold">
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          variant="h6"
+          fontWeight="bold"
+        >
           {title}
         </Typography>
       )}
-      <Typography variant="h6" fontWeight="bold">
+      <Typography
+        sx={{ color: theme.palette.common.black }}
+        variant="h6"
+        fontWeight="bold"
+      >
         {'Tổng số ảnh: '}
-        <Typography variant="body1" display={'inline'}>
+        <Typography
+          sx={{ color: theme.palette.common.black }}
+          variant="body1"
+          display={'inline'}
+        >
           {srcs?.length || 0}
         </Typography>
       </Typography>

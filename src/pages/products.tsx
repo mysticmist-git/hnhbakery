@@ -11,6 +11,7 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
+  Link,
   MenuItem,
   Select,
   Typography,
@@ -63,14 +64,6 @@ interface BoLocItem {
 }
 
 const initGroupBoLoc = [
-  {
-    heading: 'Thương hiệu',
-    heading_value: 'brand',
-    children: [
-      { display: 'Bbang House', value: 'bbang', isChecked: false },
-      { display: 'Khiết Minh', value: 'km', isChecked: false },
-    ],
-  },
   {
     heading: 'Màu sắc',
     heading_value: 'color',
@@ -330,6 +323,7 @@ const TypeSort = memo((props: any) => {
                 '& .MuiSvgIcon-root': {
                   color: theme.palette.common.white,
                 },
+                color: theme.palette.common.white,
                 fontFamily: theme.typography.body2.fontFamily,
                 fontSize: theme.typography.body2.fontSize,
                 fontWeight: theme.typography.body2.fontWeight,
@@ -464,6 +458,21 @@ const CakeCard = memo((props: any) => {
 
   const isList = useMemo(() => context.View === 'list', [context.View]);
   const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
+  const imageStyles = {
+    cardNormal: {
+      width: '100%',
+      height: '100%',
+      transition: 'transform 0.25s ease-in-out',
+      objectFit: 'cover',
+    },
+    cardHovered: {
+      width: '100%',
+      height: '100%',
+      transition: 'transform 0.4s ease-in-out',
+      transform: 'scale(1.5)',
+      objectFit: 'cover',
+    },
+  };
 
   return (
     <Card
@@ -474,14 +483,15 @@ const CakeCard = memo((props: any) => {
         borderRadius: '16px',
         display: 'flex',
         flexDirection: isList ? 'row' : 'column',
+        width: '100%',
+        height: 'auto',
       }}
     >
       <CardActionArea
         href={props.href ? props.href : productDefault.href}
-        sx={{ width: isList ? '50%' : '100%' }}
+        sx={{ width: isList ? '50%' : '100%', height: imageHeight }}
       >
         <Box
-          height={imageHeight}
           component={'img'}
           sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
           alt=""
@@ -807,7 +817,7 @@ const ProductList = memo((props: any) => {
       <Grid
         container
         direction={'row'}
-        justifyContent={'space-between'}
+        justifyContent={'flex-start'}
         alignItems={'start'}
         spacing={{ md: 2, xs: 3 }}
       >
@@ -815,12 +825,10 @@ const ProductList = memo((props: any) => {
           <Grid
             item
             key={i}
-            sx={{
-              width:
-                context.View != 'grid'
-                  ? '100%'
-                  : { md: '33.33%', sm: '50%', xs: '100%' },
-            }}
+            xs={context.View != 'grid' ? 12 : 12}
+            sm={context.View != 'grid' ? 12 : 6}
+            md={context.View != 'grid' ? 12 : 6}
+            lg={context.View != 'grid' ? 12 : 4}
           >
             <CakeCard {...item} imageHeight={imageHeight} />
           </Grid>
@@ -872,7 +880,7 @@ const Products = ({ products }: { products: string }) => {
 
   const theme = useTheme();
 
-  //#endregin
+  //#endregion
 
   //#region UseEffects
 
@@ -959,7 +967,7 @@ const Products = ({ products }: { products: string }) => {
                 spacing={2}
               >
                 <Grid item>
-                  <a href="#">
+                  <Link href="#">
                     <Typography
                       align="center"
                       variant="h1"
@@ -972,13 +980,13 @@ const Products = ({ products }: { products: string }) => {
                     >
                       Tất cả sản phẩm
                     </Typography>
-                  </a>
+                  </Link>
                 </Grid>
               </Grid>
             )}
           />
 
-          <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
+          <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
@@ -1014,7 +1022,7 @@ const Products = ({ products }: { products: string }) => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <ProductList imageHeight={'240px'} />
+                    <ProductList imageHeight={'184px'} />
                   </Grid>
                 </Grid>
               </Grid>

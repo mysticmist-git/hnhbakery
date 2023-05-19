@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import logo from '../assets/Logo.png';
 
 const Footer = () => {
@@ -85,7 +85,6 @@ const Footer = () => {
     <>
       <Box
         sx={{
-          mt: 8,
           bgcolor: theme.palette.secondary.dark,
           height: 'auto',
           width: '100%',
@@ -137,7 +136,7 @@ const Footer = () => {
                     </Grid>
                     <Grid item>
                       {listItem.children.map((child, i) => (
-                        <a key={i} href={child.href}>
+                        <Link key={i} href={child.href}>
                           <Typography
                             variant="body2"
                             sx={{
@@ -146,7 +145,7 @@ const Footer = () => {
                           >
                             {child.name}
                           </Typography>
-                        </a>
+                        </Link>
                       ))}
                     </Grid>
                   </Grid>

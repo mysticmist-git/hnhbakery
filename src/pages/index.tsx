@@ -77,7 +77,7 @@ const CustomCarousel = memo((props: any) => {
 });
 //#endregion
 
-// #region Best seller
+//#region BestSeller
 interface BestSellerItem {
   image: string;
   name: string;
@@ -172,11 +172,22 @@ const CakeCard = memo((props: any) => {
       onMouseOver={() => setCardHover(true)}
       onMouseOut={() => setCardHover(false)}
       raised={cardHover}
-      sx={{ borderRadius: '16px' }}
+      sx={{ borderRadius: '16px', width: '100%' }}
     >
-      <CardActionArea href={props.href ? props.href : defaultInformation.href}>
-        <Grid container direction={'column'}>
-          <Grid item width={'100%'} height={imageHeight}>
+      <CardActionArea
+        href={props.href ? props.href : defaultInformation.href}
+        sx={{ width: '100%', height: 'auto' }}
+      >
+        <Grid
+          container
+          direction={'row'}
+          spacing={0}
+          justifyContent={'center'}
+          alignItems={'center'}
+          width={'100%'}
+          height={'auto'}
+        >
+          <Grid item xs={12}>
             <Box
               component={'img'}
               sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
@@ -189,6 +200,7 @@ const CakeCard = memo((props: any) => {
             item
             sx={{ p: 2, pb: 0, bgcolor: theme.palette.common.white }}
             zIndex={1}
+            xs={12}
           >
             <Typography
               gutterBottom
@@ -197,7 +209,15 @@ const CakeCard = memo((props: any) => {
             >
               {props.name ?? defaultInformation.name}
             </Typography>
-            <Typography variant="body2" color={theme.palette.text.secondary}>
+            <Typography
+              variant="body2"
+              color={theme.palette.text.secondary}
+              sx={{
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+            >
               {props.description ?? defaultInformation.description}
             </Typography>
           </Grid>
@@ -209,7 +229,12 @@ const CakeCard = memo((props: any) => {
         <CustomButton
           sx={{ px: 2 }}
           children={() => (
-            <Typography variant="button">Thêm vào giỏ hàng</Typography>
+            <Typography
+              sx={{ color: theme.palette.common.white }}
+              variant="button"
+            >
+              Thêm vào giỏ hàng
+            </Typography>
           )}
         />
       </CardActions>
@@ -225,7 +250,12 @@ const CardSliderItem = memo((props: any) => {
       <Grid container direction={'row'} justifyContent={'center'} spacing={2}>
         {listColumn.map((_item: any, i: React.Key | null | undefined) => (
           <Grid key={i} item xs={12 / listColumn.length}>
-            <Grid container justifyContent={'center'} alignItems={'center'}>
+            <Grid
+              container
+              justifyContent={'center'}
+              alignItems={'center'}
+              width={'100%'}
+            >
               <props.card
                 image={_item.image}
                 name={_item.name}
@@ -245,7 +275,7 @@ const CustomCardSlider = memo((props: any) => {
 
   const [bestSellerDisplay, setBestSellerDisplay] = useState<any[]>([]);
 
-  //endregion
+  //#endregion
 
   //#region Hooks
 
@@ -300,7 +330,11 @@ const CustomCardSlider = memo((props: any) => {
         {props.title}
       </Typography>
       <Box>
-        <Carousel animation="slide" duration={props.duration} sx={{ pt: 4 }}>
+        <Carousel
+          animation="slide"
+          duration={props.duration}
+          sx={{ pt: 4, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
+        >
           {bestSellerDisplay.map((listColumn, i) => (
             <CardSliderItem
               key={i}
@@ -346,24 +380,6 @@ const initTypeCake: TypeCakeItem[] = [
   },
 ];
 
-const imageStyles = {
-  cardNormal: {
-    width: '100%',
-    height: '100%',
-    maxWidth: 345,
-    minWidth: 320,
-    transition: 'transform 0.25s ease-in-out',
-  },
-  cardHovered: {
-    width: '100%',
-    height: '100%',
-    maxWidth: 345,
-    minWidth: 320,
-    transition: 'transform 0.4s ease-in-out',
-    transform: 'scale(1.5)',
-  },
-};
-
 const TypeCakeCard = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
@@ -394,23 +410,33 @@ const TypeCakeCard = memo((props: any) => {
         onMouseOver={() => setCardHover(true)}
         onMouseOut={() => setCardHover(false)}
         raised={cardHover}
-        sx={{ borderRadius: '16px' }}
+        sx={{ borderRadius: '16px', width: '100%' }}
       >
-        <CardActionArea href={props.href ?? defaultInformation.href}>
+        <CardActionArea
+          href={props.href ?? defaultInformation.href}
+          sx={{ width: '100%' }}
+        >
           <Grid
             container
-            direction={'column'}
-            sx={{
-              maxWidth: 345,
-              minWidth: 320,
-            }}
+            direction={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            width={'100%'}
+            spacing={0}
           >
-            <Grid item width={'100%'} height={imageHeight}>
+            <Grid item xs={12} height={'auto'}>
               <Box
                 component={'img'}
-                sx={
-                  cardHover ? imageStyles.cardHovered : imageStyles.cardNormal
-                }
+                sx={{
+                  transition: 'transform 0.25s ease-in-out',
+                  objectFit: 'cover',
+                  width: '100%',
+                  height: imageHeight,
+                  maxHeight: imageHeight,
+                  '&:hover': {
+                    transform: 'scale(1.5)',
+                  },
+                }}
                 alt=""
                 src={props.image ?? defaultInformation.image}
                 loading="lazy"
@@ -418,6 +444,7 @@ const TypeCakeCard = memo((props: any) => {
             </Grid>
             <Grid
               item
+              xs={12}
               sx={{
                 p: 2,
                 bgcolor: theme.palette.common.white,
@@ -433,9 +460,16 @@ const TypeCakeCard = memo((props: any) => {
                 {props.name ?? defaultInformation.name}
               </Typography>
               <Typography
+                component={'p'}
                 variant="body2"
                 color={theme.palette.text.secondary}
                 align="center"
+                sx={{
+                  overflow: 'hidden',
+                  height: descriptionHeight,
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 {props.description ?? defaultInformation.description}
               </Typography>
@@ -468,9 +502,18 @@ const TypeCake = memo((props: any) => {
           spacing={2}
         >
           {context.typeCake.map((item, i) => (
-            <Grid item key={i}>
-              <Grid container justifyContent={'center'} alignItems={'center'}>
-                <TypeCakeCard {...item} />
+            <Grid item key={i} md={4} sm={6} xs={12}>
+              <Grid
+                container
+                justifyContent={'center'}
+                alignItems={'center'}
+                width={'100%'}
+              >
+                <TypeCakeCard
+                  {...item}
+                  imageHeight={props.imageHeight}
+                  descriptionHeight={props.descriptionHeight}
+                />
               </Grid>
             </Grid>
           ))}
@@ -637,19 +680,25 @@ const Home = ({
           typeCake: typeCakeState,
         }}
       >
-        <CustomCarousel height="400px" duration={500} />
-        <Box sx={{ pt: 8 }}>
-          <CustomCardSlider
-            duration={1000}
-            imageHeight="240px"
-            card={CakeCard}
-            title={'Best Seller'}
-          />
+        <Box>
+          <CustomCarousel height="400px" duration={500} />
+          <Box sx={{ pt: 8 }}>
+            <CustomCardSlider
+              duration={1000}
+              imageHeight="184px"
+              card={CakeCard}
+              title={'Best Seller'}
+            />
+          </Box>
+          <Box sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+            <TypeCake
+              title="Đa dạng loại bánh"
+              imageHeight="184px"
+              descriptionHeight="32px"
+            />
+          </Box>
+          <DangKyKhuyenMai />
         </Box>
-        <Box sx={{ pt: 8, px: { md: 8, xs: 3 } }}>
-          <TypeCake title="Đa dạng loại bánh" imageHeight="240px" />
-        </Box>
-        <DangKyKhuyenMai />
       </HomeContext.Provider>
     </>
   );

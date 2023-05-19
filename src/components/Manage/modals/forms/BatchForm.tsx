@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, memo } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { Grid, TextField, Autocomplete, Stack } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
@@ -8,6 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
+import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region States
@@ -119,7 +120,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   console.log(state.displayingData);
 
   //#endregion
-
+  const theme = useTheme();
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={6}>
@@ -143,7 +144,9 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
             }}
             options={products}
             getOptionLabel={(option) => option.name}
-            renderInput={(params) => <TextField {...params} label="Sản phẩm" />}
+            renderInput={(params) => (
+              <CustomTextFieldWithLabel {...params} label="Sản phẩm" />
+            )}
             isOptionEqualToValue={(option, value) => option.id === value.id}
           />
           <Autocomplete
@@ -164,7 +167,9 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               });
             }}
             options={materials}
-            renderInput={(params) => <TextField {...params} label="Vật liệu" />}
+            renderInput={(params) => (
+              <CustomTextFieldWithLabel {...params} label="Vật liệu" />
+            )}
           />
           <Autocomplete
             readOnly={readOnly}
@@ -184,7 +189,9 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               });
             }}
             options={colors}
-            renderInput={(params) => <TextField {...params} label="Màu sắc" />}
+            renderInput={(params) => (
+              <CustomTextFieldWithLabel {...params} label="Màu sắc" />
+            )}
           />
           <Autocomplete
             readOnly={readOnly}
@@ -204,7 +211,9 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               });
             }}
             options={sizes}
-            renderInput={(params) => <TextField {...params} label="Kích cỡ" />}
+            renderInput={(params) => (
+              <CustomTextFieldWithLabel {...params} label="Kích cỡ" />
+            )}
           />
         </Stack>
       </Grid>
@@ -221,6 +230,18 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
                 type="number"
                 InputProps={{
                   readOnly: readOnly,
+
+                  sx: { color: theme.palette.common.black },
+                }}
+                sx={{
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.secondary.main,
+                    color: theme.palette.common.black,
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: 2,
+                    borderRadius: '8px',
+                  },
                 }}
                 error={
                   state.displayingData?.soldQuantity >
@@ -246,6 +267,17 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               fullWidth
               InputProps={{
                 readOnly: readOnly,
+                sx: { color: theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
               }}
               value={state.displayingData?.totalQuantity ?? -1}
               onChange={(e) =>
@@ -297,6 +329,17 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
             fullWidth
             InputProps={{
               readOnly: readOnly,
+              sx: { color: theme.palette.common.black },
+            }}
+            sx={{
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.common.black,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                border: 2,
+                borderRadius: '8px',
+              },
             }}
             value={state.displayingData?.price ?? 0}
             onChange={(e) =>

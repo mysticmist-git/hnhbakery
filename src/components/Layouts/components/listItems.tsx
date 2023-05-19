@@ -58,7 +58,7 @@ function typographySxProps(route: string) {
   const theme = useTheme();
 
   const sx = [
-    {},
+    { color: theme.palette.text.secondary },
     isActive(route) && {
       color: theme.palette.secondary.main,
       fontWeight: 'bold',
@@ -161,19 +161,28 @@ export const SecondaryListItems = memo(() => {
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Tháng này" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Tháng này"
+        />
       </ListItemButton>
       <ListItemButton>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Quý trước" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Quý trước"
+        />
       </ListItemButton>
       <ListItemButton>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText primary="Year-end sale" />
+        <ListItemText
+          sx={{ color: theme.palette.text.secondary }}
+          primary="Year-end sale"
+        />
       </ListItemButton>
     </React.Fragment>
   );

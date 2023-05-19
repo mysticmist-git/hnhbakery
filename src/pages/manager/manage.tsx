@@ -293,7 +293,9 @@ export default function Manage({
         }}
       >
         {/* Title */}
-        <Typography variant="h4">Quản lý kho</Typography>
+        <Typography sx={{ color: theme.palette.common.black }} variant="h4">
+          Quản lý kho
+        </Typography>
         <Divider
           sx={{
             mt: 2,
@@ -308,9 +310,7 @@ export default function Manage({
           onChange={handleCrudTargetChanged}
           options={crudTargets}
           sx={{ mt: 4, width: 300 }}
-          renderInput={(params) => (
-            <TextField {...params} color="secondary" label="Kho" />
-          )}
+          renderInput={(params) => <TextField {...params} label="Kho" />}
         />
         {/* Manage Buttons */}
         <Box
