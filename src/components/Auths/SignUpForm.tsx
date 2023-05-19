@@ -12,14 +12,15 @@ import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { UserCredential } from 'firebase/auth';
 import { useSnackbarService } from '@/lib/contexts';
+import { memo } from 'react';
 
-export default function SignUpForm({
+const SignUpForm = ({
   handleSignUp,
   validate,
 }: {
   handleSignUp: (props: SignUpProps) => Promise<UserCredential | undefined>;
   validate: (data: any) => boolean;
-}) {
+}) => {
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -150,4 +151,6 @@ export default function SignUpForm({
       </Grid>
     </Box>
   );
-}
+};
+
+export default memo(SignUpForm);

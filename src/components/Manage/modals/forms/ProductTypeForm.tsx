@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { memo, useContext } from 'react';
 import {
   Grid,
   Box,
@@ -167,4 +167,4 @@ const ProductTypeForm = ({
   );
 };
 
-export default ProductTypeForm;
+export default memo(ProductTypeForm);

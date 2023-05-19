@@ -1,12 +1,12 @@
 import { Button, ButtonProps } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 import { useTheme } from '@mui/material/styles';
 
 interface NavbarButtonProps extends ButtonProps {
   isActive?: boolean;
 }
 
-export default function NavbarButton(props: NavbarButtonProps) {
+const NavbarButton = (props: NavbarButtonProps) => {
   const { isActive = false, children } = props;
   const theme = useTheme();
 
@@ -24,4 +24,6 @@ export default function NavbarButton(props: NavbarButtonProps) {
       {children}
     </Button>
   );
-}
+};
+
+export default memo(NavbarButton);

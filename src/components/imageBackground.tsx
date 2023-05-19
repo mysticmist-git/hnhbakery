@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/system';
 import banh1 from '../assets/Carousel/3.jpg';
 
-export default function ImageBackground(props: any) {
+const ImageBackground = (props: any) => {
   const theme = useTheme();
   return (
     <Box
@@ -26,4 +26,6 @@ export default function ImageBackground(props: any) {
       </Box>
     </Box>
   );
-}
+};
+
+export default memo(ImageBackground);

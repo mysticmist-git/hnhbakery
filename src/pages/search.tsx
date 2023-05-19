@@ -7,7 +7,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, memo } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
@@ -17,7 +17,7 @@ import CustomButton from '@/components/Inputs/Buttons/CustomButton';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 
 //#region Hóa đơn của bạn
-function CustomAccordion(props: any) {
+const CustomAccordion = memo((props: any) => {
   const theme = useTheme();
   const heading = props.heading;
   const Content = props.content;
@@ -63,9 +63,9 @@ function CustomAccordion(props: any) {
       </AccordionDetails>
     </Accordion>
   );
-}
+});
 
-function CustomAccordionItem(props: any) {
+const CustomAccordionItem = memo((props: any) => {
   const theme = useTheme();
   const heading = props.heading;
   const Content = props.content;
@@ -107,9 +107,9 @@ function CustomAccordionItem(props: any) {
       </AccordionDetails>
     </Accordion>
   );
-}
+});
 
-function ListBillItem(props: any) {
+const ListBillItem = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -137,9 +137,9 @@ function ListBillItem(props: any) {
       </Grid>
     </Grid>
   );
-}
+});
 
-function ChiTietHoaDon(props: any) {
+const ChiTietHoaDon = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'billDetail';
@@ -186,9 +186,9 @@ function ChiTietHoaDon(props: any) {
         ))}
     </Grid>
   );
-}
+});
 
-function ThongTinGiaoHang(props: any) {
+const ThongTinGiaoHang = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'delivery';
@@ -235,9 +235,9 @@ function ThongTinGiaoHang(props: any) {
         ))}
     </Grid>
   );
-}
+});
 
-function ThongTinKhuyenMai(props: any) {
+const ThongTinKhuyenMai = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const heading_value = 'sale';
@@ -332,7 +332,7 @@ function ThongTinKhuyenMai(props: any) {
       ))}
     </Grid>
   );
-}
+});
 
 const initBillInfor = [
   {
@@ -467,7 +467,7 @@ const initBillInfor = [
 //#endregion
 
 //#region Danh sách sản phẩm
-function ListProductItem(props: any) {
+const ListProductItem = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -579,9 +579,9 @@ function ListProductItem(props: any) {
       </Grid>
     </Grid>
   );
-}
+});
 
-function ProductContent(props: any) {
+const ProductContent = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   return (
@@ -625,9 +625,9 @@ function ProductContent(props: any) {
       ))}
     </>
   );
-}
+});
 
-function Product(props: any) {
+const Product = memo((props: any) => {
   const theme = useTheme();
   const item = props.item;
   return (
@@ -728,7 +728,7 @@ function Product(props: any) {
       </Grid>
     </>
   );
-}
+});
 
 const initProductInfor = [
   {
@@ -869,7 +869,7 @@ export const SearchContext =
   createContext<SearchContextType>(initSearchContext);
 // #endregion
 
-export default function Search() {
+const Search = () => {
   const theme = useTheme();
   const styles = {
     gridDesktop: { display: { xs: 'none', lg: 'block' } },
@@ -987,4 +987,6 @@ export default function Search() {
       </Box>
     </SearchContext.Provider>
   );
-}
+};
+
+export default memo(Search);

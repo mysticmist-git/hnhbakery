@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function About() {
+const About = () => {
   return <div>About</div>;
-}
+};
+
+export default memo(About);

@@ -1,10 +1,6 @@
 import {
   Card,
-  CardActionArea,
-  CardMedia,
-  CardContent,
   Typography,
-  Box,
   Container,
   TextField,
   Stack,
@@ -12,11 +8,11 @@ import {
   Grid,
   Divider,
 } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 import contactImage from '@/assets/contact-img.jpg';
 import Image from 'next/image';
 
-export default function Contact() {
+const Contact = () => {
   return (
     <Container
       sx={{
@@ -111,4 +107,6 @@ export default function Contact() {
       </Card>
     </Container>
   );
-}
+};
+
+export default memo(Contact);

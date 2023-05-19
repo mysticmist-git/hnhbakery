@@ -12,7 +12,7 @@ import { Box } from '@mui/system';
 import { selectedIdsLookupSelector } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
-export function BasicList({
+const BasicList = ({
   header,
   items,
   setSelectedItem,
@@ -20,7 +20,7 @@ export function BasicList({
   header?: string;
   items: string[];
   setSelectedItem: any;
-}) {
+}) => {
   return (
     <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
       <List
@@ -44,7 +44,7 @@ export function BasicList({
       </List>
     </Box>
   );
-}
+};
 
 interface MultipleValueInputProps {
   header: string;

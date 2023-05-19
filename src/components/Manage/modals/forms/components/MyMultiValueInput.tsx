@@ -1,11 +1,11 @@
 import { Typography, Chip } from '@mui/material';
 import { Stack } from '@mui/system';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import NewValueChip from './NewValueChip';
 import { useSnackbarService } from '@/lib/contexts';
 import { Close } from '@mui/icons-material';
 
-export default function MyMultiValueInput({
+const MyMultiValueInput = ({
   label,
   values: paramValues,
   onChange,
@@ -15,7 +15,7 @@ export default function MyMultiValueInput({
   values: string[];
   onChange: (values: string[]) => void;
   readOnly: boolean;
-}) {
+}) => {
   //#region States
 
   const [values, setValues] = useState<string[]>(paramValues);
@@ -44,7 +44,7 @@ export default function MyMultiValueInput({
       handleSnackbarAlert('error', 'Không thể xóa trong chế độ xem');
       return;
     }
-    setValues(values.filter((v) => v !== value));
+    setValues((currentValues) => currentValues.filter((v) => v !== value));
   };
 
   const handleAddNewValue = () => {
@@ -55,8 +55,8 @@ export default function MyMultiValueInput({
 
     if (!newValue || newValue === '') return;
 
-    setValues([...values, newValue]);
-    setNewValue('');
+    setValues((currentValues) => [...currentValues, newValue]);
+    setNewValue(() => '');
   };
 
   //#endregion
@@ -88,4 +88,6 @@ export default function MyMultiValueInput({
       </Stack>
     </Stack>
   );
-}
+};
+
+export default memo(MyMultiValueInput);

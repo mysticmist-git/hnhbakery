@@ -1,32 +1,11 @@
-import { useState, useRef, RefObject, useEffect, useContext } from 'react';
-import {
-  Grid,
-  Box,
-  Typography,
-  Divider,
-  IconButton,
-  Button,
-  TextField,
-  FormControlLabel,
-  Switch,
-  Theme,
-  Autocomplete,
-  Stack,
-} from '@mui/material';
-import { Delete, Close } from '@mui/icons-material';
-import Image, { StaticImageData } from 'next/image';
-import {
-  DocumentData,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-} from 'firebase/firestore';
+import { useState, useEffect, useContext, memo } from 'react';
+import { Grid, TextField, Autocomplete, Stack } from '@mui/material';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
 import { DatePicker } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
 
@@ -59,7 +38,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   useEffect(() => {
     const fetchData = async () => {
       const justGetProducts = await getProducts();
-      setProducts(justGetProducts ?? []);
+      setProducts(() => justGetProducts ?? []);
 
       if (['update', 'view'].includes(state.crudModalMode)) {
         const productId = state.displayingData?.product_id;
@@ -70,7 +49,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
           (product) => product.id === productId,
         );
 
-        if (referencedProduct) setSelectedProduct(referencedProduct);
+        if (referencedProduct) setSelectedProduct(() => referencedProduct);
       }
     };
 
@@ -81,9 +60,9 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
     const updateVariants = async () => {
       if (!selectedProduct) return;
 
-      setMaterials(selectedProduct.materials);
-      setColors(selectedProduct.colors);
-      setSizes(selectedProduct.sizes);
+      setMaterials(() => selectedProduct.materials);
+      setColors(() => selectedProduct.colors);
+      setSizes(() => selectedProduct.sizes);
 
       if (['update', 'view'].includes(state.crudModalMode)) {
         // Check state.displayingData
@@ -91,13 +70,15 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
         if (!displayingData) return;
 
-        setSelectedMaterial(selectedProduct.materials[displayingData.material]);
-        setSelectedColor(selectedProduct.colors[displayingData.color]);
-        setSelectedSize(selectedProduct.sizes[displayingData.size]);
+        setSelectedMaterial(
+          () => selectedProduct.materials[displayingData.material],
+        );
+        setSelectedColor(() => selectedProduct.colors[displayingData.color]);
+        setSelectedSize(() => selectedProduct.sizes[displayingData.size]);
       } else if (state.crudModalMode === 'create') {
-        setSelectedMaterial(selectedProduct.materials[0]);
-        setSelectedColor(selectedProduct.colors[0]);
-        setSelectedSize(selectedProduct.sizes[0]);
+        setSelectedMaterial(() => selectedProduct.materials[0]);
+        setSelectedColor(() => selectedProduct.colors[0]);
+        setSelectedSize(() => selectedProduct.sizes[0]);
       }
     };
 
@@ -334,4 +315,4 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   );
 };
 
-export default BatchForm;
+export default memo(BatchForm);

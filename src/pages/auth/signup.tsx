@@ -16,7 +16,7 @@ import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { SignUpForm } from '@/components/Auths';
 
-export default function SignUp() {
+const SignUp = () => {
   //region Hooks
 
   const router = useRouter();
@@ -111,4 +111,6 @@ export default function SignUp() {
       <Copyright sx={{ mt: 5 }} />
     </Container>
   );
-}
+};
+
+export default React.memo(SignUp);

@@ -2,8 +2,9 @@ import { Close } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import Image from 'next/image';
+import { memo } from 'react';
 
-export default function MyGalleryImage({
+const MyGalleryImage = ({
   src,
   readOnly = false,
   handleDeleteImage,
@@ -11,7 +12,7 @@ export default function MyGalleryImage({
   src: any;
   readOnly: boolean;
   handleDeleteImage: any;
-}) {
+}) => {
   return (
     <Box
       position="relative"
@@ -50,4 +51,6 @@ export default function MyGalleryImage({
       </IconButton>
     </Box>
   );
-}
+};
+
+export default memo(MyGalleryImage);

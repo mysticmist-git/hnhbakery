@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function ForgetPasswordPage() {
+const ForgetPasswordPage = () => {
   return <div>ForgetPasswordPage</div>;
-}
+};
+
+export default memo(ForgetPasswordPage);

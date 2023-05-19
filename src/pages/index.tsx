@@ -8,7 +8,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  useMemo,
+  memo,
+} from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import { alpha } from '@mui/system';
 import CustomButton from '@/components/Inputs/Buttons/CustomButton';
@@ -30,7 +37,7 @@ interface CarouselImageItem {
   href: string;
 }
 
-function CustomCarousel(props: any) {
+const CustomCarousel = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
 
@@ -67,7 +74,7 @@ function CustomCarousel(props: any) {
       ))}
     </Carousel>
   );
-}
+});
 //#endregion
 
 // #region Best seller
@@ -123,35 +130,40 @@ const initBestSeller: BestSellerItem[] = [
   },
 ];
 
-function CakeCard(props: any) {
+const CakeCard = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
-  const defaultInformation: BestSellerItem = {
-    image: banh1.src,
-    name: 'Bánh',
-    description: 'Bánh ngon dữ lắm bà ơi',
-    href: '#',
-  };
 
-  const imageHeight = props.imageHeight;
+  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
 
-  const imageStyles = {
-    cardNormal: {
-      width: '100%',
-      height: '100%',
-      maxWidth: 345,
-      minWidth: 320,
-      transition: 'transform 0.25s ease-in-out',
-    },
-    cardHovered: {
-      width: '100%',
-      height: '100%',
-      maxWidth: 345,
-      minWidth: 320,
-      transition: 'transform 0.4s ease-in-out',
-      transform: 'scale(1.5)',
-    },
-  };
+  const defaultInformation: BestSellerItem = useMemo(
+    () => ({
+      image: banh1.src,
+      name: 'Bánh',
+      description: 'Bánh ngon dữ lắm bà ơi',
+      href: '#',
+    }),
+    [banh1],
+  );
+
+  const imageStyles = useMemo(
+    () => ({
+      cardNormal: {
+        width: '100%',
+        height: imageHeight,
+        transition: 'transform 0.25s ease-in-out',
+        objectFit: 'cover',
+      },
+      cardHovered: {
+        width: '100%',
+        height: imageHeight,
+        transition: 'transform 0.25s ease-in-out',
+        transform: 'scale(1.5)',
+        objectFit: 'cover',
+      },
+    }),
+    [imageHeight],
+  );
 
   const [cardHover, setCardHover] = useState(false);
 
@@ -203,10 +215,11 @@ function CakeCard(props: any) {
       </CardActions>
     </Card>
   );
-}
+});
 
-function CardSliderItem(props: any) {
+const CardSliderItem = memo((props: any) => {
   const { listColumn } = props;
+
   return (
     <>
       <Grid container direction={'row'} justifyContent={'center'} spacing={2}>
@@ -225,9 +238,9 @@ function CardSliderItem(props: any) {
       </Grid>
     </>
   );
-}
+});
 
-function CustomCardSlider(props: any) {
+const CustomCardSlider = memo((props: any) => {
   //#region States
 
   const [bestSellerDisplay, setBestSellerDisplay] = useState<any[]>([]);
@@ -258,13 +271,13 @@ function CustomCardSlider(props: any) {
       column = 1;
     }
 
-    let listRow = [];
+    let listRow: any[] = [];
     let listColumn: BestSellerItem[] = [];
 
     const bestSellerCount = context.bestSeller.length;
 
     for (let i = 0; i < bestSellerCount; i++) {
-      listColumn.push({ ...context.bestSeller[i] } as BestSellerItem);
+      listColumn.push(context.bestSeller[i] as BestSellerItem);
 
       if ((i + 1) % column == 0 || i + 1 == context.bestSeller.length) {
         listRow.push(listColumn);
@@ -272,7 +285,7 @@ function CustomCardSlider(props: any) {
       }
     }
 
-    setBestSellerDisplay(listRow);
+    setBestSellerDisplay(() => listRow);
   }, [context.bestSeller, oneColumn, twoColumn, threeColumn]);
 
   //#endregion
@@ -300,9 +313,8 @@ function CustomCardSlider(props: any) {
       </Box>
     </>
   );
-}
-
-// #endregion
+});
+//#endregion
 
 //#region Loại bánh
 interface TypeCakeItem extends BestSellerItem {}
@@ -334,36 +346,43 @@ const initTypeCake: TypeCakeItem[] = [
   },
 ];
 
-function TypeCakeCard(props: any) {
+const imageStyles = {
+  cardNormal: {
+    width: '100%',
+    height: '100%',
+    maxWidth: 345,
+    minWidth: 320,
+    transition: 'transform 0.25s ease-in-out',
+  },
+  cardHovered: {
+    width: '100%',
+    height: '100%',
+    maxWidth: 345,
+    minWidth: 320,
+    transition: 'transform 0.4s ease-in-out',
+    transform: 'scale(1.5)',
+  },
+};
+
+const TypeCakeCard = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
 
-  const defaultInformation: TypeCakeItem = {
-    image: banh1.src,
-    name: 'Bánh Ngọt',
-    description: 'Bánh ngọt nhưng giảm cân!',
-    href: '#',
-  };
+  const defaultInformation: TypeCakeItem = useMemo(
+    () => ({
+      image: banh1.src,
+      name: 'Bánh Ngọt',
+      description: 'Bánh ngọt nhưng giảm cân!',
+      href: '#',
+    }),
+    [banh1],
+  );
 
-  const imageHeight = props.imageHeight;
-
-  const imageStyles = {
-    cardNormal: {
-      width: '100%',
-      height: '100%',
-      maxWidth: 345,
-      minWidth: 320,
-      transition: 'transform 0.25s ease-in-out',
-    },
-    cardHovered: {
-      width: '100%',
-      height: '100%',
-      maxWidth: 345,
-      minWidth: 320,
-      transition: 'transform 0.4s ease-in-out',
-      transform: 'scale(1.5)',
-    },
-  };
+  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
+  const descriptionHeight = useMemo(
+    () => props.descriptionHeight,
+    [props.descfiptionHeight],
+  );
 
   const [cardHover, setCardHover] = useState(false);
 
@@ -426,9 +445,9 @@ function TypeCakeCard(props: any) {
       </Card>
     </>
   );
-}
+});
 
-function TypeCake(props: any) {
+const TypeCake = memo((props: any) => {
   const theme = useTheme();
   const context = useContext<HomeContextType>(HomeContext);
   return (
@@ -459,11 +478,11 @@ function TypeCake(props: any) {
       </Box>
     </>
   );
-}
+});
 //#endregion
 
 //#region Khuyến mãi
-function DangKyKhuyenMai(props: any) {
+const DangKyKhuyenMai = memo((props: any) => {
   const theme = useTheme();
   return (
     <Box
@@ -536,7 +555,8 @@ function DangKyKhuyenMai(props: any) {
       </Box>
     </Box>
   );
-}
+});
+
 //#endregion
 
 // #region Context
@@ -555,13 +575,13 @@ const initHomeContext: HomeContextType = {
 export const HomeContext = createContext<HomeContextType>(initHomeContext);
 // #endregion
 
-export default function Home({
+const Home = ({
   productTypesWithImageFetched: typeCakeState,
   bestSellerProductsWithImageFetched: bestSellerState,
 }: {
   productTypesWithImageFetched: TypeCakeItem[];
   bestSellerProductsWithImageFetched: BestSellerItem[];
-}) {
+}) => {
   //#region States
 
   const [carouselImagesState, setCarouselImagesState] = useState<
@@ -586,7 +606,7 @@ export default function Home({
         imagePaths.map((path) => import(`../assets/Carousel/${path}`)),
       );
 
-      setCarouselImagesState(
+      setCarouselImagesState(() =>
         images.map(function (image) {
           return {
             src: image.default.src,
@@ -633,8 +653,7 @@ export default function Home({
       </HomeContext.Provider>
     </>
   );
-}
-
+};
 //#region Local Functions
 
 async function fetchTypeCakesAndGetTheirImagesToo(
@@ -704,3 +723,5 @@ export async function getStaticProps() {
     },
   };
 }
+
+export default memo(Home);

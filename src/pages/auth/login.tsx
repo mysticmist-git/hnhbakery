@@ -15,18 +15,24 @@ import Typography from '@mui/material/Typography';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import { Google } from '@mui/icons-material';
-import { authMessages } from '@/lib/constants/authConstants';
-import { SxProps, Theme } from '@mui/system';
+import { authMessages } from '@/lib/constants';
+import { SxProps, Theme, alpha } from '@mui/system';
+import banh1 from '@/assets/Carousel/3.jpg';
+import theme from '@/styles/themes/lightTheme';
+import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
+import CustomTextField from '@/components/Inputs/CustomTextField';
 import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
 import { handleLoginWithGoogle } from '@/lib/auth';
 import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
 import { useSnackbarService } from '@/lib/contexts';
+import { CustomButton } from '@/components/Inputs/Buttons';
+import { memo } from 'react';
 
 //#endregion
 
 //#region Top
 
-function Copyright(props: any) {
+const Copyright = (props: any) => {
   return (
     <Typography
       variant="body2"
@@ -42,11 +48,11 @@ function Copyright(props: any) {
       {'.'}
     </Typography>
   );
-}
+};
 
 //#endregion
 
-export default function Login() {
+const Login = () => {
   //#region Hooks
 
   const router = useRouter();
@@ -245,4 +251,6 @@ export default function Login() {
       </Grid>
     </Grid>
   );
-}
+};
+
+export default memo(Login);

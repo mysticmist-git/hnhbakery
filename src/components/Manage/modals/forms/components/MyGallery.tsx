@@ -1,11 +1,11 @@
 import { Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { StaticImageData } from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import MyGalleryImage from './MyGalleryImage';
 import MyGalleryImageNewButton from './MyGalleryImageNewButton';
 
-export default function MyGallery({
+const MyGallery = ({
   title: title,
   srcs,
   placeholderImage,
@@ -20,7 +20,7 @@ export default function MyGallery({
   readOnly: boolean;
   handleUploadGalleryToBrowser: any;
   handleDeleteImage: any;
-}) {
+}) => {
   //#region States
 
   //#endregion
@@ -71,4 +71,6 @@ export default function MyGallery({
       </Stack>
     </Stack>
   );
-}
+};
+
+export default memo(MyGallery);

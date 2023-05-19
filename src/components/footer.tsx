@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import logo from '../assets/Logo.png';
 
-export default function Footer() {
+const Footer = () => {
   //#region Style
   const theme = useTheme();
   const styles = {
@@ -158,4 +158,6 @@ export default function Footer() {
       </Box>
     </>
   );
-}
+};
+
+export default memo(Footer);
