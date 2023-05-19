@@ -11,13 +11,11 @@ const MyMultiValueInput = ({
   values: paramValues,
   onChange,
   readOnly = false,
-  mode = 'picker',
 }: {
   label: string;
   values: string[];
   onChange: (values: string[]) => void;
   readOnly: boolean;
-  mode?: 'picker' | 'checker';
 }) => {
   //#region States
 
