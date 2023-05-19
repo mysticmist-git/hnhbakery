@@ -76,8 +76,13 @@ function Navbar() {
 
   const router = useRouter();
   const AuthUser = useAuthUser();
-
   const theme = useTheme();
+
+  //#endregion
+
+  // #region useMemos
+
+  const { email } = useMemo(() => AuthUser, [AuthUser]);
   const styles = useMemo(
     () => ({
       appBar: {},
@@ -94,12 +99,6 @@ function Navbar() {
     [theme],
   );
 
-  //#endregion
-
-  // #region useMemos
-
-  const { email } = useMemo(() => AuthUser, [AuthUser]);
-
   // #endregion
 
   //#region UseEffects
@@ -114,7 +113,7 @@ function Navbar() {
   //#region Handlers
 
   function handleSetTabState(value: number) {
-    setTabState((currentTabState) => ({ ...currentTabState, value: value }));
+    setTabState((prev) => ({ ...prev, value: value }));
   }
 
   const handleSetDrawerOpenState = (open: boolean) => {
@@ -327,4 +326,4 @@ function Navbar() {
   );
 }
 
-export default memo(withAuthUser()(Navbar));
+export default withAuthUser()(memo(Navbar));

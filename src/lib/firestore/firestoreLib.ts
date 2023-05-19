@@ -246,3 +246,25 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
 }
 
 //#endregion
+
+// #region Contact
+
+export interface Contact {
+  name: string;
+  email: string;
+  phone?: string;
+  title: string;
+  content: string;
+}
+export const sendContact = async (form: Contact) => {
+  if (!form) return;
+
+  try {
+    const contacts = collection(db, 'contacts');
+    await addDoc(contacts, form);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// #endregion

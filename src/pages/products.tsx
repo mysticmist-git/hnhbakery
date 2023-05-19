@@ -32,7 +32,6 @@ import ListAlt from '@mui/icons-material/ListAlt';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
-import CustomIconButton from '@/components/Inputs/Buttons/CustomIconButton';
 import {
   getCollection,
   getDownloadUrlFromFirebaseStorage,
@@ -50,6 +49,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { BatchObject } from '@/lib/models/Batch';
+import { CustomIconButton } from '@/components/Inputs/Buttons';
 
 // #region Filter
 interface BoLocItem {
@@ -1160,7 +1160,7 @@ async function fetchProductTypesWithLowestPrices(
 
 //#endregion
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(

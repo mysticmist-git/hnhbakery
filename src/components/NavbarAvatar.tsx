@@ -46,6 +46,11 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     setAnchorEl(() => null);
   };
 
+  const handleOpenProfile = () => {
+    router.push('/profile');
+    setAnchorEl(() => null);
+  };
+
   const handleOpenManagement = () => {
     router.push('/manager/manage');
     setAnchorEl(() => null);
@@ -67,7 +72,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     <>
       <Avatar src={photoURL as string | undefined} onClick={handleClick} />
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleClose} sx={menuItemSx}>
+        <MenuItem onClick={handleOpenProfile} sx={menuItemSx}>
           <AccountCircle />
           <Typography variant="body2">Tài khoản</Typography>
         </MenuItem>
