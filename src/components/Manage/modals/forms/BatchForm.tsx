@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useContext } from 'react';
-import { Grid, TextField, Autocomplete, Stack } from '@mui/material';
+import { useState, memo, useEffect, useContext } from 'react';
+import { Grid, TextField, Autocomplete, Stack, useTheme } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
@@ -121,6 +121,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
   //#endregion
   const theme = useTheme();
+
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={6}>
