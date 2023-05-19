@@ -33,6 +33,7 @@ const theme = createTheme({
       main: '#F2F3F5',
       dark: '#919193',
       light: '#D9DADC',
+      contrastText: '#000000',
     },
     secondary: {
       main: '#810000',

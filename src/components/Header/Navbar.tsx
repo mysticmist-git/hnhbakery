@@ -139,7 +139,7 @@ function Navbar() {
 
   const handleScroll = () => {
     const currentScrollPos = window.pageYOffset;
-    if (currentScrollPos > 0) {
+    if (currentScrollPos > 310) {
       setIsScrolled(true);
     } else {
       setIsScrolled(false);
@@ -164,7 +164,7 @@ function Navbar() {
         <Slide appear={false} direction="down" in={!isScrolled}>
           <AppBar
             sx={{
-              top: { lg: 0, xs: 0 },
+              top: 0,
               left: 0,
               right: 0,
               background: `linear-gradient(to bottom, ${alpha(
