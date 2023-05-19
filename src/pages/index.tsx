@@ -18,7 +18,6 @@ import React, {
 } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import { alpha } from '@mui/system';
-import CustomButton from '@/components/Inputs/Buttons/CustomButton';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 import Carousel from 'react-material-ui-carousel';
 import { ProductObject, ProductTypeObject } from '@/lib/models';
@@ -29,6 +28,7 @@ import {
 } from '@/lib/firestore/firestoreLib';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CustomButton } from '@/components/Inputs/Buttons';
 
 // #region Carousel
 interface CarouselImageItem {

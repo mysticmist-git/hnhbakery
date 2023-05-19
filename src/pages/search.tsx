@@ -14,8 +14,8 @@ import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
-import CustomButton from '@/components/Inputs/Buttons/CustomButton';
 import CustomTextField from '@/components/Inputs/CustomTextField';
+import { CustomButton } from '@/components/Inputs/Buttons';
 
 //#region Hóa đơn của bạn
 const CustomAccordion = memo((props: any) => {
