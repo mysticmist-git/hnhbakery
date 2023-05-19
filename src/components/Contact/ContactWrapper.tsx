@@ -4,7 +4,13 @@ import { memo } from 'react';
 import contactImage from '@/assets/contact-img.jpg';
 import Image from 'next/image';
 
-const ContactWrapper = ({ children }: { children: React.ReactNode }) => {
+const ContactWrapper = ({
+  title,
+  children = '',
+}: {
+  title: string;
+  children?: React.ReactNode;
+}) => {
   return (
     <Container
       sx={{
@@ -43,12 +49,7 @@ const ContactWrapper = ({ children }: { children: React.ReactNode }) => {
                 color: (theme) => theme.palette.common.black,
               }}
             />
-            <Typography variant="body2">
-              Cảm ơn bạn đã ghé thăm trang web của tiệm bánh và sử dụng form
-              đóng góp / liên hệ của chúng tôi. Chúng tôi rất trân trọng ý kiến
-              đóng góp của bạn và sẽ liên hệ lại với bạn trong thời gian sớm
-              nhất có thể. Xin cảm ơn!
-            </Typography>
+            <Typography variant="body2">{title}</Typography>
             <Divider
               sx={{
                 color: (theme) => theme.palette.common.black,

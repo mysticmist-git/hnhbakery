@@ -1,5 +1,5 @@
 import { Button, useTheme } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 
 const CustomButton = (props: any) => {
   const theme = useTheme();
