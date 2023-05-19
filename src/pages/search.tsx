@@ -714,7 +714,10 @@ const Product = memo((props: any) => {
               <Grid item xs={12}>
                 <CustomButton
                   children={() => (
-                    <Link href={item.product.href}>
+                    <Link
+                      href={item.product.href}
+                      style={{ textDecoration: 'none' }}
+                    >
                       <Typography
                         variant="button"
                         color={theme.palette.common.white}
@@ -903,7 +906,7 @@ const Search = () => {
               spacing={2}
             >
               <Grid item>
-                <Link href="#">
+                <Link href="#" style={{ textDecoration: 'none' }}>
                   <Typography
                     align="center"
                     variant="h1"
