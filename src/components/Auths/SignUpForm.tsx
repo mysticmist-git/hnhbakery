@@ -139,7 +139,9 @@ export default function SignUpForm({
       <Grid container justifyContent="flex-end">
         <Grid item>
           <NextLink href="/auth/login" passHref legacyBehavior>
-            <Link variant="body2">Đã có tài khoản? Đăng nhập ngay!</Link>
+            <Link variant="body2" style={{ textDecoration: 'none' }}>
+              Đã có tài khoản? Đăng nhập ngay!
+            </Link>
           </NextLink>
         </Grid>
       </Grid>

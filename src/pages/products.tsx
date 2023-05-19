@@ -900,13 +900,13 @@ export default function Products({ products }: { products: string }) {
                 sx={{ px: 6 }}
                 height={'100%'}
                 container
-                direction={'column'}
+                direction={'row'}
                 justifyContent={'center'}
                 alignItems={'center'}
                 spacing={2}
               >
-                <Grid item>
-                  <Link href="#">
+                <Grid item xs={12}>
+                  <Link href="#" style={{ textDecoration: 'none' }}>
                     <Typography
                       align="center"
                       variant="h1"

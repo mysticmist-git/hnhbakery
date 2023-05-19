@@ -7,7 +7,7 @@ const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          backgroundColor: '#eeebdd',
+          backgroundColor: '#F2F3F5',
         },
       },
     },
@@ -30,7 +30,9 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#EEEBDD',
+      main: '#F2F3F5',
+      dark: '#919193',
+      light: '#D9DADC',
     },
     secondary: {
       main: '#810000',
@@ -49,11 +51,11 @@ const theme = createTheme({
     },
     common: {
       black: '#000000',
-      light: '#333',
       white: '#FFFFFF',
-      veryLight: '#555',
-      gray: '#808080',
-      darkGray: '#555',
+      // light: '#333',
+      // veryLight: '#555',
+      // gray: '#808080',
+      // darkGray: '#555',
     },
   },
   typography: {

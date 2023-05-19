@@ -326,7 +326,9 @@ function Navbar() {
 
               <Grid item xs={6} sx={styles.gridPhone}>
                 <Typography variant="h3" color={theme.palette.common.white}>
-                  <Link href="#">H&H Bakery</Link>
+                  <Link href="#" style={{ textDecoration: 'none' }}>
+                    H&H Bakery
+                  </Link>
                 </Typography>
               </Grid>
 
