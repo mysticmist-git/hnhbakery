@@ -1,7 +1,7 @@
 import { Button, useTheme } from '@mui/material';
 import React from 'react';
 
-export default function CustomButton(props: any) {
+const CustomButton = (props: any) => {
   const theme = useTheme();
   return (
     <Button
@@ -18,4 +18,6 @@ export default function CustomButton(props: any) {
       <props.children />
     </Button>
   );
-}
+};
+
+export default memo(CustomButton);

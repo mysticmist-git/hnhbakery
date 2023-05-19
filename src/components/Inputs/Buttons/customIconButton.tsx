@@ -1,7 +1,7 @@
 import { IconButton, useTheme } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function CustomIconButton(props: any) {
+const CustomIconButton = (props: any) => {
   const theme = useTheme();
   return (
     <IconButton
@@ -15,4 +15,6 @@ export default function CustomIconButton(props: any) {
       <props.children />
     </IconButton>
   );
-}
+};
+
+export default memo(CustomIconButton);
