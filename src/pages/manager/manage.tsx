@@ -22,7 +22,7 @@ import {
   doc,
   deleteDoc,
 } from 'firebase/firestore';
-import { createContext, useEffect, useReducer, useState } from 'react';
+import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -142,7 +142,11 @@ export default function Manage({
     }
   };
 
-  const generateAddNewRowText = () => {
+  //#endregion
+
+  // #region useMemos
+
+  const rowText = useMemo(() => {
     switch (state.selectedTarget?.collectionName) {
       case CollectionName.ProductTypes:
         return 'Thêm loại sản phẩm';
@@ -153,9 +157,9 @@ export default function Manage({
       default:
         return 'Lỗi khi load text';
     }
-  };
+  }, [state.selectedTarget]);
 
-  //#endregion
+  // #endregion
 
   //#region Handlers
 
@@ -329,7 +333,7 @@ export default function Manage({
             }}
             onClick={handleNewRow}
           >
-            {generateAddNewRowText()}
+            {rowText}
           </TableActionButton>
         </Box>
 
