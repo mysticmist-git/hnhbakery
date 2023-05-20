@@ -5,16 +5,16 @@ import {
   addUser,
   handleLoginWithGoogle,
   updateUserLogin,
-} from '@/lib/auth/auth';
+} from '@/lib/auth';
 import { Google } from '@mui/icons-material';
 import { Grid, TextField, Button, Link, Divider } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { UserCredential } from 'firebase/auth';
-import { useSnackbarService } from '@/lib/contexts';
 import { memo } from 'react';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
+import { useSnackbarService } from '@/lib/contexts';
 
 const SignUpForm = ({
   handleSignUp,

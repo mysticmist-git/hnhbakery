@@ -41,8 +41,9 @@ import {
   DEFAULT_ROW,
   ManageState,
 } from '@/lib/localLib/manage';
-import { ManageContext, useSnackbarService } from '@/lib/contexts';
 import { MyMultiValuePickerInput } from '@/components/Inputs';
+import { useSnackbarService } from '@/lib/contexts';
+import { ManageContext } from '@/lib/contexts/manageContext';
 
 //#region Constants
 
