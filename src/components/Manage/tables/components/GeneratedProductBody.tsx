@@ -1,5 +1,5 @@
 import { TableRow, TableCell, Typography } from '@mui/material';
-import React, { memo, useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { ManageContext } from '@/pages/manager/manage';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
@@ -7,6 +7,7 @@ import { DocumentData, doc, getDoc } from 'firebase/firestore';
 import RowActionButtons from './RowActionButtons';
 import { ManageContextType } from '@/lib/localLib/manage';
 import theme from '@/styles/themes/lightTheme';
+import { table } from 'console';
 
 const GeneratedProductTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
@@ -49,51 +50,55 @@ const GeneratedProductTableBody = () => {
     getProductTypeNames();
   }, [state.mainDocs]);
 
-  return (
-    <>
-      {displayMainDocs?.map((doc, index) => (
-        <TableRow
-          key={doc.id}
-          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-        >
-          <TableCell component="th" scope="row">
-            <Typography sx={{ color: theme.palette.common.black }}>
-              {index + 1}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography sx={{ color: theme.palette.common.black }}>
-              {doc.name}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography sx={{ color: theme.palette.common.black }}>
-              {doc.productTypeName}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography sx={{ color: theme.palette.common.black }}>
-              {doc.description}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography
-              sx={{
-                color: doc.isActive
-                  ? theme.palette.success.main
-                  : theme.palette.error.main,
-              }}
-            >
-              {doc.isActive ? 'Còn cung cấp' : 'Ngưng cung cấp'}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <RowActionButtons doc={doc} />
-          </TableCell>
-        </TableRow>
-      )) ?? <TableRow>Error loading body</TableRow>}
-    </>
-  );
+  const TableBody = useMemo(() => {
+    return (
+      <>
+        {displayMainDocs?.map((doc, index) => (
+          <TableRow
+            key={doc.id}
+            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+          >
+            <TableCell component="th" scope="row">
+              <Typography sx={{ color: theme.palette.common.black }}>
+                {index + 1}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography sx={{ color: theme.palette.common.black }}>
+                {doc.name}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography sx={{ color: theme.palette.common.black }}>
+                {doc.productTypeName}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography sx={{ color: theme.palette.common.black }}>
+                {doc.description}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography
+                sx={{
+                  color: doc.isActive
+                    ? theme.palette.success.main
+                    : theme.palette.error.main,
+                }}
+              >
+                {doc.isActive ? 'Còn cung cấp' : 'Ngưng cung cấp'}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <RowActionButtons doc={doc} />
+            </TableCell>
+          </TableRow>
+        )) ?? <TableRow>Error loading body</TableRow>}
+      </>
+    );
+  }, [displayMainDocs]);
+
+  return TableBody;
 };
 
 export default memo(GeneratedProductTableBody);

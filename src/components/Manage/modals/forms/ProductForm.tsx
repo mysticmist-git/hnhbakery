@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, memo } from 'react';
+import { useState, useEffect, useContext, memo, useMemo } from 'react';
 import {
   Grid,
   Box,
@@ -11,18 +11,27 @@ import {
   Autocomplete,
   Stack,
 } from '@mui/material';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import placeholderImage from '@/assets/placeholder-image.png';
 import TabPanel from './components/TabPanel';
 import { a11yProps } from './lib';
 import MyGallery from './components/MyGallery';
-import MyMultiValueInput from './components/MyMultiValueInput';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { ManageContext } from '@/pages/manager/manage';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
+import {
+  MyMultiValueInput,
+  MyMultiValueCheckerPickerInput,
+} from '@/components/Inputs';
+import { getCollection } from '@/lib/firestore';
+import {
+  ReferenceServiceInterface,
+  ReferenceServiceProxy,
+  ReferencesService,
+} from '@/lib/services/ReferenceService';
 
 //#region Types
 
@@ -52,6 +61,8 @@ const ProductForm = ({
   const [productTypes, setProductTypes] = useState<ProductTypeStateProps[]>([]);
   const [selectedProductType, setSelectedProductType] =
     useState<ProductTypeStateProps | null>(null);
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
 
   //#endregion
 
@@ -108,6 +119,29 @@ const ProductForm = ({
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const colors = await referenceService.getColors();
+        setColors(() => colors);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchSizes = async () => {
+      try {
+        const sizes = await referenceService.getSizes();
+        setSizes(() => sizes);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchColors();
+    fetchSizes();
+  }, []);
+
   //#endregion
 
   //#region Handlers
@@ -117,6 +151,18 @@ const ProductForm = ({
   };
 
   //#endregion
+
+  // #region useMemos
+
+  const referenceService: ReferenceServiceInterface = useMemo(
+    () => new ReferenceServiceProxy(new ReferencesService()),
+    [],
+  );
+
+  // #endregion
+
+  console.log(colors);
+  console.log(sizes);
 
   return (
     <>
@@ -376,7 +422,40 @@ const ProductForm = ({
               });
             }}
           />
-          <MyMultiValueInput
+          <MyMultiValueCheckerPickerInput
+            readOnly={readOnly}
+            mode="checker"
+            label={'Màu sắc'}
+            values={state.displayingData?.colors ?? []}
+            options={colors}
+            onChange={(values) => {
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  colors: values,
+                },
+              });
+            }}
+          />
+
+          <MyMultiValueCheckerPickerInput
+            readOnly={readOnly}
+            mode="checker"
+            label={'Kích cỡ'}
+            values={state.displayingData?.sizes ?? []}
+            options={sizes}
+            onChange={(values) => {
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  sizes: values,
+                },
+              });
+            }}
+          />
+          {/* <MyMultiValueInput
             readOnly={readOnly}
             label={'Màu sắc'}
             values={state.displayingData?.colors ?? []}
@@ -403,7 +482,7 @@ const ProductForm = ({
                 },
               });
             }}
-          />
+          /> */}
         </Stack>
       </TabPanel>
     </>

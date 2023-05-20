@@ -15,8 +15,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
-import { SnackbarService, TransitionUp } from '@/lib/contexts';
+import { SnackbarService } from '@/lib/contexts';
 import NProgress from 'nprogress';
+import { TransitionUp } from '@/components/Transitions';
 
 //Binding events.
 

@@ -1,7 +1,7 @@
 import { Typography, Chip } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useState, useEffect, memo } from 'react';
-import NewValueChip from './NewValueChip';
+import NewValueChip from '../Manage/modals/forms/components/NewValueChip';
 import { useSnackbarService } from '@/lib/contexts';
 import { Close } from '@mui/icons-material';
 import theme from '@/styles/themes/lightTheme';
