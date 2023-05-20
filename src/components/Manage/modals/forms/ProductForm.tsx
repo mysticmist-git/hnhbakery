@@ -23,7 +23,7 @@ import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import {
   MyMultiValueInput,
-  MyMultiValueCheckerPickerInput,
+  MyMultiValueCheckerInput,
 } from '@/components/Inputs';
 import { getCollection } from '@/lib/firestore';
 import {
@@ -419,9 +419,8 @@ const ProductForm = ({
               });
             }}
           />
-          <MyMultiValueCheckerPickerInput
+          <MyMultiValueCheckerInput
             readOnly={readOnly}
-            mode="checker"
             label={'Màu sắc'}
             values={state.displayingData?.colors ?? []}
             options={colors}
@@ -436,9 +435,8 @@ const ProductForm = ({
             }}
           />
 
-          <MyMultiValueCheckerPickerInput
+          <MyMultiValueCheckerInput
             readOnly={readOnly}
-            mode="checker"
             label={'Kích cỡ'}
             values={state.displayingData?.sizes ?? []}
             options={sizes}

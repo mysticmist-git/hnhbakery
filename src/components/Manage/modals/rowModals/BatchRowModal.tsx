@@ -80,7 +80,7 @@ const BatchRowModal = () => {
       };
     }
 
-    if (data.totalQuantity < 0) {
+    if (data.totalQuantity <= 0) {
       return {
         isValid: false,
         errorMessage: 'Nhập tổng số lượng',
@@ -94,26 +94,6 @@ const BatchRowModal = () => {
       };
     }
 
-    if (data.material < 0) {
-      return {
-        isValid: false,
-        errorMessage: 'Vật liệu sai',
-      };
-    }
-
-    if (data.size < 0) {
-      return {
-        isValid: false,
-        errorMessage: 'Kích cỡ sai',
-      };
-    }
-
-    if (data.color < 0) {
-      return {
-        isValid: false,
-        errorMessage: 'Màu sắc sai',
-      };
-    }
     if (!data.MFG) {
       return {
         isValid: false,
@@ -135,7 +115,7 @@ const BatchRowModal = () => {
       };
     }
 
-    if (data.price < 0) {
+    if (data.price <= 0) {
       return {
         isValid: false,
         errorMessage: 'Giá sai',

@@ -159,9 +159,9 @@ export const DEFAULT_ROW = {
     EXP: Timestamp.now()
       .toDate()
       .setDate(Timestamp.now().toDate().getDate() + 1),
-    material: 0,
-    size: 0,
-    color: 0,
+    material: '',
+    size: '',
+    color: '',
     price: 0,
     discount: [],
     product_id: '',

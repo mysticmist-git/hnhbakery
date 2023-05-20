@@ -42,7 +42,7 @@ import {
   ManageState,
 } from '@/lib/localLib/manage';
 import { ManageContext, useSnackbarService } from '@/lib/contexts';
-import { MyMultiValueCheckerPickerInput } from '@/components/Inputs';
+import { MyMultiValuePickerInput } from '@/components/Inputs';
 
 //#region Constants
 
@@ -72,7 +72,12 @@ export default function Manage({
 }) {
   //#region States
 
-  const [state, dispatch] = useReducer(manageReducer, initManageState);
+  const [state, dispatch] = useReducer(manageReducer, {
+    ...initManageState,
+    selectedTarget:
+      crudTargets.find((t) => t.collectionName === paramCollectionName) ??
+      crudTargets[0],
+  });
   const [justLoaded, setJustLoaded] = useState(true);
 
   //#endregion
@@ -324,15 +329,14 @@ export default function Manage({
           renderInput={(params) => <TextField {...params} label="Kho" />}
         /> */}
 
-        <MyMultiValueCheckerPickerInput
+        <MyMultiValuePickerInput
           label="Kho"
           options={crudTargets.map((target) => target.label)}
-          values={[state.selectedTarget]}
-          mode="picker"
+          value={state.selectedTarget.label}
           onChange={(value) =>
             dispatch({
               type: ManageActionType.SET_SELECTED_TARGET,
-              payload: crudTargets.find((target) => target.label === value[0]),
+              payload: crudTargets.find((target) => target.label === value),
             })
           }
         />

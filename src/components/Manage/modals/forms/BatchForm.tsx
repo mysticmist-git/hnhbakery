@@ -1,4 +1,4 @@
-import { useState, memo, useEffect, useContext } from 'react';
+import { useState, memo, useEffect, useContext, useRef, useMemo } from 'react';
 import { Grid, TextField, Autocomplete, Stack, useTheme } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
@@ -9,6 +9,10 @@ import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import { ManageContext, useSnackbarService } from '@/lib/contexts';
+import {
+  MyMultiValueCheckerInput,
+  MyMultiValuePickerInput,
+} from '@/components/Inputs';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region States
@@ -18,15 +22,31 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
     null,
   );
 
-  // Variants
-  const [materials, setMaterials] = useState<string[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>('');
-  const [colors, setColors] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | null>('');
-  const [sizes, setSizes] = useState<string[]>([]);
-  const [selectedSize, setSelectedSize] = useState<string | null>('');
-
   //#endregion
+
+  // region Refs
+
+  const materialRef = useRef<string>('');
+  const colorRef = useRef<string>('');
+  const sizeRef = useRef<string>('');
+
+  // #endregion
+
+  // #region useMemos
+
+  const materials = useMemo(() => {
+    return selectedProduct?.materials ?? [];
+  }, [selectedProduct]);
+
+  const colors = useMemo(() => {
+    return selectedProduct?.colors ?? [];
+  }, [selectedProduct]);
+
+  const sizes = useMemo(() => {
+    return selectedProduct?.sizes ?? [];
+  }, [selectedProduct]);
+
+  // #endregion
 
   //#region Hooks
 
@@ -73,35 +93,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
     fetchData();
   }, []);
-
-  useEffect(() => {
-    const updateVariants = async () => {
-      if (!selectedProduct) return;
-
-      setMaterials(() => selectedProduct.materials);
-      setColors(() => selectedProduct.colors);
-      setSizes(() => selectedProduct.sizes);
-
-      if (['update', 'view'].includes(state.crudModalMode)) {
-        // Check state.displayingData
-        const displayingData = state.displayingData;
-
-        if (!displayingData) return;
-
-        setSelectedMaterial(
-          () => selectedProduct.materials[displayingData.material],
-        );
-        setSelectedColor(() => selectedProduct.colors[displayingData.color]);
-        setSelectedSize(() => selectedProduct.sizes[displayingData.size]);
-      } else if (state.crudModalMode === 'create') {
-        setSelectedMaterial(() => selectedProduct.materials[0]);
-        setSelectedColor(() => selectedProduct.colors[0]);
-        setSelectedSize(() => selectedProduct.sizes[0]);
-      }
-    };
-
-    updateVariants();
-  }, [selectedProduct]);
 
   //#endregion
 
@@ -166,71 +157,56 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
             )}
             isOptionEqualToValue={(option, value) => option.id === value.id}
           />
-          <Autocomplete
+
+          <MyMultiValuePickerInput
+            label="Vật liệu"
+            value={state.displayingData?.material ?? ''}
             readOnly={readOnly}
-            disablePortal
-            value={selectedMaterial}
-            onChange={(event, newValue) => {
-              if (!newValue) return;
-
-              setSelectedMaterial(newValue);
-
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: {
-                  ...state.displayingData,
-                  material: materials.indexOf(newValue),
-                },
-              });
-            }}
+            ref={materialRef}
             options={materials}
-            renderInput={(params) => (
-              <CustomTextFieldWithLabel {...params} label="Vật liệu" />
-            )}
-          />
-          <Autocomplete
-            readOnly={readOnly}
-            disablePortal
-            value={selectedColor}
-            onChange={(event, newValue) => {
-              if (!newValue) return;
-
-              setSelectedColor(newValue);
-
+            onChange={(value) => {
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
                 payload: {
                   ...state.displayingData,
-                  color: colors.indexOf(newValue),
+                  material: value,
                 },
               });
             }}
+          />
+
+          <MyMultiValuePickerInput
+            label="Màu sắc"
+            value={state.displayingData?.color ?? ''}
+            readOnly={readOnly}
             options={colors}
-            renderInput={(params) => (
-              <CustomTextFieldWithLabel {...params} label="Màu sắc" />
-            )}
-          />
-          <Autocomplete
-            readOnly={readOnly}
-            disablePortal
-            value={selectedSize}
-            onChange={(event, newValue) => {
-              if (!newValue) return;
-
-              setSelectedSize(newValue);
-
+            ref={colorRef}
+            onChange={(value) => {
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
                 payload: {
                   ...state.displayingData,
-                  size: sizes.indexOf(newValue),
+                  color: value,
                 },
               });
             }}
+          />
+
+          <MyMultiValuePickerInput
+            label="Kích cỡ"
+            value={state.displayingData?.size ?? ''}
+            readOnly={readOnly}
             options={sizes}
-            renderInput={(params) => (
-              <CustomTextFieldWithLabel {...params} label="Kích cỡ" />
-            )}
+            ref={sizeRef}
+            onChange={(value) => {
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  size: value,
+                },
+              });
+            }}
           />
         </Stack>
       </Grid>
