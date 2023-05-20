@@ -55,6 +55,16 @@ import ProductsContext, {
   ProductItem,
 } from '@/lib/contexts/productsContext';
 
+const dateComparer = (a: Date, b: Date) => {
+  if (a.valueOf() > b.valueOf()) {
+    return -1;
+  }
+  if (a.valueOf() < b.valueOf()) {
+    return 1;
+  }
+  return 0;
+};
+
 // #region Filter
 
 const initGroupBoLoc = [
@@ -645,15 +655,15 @@ const ProductList = memo((props: any) => {
       // Cũ nhất
       case '5':
         console.log('Option raised');
-        return [...productList].sort(
-          (a, b) => a.MFG.valueOf() - b.MFG.valueOf(),
-        );
+        return [...productList].sort((a, b) => {
+          return dateComparer(a.MFG, b.MFG);
+        });
       // Mới nhất
       case '6':
         console.log('Option raised');
-        return [...productList].sort(
-          (a, b) => b.MFG.valueOf() - a.MFG.valueOf(),
-        );
+        return [...productList].sort((a, b) => {
+          return dateComparer(b.MFG, a.MFG);
+        });
       // Bán chạy nhất
       case '7':
         console.log('Option raised');
