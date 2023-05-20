@@ -8,7 +8,7 @@ import { useSnackbarService } from '@/lib/contexts';
 import { ProductObject } from '@/lib/models';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import ProductForm from '../forms/ProductForm';
 import {
   getDownloadUrlFromFirebaseStorage,

@@ -4,7 +4,7 @@ import React, { memo, useContext, useMemo } from 'react';
 import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 import GeneratedProductTableBody from './GeneratedProductBody';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedTableBody = () => {

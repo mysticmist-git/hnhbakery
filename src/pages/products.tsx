@@ -50,18 +50,12 @@ import {
 } from 'firebase/firestore';
 import { BatchObject } from '@/lib/models/Batch';
 import { CustomIconButton } from '@/components/Inputs/Buttons';
+import ProductsContext, {
+  BoLocItem,
+  ProductItem,
+} from '@/lib/contexts/productsContext';
 
 // #region Filter
-interface BoLocItem {
-  heading: string;
-  heading_value: string;
-  children: {
-    display: string;
-    value: string;
-    color?: boolean;
-    isChecked: boolean;
-  }[];
-}
 
 const initGroupBoLoc = [
   {
@@ -373,16 +367,6 @@ const TypeSort = memo((props: any) => {
 //#endregion
 
 // #region Products
-interface ProductItem {
-  id: string;
-  image: string;
-  name: string;
-  price: number;
-  MFG: Date;
-  description: string;
-  totalSoldQuantity: number;
-  href: string;
-}
 
 // const initProductList: ProductItem[] = [
 //   {
@@ -824,32 +808,6 @@ const ProductList = memo((props: any) => {
 
 //#endregion
 
-// #region Context
-export interface ProductsContextType {
-  GroupBoLoc: BoLocItem[];
-  handleCheckBox: any;
-  View: 'grid' | 'list';
-  handleSetViewState: any;
-  SortList: any;
-  handleSetSortList: any;
-  ProductList: ProductItem[];
-}
-
-const initProductsContext: ProductsContextType = {
-  GroupBoLoc: [],
-  View: 'grid',
-  SortList: {},
-  ProductList: [],
-
-  handleCheckBox: () => {},
-  handleSetViewState: () => {},
-  handleSetSortList: () => {},
-};
-
-export const ProductsContext =
-  createContext<ProductsContextType>(initProductsContext);
-// #endregion
-
 const Products = ({ products }: { products: string }) => {
   //#region States
 
@@ -1146,6 +1104,8 @@ async function fetchProductTypesWithLowestPrices(
 
 export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
+
+  console.log(batches);
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(
     batches,

@@ -38,6 +38,7 @@ const NewValueChip = ({
           backgroundColor: 'transparent',
           width: width ?? '52px',
           color: 'common.black',
+          typography: (theme) => theme.typography.body2,
         }}
         disableUnderline
       />

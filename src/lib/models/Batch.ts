@@ -6,9 +6,9 @@ export interface BatchObject extends DocumentData {
   soldQuantity: number;
   MFG: Date;
   EXP: Date;
-  material: number;
-  size: number;
-  color: number;
+  material: string;
+  size: string;
+  color: string;
   price: number;
   discount: { timeRemain: number; percent: number }[];
   product_id: string;
@@ -20,9 +20,9 @@ export default class Batch {
   soldQuantity: number;
   MFG: Date;
   EXP: Date;
-  material: number;
-  size: number;
-  color: number;
+  material: string;
+  size: string;
+  color: string;
   price: number;
   discount: { timeRemain: number; percent: number }[];
   discountPrice: number;
@@ -34,9 +34,9 @@ export default class Batch {
     soldQuantity: number,
     MFG: Date,
     EXP: Date,
-    material: number,
-    size: number,
-    color: number,
+    material: string,
+    size: string,
+    color: string,
     price: number,
     discount: { timeRemain: number; percent: number }[],
     discountPrice: number,

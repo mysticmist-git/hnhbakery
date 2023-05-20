@@ -4,7 +4,7 @@ import { CollectionName } from '@/lib/models/utilities';
 import ProductRowModal from './ProductRowModal';
 import BatchRowModal from './BatchRowModal';
 import { ManageContextType } from '@/lib/localLib/manage';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 
 const RowModal = () => {
   const { state } = useContext<ManageContextType>(ManageContext);

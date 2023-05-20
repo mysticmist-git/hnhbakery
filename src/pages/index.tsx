@@ -387,6 +387,16 @@ const Home = ({
               productList={bestSellerState}
               buttonOnclick={() => {}}
             />
+            {bestSellerState.length <= 0 && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography variant="h2">Không có dữ liệu</Typography>
+              </Box>
+            )}
           </Box>
           <Box sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <TypeCake
@@ -434,9 +444,9 @@ async function fetchBestSellerProductsAndTheirImagesToo(
     url: (await getDownloadUrlFromFirebaseStorage(product.images[0])) as string,
   }));
 
-  const imageFetchedProductTypes = await Promise.all(promises);
+  const imageFetchedProducts = await Promise.all(promises);
 
-  return imageFetchedProductTypes.map(
+  return imageFetchedProducts.map(
     (product) =>
       ({
         image: product.url,
@@ -459,9 +469,6 @@ export async function getServerSideProps() {
 
   const bestSellerProductsWithImageFetched =
     await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
-
-  console.log(productTypesWithImageFetched);
-  console.log(bestSellerProductsWithImageFetched);
 
   return {
     props: {

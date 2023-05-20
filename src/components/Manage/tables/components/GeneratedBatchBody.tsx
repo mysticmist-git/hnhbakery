@@ -1,4 +1,4 @@
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import theme from '@/styles/themes/lightTheme';
 import { TableRow, TableCell, Typography } from '@mui/material';
 import { memo, useContext, useEffect, useMemo, useState } from 'react';

@@ -1,9 +1,7 @@
 import { useSnackbarService } from '@/lib/contexts';
-import { Close } from '@mui/icons-material';
 import { Typography, Chip, useTheme } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useState, useEffect, memo } from 'react';
-import { NewValueChip } from '../Manage/modals/forms/components';
 
 const MyMultiValueCheckerPickerInput = ({
   label,
@@ -11,20 +9,18 @@ const MyMultiValueCheckerPickerInput = ({
   options,
   onChange,
   readOnly = false,
-  mode = 'picker',
 }: {
   label: string;
   values: string[];
   options: string[];
   onChange: (values: string[]) => void;
-  readOnly: boolean;
-  mode?: 'picker' | 'checker';
+  readOnly?: boolean;
 }) => {
   //#region States
 
-  const [values, setValues] = useState<string[]>(paramValues);
+  const [values, setValues] = useState<string[]>(paramValues ?? []);
 
-  //#endregion
+  // #endregion
 
   //#region Hooks
 
@@ -50,9 +46,6 @@ const MyMultiValueCheckerPickerInput = ({
     }
 
     setValues((currentValues) => {
-      // Check mode
-      if (mode === 'picker') return [value];
-
       // Checker
       if (currentValues.includes(value)) {
         return currentValues.filter((v) => v !== value);
@@ -87,16 +80,9 @@ const MyMultiValueCheckerPickerInput = ({
             onClick={() => handleChipClick(value)}
           />
         ))}
-
-        {/* {!readOnly && (
-          <NewValueChip
-            value={newValue}
-            placeholder="Thêm mới"
-            width={'68px'}
-            onChange={(e: any) => setNewValue(e.target.value)}
-            onClick={handleAddNewValue}
-          />
-        )} */}
+        {options.length === 0 && (
+          <Typography variant="body2">Không có lựa chọn</Typography>
+        )}
       </Stack>
     </Stack>
   );

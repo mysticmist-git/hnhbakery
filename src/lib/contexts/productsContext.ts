@@ -1,0 +1,48 @@
+import { createContext } from 'react';
+
+export interface ProductItem {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  MFG: Date;
+  description: string;
+  totalSoldQuantity: number;
+  href: string;
+}
+
+export interface BoLocItem {
+  heading: string;
+  heading_value: string;
+  children: {
+    display: string;
+    value: string;
+    color?: boolean;
+    isChecked: boolean;
+  }[];
+}
+
+export interface ProductsContextType {
+  GroupBoLoc: BoLocItem[];
+  handleCheckBox: any;
+  View: 'grid' | 'list';
+  handleSetViewState: any;
+  SortList: any;
+  handleSetSortList: any;
+  ProductList: ProductItem[];
+}
+
+export const initProductsContext: ProductsContextType = {
+  GroupBoLoc: [],
+  View: 'grid',
+  SortList: {},
+  ProductList: [],
+
+  handleCheckBox: () => {},
+  handleSetViewState: () => {},
+  handleSetSortList: () => {},
+};
+
+const ProductsContext = createContext<ProductsContextType>(initProductsContext);
+
+export default ProductsContext;

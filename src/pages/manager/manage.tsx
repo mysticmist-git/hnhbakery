@@ -3,6 +3,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  Card,
   Container,
   Dialog,
   DialogActions,
@@ -34,28 +35,34 @@ import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
 import {
   ManageContextType,
-  initManageState,
   manageReducer,
   ManageActionType,
   crudTargets,
   DEFAULT_ROW,
+  ManageState,
 } from '@/lib/localLib/manage';
+import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { useSnackbarService } from '@/lib/contexts';
+import { ManageContext } from '@/lib/contexts/manageContext';
 
 //#region Constants
 
 const LOADING_TEXT = 'Loading...';
 const PATH = '/manager/manage';
 
-//#endregion
+const initManageState: ManageState = {
+  mainDocs: [],
+  mainCollectionName: CollectionName.None,
+  selectedTarget: crudTargets[0],
+  displayingData: null,
+  loading: false,
+  dialogOpen: false,
+  crudModalOpen: false,
+  crudModalMode: 'none',
+  deletingId: '',
+};
 
-export const ManageContext = createContext<ManageContextType>({
-  state: initManageState,
-  dispatch: () => {},
-  handleDeleteRowOnFirestore: () => {},
-  handleViewRow: () => {},
-  resetDisplayingData: () => {},
-});
+//#endregion
 
 export default function Manage({
   mainDocs: paramMainDocs,
@@ -66,7 +73,12 @@ export default function Manage({
 }) {
   //#region States
 
-  const [state, dispatch] = useReducer(manageReducer, initManageState);
+  const [state, dispatch] = useReducer(manageReducer, {
+    ...initManageState,
+    selectedTarget:
+      crudTargets.find((t) => t.collectionName === paramCollectionName) ??
+      crudTargets[0],
+  });
   const [justLoaded, setJustLoaded] = useState(true);
 
   //#endregion
@@ -200,6 +212,7 @@ export default function Manage({
       type: ManageActionType.SET_CRUD_MODAL_MODE,
       payload: 'create',
     });
+
     resetDisplayingData();
 
     dispatch({
@@ -306,7 +319,7 @@ export default function Manage({
           }}
         />
         {/* CRUD target */}
-        <Autocomplete
+        {/* <Autocomplete
           disablePortal
           id="crudtarget-select"
           inputValue={state.selectedTarget?.label || LOADING_TEXT}
@@ -315,7 +328,20 @@ export default function Manage({
           options={crudTargets}
           sx={{ mt: 4, width: 300 }}
           renderInput={(params) => <TextField {...params} label="Kho" />}
+        /> */}
+
+        <MyMultiValuePickerInput
+          label="Kho"
+          options={crudTargets.map((target) => target.label)}
+          value={state.selectedTarget.label}
+          onChange={(value) =>
+            dispatch({
+              type: ManageActionType.SET_SELECTED_TARGET,
+              payload: crudTargets.find((target) => target.label === value),
+            })
+          }
         />
+
         {/* Manage Buttons */}
         <Box
           sx={{
@@ -341,6 +367,25 @@ export default function Manage({
             thì component này sẽ không tái sử dụng được.
             Tất nhiên thì nếu không có ý định tái sử dụng component này thì để nó vậy cũng được. */}
         <CustomDataTable />
+
+        {paramMainDocs.length === 0 && (
+          <Card
+            sx={{
+              width: '100%',
+              padding: '1rem',
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                textAlign: 'center',
+                color: (theme) => theme.palette.secondary.main,
+              }}
+            >
+              Không dữ liệu
+            </Typography>
+          </Card>
+        )}
 
         <Divider
           sx={{

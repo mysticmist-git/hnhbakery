@@ -3,7 +3,7 @@ import { Wysiwyg, Delete } from '@mui/icons-material';
 import { Box } from '@mui/system';
 import { DocumentData, doc } from 'firebase/firestore';
 import { TableActionButton } from '../TableActionButton';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import { memo, useContext } from 'react';
 import { ManageContextType } from '@/lib/localLib/manage';
 

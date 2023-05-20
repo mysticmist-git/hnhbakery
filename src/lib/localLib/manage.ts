@@ -17,18 +17,6 @@ export const crudTargets: CrudTarget[] = [
   },
 ];
 
-export const initManageState: ManageState = {
-  mainDocs: [],
-  mainCollectionName: CollectionName.None,
-  selectedTarget: crudTargets[0],
-  displayingData: null,
-  loading: false,
-  dialogOpen: false,
-  crudModalOpen: false,
-  crudModalMode: 'none',
-  deletingId: '',
-};
-
 export enum ManageActionType {
   SET_MAIN_DOCS = 'SET_MAIN_DOCS',
   SET_SELECTED_TARGET = 'SET_SELECTED_TARGET',
@@ -171,9 +159,9 @@ export const DEFAULT_ROW = {
     EXP: Timestamp.now()
       .toDate()
       .setDate(Timestamp.now().toDate().getDate() + 1),
-    material: 0,
-    size: 0,
-    color: 0,
+    material: '',
+    size: '',
+    color: '',
     price: 0,
     discount: [],
     product_id: '',

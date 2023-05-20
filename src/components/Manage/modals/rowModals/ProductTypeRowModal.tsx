@@ -7,7 +7,7 @@ import RowModalLayout from './RowModalLayout';
 import { useSnackbarService } from '@/lib/contexts';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import ProductTypeForm from '../forms/ProductTypeForm';
 import {
   getDownloadUrlsFromFirebaseStorage,
