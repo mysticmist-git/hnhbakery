@@ -155,10 +155,8 @@ export const DEFAULT_ROW = {
     id: '',
     totalQuantity: 0,
     soldQuantity: 0,
-    MFG: Timestamp.now().toDate(),
-    EXP: Timestamp.now()
-      .toDate()
-      .setDate(Timestamp.now().toDate().getDate() + 1),
+    MFG: new Date(),
+    EXP: new Date(new Date().setDate(new Date().getDate() + 1)),
     material: '',
     size: '',
     color: '',

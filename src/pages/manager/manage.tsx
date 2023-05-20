@@ -68,7 +68,7 @@ export default function Manage({
   mainDocs: paramMainDocs,
   collectionName: paramCollectionName,
 }: {
-  mainDocs: DocumentData[];
+  mainDocs: string;
   collectionName: string;
 }) {
   //#region States
@@ -102,7 +102,7 @@ export default function Manage({
   useEffect(() => {
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
-      payload: paramMainDocs,
+      payload: JSON.parse(paramMainDocs) as DocumentData[],
     });
   }, [paramMainDocs]);
 
@@ -368,7 +368,7 @@ export default function Manage({
             Tất nhiên thì nếu không có ý định tái sử dụng component này thì để nó vậy cũng được. */}
         <CustomDataTable />
 
-        {paramMainDocs.length === 0 && (
+        {(JSON.parse(paramMainDocs) as DocumentData[]).length === 0 && (
           <Card
             sx={{
               width: '100%',
@@ -453,7 +453,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Get the documents from the specified collection.
   const collectionRef = collection(db, collectionName as string);
   const querySnapshot = await getDocs(collectionRef);
-  const mainDocs = getDocsFromQuerySnapshot(querySnapshot);
+
+  const rawMainDocs = getDocsFromQuerySnapshot(querySnapshot);
+
+  const mainDocs = JSON.stringify(rawMainDocs);
+
+  console.group(rawMainDocs);
 
   // Return the main documents as props.
   return {

@@ -197,7 +197,7 @@ export function getDocsFromQuerySnapshot(
     // Convert Date objects to ISO strings
     Object.keys(data).forEach((key) => {
       if (data[key] instanceof Timestamp) {
-        data[key] = data[key].toDate().toISOString();
+        data[key] = data[key].toDate();
       }
     });
     return { id: doc.id, ...data };

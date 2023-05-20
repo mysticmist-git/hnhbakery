@@ -25,13 +25,15 @@ import {
   CustomCardSlider,
   CustomCardWithButton,
 } from '@/components/Layouts/components';
+import {
+  HomeContext,
+  BestSellerItem,
+  TypeCakeItem,
+  HomeContextType,
+  CarouselImageItem,
+} from '@/lib/contexts/homeContext';
 
 // #region Carousel
-interface CarouselImageItem {
-  src: string;
-  alt: string;
-  href: string;
-}
 
 const CustomCarousel = memo((props: any) => {
   const theme = useTheme();
@@ -63,12 +65,6 @@ const CustomCarousel = memo((props: any) => {
 //#endregion
 
 //#region BestSeller
-interface BestSellerItem {
-  image: string;
-  name: string;
-  description: string;
-  href: string;
-}
 
 const initBestSeller: BestSellerItem[] = [
   {
@@ -130,7 +126,6 @@ const initBestSeller: BestSellerItem[] = [
 //#endregion
 
 //#region Loại bánh
-interface TypeCakeItem extends BestSellerItem {}
 
 const initTypeCake: TypeCakeItem[] = [
   {
@@ -299,20 +294,6 @@ const DangKyKhuyenMai = memo((props: any) => {
 });
 
 //#endregion
-
-// #region Context
-export interface HomeContextType {
-  carouselImages: CarouselImageItem[];
-  typeCake: TypeCakeItem[];
-}
-
-const initHomeContext: HomeContextType = {
-  carouselImages: [],
-  typeCake: [],
-};
-
-export const HomeContext = createContext<HomeContextType>(initHomeContext);
-// #endregion
 
 const Home = ({
   productTypesWithImageFetched: typeCakeState,

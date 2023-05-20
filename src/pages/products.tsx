@@ -988,16 +988,17 @@ function firestoreTimestampToISOString(timestamp: Timestamp): string {
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
     const batchesRef = collection(db, 'batches');
-    const batchesQuery = query(batchesRef, where('EXP', '>', Timestamp.now()));
+    const batchesQuery = query(batchesRef, where('EXP', '>=', Timestamp.now()));
 
     const batchSnapshots = await getDocs(batchesQuery);
+
     const batches = batchSnapshots.docs.map(
       (batch) =>
         ({
           id: batch.id,
           ...batch.data(),
           MFG: batch.data().MFG.toDate(),
-          EXP: batch.data().MFG.toDate(),
+          EXP: batch.data().EXP.toDate(),
         } as BatchObject),
     );
 
