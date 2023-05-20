@@ -72,18 +72,64 @@ const initGroupBoLoc = [
     heading: 'Màu sắc',
     heading_value: 'color',
     children: [
-      { display: 'Đỏ', value: 'red', color: true, isChecked: false },
-      { display: 'Xanh lá', value: 'green', color: true, isChecked: false },
-      { display: 'Xanh dương', value: 'blue', color: true, isChecked: false },
+      {
+        display: 'Đỏ',
+        value: 'red',
+        readValue: 'đỏ',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Cam',
+        value: 'orange',
+        realValue: 'cam',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Vàng',
+        value: 'yellow',
+        realValue: 'vàng',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Lục',
+        value: 'green',
+        realValue: 'lục',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Lam',
+        value: 'blue',
+        realValue: 'lam',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Chàm',
+        value: 'indigo',
+        realValue: 'chàm',
+        color: true,
+        isChecked: false,
+      },
+      {
+        display: 'Tím',
+        value: 'purple',
+        realValue: 'tím',
+        color: true,
+        isChecked: false,
+      },
     ],
   },
   {
     heading: 'Size bánh',
     heading_value: 'size',
     children: [
-      { display: 'Nhỏ', value: 'small', isChecked: false },
-      { display: 'Thường', value: 'medium', isChecked: false },
-      { display: 'Lớn', value: 'big', isChecked: false },
+      { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
+      { display: 'Thường', value: 'vừa', isChecked: false },
+      { display: 'Lớn', value: 'lớn', isChecked: false },
     ],
   },
   {
@@ -410,6 +456,8 @@ const productDefault: ProductItem = {
   image: banh1.src,
   name: 'Bánh Quy',
   price: 100000,
+  sizes: ['nhỏ', 'lớn'],
+  colors: ['đỏ, vàng'],
   MFG: new Date(),
   description: 'Bánh ngon dữ lắm bà ơi',
   totalSoldQuantity: 15,
@@ -682,11 +730,62 @@ const ProductList = memo((props: any) => {
     //#region Local Functions
 
     function filterColor(productList: ProductItem[]): ProductItem[] {
-      return [...productList];
+      const colorFilter = context.GroupBoLoc.find(
+        (item) => item.heading_value === 'color',
+      );
+
+      console.log(colorFilter);
+
+      if (!colorFilter) return [...productList];
+
+      const colorChecks = colorFilter.children
+        .filter((item) => item.isChecked)
+        .map((item) => item.realValue);
+
+      console.log(colorChecks);
+
+      if (colorChecks.length === 0) return [...productList];
+
+      return [
+        ...productList.filter((product) => {
+          for (const color of colorChecks) {
+            if (!product.colors.includes(color!)) {
+              return false;
+            }
+          }
+          return true;
+        }),
+      ];
     }
 
     function filterSize(productList: ProductItem[]): ProductItem[] {
-      return [...productList];
+      // Get size filter
+      const sizeFilter = context.GroupBoLoc.find(
+        (item) => item.heading_value === 'size',
+      );
+
+      if (!sizeFilter) return [...productList];
+
+      console.log(sizeFilter);
+
+      const sizeChecks = sizeFilter.children
+        .filter((item) => item.isChecked)
+        .map((item) => item.value);
+
+      console.log(sizeChecks);
+
+      if (sizeChecks.length === 0) return [...productList];
+
+      return [
+        ...productList.filter((product) => {
+          for (const size of sizeChecks) {
+            if (!product.sizes.includes(size)) {
+              return false;
+            }
+          }
+          return true;
+        }),
+      ];
     }
 
     function filterPrice(productList: ProductItem[]): ProductItem[] {
@@ -892,6 +991,8 @@ const Products = ({ products }: { products: string }) => {
   }
 
   //#endregion
+
+  console.log(products);
 
   return (
     <>
@@ -1122,9 +1223,27 @@ export async function getServerSideProps() {
     batches,
   );
 
-  const products = await fetchProductTypesWithLowestPrices(
+  const fetchedProducts = await fetchProductTypesWithLowestPrices(
     lowestPricesAndTheirMFGs,
   );
+
+  const products = fetchedProducts.map((product) => {
+    const productBatches: BatchObject[] = batches.filter(
+      (batch) => batch.product_id === product.id,
+    );
+
+    const sizes = productBatches.map((batch) => batch.size);
+    const colors = productBatches.map((batch) => batch.color);
+    return {
+      ...product,
+      sizes: sizes.filter(function (item, pos) {
+        return sizes.indexOf(item) == pos;
+      }),
+      colors: colors.filter((item, pos) => {
+        return colors.indexOf(item) == pos;
+      }),
+    };
+  });
 
   return {
     props: {
