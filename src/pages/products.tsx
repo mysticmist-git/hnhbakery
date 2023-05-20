@@ -422,22 +422,6 @@ const productDefault: ProductItem = {
   href: '#',
 };
 
-const imageStyles = {
-  cardNormal: {
-    width: '100%',
-    height: '100%',
-    transition: 'transform 0.25s ease-in-out',
-    objectFit: 'cover',
-  },
-  cardHovered: {
-    width: '100%',
-    height: '100%',
-    transition: 'transform 0.4s ease-in-out',
-    transform: 'scale(1.5)',
-    objectFit: 'cover',
-  },
-};
-
 const CakeCard = memo((props: any) => {
   // #region States
 

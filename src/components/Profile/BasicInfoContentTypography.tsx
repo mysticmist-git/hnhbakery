@@ -1,3 +1,4 @@
+import theme from '@/styles/themes/lightTheme';
 import { Typography } from '@mui/material';
 import { memo } from 'react';
 
@@ -12,6 +13,7 @@ const BasicInfoContentTypography = ({
       display={'inline'}
       sx={{
         fontWeight: 'normal',
+        color: theme.palette.common.black,
       }}
     >
       {children}

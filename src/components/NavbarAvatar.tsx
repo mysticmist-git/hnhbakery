@@ -9,6 +9,7 @@ import { SxProps, Theme, Typography } from '@mui/material';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
 import { useSnackbarService } from '@/lib/contexts';
 import { memo } from 'react';
+import theme from '@/styles/themes/lightTheme';
 
 interface Props {
   photoURL: string | null;
@@ -74,15 +75,21 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenProfile} sx={menuItemSx}>
           <AccountCircle />
-          <Typography variant="body2">Tài khoản</Typography>
+          <Typography variant="body2" color={theme.palette.common.black}>
+            Tài khoản
+          </Typography>
         </MenuItem>
         <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
           <ViewInAr />
-          <Typography variant="body2">Quản lý</Typography>
+          <Typography variant="body2" color={theme.palette.common.black}>
+            Quản lý
+          </Typography>
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={menuItemSx}>
           <Logout />
-          <Typography variant="body2">Đăng xuất</Typography>
+          <Typography variant="body2" color={theme.palette.common.black}>
+            Đăng xuất
+          </Typography>
         </MenuItem>
       </Menu>
     </>

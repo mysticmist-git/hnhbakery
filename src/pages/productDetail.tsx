@@ -9,9 +9,19 @@ import {
   Button,
   TextField,
   InputAdornment,
+  Pagination,
+  useMediaQuery,
+  Card,
+  CardActionArea,
 } from '@mui/material';
-import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
+import { Box, height } from '@mui/system';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
@@ -21,66 +31,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import theme from '@/styles/themes/lightTheme';
-
-const initProduct = {
-  id: 1,
-  name: 'Bánh Croissant',
-  type: 'Bánh mặn',
-  state: {
-    content: 'Còn hàng',
-    color: 'success', // success | error
-  },
-  description:
-    'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-  rating: 4.5,
-  numReviews: 123,
-  ingredients: 'Bột mì, trứng, sữa, đường, muối',
-  howToUse: 'Dùng ngay khi mở túi',
-  preservation: 'Bảo quản ở nhiệt độ dưới 30 độ C',
-  maxQuantity: 10,
-  prices: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
-    min: 150000,
-    max: 200000,
-    items: {
-      price1: { display: 150000, value: 150000, checked: false },
-      price2: { display: 150000, value: 150000, checked: false },
-      price3: { display: 150000, value: 150000, checked: false },
-      price4: { display: 150000, value: 150000, checked: false },
-    },
-  },
-  sizes: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
-    small: { display: 'Nhỏ', value: 'S', checked: false },
-    medium: { display: 'Vừa', value: 'M', checked: false },
-    large: { display: 'Lớn', value: 'L', checked: false },
-  },
-  materials: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
-    strawbery: { display: 'Mức dâu', value: 'strawbery', checked: false },
-    coconut: { display: 'Mức dừa', value: 'coconut', checked: false },
-    pineapple: { display: 'Mức thơm', value: 'pineapple', checked: false },
-  },
-  images: [
-    {
-      src: banh1.src,
-      alt: '',
-    },
-    {
-      src: banh2.src,
-      alt: '',
-    },
-    {
-      src: banh3.src,
-      alt: '',
-    },
-  ],
-};
+import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
 
 function ProductCarousel(props: any) {
   const theme = useTheme();
+  const context = useContext(ProductDetailContext);
+  const { productState } = context;
   const [activeIndex, setActiveIndex] = useState(0);
-
   function handleChange(index: any) {
     setActiveIndex(index);
   }
@@ -103,7 +60,7 @@ function ProductCarousel(props: any) {
         index={activeIndex}
         onChange={handleChange}
       >
-        {initProduct.images.map((image, i) => (
+        {productState.images.map((image: any, i: number) => (
           <Box
             key={i}
             sx={{
@@ -157,7 +114,7 @@ function ProductCarousel(props: any) {
             )}, ${alpha(theme.palette.common.white, 0.5)})`,
           }}
         >
-          {initProduct.images.map((image, i: number) => (
+          {productState.images.map((image: any, i: number) => (
             <Grid key={i} item>
               <Box
                 sx={{
@@ -198,18 +155,20 @@ function ProductCarousel(props: any) {
   );
 }
 
-function ProductRating({ rating, numReviews }: any) {
+function ProductRating({ rating, numReviews, size = 'small' }: any) {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const sizeProps = isSmallScreen ? { size: 'small' } : { size };
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Rating
-        name="product-rating"
         value={rating}
         sx={{ color: theme.palette.secondary.main }}
         precision={0.5}
         max={5}
         readOnly
-        size="small"
+        {...sizeProps}
       />
       <Typography
         variant="button"
@@ -218,13 +177,13 @@ function ProductRating({ rating, numReviews }: any) {
           color: theme.palette.secondary.main,
         }}
       >
-        ({numReviews} lượt đánh giá)
+        {numReviews ? `(${numReviews} lượt đánh giá)` : ''}
       </Typography>
     </Box>
   );
 }
 
-function CheckboxButtonGroup({ object }: any) {
+function CheckboxButtonGroup({ object, setObject }: any) {
   const [buttons, setButtons] = useState(object);
 
   const handleClick = (choosingKey: string) => {
@@ -238,6 +197,7 @@ function CheckboxButtonGroup({ object }: any) {
     });
 
     setButtons(updatedButtons);
+    setObject(updatedButtons);
   };
 
   const theme = useTheme();
@@ -263,8 +223,8 @@ function CheckboxButtonGroup({ object }: any) {
                 ? theme.palette.common.white
                 : theme.palette.secondary.main,
               transition: 'opacity 0.2s',
-              py: 1.5,
-              px: 3,
+              py: { md: 1.5, xs: 0.5 },
+              px: { md: 3, xs: 1 },
               border: 3,
               borderColor: theme.palette.secondary.main,
               borderRadius: '8px',
@@ -277,6 +237,7 @@ function CheckboxButtonGroup({ object }: any) {
             {typeof buttons[key].display === 'number'
               ? formatPrice(buttons[key].display)
               : buttons[key].display}
+            {buttons[key].displayMore ? ` (${buttons[key].displayMore})` : ''}
           </Button>
         </Grid>
       ))}
@@ -434,10 +395,16 @@ function NumberInputWithButtons({ min, max }: any) {
 
 function ProductDetailInfo(props: any) {
   const theme = useTheme();
-
-  const [product, setProduct] = useState(initProduct);
-
-  const [readyState, setReadyState] = useState(false);
+  const context = useContext(ProductDetailContext);
+  const {
+    productState,
+    sizeState,
+    setSizeState,
+    materialState,
+    setMaterialState,
+    priceState,
+    setPriceState,
+  } = context;
 
   return (
     <Grid
@@ -470,14 +437,14 @@ function ProductDetailInfo(props: any) {
           >
             <Grid item xs={12}>
               <Typography variant="h2" color={theme.palette.secondary.main}>
-                {product.name}
+                {productState.name}
               </Typography>
             </Grid>
 
             <Grid item xs={12}>
               <ProductRating
-                rating={product.rating}
-                numReviews={product.numReviews}
+                rating={productState.comments.ratingAverage}
+                numReviews={productState.comments.numReviews}
               />
             </Grid>
 
@@ -498,9 +465,9 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {formatPrice(product.prices.min) +
+                    {formatPrice(productState.prices.min) +
                       ' - ' +
-                      formatPrice(product.prices.max)}
+                      formatPrice(productState.prices.max)}
                   </Typography>
                 </Grid>
               </Grid>
@@ -522,7 +489,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.type}</Typography>
+                  <Typography variant="body1">{productState.type}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -546,12 +513,12 @@ function ProductDetailInfo(props: any) {
                   <Typography
                     variant="body1"
                     color={
-                      product.state.color === 'success'
+                      productState.state.color === 'success'
                         ? theme.palette.success.main
                         : theme.palette.error.main
                     }
                   >
-                    {product.state.content}
+                    {productState.state.content}
                   </Typography>
                 </Grid>
               </Grid>
@@ -573,7 +540,9 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.description}</Typography>
+                  <Typography variant="body1">
+                    {productState.description}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -594,7 +563,9 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.ingredients}</Typography>
+                  <Typography variant="body1">
+                    {productState.ingredients}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -615,7 +586,9 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.howToUse}</Typography>
+                  <Typography variant="body1">
+                    {productState.howToUse}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -637,7 +610,7 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {product.preservation}
+                    {productState.preservation}
                   </Typography>
                 </Grid>
               </Grid>
@@ -684,7 +657,10 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <CheckboxButtonGroup object={product.sizes} />
+                  <CheckboxButtonGroup
+                    object={sizeState}
+                    setObject={setSizeState}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -705,7 +681,10 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <CheckboxButtonGroup object={product.materials} />
+                  <CheckboxButtonGroup
+                    object={materialState}
+                    setObject={setMaterialState}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -726,7 +705,10 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <CheckboxButtonGroup object={product.prices.items} />
+                  <CheckboxButtonGroup
+                    object={priceState}
+                    setObject={setPriceState}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -774,8 +756,37 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <NumberInputWithButtons min={0} max={product.maxQuantity} />
+                  <NumberInputWithButtons
+                    min={0}
+                    max={productState.maxQuantity}
+                  />
                 </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <CustomButton
+                  onClick={() => {}}
+                  sx={{
+                    py: 1.5,
+                    width: '100%',
+                    borderRadius: '8px',
+                  }}
+                  children={() => (
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.common.white}
+                    >
+                      Thêm vào giỏ hàng
+                    </Typography>
+                  )}
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -784,7 +795,12 @@ function ProductDetailInfo(props: any) {
     </Grid>
   );
 }
+
 function Comments(props: any) {
+  const theme = useTheme();
+  const context = useContext(ProductDetailContext);
+  const { productState, starState, setStarState } = context;
+  const avatarHeight = '50px';
   return (
     <>
       <Grid
@@ -793,85 +809,449 @@ function Comments(props: any) {
         justifyContent={'center'}
         alignItems={'center'}
         spacing={2}
-      ></Grid>
-    </>
-  );
-}
-export default function productDetail() {
-  const theme = useTheme();
-  return (
-    <>
-      <Box>
-        <ImageBackground
-          children={() => (
+      >
+        <Grid item xs={12} md={8} lg={12}>
+          <Typography
+            variant="h2"
+            align="center"
+            color={theme.palette.secondary.main}
+          >
+            Đánh giá
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} md={8} lg={12}>
+          <Box
+            sx={{
+              bgcolor: theme.palette.primary.light,
+              py: 3,
+              px: 4,
+              borderRadius: '8px',
+            }}
+          >
             <Grid
               container
               direction={'row'}
               justifyContent={'center'}
               alignItems={'center'}
-              height={'100%'}
-              sx={{ px: 6 }}
+              spacing={2}
             >
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  spacing={2}
+              <Grid item xs={4}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                  }}
                 >
-                  <Grid item xs={12}>
-                    <Link href="/products" style={{ textDecoration: 'none' }}>
-                      <Typography
-                        align="center"
-                        variant="h3"
-                        color={theme.palette.primary.main}
-                        sx={{
-                          '&:hover': {
-                            textDecoration: 'underline',
-                          },
-                        }}
-                      >
-                        Sản phẩm
-                      </Typography>
-                    </Link>
-                  </Grid>
-                  <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: { sm: 'row', xs: 'column' },
+                    }}
+                  >
                     <Typography
-                      align="center"
-                      variant="h2"
-                      color={theme.palette.primary.main}
+                      variant="body1"
+                      color={theme.palette.secondary.main}
                     >
-                      Bánh Croissant
+                      4.5
                     </Typography>
-                  </Grid>
-                </Grid>
+                    <Typography
+                      sx={{ ml: { sm: 1, xs: 0 } }}
+                      variant="body2"
+                      color={theme.palette.secondary.main}
+                    >
+                      trên 5 sao
+                    </Typography>
+                  </Box>
+                  <ProductRating
+                    rating={productState.comments.ratingAverage}
+                    size="large"
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={8}>
+                <CheckboxButtonGroup
+                  object={starState}
+                  setObject={setStarState}
+                />
               </Grid>
             </Grid>
-          )}
-        />
+          </Box>
+        </Grid>
 
-        <Box sx={{ px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Grid item xs={12} md={8} lg={12}>
           <Grid
             container
             direction={'row'}
             justifyContent={'center'}
             alignItems={'center'}
-            spacing={8}
-            sx={{ pt: 8 }}
+            spacing={2}
+            sx={{
+              px: 2,
+            }}
           >
-            <Grid item xs={12}>
-              <ProductDetailInfo />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Comments />
-            </Grid>
-
-            <Grid item xs={12}></Grid>
+            {productState.comments.items.map((comment: any) => (
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                  spacing={2}
+                >
+                  <Grid item xs={'auto'}>
+                    <Box
+                      sx={{
+                        borderRadius: '50%',
+                        position: 'relative',
+                        width: avatarHeight,
+                        height: avatarHeight,
+                        overflow: 'hidden',
+                        border: 1,
+                        borderColor: theme.palette.secondary.main,
+                      }}
+                    >
+                      <Box
+                        component={Image}
+                        src={comment.user.image}
+                        alt={comment.user.name}
+                        fill={true}
+                        loading="lazy"
+                        sx={{
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={true}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 'normal',
+                        }}
+                        color={theme.palette.common.black}
+                      >
+                        {comment.user.name}
+                      </Typography>
+                      <ProductRating rating={comment.rating} />
+                      <Typography
+                        variant="button"
+                        color={theme.palette.text.secondary}
+                        mt={1}
+                      >
+                        {comment.time}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                        mt={1}
+                      >
+                        {comment.comment}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: theme.palette.text.secondary,
+                      }}
+                    ></Box>
+                  </Grid>
+                </Grid>
+              </Grid>
+            ))}
           </Grid>
+        </Grid>
+
+        <Grid item xs={12} md={8} lg={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Pagination
+              count={5}
+              shape="rounded"
+              boundaryCount={2}
+              siblingCount={1}
+              size="large"
+            />
+          </Box>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+// #region Context
+export interface ProductDetailContextType {
+  productState: any;
+  sizeState: any;
+  setSizeState: any;
+  materialState: any;
+  setMaterialState: any;
+  priceState: any;
+  setPriceState: any;
+  starState: any;
+  setStarState: any;
+}
+
+const initProductDetailContext: ProductDetailContextType = {
+  productState: {},
+  sizeState: {},
+  setSizeState: () => {},
+  materialState: {},
+  setMaterialState: () => {},
+  priceState: {},
+  setPriceState: () => {},
+  starState: {},
+  setStarState: () => {},
+};
+
+export const ProductDetailContext = createContext<ProductDetailContextType>(
+  initProductDetailContext,
+);
+// #endregion
+
+const initProduct = {
+  id: 1,
+  name: 'Bánh Croissant',
+  type: 'Bánh mặn',
+  state: {
+    content: 'Còn hàng',
+    color: 'success', // success | error
+  },
+  description:
+    'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+
+  ingredients: 'Bột mì, trứng, sữa, đường, muối',
+  howToUse: 'Dùng ngay khi mở túi',
+  preservation: 'Bảo quản ở nhiệt độ dưới 30 độ C',
+  maxQuantity: 10,
+  images: [
+    {
+      src: banh1.src,
+      alt: '',
+    },
+    {
+      src: banh2.src,
+      alt: '',
+    },
+    {
+      src: banh3.src,
+      alt: '',
+    },
+  ],
+  comments: {
+    ratingAverage: 4.5,
+    numReviews: 123,
+    items: [
+      {
+        id: 1,
+        rating: 5,
+        comment: 'Ôi là trời',
+        time: '12:00 20/01/2023',
+        user: {
+          id: 1,
+          name: 'Nguyen Van A',
+          image: banh1.src,
+        },
+      },
+      {
+        id: 2,
+        rating: 5,
+        comment: 'Ôi là trời, cứu mẹ',
+        time: '09:00 20/01/2023',
+        user: {
+          id: 1,
+          name: 'Nguyen Van B',
+          image: banh2.src,
+        },
+      },
+    ],
+  },
+  prices: {
+    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    min: 150000,
+    max: 200000,
+    items: {
+      price1: { display: 150000, value: 150000, checked: false },
+      price2: { display: 150000, value: 150000, checked: false },
+      price3: { display: 150000, value: 150000, checked: false },
+      price4: { display: 150000, value: 150000, checked: false },
+    },
+  },
+  sizes: {
+    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    small: { display: 'Nhỏ', value: 'S', checked: false },
+    medium: { display: 'Vừa', value: 'M', checked: false },
+    large: { display: 'Lớn', value: 'L', checked: false },
+  },
+  materials: {
+    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    strawbery: { display: 'Mức dâu', value: 'strawbery', checked: false },
+    coconut: { display: 'Mức dừa', value: 'coconut', checked: false },
+    pineapple: { display: 'Mức thơm', value: 'pineapple', checked: false },
+  },
+  similarProducts: [
+    {
+      id: 1,
+      image: banh1.src,
+      href: '#',
+      name: 'Bánh Croissant',
+      description:
+        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+    },
+    {
+      id: 1,
+      image: banh2.src,
+      href: '#',
+      name: '2',
+      description:
+        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+    },
+    {
+      id: 1,
+      image: banh3.src,
+      href: '#',
+      name: '3',
+      description:
+        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+    },
+    {
+      id: 1,
+      image: banh1.src,
+      href: '#',
+      name: '4',
+      description:
+        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+    },
+  ],
+};
+
+const initStars = {
+  // object này để hiển thị các nút sao
+  all: { display: 'Tất cả', displayMore: 123, value: 'all', checked: true },
+  five: { display: '5 sao', displayMore: 50, value: '5', checked: false },
+  four: { display: '4 sao', displayMore: 50, value: '4', checked: false },
+  three: { display: '3 sao', displayMore: 15, value: '3', checked: false },
+  two: { display: '2 sao', displayMore: 5, value: '2', checked: false },
+  one: { display: '1 sao', displayMore: 3, value: '1', checked: false },
+};
+
+export default function productDetail() {
+  const theme = useTheme();
+
+  const [productState, setProductState] = useState(initProduct);
+  const [sizeState, setSizeState] = useState(productState.sizes);
+  const [materialState, setMaterialState] = useState(productState.materials);
+  const [priceState, setPriceState] = useState(productState.prices.items);
+
+  const [starState, setStarState] = useState(initStars);
+  return (
+    <>
+      <ProductDetailContext.Provider
+        value={{
+          productState,
+          sizeState,
+          setSizeState,
+          materialState,
+          setMaterialState,
+          priceState,
+          setPriceState,
+          starState,
+          setStarState,
+        }}
+      >
+        <Box>
+          <ImageBackground
+            children={() => (
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'center'}
+                height={'100%'}
+                sx={{ px: 6 }}
+              >
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    spacing={2}
+                  >
+                    <Grid item xs={12}>
+                      <Link href="/products" style={{ textDecoration: 'none' }}>
+                        <Typography
+                          align="center"
+                          variant="h3"
+                          color={theme.palette.primary.main}
+                          sx={{
+                            '&:hover': {
+                              textDecoration: 'underline',
+                            },
+                          }}
+                        >
+                          Sản phẩm
+                        </Typography>
+                      </Link>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography
+                        align="center"
+                        variant="h2"
+                        color={theme.palette.primary.main}
+                      >
+                        Bánh Croissant
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            )}
+          />
+
+          <Box sx={{ px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={8}
+              sx={{ pt: 8 }}
+            >
+              <Grid item xs={12}>
+                <ProductDetailInfo />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Comments />
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box sx={{ py: 8 }}>
+            <CustomCardSlider
+              duration={1000}
+              imageHeight="184px"
+              descriptionHeight="32px"
+              CustomCard={CustomCard}
+              title={'Sản phẩm tương tự'}
+              productList={productState.similarProducts}
+            />
+          </Box>
         </Box>
-      </Box>
+      </ProductDetailContext.Provider>
     </>
   );
 }

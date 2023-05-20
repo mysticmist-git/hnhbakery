@@ -4,6 +4,7 @@ import React from 'react';
 import BasicInfoContentTypography from './BasicInfoContentTypography';
 import BasicInfoHeadingTypography from './BasicInfoHeadingTypography';
 import { LeftProfileBasicInfoProps, LeftProfileColumnProps } from './types';
+import theme from '@/styles/themes/lightTheme';
 
 const LeftProfileBasicInformation = ({
   avatarSrc,
@@ -20,7 +21,11 @@ const LeftProfileBasicInformation = ({
         width: '100%',
       }}
     >
-      <Typography variant="h3" alignSelf={'center'}>
+      <Typography
+        color={theme.palette.common.black}
+        variant="h3"
+        alignSelf={'center'}
+      >
         Thông tin cơ bản
       </Typography>
       <Stack rowGap={1}>
