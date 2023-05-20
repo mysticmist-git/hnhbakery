@@ -13,8 +13,8 @@ import {
   useMediaQuery,
   Card,
   CardActionArea,
+  Box,
 } from '@mui/material';
-import { Box, height } from '@mui/system';
 import React, {
   createContext,
   useContext,
@@ -22,17 +22,17 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import banh1 from '../assets/Carousel/1.jpg';
-import banh2 from '../assets/Carousel/2.jpg';
-import banh3 from '../assets/Carousel/3.jpg';
 import formatPrice from '@/utilities/formatCurrency';
 import Carousel from 'react-material-ui-carousel';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CustomButton } from '@/components/Inputs/Buttons';
-import theme from '@/styles/themes/lightTheme';
 import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
+import banh1 from '../assets/Carousel/1.jpg';
+import banh2 from '../assets/Carousel/2.jpg';
+import banh3 from '../assets/Carousel/3.jpg';
 
+//#region Đọc export default trước rồi hả lên đây!
 function ProductCarousel(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
@@ -247,6 +247,7 @@ function CheckboxButtonGroup({ object, setObject }: any) {
 
 function NumberInputWithButtons({ min, max }: any) {
   const [value, setValue] = useState(0);
+  const theme = useTheme();
 
   const handleAddClick = () => {
     if (value < max) {
@@ -991,6 +992,8 @@ function Comments(props: any) {
   );
 }
 
+//#endregion
+
 // #region Context
 export interface ProductDetailContextType {
   productState: any;
@@ -1021,6 +1024,7 @@ export const ProductDetailContext = createContext<ProductDetailContextType>(
 );
 // #endregion
 
+//#region Giả dữ liệu
 const initProduct = {
   id: 1,
   name: 'Bánh Croissant',
@@ -1079,10 +1083,10 @@ const initProduct = {
     ],
   },
   prices: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
     min: 150000,
     max: 200000,
     items: {
+      //Mỗi object ứng với 1 button của phần chọn size
       price1: { display: 150000, value: 150000, checked: false },
       price2: { display: 150000, value: 150000, checked: false },
       price3: { display: 150000, value: 150000, checked: false },
@@ -1090,13 +1094,13 @@ const initProduct = {
     },
   },
   sizes: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    //Mỗi object ứng với 1 button của phần chọn size
     small: { display: 'Nhỏ', value: 'S', checked: false },
     medium: { display: 'Vừa', value: 'M', checked: false },
     large: { display: 'Lớn', value: 'L', checked: false },
   },
   materials: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    //Mỗi object ứng với 1 button của phần chọn size
     strawbery: { display: 'Mức dâu', value: 'strawbery', checked: false },
     coconut: { display: 'Mức dừa', value: 'coconut', checked: false },
     pineapple: { display: 'Mức thơm', value: 'pineapple', checked: false },
@@ -1146,6 +1150,8 @@ const initStars = {
   two: { display: '2 sao', displayMore: 5, value: '2', checked: false },
   one: { display: '1 sao', displayMore: 3, value: '1', checked: false },
 };
+
+//#endregion
 
 export default function productDetail() {
   const theme = useTheme();

@@ -9,4 +9,5 @@ export interface NavbarContextType {
   drawerOpen: boolean;
   handleSetDrawerOpenState: any;
   isSignIn: boolean;
+  isScrolled: boolean;
 }

@@ -24,11 +24,16 @@ const RightMenu = (props: any) => {
     router.push('/auth/login');
   }
 
+  function handleCart() {
+    router.push('/cart');
+  }
+
   //#endregion
 
   return (
     <>
       <CustomIconButton
+        onClick={handleCart}
         sx={{
           mr: props.orientation == 'vertical' ? 0 : 1,
           mb: props.orientation == 'vertical' ? 1 : 0,
@@ -41,15 +46,6 @@ const RightMenu = (props: any) => {
       {context.isSignIn ? (
         <NavbarAvatar photoURL={photoURL} />
       ) : (
-        // <Avatar
-        //   src={photoURL ? photoURL : undefined}
-        //   sx={
-        //     props.orientation == 'vertical'
-        //       ? { width: 56, height: 56 }
-        //       : { width: 40, height: 40 }
-        //   }
-        //   onClick={() => {}}
-        // />
         <CustomButton
           children={() => (
             <Typography variant="button" color={theme.palette.common.white}>
