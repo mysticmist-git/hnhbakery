@@ -22,7 +22,6 @@ export const isDataChanged = (
   const changed = Object.keys(newData).some(
     (key) => newData[key] !== displayingData[key],
   );
-  console.log('dataChanged:', changed);
   return changed;
 };
 

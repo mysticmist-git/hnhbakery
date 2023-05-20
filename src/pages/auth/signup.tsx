@@ -39,8 +39,6 @@ const SignUp = () => {
       return result.userCredential;
     }
 
-    console.log(result.errorCode);
-
     switch (result.errorCode) {
       case AuthErrorCode.EMAIL_ALREADY_IN_USE:
         handleSnackbarAlert('error', 'Email đã được sử dụng');

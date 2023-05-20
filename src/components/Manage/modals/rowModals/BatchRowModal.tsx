@@ -164,15 +164,11 @@ const BatchRowModal = () => {
     if (!collectionName) return;
 
     try {
-      console.log(state.displayingData);
-
       const dataForFirestoreAdding = {
         ...state.displayingData,
         MFG: Timestamp.fromDate(state.displayingData.MFG),
         EXP: Timestamp.fromDate(state.displayingData.EXP),
       };
-
-      console.log(dataForFirestoreAdding);
 
       // Add new document to Firestore
       const docId = await addDocumentToFirestore(
@@ -270,8 +266,6 @@ const BatchRowModal = () => {
         handleUpdateFail();
         return;
       }
-
-      console.log(displayingData);
 
       const dataForFirestoreAdding = {
         ...displayingData,

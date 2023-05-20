@@ -38,8 +38,6 @@ const SignUpForm = ({
 
     const signUpData = SignUpPropsFromObject(dataObject);
 
-    console.log(signUpData);
-
     if (!validate(signUpData)) {
       handleSnackbarAlert('error', 'Vui lòng điền đủ thông tin');
       return;

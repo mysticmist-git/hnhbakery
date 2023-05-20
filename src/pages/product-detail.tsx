@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import React, {
   createContext,
+  memo,
   useContext,
   useEffect,
   useMemo,
@@ -31,6 +32,26 @@ import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import {
+  ProductDetailContext,
+  ProductDetailContextType,
+} from '@/lib/contexts/productDetail';
+import { ProductObject } from '@/lib/models';
+import Batch, { BatchObject } from '@/lib/models/Batch';
+import { db } from '@/firebase/config';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import {
+  getDocsFromQuerySnapshot,
+  getDownloadUrlsFromFirebaseStorage,
+} from '@/lib/firestore';
 
 //#region Đọc export default trước rồi hả lên đây!
 function ProductCarousel(props: any) {
@@ -994,36 +1015,6 @@ function Comments(props: any) {
 
 //#endregion
 
-// #region Context
-export interface ProductDetailContextType {
-  productState: any;
-  sizeState: any;
-  setSizeState: any;
-  materialState: any;
-  setMaterialState: any;
-  priceState: any;
-  setPriceState: any;
-  starState: any;
-  setStarState: any;
-}
-
-const initProductDetailContext: ProductDetailContextType = {
-  productState: {},
-  sizeState: {},
-  setSizeState: () => {},
-  materialState: {},
-  setMaterialState: () => {},
-  priceState: {},
-  setPriceState: () => {},
-  starState: {},
-  setStarState: () => {},
-};
-
-export const ProductDetailContext = createContext<ProductDetailContextType>(
-  initProductDetailContext,
-);
-// #endregion
-
 //#region Giả dữ liệu
 const initProduct = {
   id: 1,
@@ -1153,7 +1144,7 @@ const initStars = {
 
 //#endregion
 
-export default function productDetail() {
+const ProductDetail = ({ productDetail }: { productDetail: string }) => {
   const theme = useTheme();
 
   const [productState, setProductState] = useState(initProduct);
@@ -1162,6 +1153,9 @@ export default function productDetail() {
   const [priceState, setPriceState] = useState(productState.prices.items);
 
   const [starState, setStarState] = useState(initStars);
+
+  console.log(JSON.parse(productDetail));
+
   return (
     <>
       <ProductDetailContext.Provider
@@ -1260,4 +1254,82 @@ export default function productDetail() {
       </ProductDetailContext.Provider>
     </>
   );
+};
+
+interface ProductDetail {
+  id: string;
+  name: string;
+  productTypeName: string;
+  stockAvailable: boolean;
+  description: string;
+  ingredients: string[];
+  howToUse: string;
+  preservation: string;
+  images: string[];
+  batches: BatchObject[];
 }
+
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  if (!context.query.id)
+    return {
+      props: {
+        invalid: true,
+      },
+    };
+
+  // Get product
+  const productId = context.query.id;
+
+  const productRef = await getDoc(doc(db, `products/${productId}`));
+  const product = { id: productRef.id, ...productRef.data() } as ProductObject;
+
+  // Get product type
+  const productTypeRef = await getDoc(
+    doc(db, `productTypes/${product.productType_id}`),
+  );
+
+  const productTypeName = productTypeRef.data()?.name ?? 'Unknown';
+
+  // Get batches
+  const batchesQuery = query(
+    collection(db, 'batches'),
+    where('product_id', '==', productId),
+  );
+  const batchesSnapsshot = await getDocs(batchesQuery);
+  const batches: BatchObject[] = getDocsFromQuerySnapshot(
+    batchesSnapsshot,
+  ) as BatchObject[];
+
+  // Filter out batches that out of stock
+  const filteredBatches = batches.filter(
+    (batch) => batch.soldQuantity < batch.totalQuantity,
+  );
+
+  const stockAvailable = filteredBatches.length > 0;
+
+  // Get product images
+  const images = await getDownloadUrlsFromFirebaseStorage(product.images);
+
+  const productDetail: ProductDetail = {
+    id: product.id,
+    name: product.name,
+    productTypeName: productTypeName,
+    stockAvailable: stockAvailable,
+    description: product.description,
+    ingredients: product.ingredients,
+    howToUse: product.howToUse,
+    preservation: product.preservation,
+    images: images,
+    batches: filteredBatches,
+  };
+
+  return {
+    props: {
+      productDetail: JSON.stringify(productDetail),
+    },
+  };
+};
+
+export default memo(ProductDetail);

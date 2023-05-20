@@ -198,8 +198,6 @@ export default function Manage({
   const handleCrudTargetChanged = (e: any, newValue: any) => {
     if (!newValue) return;
 
-    console.log(newValue);
-
     dispatch({
       type: ManageActionType.SET_SELECTED_TARGET,
       payload: newValue,
@@ -275,7 +273,6 @@ export default function Manage({
     });
 
     const id = state.deletingId;
-    console.log('Deleting document with id:', id);
 
     try {
       await deleteDoc(doc(db, state.selectedTarget.collectionName, id));
@@ -326,8 +323,6 @@ export default function Manage({
   //#endregion
 
   // #region Logs
-
-  console.log(state.mainDocs);
 
   // #endregion
 

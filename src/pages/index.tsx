@@ -343,9 +343,6 @@ const Home = ({
 
   //#region Logs
 
-  console.log(typeCakeState);
-  console.log(bestSellerState);
-
   //#endregion
 
   return (

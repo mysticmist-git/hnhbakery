@@ -58,8 +58,6 @@ const ProductTypeRowModal = () => {
       return;
     }
 
-    console.log(state.displayingData);
-
     setOriginalDisplayingData(() => state.displayingData);
 
     let downloadURL: string | null = null;
@@ -68,8 +66,6 @@ const ProductTypeRowModal = () => {
       downloadURL = await GetDownloadURLAndLoadImageToView(
         state.displayingData!.image,
       );
-
-      console.log('Download URL: ', downloadURL);
 
       if (downloadURL) setOriginalFeaturedImageURL(() => downloadURL);
     }
@@ -101,12 +97,8 @@ const ProductTypeRowModal = () => {
 
     const downloadURLs = await getDownloadUrlsFromFirebaseStorage([image]);
 
-    console.log(downloadURLs);
-
     if (downloadURLs && downloadURLs.length > 0) {
       loadImageToView(downloadURLs[0]);
-
-      console.log(downloadURLs[0]);
 
       return downloadURLs[0];
     }
@@ -127,7 +119,6 @@ const ProductTypeRowModal = () => {
 
     // Remove old image from storage
     if (state.displayingData?.image) {
-      console.log('Old image: ', state.displayingData.image);
       try {
         const imageRef = ref(storage, state.displayingData.image);
         await deleteObject(imageRef);
@@ -146,7 +137,6 @@ const ProductTypeRowModal = () => {
           featuredImageFile,
         );
 
-        console.log('New image', downloadURL);
         // Update document image
         const docRef = doc(
           db,

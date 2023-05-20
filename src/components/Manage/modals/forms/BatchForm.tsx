@@ -125,8 +125,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
   //#region Console.logs
 
-  console.log(state.displayingData);
-
   //#endregion
 
   return (
