@@ -1083,10 +1083,10 @@ const initProduct = {
     ],
   },
   prices: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
     min: 150000,
     max: 200000,
     items: {
+      //Mỗi object ứng với 1 button của phần chọn size
       price1: { display: 150000, value: 150000, checked: false },
       price2: { display: 150000, value: 150000, checked: false },
       price3: { display: 150000, value: 150000, checked: false },
@@ -1094,13 +1094,13 @@ const initProduct = {
     },
   },
   sizes: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    //Mỗi object ứng với 1 button của phần chọn size
     small: { display: 'Nhỏ', value: 'S', checked: false },
     medium: { display: 'Vừa', value: 'M', checked: false },
     large: { display: 'Lớn', value: 'L', checked: false },
   },
   materials: {
-    //Mỗi object trong sizes ứng với 1 button của phần chọn size
+    //Mỗi object ứng với 1 button của phần chọn size
     strawbery: { display: 'Mức dâu', value: 'strawbery', checked: false },
     coconut: { display: 'Mức dừa', value: 'coconut', checked: false },
     pineapple: { display: 'Mức thơm', value: 'pineapple', checked: false },
