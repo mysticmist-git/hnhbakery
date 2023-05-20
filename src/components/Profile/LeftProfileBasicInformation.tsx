@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import BasicInfoContentTypography from './BasicInfoContentTypography';
 import BasicInfoHeadingTypography from './BasicInfoHeadingTypography';
 import { LeftProfileBasicInfoProps } from './types';
+import theme from '@/styles/themes/lightTheme';
 import { Edit } from '@mui/icons-material';
 import { useSnackbarService } from '@/lib/contexts';
 

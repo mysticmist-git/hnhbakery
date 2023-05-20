@@ -51,7 +51,11 @@ const RightMenu = (props: any) => {
         //   onClick={() => {}}
         // />
         <CustomButton
-          children={() => <Typography variant="button">Đăng nhập</Typography>}
+          children={() => (
+            <Typography variant="button" color={theme.palette.common.white}>
+              Đăng nhập
+            </Typography>
+          )}
           onClick={handleLoginRoute}
         />
       )}

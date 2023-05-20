@@ -1,13 +1,4 @@
-import {
-  Box,
-  Card,
-  CardActionArea,
-  CardActions,
-  Grid,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React, {
   useEffect,
   useState,
@@ -29,6 +20,11 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { CustomButton } from '@/components/Inputs/Buttons';
+import {
+  CustomCard,
+  CustomCardSlider,
+  CustomCardWithButton,
+} from '@/components/Layouts/components';
 
 // #region Carousel
 interface CarouselImageItem {
@@ -59,17 +55,6 @@ const CustomCarousel = memo((props: any) => {
               }}
             />
           </Link>
-          {/* <a href={image.href}>
-            <Box
-              height={'100%'}
-              width={'100%'}
-              component={'img'}
-              loading="lazy"
-              alt=""
-              src={image.src}
-              sx={{ objectFit: 'cover' }}
-            />
-          </a> */}
         </Box>
       ))}
     </Carousel>
@@ -87,268 +72,61 @@ interface BestSellerItem {
 
 const initBestSeller: BestSellerItem[] = [
   {
-    image: '',
+    image: banh1.src,
     name: '1',
-    description: '',
+    description:
+      'mẹ ới cứu bé mẹ ới cứu bé mẹ ới cứu bé mẹ ới cứu bé mẹ ới cứu bé',
     href: '#',
   },
   {
-    image: '',
+    image: banh1.src,
     name: '2',
     description: '',
     href: '#',
   },
   {
-    image: '',
+    image: banh1.src,
     name: '3',
     description: '',
     href: '#',
   },
   {
-    image: '',
+    image: banh1.src,
     name: '4',
     description: '',
     href: '#',
   },
   {
-    image: '',
+    image: banh1.src,
     name: '5',
     description: '',
     href: '#',
   },
   {
-    image: '',
+    image: banh1.src,
     name: '6',
     description: '',
     href: '#',
   },
   {
-    image: '',
-    name: '7',
+    image: banh1.src,
+    name: '4',
+    description: '',
+    href: '#',
+  },
+  {
+    image: banh1.src,
+    name: '5',
+    description: '',
+    href: '#',
+  },
+  {
+    image: banh1.src,
+    name: '6',
     description: '',
     href: '#',
   },
 ];
-
-const CakeCard = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(HomeContext);
-
-  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
-
-  const defaultInformation: BestSellerItem = useMemo(
-    () => ({
-      image: banh1.src,
-      name: 'Bánh',
-      description: 'Bánh ngon dữ lắm bà ơi',
-      href: '#',
-    }),
-    [banh1],
-  );
-
-  const imageStyles = useMemo(
-    () => ({
-      cardNormal: {
-        width: '100%',
-        height: imageHeight,
-        transition: 'transform 0.25s ease-in-out',
-        objectFit: 'cover',
-      },
-      cardHovered: {
-        width: '100%',
-        height: imageHeight,
-        transition: 'transform 0.25s ease-in-out',
-        transform: 'scale(1.5)',
-        objectFit: 'cover',
-      },
-    }),
-    [imageHeight],
-  );
-
-  const [cardHover, setCardHover] = useState(false);
-
-  return (
-    <Card
-      onMouseOver={() => setCardHover(true)}
-      onMouseOut={() => setCardHover(false)}
-      raised={cardHover}
-      sx={{ borderRadius: '16px', width: '100%' }}
-    >
-      <CardActionArea
-        href={props.href ? props.href : defaultInformation.href}
-        sx={{ width: '100%', height: 'auto' }}
-      >
-        <Grid
-          container
-          direction={'row'}
-          spacing={0}
-          justifyContent={'center'}
-          alignItems={'center'}
-          width={'100%'}
-          height={'auto'}
-        >
-          <Grid item xs={12}>
-            <Box
-              component={'img'}
-              sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
-              alt=""
-              src={props.image ? props.image : defaultInformation.image}
-              loading="lazy"
-            />
-          </Grid>
-          <Grid
-            item
-            sx={{ p: 2, pb: 0, bgcolor: theme.palette.common.white }}
-            zIndex={1}
-            xs={12}
-          >
-            <Typography
-              gutterBottom
-              variant="body1"
-              color={theme.palette.common.black}
-            >
-              {props.name ?? defaultInformation.name}
-            </Typography>
-            <Typography
-              variant="body2"
-              color={theme.palette.text.secondary}
-              sx={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              {props.description ?? defaultInformation.description}
-            </Typography>
-          </Grid>
-        </Grid>
-      </CardActionArea>
-      <CardActions
-        sx={{ p: 2, bgcolor: theme.palette.common.white, zIndex: 1 }}
-      >
-        <CustomButton
-          sx={{ px: 2 }}
-          children={() => (
-            <Typography
-              sx={{ color: theme.palette.common.white }}
-              variant="button"
-            >
-              Thêm vào giỏ hàng
-            </Typography>
-          )}
-        />
-      </CardActions>
-    </Card>
-  );
-});
-
-const CardSliderItem = memo((props: any) => {
-  const { listColumn } = props;
-
-  return (
-    <>
-      <Grid container direction={'row'} justifyContent={'center'} spacing={2}>
-        {listColumn.map((_item: any, i: React.Key | null | undefined) => (
-          <Grid key={i} item xs={12 / listColumn.length}>
-            <Grid
-              container
-              justifyContent={'center'}
-              alignItems={'center'}
-              width={'100%'}
-            >
-              <props.card
-                image={_item.image}
-                name={_item.name}
-                description={_item.description}
-                imageHeight={props.imageHeight}
-              ></props.card>
-            </Grid>
-          </Grid>
-        ))}
-      </Grid>
-    </>
-  );
-});
-
-const CustomCardSlider = memo((props: any) => {
-  //#region States
-
-  const [bestSellerDisplay, setBestSellerDisplay] = useState<any[]>([]);
-
-  //#endregion
-
-  //#region Hooks
-
-  const theme = useTheme();
-  const context = useContext<HomeContextType>(HomeContext);
-
-  //#endregion
-
-  //#region UseEffects
-
-  const oneColumn = useMediaQuery(theme.breakpoints.down('sm'));
-  const twoColumn = useMediaQuery(theme.breakpoints.up('sm'));
-  const threeColumn = useMediaQuery(theme.breakpoints.up('md'));
-
-  useEffect(() => {
-    let column = 1;
-
-    if (threeColumn) {
-      column = 3;
-    } else if (twoColumn) {
-      column = 2;
-    } else if (oneColumn) {
-      column = 1;
-    }
-
-    let listRow: any[] = [];
-    let listColumn: BestSellerItem[] = [];
-
-    const bestSellerCount = context.bestSeller.length;
-
-    for (let i = 0; i < bestSellerCount; i++) {
-      listColumn.push(context.bestSeller[i] as BestSellerItem);
-
-      if ((i + 1) % column == 0 || i + 1 == context.bestSeller.length) {
-        listRow.push(listColumn);
-
-        listColumn = [];
-      }
-    }
-
-    setBestSellerDisplay(() => listRow);
-  }, [context.bestSeller, oneColumn, twoColumn, threeColumn]);
-
-  //#endregion
-
-  return (
-    <>
-      <Typography
-        variant="h1"
-        color={theme.palette.secondary.main}
-        align={'center'}
-      >
-        {props.title}
-      </Typography>
-      <Box>
-        <Carousel
-          animation="slide"
-          duration={props.duration}
-          sx={{ pt: 4, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
-        >
-          {bestSellerDisplay.map((listColumn, i) => (
-            <CardSliderItem
-              key={i}
-              listColumn={listColumn}
-              imageHeight={props.imageHeight}
-              card={props.card}
-            />
-          ))}
-        </Carousel>
-      </Box>
-    </>
-  );
-});
 //#endregion
 
 //#region Loại bánh
@@ -381,114 +159,13 @@ const initTypeCake: TypeCakeItem[] = [
   },
 ];
 
-const TypeCakeCard = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(HomeContext);
-
-  const defaultInformation: TypeCakeItem = useMemo(
-    () => ({
-      image: banh1.src,
-      name: 'Bánh Ngọt',
-      description: 'Bánh ngọt nhưng giảm cân!',
-      href: '#',
-    }),
-    [banh1],
-  );
-
-  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
-  const descriptionHeight = useMemo(
-    () => props.descriptionHeight,
-    [props.descfiptionHeight],
-  );
-
-  const [cardHover, setCardHover] = useState(false);
-
-  console.log(props);
-
-  return (
-    <>
-      <Card
-        onMouseOver={() => setCardHover(true)}
-        onMouseOut={() => setCardHover(false)}
-        raised={cardHover}
-        sx={{ borderRadius: '16px', width: '100%' }}
-      >
-        <CardActionArea
-          href={props.href ?? defaultInformation.href}
-          sx={{ width: '100%' }}
-        >
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'center'}
-            alignItems={'center'}
-            width={'100%'}
-            spacing={0}
-          >
-            <Grid item xs={12} height={'auto'}>
-              <Box
-                component={'img'}
-                sx={{
-                  transition: 'transform 0.25s ease-in-out',
-                  objectFit: 'cover',
-                  width: '100%',
-                  height: imageHeight,
-                  maxHeight: imageHeight,
-                  '&:hover': {
-                    transform: 'scale(1.5)',
-                  },
-                }}
-                alt=""
-                src={props.image ?? defaultInformation.image}
-                loading="lazy"
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sx={{
-                p: 2,
-                bgcolor: theme.palette.common.white,
-              }}
-              zIndex={1}
-            >
-              <Typography
-                gutterBottom
-                variant="h3"
-                color={theme.palette.secondary.main}
-                align="center"
-              >
-                {props.name ?? defaultInformation.name}
-              </Typography>
-              <Typography
-                component={'p'}
-                variant="body2"
-                color={theme.palette.text.secondary}
-                align="center"
-                sx={{
-                  overflow: 'hidden',
-                  height: descriptionHeight,
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {props.description ?? defaultInformation.description}
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardActionArea>
-      </Card>
-    </>
-  );
-});
-
 const TypeCake = memo((props: any) => {
   const theme = useTheme();
   const context = useContext<HomeContextType>(HomeContext);
   return (
     <>
       <Typography
-        variant="h1"
+        variant="h2"
         color={theme.palette.secondary.main}
         align={'center'}
       >
@@ -510,10 +187,15 @@ const TypeCake = memo((props: any) => {
                 alignItems={'center'}
                 width={'100%'}
               >
-                <TypeCakeCard
-                  {...item}
+                <CustomCard
                   imageHeight={props.imageHeight}
                   descriptionHeight={props.descriptionHeight}
+                  cardInfo={{
+                    image: item.image,
+                    name: item.name,
+                    description: item.description,
+                    href: item.href,
+                  }}
                 />
               </Grid>
             </Grid>
@@ -556,10 +238,18 @@ const DangKyKhuyenMai = memo((props: any) => {
           spacing={2}
         >
           <Grid item>
-            <Typography align="center" variant="h2">
+            <Typography
+              align="center"
+              color={theme.palette.common.white}
+              variant="h2"
+            >
               Khuyến mãi mỗi ngày
             </Typography>
-            <Typography variant="body2" align="center">
+            <Typography
+              variant="body2"
+              color={theme.palette.common.white}
+              align="center"
+            >
               Đăng ký email để nhận ưu đãi và thông tin các chương trình khuyến
               mãi
             </Typography>
@@ -574,7 +264,9 @@ const DangKyKhuyenMai = memo((props: any) => {
             >
               <Grid item>
                 <CustomTextField
-                  width={'350px'}
+                  sx={{
+                    width: '400px',
+                  }}
                   placeholder="Email của bạn"
                   type="email"
                   borderColor={theme.palette.common.white}
@@ -589,7 +281,12 @@ const DangKyKhuyenMai = memo((props: any) => {
                     px: 3,
                   }}
                   children={() => (
-                    <Typography variant="button">Đăng ký</Typography>
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.white}
+                    >
+                      Đăng ký
+                    </Typography>
                   )}
                 />
               </Grid>
@@ -606,13 +303,11 @@ const DangKyKhuyenMai = memo((props: any) => {
 // #region Context
 export interface HomeContextType {
   carouselImages: CarouselImageItem[];
-  bestSeller: BestSellerItem[];
   typeCake: TypeCakeItem[];
 }
 
 const initHomeContext: HomeContextType = {
   carouselImages: [],
-  bestSeller: [],
   typeCake: [],
 };
 
@@ -677,7 +372,6 @@ const Home = ({
       <HomeContext.Provider
         value={{
           carouselImages: carouselImagesState,
-          bestSeller: bestSellerState,
           typeCake: typeCakeState,
         }}
       >
@@ -687,8 +381,11 @@ const Home = ({
             <CustomCardSlider
               duration={1000}
               imageHeight="184px"
-              card={CakeCard}
+              descriptionHeight="32px"
+              CustomCard={CustomCardWithButton}
               title={'Best Seller'}
+              productList={bestSellerState}
+              buttonOnclick={() => {}}
             />
             {bestSellerState.length <= 0 && (
               <Box
