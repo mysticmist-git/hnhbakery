@@ -7,8 +7,6 @@ import {
   styled,
   Rating,
   Button,
-  TextField,
-  InputAdornment,
   Pagination,
   useMediaQuery,
   Card,
@@ -31,6 +29,7 @@ import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
+import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 
 //#region Đọc export default trước rồi hả lên đây!
 function ProductCarousel(props: any) {
@@ -241,155 +240,6 @@ function CheckboxButtonGroup({ object, setObject }: any) {
           </Button>
         </Grid>
       ))}
-    </Grid>
-  );
-}
-
-function NumberInputWithButtons({ min, max }: any) {
-  const [value, setValue] = useState(0);
-  const theme = useTheme();
-
-  const handleAddClick = () => {
-    if (value < max) {
-      setValue((prevValue) => prevValue + 1);
-    }
-  };
-
-  const handleMinusClick = () => {
-    if (value > min) {
-      setValue((prevValue) => prevValue - 1);
-    }
-  };
-
-  const handleOnBlur = () => {
-    if (value < min) {
-      setValue(min);
-    } else if (value > max) {
-      setValue(max);
-    }
-  };
-
-  return (
-    <Grid
-      container
-      direction="row"
-      justifyContent="flex-start"
-      spacing={1}
-      alignItems={'center'}
-    >
-      <Grid
-        item
-        sx={{
-          display: {
-            xs: 'none',
-            sm: 'block',
-          },
-        }}
-      >
-        <CustomButton
-          onClick={handleMinusClick}
-          sx={{
-            py: 1.5,
-            px: 3,
-            borderRadius: '8px',
-          }}
-          children={() => (
-            <Typography variant="body1" color={theme.palette.common.white}>
-              -
-            </Typography>
-          )}
-        />
-      </Grid>
-      <Grid item>
-        <TextField
-          value={value}
-          onBlur={handleOnBlur}
-          onChange={(e) => setValue(Number(e.target.value))}
-          type="number"
-          variant="filled"
-          hiddenLabel
-          maxRows="1"
-          sx={{
-            '&:hover': {
-              boxShadow: `0px 0px 5px 2px ${alpha(
-                theme.palette.secondary.main,
-                0.3,
-              )}`,
-            },
-            '& .MuiInputBase-root': {
-              p: 0,
-            },
-            '& .MuiInputAdornment-root': {
-              m: 0,
-            },
-          }}
-          InputProps={{
-            disableUnderline: true,
-            endAdornment: (
-              <InputAdornment
-                position="end"
-                sx={{
-                  backgroundColor: theme.palette.common.white,
-                  maxHeight: 'none',
-                  height: 'auto',
-                  alignSelf: 'stretch',
-                  pr: 1,
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  color={theme.palette.secondary.main}
-                >
-                  {'/' + max.toString()}
-                </Typography>
-              </InputAdornment>
-            ),
-          }}
-          style={{
-            border: `3px solid ${theme.palette.secondary.main}`,
-            borderRadius: '8px',
-            borderColor: theme.palette.secondary.main,
-            borderStyle: 'solid',
-            overflow: 'hidden',
-          }}
-          inputProps={{
-            sx: {
-              textAlign: 'center',
-              fontSize: theme.typography.body1.fontSize,
-              color: theme.palette.common.black,
-              fontWeight: theme.typography.body1.fontWeight,
-              fontFamily: theme.typography.body1.fontFamily,
-              padding: 1.5,
-              backgroundColor: theme.palette.common.white,
-            },
-            min: min,
-            max: max,
-          }}
-        />
-      </Grid>
-      <Grid
-        item
-        sx={{
-          display: {
-            xs: 'none',
-            sm: 'block',
-          },
-        }}
-      >
-        <CustomButton
-          onClick={handleAddClick}
-          sx={{
-            py: 1.5,
-            px: 3,
-            borderRadius: '8px',
-          }}
-          children={() => (
-            <Typography variant="body1" color={theme.palette.common.white}>
-              +
-            </Typography>
-          )}
-        />
-      </Grid>
     </Grid>
   );
 }
