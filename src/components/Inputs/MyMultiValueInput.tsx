@@ -88,7 +88,7 @@ const MyMultiValueInput = ({
           <NewValueChip
             value={newValue}
             placeholder="Thêm mới"
-            width={'68px'}
+            width={'76px'}
             onChange={(e: any) => setNewValue(e.target.value)}
             onClick={handleAddNewValue}
           />
