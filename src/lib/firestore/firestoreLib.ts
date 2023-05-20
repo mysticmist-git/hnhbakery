@@ -23,6 +23,7 @@ import {
 import { memoize } from '../localLib/manage-modal';
 import { CollectionName } from '../models/utilities';
 import { ProductObject, ProductTypeObject } from '../models';
+import { display } from '@mui/system';
 
 //#region Document Related Functions
 
@@ -45,16 +46,22 @@ export const addDocumentToFirestore = async (
 export async function updateDocumentToFirestore(
   displayingData: DocumentData,
   collectionName: CollectionName,
-) {
+): Promise<boolean> {
   // Null check
-  if (!displayingData) return;
+  if (!displayingData) return false;
+
+  console.log(displayingData);
 
   const id = displayingData.id;
 
   try {
     await updateDoc(doc(db, collectionName, id), displayingData);
+
+    return true;
   } catch (error) {
     console.log('Error: ', error);
+
+    return false;
   }
 }
 

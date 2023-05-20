@@ -183,7 +183,7 @@ const BatchRowModal = () => {
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [...state.mainDocs, { id: docId, ...state.displayingData }],
+        payload: [...state.mainDocs, { ...state.displayingData, id: docId }],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
@@ -271,8 +271,25 @@ const BatchRowModal = () => {
         return;
       }
 
+      console.log(displayingData);
+
+      const dataForFirestoreAdding = {
+        ...displayingData,
+        MFG: Timestamp.fromDate(new Date(displayingData.MFG)),
+        EXP: Timestamp.fromDate(new Date(displayingData.EXP)),
+      };
+
+      console.log(dataForFirestoreAdding);
+
       // Update document to firestore
-      updateDocumentToFirestore(displayingData, collectionName);
+      const isSucess = await updateDocumentToFirestore(
+        dataForFirestoreAdding,
+        collectionName,
+      );
+
+      if (!isSucess) {
+        throw new Error('Update row failed');
+      }
 
       // Update state
       dispatch({

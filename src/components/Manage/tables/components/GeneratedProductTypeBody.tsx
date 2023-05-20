@@ -11,12 +11,13 @@ const GeneratedProductTypeTableBody = () => {
     dispatch,
     handleDeleteRowOnFirestore: handleDeleteRow,
     handleViewRow,
+    handleSearchFilter,
   } = useContext<ManageContextType>(ManageContext);
 
   const TableBody = useMemo(() => {
     return (
       <>
-        {state.mainDocs?.map((doc, index) => (
+        {handleSearchFilter(state.mainDocs)?.map((doc, index) => (
           <TableRow
             key={doc.id}
             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -54,7 +55,7 @@ const GeneratedProductTypeTableBody = () => {
         )) ?? <TableRow>Error loading body</TableRow>}
       </>
     );
-  }, [state.mainDocs]);
+  }, [state.mainDocs, state.searchText]);
 
   return TableBody;
 };

@@ -258,7 +258,7 @@ const ProductTypeRowModal = () => {
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [...state.mainDocs, { id: docId, ...data }],
+        payload: [...state.mainDocs, { ...data, id: docId }],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);

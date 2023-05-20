@@ -27,12 +27,14 @@ export enum ManageActionType {
   SET_CRUD_MODAL_MODE = 'SET_CRUD_MODAL_MODE',
   SET_DELETING_ID = 'SET_DELETING_ID',
   UPDATE_SPECIFIC_DOC = 'UPDATE_SPECIFIC_DOC',
+  SET_SEARCH_TEXT = 'SET_SEARCH_TEXT',
 }
 
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
 
 export interface ManageState {
   mainDocs: DocumentData[];
+  searchText: string;
   mainCollectionName: CollectionName;
   selectedTarget: CrudTarget | null;
   displayingData: DocumentData | null;
@@ -49,6 +51,7 @@ export interface ManageContextType {
   handleViewRow: any;
   handleDeleteRowOnFirestore: any;
   resetDisplayingData: any;
+  handleSearchFilter: (docs: DocumentData[]) => DocumentData[];
 }
 
 export const manageReducer = (state: ManageState, action: any) => {
@@ -57,6 +60,11 @@ export const manageReducer = (state: ManageState, action: any) => {
       return {
         ...state,
         mainDocs: action.payload,
+      };
+    case ManageActionType.SET_SEARCH_TEXT:
+      return {
+        ...state,
+        searchText: action.payload,
       };
 
     case ManageActionType.UPDATE_SPECIFIC_DOC:

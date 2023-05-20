@@ -44,6 +44,8 @@ import {
 import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { useSnackbarService } from '@/lib/contexts';
 import { ManageContext } from '@/lib/contexts/manageContext';
+import { DocumentContext } from 'next/document';
+import search from '../search';
 
 //#region Constants
 
@@ -52,6 +54,7 @@ const PATH = '/manager/manage';
 
 const initManageState: ManageState = {
   mainDocs: [],
+  searchText: '',
   mainCollectionName: CollectionName.None,
   selectedTarget: crudTargets[0],
   displayingData: null,
@@ -100,9 +103,11 @@ export default function Manage({
   }, [state.selectedTarget]);
 
   useEffect(() => {
+    const mainDocs = JSON.parse(paramMainDocs) as DocumentData[];
+
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
-      payload: JSON.parse(paramMainDocs) as DocumentData[],
+      payload: mainDocs,
     });
   }, [paramMainDocs]);
 
@@ -170,6 +175,14 @@ export default function Manage({
         return 'Lỗi khi load text';
     }
   }, [state.selectedTarget]);
+
+  const isTableEmpty = useMemo(() => {
+    return state.mainDocs.length === 0;
+  }, [state.mainDocs]);
+
+  const namesForSearchBar = useMemo(() => {
+    return state.mainDocs.map((d: DocumentData) => d.name);
+  }, [state.mainDocs]);
 
   // #endregion
 
@@ -292,7 +305,31 @@ export default function Manage({
     });
   };
 
+  const handleSearch = (e: any, searchText: string) => {
+    dispatch({
+      type: ManageActionType.SET_SEARCH_TEXT,
+      payload: searchText,
+    });
+  };
+
+  const handleSearchFilter = (docs: DocumentData[]) => {
+    if (
+      !state.searchText ||
+      state.searchText.length === 0 ||
+      state.searchText === ''
+    )
+      return docs;
+
+    return docs.filter((doc) => doc.name === state.searchText);
+  };
+
   //#endregion
+
+  // #region Logs
+
+  console.log(state.mainDocs);
+
+  // #endregion
 
   return (
     <ManageContext.Provider
@@ -302,6 +339,7 @@ export default function Manage({
         handleDeleteRowOnFirestore,
         handleViewRow,
         resetDisplayingData,
+        handleSearchFilter,
       }}
     >
       <Container
@@ -342,15 +380,47 @@ export default function Manage({
           }
         />
 
+        <Divider
+          sx={{
+            marginY: '1rem',
+          }}
+        />
+
         {/* Manage Buttons */}
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'end',
+            justifyContent:
+              state.selectedTarget.collectionName !== 'batches'
+                ? 'space-between'
+                : 'end',
             alignItems: 'center',
             my: '1rem',
           }}
         >
+          {state.selectedTarget.collectionName !== 'batches' && (
+            <Autocomplete
+              freeSolo
+              sx={{
+                width: 400,
+              }}
+              id="search-bar"
+              disableClearable
+              options={namesForSearchBar}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tìm kiếm"
+                  InputProps={{
+                    ...params.InputProps,
+                    type: 'search',
+                  }}
+                />
+              )}
+              onInputChange={handleSearch}
+            />
+          )}
+
           <TableActionButton
             startIcon={<Add />}
             variant="contained"
@@ -368,7 +438,7 @@ export default function Manage({
             Tất nhiên thì nếu không có ý định tái sử dụng component này thì để nó vậy cũng được. */}
         <CustomDataTable />
 
-        {(JSON.parse(paramMainDocs) as DocumentData[]).length === 0 && (
+        {isTableEmpty && (
           <Card
             sx={{
               width: '100%',
