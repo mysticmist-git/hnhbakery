@@ -5,6 +5,8 @@ export interface ProductItem {
   image: string;
   name: string;
   price: number;
+  colors: string[];
+  sizes: string[];
   MFG: Date;
   description: string;
   totalSoldQuantity: number;
@@ -17,6 +19,7 @@ export interface BoLocItem {
   children: {
     display: string;
     value: string;
+    realValue?: string;
     color?: boolean;
     isChecked: boolean;
   }[];

@@ -5,7 +5,7 @@ import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
 import { DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import { ManageContext, useSnackbarService } from '@/lib/contexts';
@@ -284,19 +284,26 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               }
             />
           </Stack>
+
           <DatePicker
             readOnly={readOnly}
             label="Ngày sản xuất"
             value={dayjs(state.displayingData?.MFG)}
             disablePast={state.crudModalMode === 'create'}
             format="DD/MM/YYYY"
-            onChange={(newValue: any) =>
+            onChange={(newValue) => {
+              if (!newValue) return;
+
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: { ...state.displayingData, MFG: newValue.toDate() },
-              })
-            }
+                payload: {
+                  ...state.displayingData,
+                  MFG: newValue.toDate(),
+                },
+              });
+            }}
           />
+
           <DatePicker
             readOnly={readOnly}
             label="Ngày hết hạn"
@@ -306,12 +313,16 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               return dayjs(state.displayingData?.MFG).isAfter(day);
             }}
             format="DD/MM/YYYY"
-            onChange={(newValue: any) =>
+            onChange={(newValue) => {
+              if (!newValue) return;
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: { ...state.displayingData, EXP: newValue.toDate() },
-              })
-            }
+                payload: {
+                  ...state.displayingData,
+                  EXP: newValue.toDate(),
+                },
+              });
+            }}
           />
 
           <TextField

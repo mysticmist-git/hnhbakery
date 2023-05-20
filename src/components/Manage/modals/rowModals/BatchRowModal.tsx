@@ -4,7 +4,7 @@ import BatchForm from '../forms/BatchForm';
 import RowModalLayout from './RowModalLayout';
 import { storage, db } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
-import { DocumentData, doc, updateDoc } from 'firebase/firestore';
+import { DocumentData, Timestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import ProductTypeForm from '../forms/ProductTypeForm';
 import { BatchObject } from '@/lib/models/Batch';
@@ -164,21 +164,32 @@ const BatchRowModal = () => {
     if (!collectionName) return;
 
     try {
-      const data = {
+      console.log(state.displayingData);
+
+      const dataForFirestoreAdding = {
         ...state.displayingData,
+        MFG: Timestamp.fromDate(state.displayingData.MFG),
+        EXP: Timestamp.fromDate(state.displayingData.EXP),
       };
 
+      console.log(dataForFirestoreAdding);
+
       // Add new document to Firestore
-      const docId = await addDocumentToFirestore(data, collectionName);
+      const docId = await addDocumentToFirestore(
+        dataForFirestoreAdding,
+        collectionName,
+      );
 
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [...state.mainDocs, { id: docId, ...data }],
+        payload: [...state.mainDocs, { ...state.displayingData, id: docId }],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
       handleSnackbarAlert('error', 'Thêm mới thất bại');
+
+      return;
     }
 
     handleSnackbarAlert('success', 'Thêm mới thành công');
@@ -260,8 +271,25 @@ const BatchRowModal = () => {
         return;
       }
 
+      console.log(displayingData);
+
+      const dataForFirestoreAdding = {
+        ...displayingData,
+        MFG: Timestamp.fromDate(new Date(displayingData.MFG)),
+        EXP: Timestamp.fromDate(new Date(displayingData.EXP)),
+      };
+
+      console.log(dataForFirestoreAdding);
+
       // Update document to firestore
-      updateDocumentToFirestore(displayingData, collectionName);
+      const isSucess = await updateDocumentToFirestore(
+        dataForFirestoreAdding,
+        collectionName,
+      );
+
+      if (!isSucess) {
+        throw new Error('Update row failed');
+      }
 
       // Update state
       dispatch({
