@@ -1,6 +1,6 @@
 import { TableRow, TableCell, Typography } from '@mui/material';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import { db } from '@/firebase/config';
 import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';

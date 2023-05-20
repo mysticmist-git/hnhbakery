@@ -19,7 +19,6 @@ import TabPanel from './components/TabPanel';
 import { a11yProps } from './lib';
 import MyGallery from './components/MyGallery';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import { ManageContext } from '@/pages/manager/manage';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import {
@@ -32,6 +31,7 @@ import {
   ReferenceServiceProxy,
   ReferencesService,
 } from '@/lib/services/ReferenceService';
+import { ManageContext } from '@/lib/contexts';
 
 //#region Types
 
@@ -160,9 +160,6 @@ const ProductForm = ({
   );
 
   // #endregion
-
-  console.log(colors);
-  console.log(sizes);
 
   return (
     <>

@@ -7,8 +7,8 @@ import { ProductObject } from '@/lib/models';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import { ManageContext } from '@/pages/manager/manage';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
+import { ManageContext, useSnackbarService } from '@/lib/contexts';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region States
@@ -31,6 +31,8 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region Hooks
 
   const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+  const handleSnackbarAlert = useSnackbarService();
+  const theme = useTheme();
 
   //#endregion
 
@@ -39,6 +41,21 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   useEffect(() => {
     const fetchData = async () => {
       const justGetProducts = await getProducts();
+
+      if (justGetProducts.length === 0) {
+        handleSnackbarAlert(
+          'error',
+          'Không có sản phẩm, vui lòng thêm sản phẩm trước',
+        );
+
+        dispatch({
+          type: ManageActionType.SET_CRUD_MODAL_MODE,
+          payload: false,
+        });
+
+        return;
+      }
+
       setProducts(() => justGetProducts ?? []);
 
       if (['update', 'view'].includes(state.crudModalMode)) {
@@ -120,7 +137,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   console.log(state.displayingData);
 
   //#endregion
-  const theme = useTheme();
 
   return (
     <Grid container columnSpacing={2}>

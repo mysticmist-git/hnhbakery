@@ -17,18 +17,6 @@ export const crudTargets: CrudTarget[] = [
   },
 ];
 
-export const initManageState: ManageState = {
-  mainDocs: [],
-  mainCollectionName: CollectionName.None,
-  selectedTarget: crudTargets[0],
-  displayingData: null,
-  loading: false,
-  dialogOpen: false,
-  crudModalOpen: false,
-  crudModalMode: 'none',
-  deletingId: '',
-};
-
 export enum ManageActionType {
   SET_MAIN_DOCS = 'SET_MAIN_DOCS',
   SET_SELECTED_TARGET = 'SET_SELECTED_TARGET',

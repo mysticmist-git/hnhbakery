@@ -17,14 +17,14 @@ const MyMultiValueCheckerPickerInput = ({
   values: string[];
   options: string[];
   onChange: (values: string[]) => void;
-  readOnly: boolean;
+  readOnly?: boolean;
   mode?: 'picker' | 'checker';
 }) => {
   //#region States
 
   const [values, setValues] = useState<string[]>(paramValues);
 
-  //#endregion
+  // #endregion
 
   //#region Hooks
 

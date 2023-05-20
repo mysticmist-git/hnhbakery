@@ -11,7 +11,7 @@ import { BatchObject } from '@/lib/models/Batch';
 import { tokenToString } from 'typescript';
 import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import {
   addDocumentToFirestore,
   updateDocumentToFirestore,

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import placeholderImage from '@/assets/placeholder-image.png';
-import { ManageContext } from '@/pages/manager/manage';
+import { ManageContext } from '@/lib/contexts';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 
 const ProductTypeForm = ({

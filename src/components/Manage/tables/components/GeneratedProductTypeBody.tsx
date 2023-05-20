@@ -1,9 +1,9 @@
 import theme from '@/styles/themes/lightTheme';
 import { TableCell, TableRow, Typography } from '@mui/material';
-import { ManageContext } from '@/pages/manager/manage';
 import { memo, useContext, useMemo } from 'react';
 import RowActionButtons from './RowActionButtons';
 import { ManageContextType } from '@/lib/localLib/manage';
+import { ManageContext } from '@/lib/contexts';
 
 const GeneratedProductTypeTableBody = () => {
   const {
