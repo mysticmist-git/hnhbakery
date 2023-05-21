@@ -509,7 +509,7 @@ async function fetchBestSellerProductsAndTheirImagesToo(
         image: product.url,
         name: product.name,
         description: product.description,
-        href: product.id,
+        href: `/product-detail?id=${product.id}`,
       } as BestSellerItem),
   );
 }

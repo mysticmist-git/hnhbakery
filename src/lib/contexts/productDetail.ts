@@ -1,27 +1,34 @@
 import { createContext } from 'react';
+import { BatchObject } from '../models/Batch';
+
+export interface ProductDetail {
+  id: string;
+  name: string;
+  type: string;
+  state: boolean;
+  description: string;
+  ingredients: string[];
+  howToUse: string;
+  preservation: string;
+  images: { src: string; alt: string }[];
+  batches: BatchObject[];
+}
 
 const initProductDetailContext: ProductDetailContextType = {
-  productState: {},
-  sizeState: {},
-  setSizeState: () => {},
-  materialState: {},
-  setMaterialState: () => {},
-  priceState: {},
-  setPriceState: () => {},
+  productDetail: {} as any,
   starState: {},
   setStarState: () => {},
+  form: {},
+  setForm: () => {},
 };
 
 export interface ProductDetailContextType {
-  productState: any;
-  sizeState: any;
-  setSizeState: any;
-  materialState: any;
-  setMaterialState: any;
-  priceState: any;
-  setPriceState: any;
+  productDetail: ProductDetail;
   starState: any;
   setStarState: any;
+  // TODO: make it strongly type
+  form: any;
+  setForm: any;
 }
 
 export const ProductDetailContext = createContext<ProductDetailContextType>(
