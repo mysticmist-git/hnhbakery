@@ -54,6 +54,7 @@ import ProductsContext, {
   BoLocItem,
   ProductItem,
 } from '@/lib/contexts/productsContext';
+import Image from 'next/image';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -76,49 +77,49 @@ const initGroupBoLoc = [
     children: [
       {
         display: 'Đỏ',
-        value: 'red',
+        value: '#F43545',
         readValue: 'đỏ',
         color: true,
         isChecked: false,
       },
       {
         display: 'Cam',
-        value: 'orange',
+        value: '#FA8901',
         realValue: 'cam',
         color: true,
         isChecked: false,
       },
       {
         display: 'Vàng',
-        value: 'yellow',
+        value: '#C4A705',
         realValue: 'vàng',
         color: true,
         isChecked: false,
       },
       {
         display: 'Lục',
-        value: 'green',
+        value: '#00BA71',
         realValue: 'lục',
         color: true,
         isChecked: false,
       },
       {
         display: 'Lam',
-        value: 'blue',
+        value: '#00C2DE',
         realValue: 'lam',
         color: true,
         isChecked: false,
       },
       {
         display: 'Chàm',
-        value: 'indigo',
+        value: '#00418D',
         realValue: 'chàm',
         color: true,
         isChecked: false,
       },
       {
         display: 'Tím',
-        value: 'purple',
+        value: '#5F2879',
         realValue: 'tím',
         color: true,
         isChecked: false,
@@ -212,16 +213,18 @@ const CustomAccordion = memo((props: any) => {
                 }
                 label={
                   <Typography
-                    style={{
-                      backgroundColor: item.color ? item.value : 'transparent',
-                    }}
                     variant="button"
                     color={
                       item.color
                         ? theme.palette.common.white
                         : theme.palette.common.black
                     }
-                    sx={{ px: item.color ? 1 : 0 }}
+                    sx={{
+                      px: item.color ? 1 : 0,
+                      background: item.color ? item.value : 'transparent',
+                      borderRadius: '4px',
+                      width: '100%',
+                    }}
                   >
                     {item.display}
                   </Typography>
@@ -486,6 +489,10 @@ const CakeCard = memo((props: any) => {
 
   const isList = useMemo(() => context.View === 'list', [context.View]);
   const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
+  const imageHeightList = useMemo(
+    () => props.imageHeightList,
+    [props.imageHeightList],
+  );
   const imageStyles = {
     cardNormal: {
       width: '100%',
@@ -497,7 +504,7 @@ const CakeCard = memo((props: any) => {
       width: '100%',
       height: '100%',
       transition: 'transform 0.4s ease-in-out',
-      transform: 'scale(1.5)',
+      transform: 'scale(1.3)',
       objectFit: 'cover',
     },
   };
@@ -517,10 +524,14 @@ const CakeCard = memo((props: any) => {
     >
       <CardActionArea
         href={props.href ? props.href : productDefault.href}
-        sx={{ width: isList ? '50%' : '100%', height: imageHeight }}
+        sx={{
+          width: isList ? '50%' : '100%',
+          height: isList ? imageHeightList : imageHeight,
+        }}
       >
         <Box
-          component={'img'}
+          fill={true}
+          component={Image}
           sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
           alt=""
           src={props.image ? props.image : productDefault.image}
@@ -534,6 +545,7 @@ const CakeCard = memo((props: any) => {
           zIndex: 1,
           width: isList ? '50%' : '100%',
           height: 'auto',
+          maxHeight: isList ? imageHeightList : imageHeight,
         }}
       >
         <Grid
@@ -555,6 +567,7 @@ const CakeCard = memo((props: any) => {
               direction={'column'}
               justifyContent={'space-between'}
               alignItems={'start'}
+              spacing={1}
               sx={{
                 height: '100%',
               }}
@@ -567,6 +580,14 @@ const CakeCard = memo((props: any) => {
                   variant="body2"
                   color={theme.palette.text.secondary}
                   display={isList ? 'block' : 'none'}
+                  sx={{
+                    maxHeight: '10vh',
+                    whiteSpace: 'normal',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    wordBreak: 'break-word',
+                    fontWeight: 'medium',
+                  }}
                 >
                   {props.description
                     ? props.description
@@ -655,8 +676,13 @@ const ProductList = memo((props: any) => {
   //#region useMemo
 
   const imageHeight = useMemo(
-    () => props.imageHeight ?? '240px',
+    () => props.imageHeight ?? '20vh',
     [props.imageHeight],
+  );
+
+  const imageHeightList = useMemo(
+    () => props.imageHeightList ?? '30vh',
+    [props.imageHeightList],
   );
 
   const displayProducts: ProductItem[] = useMemo(() => {
@@ -888,7 +914,11 @@ const ProductList = memo((props: any) => {
             md={context.View != 'grid' ? 12 : 6}
             lg={context.View != 'grid' ? 12 : 4}
           >
-            <CakeCard {...item} imageHeight={imageHeight} />
+            <CakeCard
+              {...item}
+              imageHeight={imageHeight}
+              imageHeightList={imageHeightList}
+            />
           </Grid>
         ))}
       </Grid>
@@ -1002,7 +1032,7 @@ const Products = ({ products }: { products: string }) => {
                   <Link href="#" style={{ textDecoration: 'none' }}>
                     <Typography
                       align="center"
-                      variant="h1"
+                      variant="h2"
                       color={theme.palette.primary.main}
                       sx={{
                         '&:hover': {
@@ -1054,7 +1084,10 @@ const Products = ({ products }: { products: string }) => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <ProductList imageHeight={'184px'} />
+                    <ProductList
+                      imageHeight={'20vh'}
+                      imageHeightList={'30vh'}
+                    />
                   </Grid>
                 </Grid>
               </Grid>

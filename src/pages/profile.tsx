@@ -2,7 +2,7 @@ import { LeftProfileColumn, RightProfileColumn } from '@/components/Profile';
 import { Card, Container, Grid, useTheme } from '@mui/material';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { useAuthUser, withAuthUser } from 'next-firebase-auth';
-import avatar from '@/assets/avatar-gau-cute.jpg';
+import avatar from '../assets/Logo.png';
 import { Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { UserObject } from '@/lib/models/User';

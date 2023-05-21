@@ -8,6 +8,12 @@ import React, {
   memo,
 } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
+import bg2 from '../assets/Decorate/bg2.png';
+import bg3 from '../assets/Decorate/bg3.png';
+import bg8 from '../assets/Decorate/bg8.png';
+import bg10 from '../assets/Decorate/bg10.png';
+import bg11 from '../assets/Decorate/bg11.png';
+
 import { alpha } from '@mui/system';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 import Carousel from 'react-material-ui-carousel';
@@ -40,7 +46,20 @@ const CustomCarousel = memo((props: any) => {
   const context = useContext(HomeContext);
 
   return (
-    <Carousel animation="slide" duration={props.duration}>
+    <Carousel
+      animation="slide"
+      duration={props.duration}
+      indicatorContainerProps={{
+        style: {
+          position: 'absolute',
+          bottom: 0,
+          left: '0',
+          right: '0',
+          paddingTop: 0,
+          zIndex: 1,
+        },
+      }}
+    >
       {context.carouselImages.map((image, i) => (
         <Box
           key={i}
@@ -208,87 +227,82 @@ const DangKyKhuyenMai = memo((props: any) => {
   return (
     <Box
       sx={{
-        mt: 8,
         width: '100%',
-        height: '450px',
-        backgroundImage: `url(${banh1.src})`,
+        height: '80vh',
+        minHeight: '300px',
+        backgroundImage: `url(${bg10.src})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          bgcolor: alpha(theme.palette.common.black, 0.6),
-        }}
+      <Grid
+        container
+        direction={'row'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        spacing={2}
       >
-        <Grid
-          sx={{ px: 6 }}
-          height={'100%'}
-          container
-          direction={'column'}
-          justifyContent={'center'}
-          alignItems={'center'}
-          spacing={2}
-        >
-          <Grid item>
-            <Typography
-              align="center"
-              color={theme.palette.common.white}
-              variant="h2"
-            >
-              Khuyến mãi mỗi ngày
-            </Typography>
-            <Typography
-              variant="body2"
-              color={theme.palette.common.white}
-              align="center"
-            >
-              Đăng ký email để nhận ưu đãi và thông tin các chương trình khuyến
-              mãi
-            </Typography>
-          </Grid>
-          <Grid item>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              spacing={1}
-            >
-              <Grid item>
-                <CustomTextField
-                  sx={{
-                    width: '400px',
-                  }}
-                  placeholder="Email của bạn"
-                  type="email"
-                  borderColor={theme.palette.common.white}
-                />
-              </Grid>
-              <Grid item>
-                <CustomButton
-                  sx={{
-                    height: '100%',
-                    borderRadius: '8px',
-                    py: '12px',
-                    px: 3,
-                  }}
-                  children={() => (
-                    <Typography
-                      variant="button"
-                      color={theme.palette.common.white}
-                    >
-                      Đăng ký
-                    </Typography>
-                  )}
-                />
-              </Grid>
+        <Grid item xs={11}>
+          <Typography
+            align="center"
+            color={theme.palette.secondary.main}
+            variant="h2"
+          >
+            Khuyến mãi mỗi ngày
+          </Typography>
+          <Typography
+            variant="body2"
+            color={theme.palette.common.black}
+            align="center"
+          >
+            Đăng ký email để nhận ưu đãi và thông tin các chương trình khuyến
+            mãi
+          </Typography>
+        </Grid>
+        <Grid item xs={11} sm={8} md={6}>
+          <Grid
+            container
+            direction={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            spacing={1}
+            width={'100%'}
+          >
+            <Grid item xs={true}>
+              <CustomTextField
+                sx={{
+                  width: '100%',
+                }}
+                placeholder="Email của bạn"
+                type="email"
+                borderColor={theme.palette.secondary.main}
+              />
+            </Grid>
+            <Grid item xs={'auto'}>
+              <CustomButton
+                sx={{
+                  height: '100%',
+                  borderRadius: '8px',
+                  py: '12px',
+                  px: 3,
+                }}
+                children={() => (
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    Đăng ký
+                  </Typography>
+                )}
+              />
             </Grid>
           </Grid>
         </Grid>
-      </Box>
+      </Grid>
     </Box>
   );
 });
@@ -353,37 +367,102 @@ const Home = ({
           typeCake: typeCakeState,
         }}
       >
-        <Box>
-          <CustomCarousel height="400px" duration={500} />
-          <Box sx={{ pt: 8 }}>
-            <CustomCardSlider
-              duration={1000}
-              imageHeight="184px"
-              descriptionHeight="32px"
-              CustomCard={CustomCardWithButton}
-              title={'Best Seller'}
-              productList={bestSellerState}
-              buttonOnclick={() => {}}
-            />
-            {bestSellerState.length <= 0 && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="h2">Không có dữ liệu</Typography>
-              </Box>
-            )}
+        <Box
+          sx={{
+            backgroundImage: `url(${bg2.src})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundAttachment: 'fixed',
+            backgroundPosition: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: alpha(theme.palette.primary.main, 0.85),
+              backdropFilter: 'blur(1px)',
+            }}
+          >
+            <CustomCarousel height="400px" duration={500} />
+            <Box
+              sx={{
+                height: '80px',
+                backgroundImage: `url(${bg3.src})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'cover',
+                zIndex: 1,
+              }}
+            ></Box>
+            <Box
+              sx={{
+                py: 8,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <CustomCardSlider
+                duration={1000}
+                imageHeight="184px"
+                descriptionHeight="32px"
+                CustomCard={CustomCardWithButton}
+                title={'Best Seller'}
+                productList={bestSellerState}
+                buttonOnclick={() => {}}
+              />
+              {bestSellerState.length <= 0 && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography variant="h2">Không có dữ liệu</Typography>
+                </Box>
+              )}
+            </Box>
+            <Box
+              sx={{
+                height: '80px',
+                backgroundImage: `url(${bg8.src})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'cover',
+                zIndex: 1,
+              }}
+            ></Box>
+            <Box
+              sx={{
+                pb: 8,
+                px: { xs: 2, sm: 2, md: 4, lg: 8 },
+                backgroundColor: alpha(theme.palette.common.white, 0.7),
+                backdropFilter: 'blur(2px)',
+              }}
+            >
+              <TypeCake
+                title="Đa dạng loại bánh"
+                imageHeight="184px"
+                descriptionHeight="32px"
+              />
+            </Box>
+            <Box
+              sx={{
+                height: '80px',
+                backgroundImage: `url(${bg11.src})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'cover',
+                zIndex: 1,
+              }}
+            ></Box>
+            <Box
+              sx={{
+                background: `linear-gradient(to bottom,${alpha(
+                  theme.palette.common.white,
+                  0.05,
+                )}, ${alpha(theme.palette.common.white, 1)})`,
+              }}
+            >
+              <DangKyKhuyenMai />
+            </Box>
           </Box>
-          <Box sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
-            <TypeCake
-              title="Đa dạng loại bánh"
-              imageHeight="184px"
-              descriptionHeight="32px"
-            />
-          </Box>
-          <DangKyKhuyenMai />
         </Box>
       </HomeContext.Provider>
     </>
