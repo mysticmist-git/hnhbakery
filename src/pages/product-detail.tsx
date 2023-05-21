@@ -343,9 +343,15 @@ function CheckboxButtonGroup({
 }
 
 function ProductDetailInfo(props: any) {
+  // #region Hooks
+
   const theme = useTheme();
   const { productDetail, form, setForm } =
     useContext<ProductDetailContextType>(ProductDetailContext);
+
+  // #endregion
+
+  // #region useMemos
 
   const sizeOptions = useMemo(() => {
     const sizes = productDetail.batches.map((batch) => batch.size);
@@ -405,6 +411,23 @@ function ProductDetailInfo(props: any) {
     return 'Vui lòng điền các lựa chọn';
   }, [form.material]);
 
+  const priceRange = useMemo(() => {
+    const minPrice = Math.min(
+      ...productDetail.batches.map((batch) => batch.price),
+    );
+    const maxPrice = Math.max(
+      ...productDetail.batches.map((batch) => batch.price),
+    );
+
+    if (minPrice === maxPrice) {
+      return formatPrice(minPrice);
+    } else {
+      return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+    }
+  }, [productDetail]);
+
+  // #endregin
+
   return (
     <Grid
       container
@@ -463,19 +486,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {formatPrice(
-                      Math.min(
-                        ...productDetail.batches.map((batch) => batch.price),
-                      ),
-                    ) +
-                      ' - ' +
-                      formatPrice(
-                        Math.max(
-                          ...productDetail.batches.map((batch) => batch.price),
-                        ),
-                      )}
-                  </Typography>
+                  <Typography variant="body1">{priceRange}</Typography>
                 </Grid>
               </Grid>
             </Grid>
