@@ -23,7 +23,6 @@ const GeneratedBatchTableBody = () => {
       try {
         const docs = await Promise.all(
           state.mainDocs.map(async (document) => {
-            console.log('Document received: ', document);
             const docRef = doc(
               db,
               CollectionName.Products,

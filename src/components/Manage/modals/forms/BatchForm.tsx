@@ -15,6 +15,14 @@ import {
 } from '@/components/Inputs';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
+  //#region Hooks
+
+  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
+  const handleSnackbarAlert = useSnackbarService();
+  const theme = useTheme();
+
+  //#endregion
+
   //#region States
 
   const [products, setProducts] = useState<ProductObject[]>([]);
@@ -35,26 +43,48 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   // #region useMemos
 
   const materials = useMemo(() => {
-    return selectedProduct?.materials ?? [];
+    const productMaterials = selectedProduct?.materials ?? [];
+
+    dispatch({
+      type: ManageActionType.SET_DISPLAYING_DATA,
+      payload: {
+        ...state.displayingData,
+        material: productMaterials[0],
+      },
+    });
+
+    return productMaterials;
   }, [selectedProduct]);
 
   const colors = useMemo(() => {
-    return selectedProduct?.colors ?? [];
+    const productColors = selectedProduct?.colors ?? [];
+
+    dispatch({
+      type: ManageActionType.SET_DISPLAYING_DATA,
+      payload: {
+        ...state.displayingData,
+        color: productColors[0],
+      },
+    });
+
+    return productColors;
   }, [selectedProduct]);
 
   const sizes = useMemo(() => {
-    return selectedProduct?.sizes ?? [];
+    const productSizes = selectedProduct?.sizes ?? [];
+
+    dispatch({
+      type: ManageActionType.SET_DISPLAYING_DATA,
+      payload: {
+        ...state.displayingData,
+        size: productSizes[0],
+      },
+    });
+
+    return productSizes;
   }, [selectedProduct]);
 
   // #endregion
-
-  //#region Hooks
-
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
-  const handleSnackbarAlert = useSnackbarService();
-  const theme = useTheme();
-
-  //#endregion
 
   //#region useEffects
 
@@ -124,8 +154,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#endregion
 
   //#region Console.logs
-
-  console.log(state.displayingData);
 
   //#endregion
 

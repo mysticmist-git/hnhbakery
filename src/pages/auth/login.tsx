@@ -66,8 +66,6 @@ const Login = () => {
   const handleSignIn = async (props: SignInProps) => {
     const result = await signUserInWithEmailAndPassword(props);
 
-    // console.log(result);
-
     if (result.result === 'successful') {
       router.push('/');
       handleSnackbarAlert('success', authMessages.signInSucesful);
@@ -94,8 +92,6 @@ const Login = () => {
     const dataObject = Object.fromEntries(data.entries());
 
     const signInData = SignInPropsFromObject(dataObject);
-
-    console.log(signInData);
 
     if (signInData.email === '' || signInData.password === '') {
       handleSnackbarAlert('error', 'Vui lòng nhập đầy đủ thông tin');

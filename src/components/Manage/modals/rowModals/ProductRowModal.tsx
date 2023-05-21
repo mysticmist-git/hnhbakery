@@ -91,8 +91,6 @@ const ProductRowModal = () => {
       );
 
     async function GetDownloadURLs() {
-      console.log(_firebaseStorageImages);
-
       _firebaseStorageImages = await Promise.all(
         _firebaseStorageImages.map(async (image) => {
           return {
@@ -101,8 +99,6 @@ const ProductRowModal = () => {
           };
         }),
       );
-
-      console.log(_firebaseStorageImages);
 
       setFirebaseStorageImages(() => _firebaseStorageImages);
       setOriginalFirebaseStorageImages(() => _firebaseStorageImages);
@@ -117,8 +113,6 @@ const ProductRowModal = () => {
 
   const handleUploadGalleryToBrowser = (event: any) => {
     const file = event.target.files[0];
-
-    console.log('Running...');
 
     if (!file) return;
 
@@ -193,8 +187,6 @@ const ProductRowModal = () => {
           async (image) => await uploadImageToFirebaseStorage(image.file),
         ),
       );
-
-      console.log(imageURLs);
 
       // Image upload fail
       if (!imageURLs || imageURLs.length === 0) {
@@ -355,8 +347,6 @@ const ProductRowModal = () => {
     const galleryChanged =
       originalFirebaseStorageImages !== firebaseStorageImages || imageUploaded;
 
-    console.log(galleryChanged);
-
     return galleryChanged;
   }
 
@@ -456,8 +446,6 @@ const ProductRowModal = () => {
 
     if (galleryImages)
       urls = [...urls, ...galleryImages.map((image) => image.url)];
-
-    console.log(urls);
 
     return urls;
   }

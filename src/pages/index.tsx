@@ -359,9 +359,6 @@ const Home = ({
 
   //#region Logs
 
-  console.log(typeCakeState);
-  console.log(bestSellerState);
-
   //#endregion
 
   return (
@@ -490,7 +487,7 @@ async function fetchBestSellerProductsAndTheirImagesToo(
         image: product.url,
         name: product.name,
         description: product.description,
-        href: product.id,
+        href: `/product-detail?id=${product.id}`,
       } as BestSellerItem),
   );
 }

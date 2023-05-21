@@ -17,7 +17,6 @@ class ReferencesService implements ReferenceServiceInterface {
     try {
       const colorsSnapshot = await getDocs(referencesQuery);
       const colors: string[] = colorsSnapshot.docs[0].data().values ?? [];
-      console.log(colors);
 
       return colors;
     } catch (error) {
@@ -32,7 +31,6 @@ class ReferencesService implements ReferenceServiceInterface {
     try {
       const colorsSnapshot = await getDocs(referencesQuery);
       const sizes: string[] = colorsSnapshot.docs[0].data().values ?? [];
-      console.log(sizes);
 
       return sizes;
     } catch (error) {

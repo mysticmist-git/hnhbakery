@@ -34,8 +34,6 @@ const MyGallery = ({
 
   //#endregion
 
-  console.log(srcs);
-
   return (
     <Stack spacing={1}>
       {title && (

@@ -6,7 +6,7 @@ import {
   TextField,
   InputAdornment,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CustomButton } from '@/components/Inputs/Buttons';
 
 export function NumberInputWithButtons({
@@ -15,6 +15,7 @@ export function NumberInputWithButtons({
   value = 0,
   size = 'large',
   justifyContent = 'flex-start',
+  onChange,
 }: any) {
   const style = {
     spacing: size === 'small' ? 0.5 : 1,
@@ -44,6 +45,18 @@ export function NumberInputWithButtons({
       setInputValue(max);
     }
   };
+
+  useEffect(() => {
+    if (onChange) onChange(inputValue);
+  }, [inputValue]);
+
+  useEffect(() => {
+    setInputValue((prev: number) => value);
+  }, [value]);
+
+  useEffect(() => {
+    setInputValue((prev: number) => min);
+  }, [min, max]);
 
   return (
     <Grid

@@ -54,8 +54,6 @@ const Profile = () => {
 
   // #endregion
 
-  console.log(userData);
-
   return (
     <Container
       sx={{

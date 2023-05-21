@@ -82,8 +82,6 @@ export const MainListItems = memo(() => {
 
   //#region Console.Logs
 
-  console.log(router.pathname);
-
   //#endregion
 
   return (

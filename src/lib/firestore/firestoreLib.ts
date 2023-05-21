@@ -35,7 +35,6 @@ export const addDocumentToFirestore = async (
     delete data.id;
 
     const docRef = await addDoc(collection(db, collectionName), data);
-    console.log('Document written with ID: ', docRef.id);
     return docRef.id;
   } catch (e) {
     console.log('Error adding new document to firestore: ', e);
@@ -49,8 +48,6 @@ export async function updateDocumentToFirestore(
 ): Promise<boolean> {
   // Null check
   if (!displayingData) return false;
-
-  console.log(displayingData);
 
   const id = displayingData.id;
 
@@ -105,8 +102,6 @@ export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
   async (paths: string[]) => {
-    console.log(paths);
-
     if (!paths) {
       return null;
     }
@@ -127,8 +122,6 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
 );
 export const getDownloadUrlFromFirebaseStorage = memoize(
   async (path: string) => {
-    console.log(path);
-
     if (!path) {
       return null;
     }
@@ -207,7 +200,7 @@ export function getDocsFromQuerySnapshot(
         data[key] = data[key].toDate();
       }
     });
-    return { id: doc.id, ...data };
+    return { ...data, id: doc.id };
   });
 }
 
@@ -231,8 +224,6 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
 
   const productIds = querySnapshot.docs.map((doc) => doc.data().product_id);
 
-  console.log(productIds);
-
   // Check if there are any products
   if (productIds.length === 0) return [];
 
@@ -246,8 +237,6 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
     (doc) => ({ id: doc.id, ...doc.data() } as ProductObject),
   );
   // Do something with the productTypes
-
-  console.log(products);
 
   return products ?? [];
 }

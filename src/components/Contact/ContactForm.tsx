@@ -52,7 +52,6 @@ const ContactForm = () => {
   // #region Handlers
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    console.log('Running...');
     e.preventDefault();
 
     const isValid = validateForm();

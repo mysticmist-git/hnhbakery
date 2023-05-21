@@ -57,6 +57,8 @@ import ProductsContext, {
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
 
+const DETAIL_PATH = '/product-detail';
+
 const dateComparer = (a: Date, b: Date) => {
   if (a.valueOf() > b.valueOf()) {
     return -1;
@@ -696,15 +698,7 @@ const ProductList = memo((props: any) => {
   //#region Functions
 
   function sortProductList(productList: ProductItem[]): ProductItem[] {
-    console.log('sorting...');
-
     const choosenSort: string = context.SortList.value;
-
-    console.log(choosenSort);
-
-    console.log(productList);
-
-    console.log(productList.map((item) => item.MFG.valueOf()));
 
     switch (choosenSort) {
       // Mặc định
@@ -752,8 +746,6 @@ const ProductList = memo((props: any) => {
   }
 
   function filterProductList(productList: ProductItem[]): ProductItem[] {
-    console.log(context.GroupBoLoc);
-
     //#region Local Functions
 
     function filterColor(productList: ProductItem[]): ProductItem[] {
@@ -761,15 +753,11 @@ const ProductList = memo((props: any) => {
         (item) => item.heading_value === 'color',
       );
 
-      console.log(colorFilter);
-
       if (!colorFilter) return [...productList];
 
       const colorChecks = colorFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.realValue);
-
-      console.log(colorChecks);
 
       if (colorChecks.length === 0) return [...productList];
 
@@ -793,13 +781,9 @@ const ProductList = memo((props: any) => {
 
       if (!sizeFilter) return [...productList];
 
-      console.log(sizeFilter);
-
       const sizeChecks = sizeFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.value);
-
-      console.log(sizeChecks);
 
       if (sizeChecks.length === 0) return [...productList];
 
@@ -840,10 +824,7 @@ const ProductList = memo((props: any) => {
         const priceRanges: PriceRange[] = [];
 
         for (const filter of priceFilter.children) {
-          console.log(filter);
-
           if (filter.isChecked) {
-            console.log('Find price checked, adding it');
             priceRanges.push(processPriceRange(filter.value));
           }
         }
@@ -1022,8 +1003,6 @@ const Products = ({ products }: { products: string }) => {
   }
 
   //#endregion
-
-  console.log(products);
 
   return (
     <>
@@ -1233,7 +1212,7 @@ async function fetchProductTypesWithLowestPrices(
           price: price,
           MFG: MFG,
           image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
-          href: productData.id,
+          href: `${DETAIL_PATH}?id=${productData.id}`,
           totalSoldQuantity: await getTotalSoldQuantity(productData.id),
         } as ProductItem;
       }),
@@ -1250,8 +1229,6 @@ async function fetchProductTypesWithLowestPrices(
 
 export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
-
-  console.log(batches);
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(
     batches,

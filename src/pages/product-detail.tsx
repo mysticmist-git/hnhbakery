@@ -15,9 +15,11 @@ import {
 } from '@mui/material';
 import React, {
   createContext,
+  memo,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import formatPrice from '@/utilities/formatCurrency';
@@ -29,13 +31,100 @@ import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import {
+  ProductDetail,
+  ProductDetailContext,
+  ProductDetailContextType,
+} from '@/lib/contexts/productDetail';
+import { ProductObject, ProductType } from '@/lib/models';
+import Batch, { BatchObject } from '@/lib/models/Batch';
+import { db } from '@/firebase/config';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import {
+  getDocsFromQuerySnapshot,
+  getDownloadUrlsFromFirebaseStorage,
+} from '@/lib/firestore';
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
+
+// Mock Data
+
+const comments = {
+  ratingAverage: 4.5,
+  numReviews: 123,
+  items: [
+    {
+      id: 1,
+      rating: 5,
+      comment: 'Ôi là trời',
+      time: '12:00 20/01/2023',
+      user: {
+        id: 1,
+        name: 'Nguyen Van A',
+        image: banh1.src,
+      },
+    },
+    {
+      id: 2,
+      rating: 5,
+      comment: 'Ôi là trời, cứu mẹ',
+      time: '09:00 20/01/2023',
+      user: {
+        id: 1,
+        name: 'Nguyen Van B',
+        image: banh2.src,
+      },
+    },
+  ],
+};
+
+const similiarProducts = [
+  {
+    id: 1,
+    image: banh1.src,
+    href: '#',
+    name: 'Bánh Croissant',
+    description:
+      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+  },
+  {
+    id: 1,
+    image: banh2.src,
+    href: '#',
+    name: '2',
+    description:
+      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+  },
+  {
+    id: 1,
+    image: banh3.src,
+    href: '#',
+    name: '3',
+    description:
+      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+  },
+  {
+    id: 1,
+    image: banh1.src,
+    href: '#',
+    name: '4',
+    description:
+      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+  },
+];
 
 //#region Đọc export default trước rồi hả lên đây!
 function ProductCarousel(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
-  const { productState } = context;
+  const { productDetail } = context;
   const [activeIndex, setActiveIndex] = useState(0);
   function handleChange(index: any) {
     setActiveIndex(index);
@@ -59,7 +148,7 @@ function ProductCarousel(props: any) {
         index={activeIndex}
         onChange={handleChange}
       >
-        {productState.images.map((image: any, i: number) => (
+        {productDetail.images.map((image: any, i: number) => (
           <Box
             key={i}
             sx={{
@@ -113,7 +202,7 @@ function ProductCarousel(props: any) {
             )}, ${alpha(theme.palette.common.white, 0.5)})`,
           }}
         >
-          {productState.images.map((image: any, i: number) => (
+          {productDetail.images.map((image: any, i: number) => (
             <Grid key={i} item>
               <Box
                 sx={{
@@ -182,24 +271,35 @@ function ProductRating({ rating, numReviews, size = 'small' }: any) {
   );
 }
 
-function CheckboxButtonGroup({ object, setObject }: any) {
-  const [buttons, setButtons] = useState(object);
+function CheckboxButtonGroup({
+  options,
+  value: paramValue,
+  onChange,
+}: {
+  options: string[];
+  value?: string;
+  onChange?: (value: string) => void;
+}) {
+  const [value, setValue] = useState<string>(options[0]);
 
-  const handleClick = (choosingKey: string) => {
-    const updatedButtons = { ...buttons };
-    Object.keys(updatedButtons).forEach((key) => {
-      if (key === choosingKey) {
-        updatedButtons[key].checked = !updatedButtons[key].checked;
-      } else {
-        updatedButtons[key].checked = false;
-      }
-    });
-
-    setButtons(updatedButtons);
-    setObject(updatedButtons);
+  const handleClick = (newValue: string) => {
+    if (newValue && newValue !== '') setValue(() => newValue);
   };
 
   const theme = useTheme();
+
+  useEffect(() => {
+    console.log(value);
+
+    if (onChange) onChange(value);
+  }, [value]);
+
+  useEffect(() => {
+    setValue(() => paramValue ?? options[0]);
+  }, [paramValue]);
+
+  console.log(options);
+
   return (
     <Grid
       container
@@ -208,19 +308,19 @@ function CheckboxButtonGroup({ object, setObject }: any) {
       alignItems="center"
       justifyContent="flex-start"
     >
-      {Object.keys(buttons).map((key, i) => (
+      {options.map((key, i) => (
         <Grid key={i} item>
           <Button
             key={i}
             variant="contained"
             onClick={() => handleClick(key)}
             sx={{
-              bgcolor: buttons[key].checked
-                ? theme.palette.secondary.main
-                : 'transparent',
-              color: buttons[key].checked
-                ? theme.palette.common.white
-                : theme.palette.secondary.main,
+              bgcolor:
+                key === value ? theme.palette.secondary.main : 'transparent',
+              color:
+                key === value
+                  ? theme.palette.common.white
+                  : theme.palette.secondary.main,
               transition: 'opacity 0.2s',
               py: { md: 1.5, xs: 0.5 },
               px: { md: 3, xs: 1 },
@@ -233,10 +333,7 @@ function CheckboxButtonGroup({ object, setObject }: any) {
               },
             }}
           >
-            {typeof buttons[key].display === 'number'
-              ? formatPrice(buttons[key].display)
-              : buttons[key].display}
-            {buttons[key].displayMore ? ` (${buttons[key].displayMore})` : ''}
+            {Boolean(parseInt(key)) ? formatPrice(parseInt(key)) : key}
           </Button>
         </Grid>
       ))}
@@ -246,16 +343,61 @@ function CheckboxButtonGroup({ object, setObject }: any) {
 
 function ProductDetailInfo(props: any) {
   const theme = useTheme();
-  const context = useContext(ProductDetailContext);
-  const {
-    productState,
-    sizeState,
-    setSizeState,
-    materialState,
-    setMaterialState,
-    priceState,
-    setPriceState,
-  } = context;
+  const { productDetail, form, setForm } =
+    useContext<ProductDetailContextType>(ProductDetailContext);
+
+  const sizeOptions = useMemo(() => {
+    return productDetail.batches.map((batch) => batch.size);
+  }, [productDetail]);
+
+  const materialOptions = useMemo(() => {
+    console.log(form.size);
+
+    console.log(productDetail.batches);
+
+    const newMaterials = productDetail.batches
+      .filter((batch) => batch.size === form.size)
+      .map((batch) => batch.material);
+
+    console.log(newMaterials);
+
+    setForm((prev: any) => ({ ...prev, material: newMaterials[0] }));
+
+    console.log(form);
+
+    return newMaterials;
+  }, [form.size]);
+
+  const price = useMemo(() => {
+    return productDetail.batches
+      .filter((batch) => batch.size === form.size)
+      .filter((batch) => batch.material === form.material)
+      .map((batch) => batch.price)[0];
+  }, [form.material]);
+
+  const maxQuantity = useMemo(() => {
+    return productDetail.batches
+      .filter((batch) => batch.size === form.size)
+      .filter((batch) => batch.material === form.material)
+      .map((batch) => batch.totalQuantity - batch.soldQuantity)[0];
+  }, [form.material]);
+
+  const expireDate = useMemo(() => {
+    const exps = productDetail.batches
+      .filter((batch) => batch.size === form.size)
+      .filter((batch) => batch.material === form.material)
+      .map((batch) => batch.EXP)[0];
+
+    if (exps) {
+      return new Date(exps).toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+
+    return 'Vui lòng điền các lựa chọn';
+  }, [form.material]);
 
   return (
     <Grid
@@ -288,14 +430,14 @@ function ProductDetailInfo(props: any) {
           >
             <Grid item xs={12}>
               <Typography variant="h2" color={theme.palette.secondary.main}>
-                {productState.name}
+                {productDetail.name}
               </Typography>
             </Grid>
 
             <Grid item xs={12}>
               <ProductRating
-                rating={productState.comments.ratingAverage}
-                numReviews={productState.comments.numReviews}
+                rating={comments.ratingAverage}
+                numReviews={comments.numReviews}
               />
             </Grid>
 
@@ -316,9 +458,17 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {formatPrice(productState.prices.min) +
+                    {formatPrice(
+                      Math.min(
+                        ...productDetail.batches.map((batch) => batch.price),
+                      ),
+                    ) +
                       ' - ' +
-                      formatPrice(productState.prices.max)}
+                      formatPrice(
+                        Math.max(
+                          ...productDetail.batches.map((batch) => batch.price),
+                        ),
+                      )}
                   </Typography>
                 </Grid>
               </Grid>
@@ -340,7 +490,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{productState.type}</Typography>
+                  <Typography variant="body1">{productDetail.type}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -364,12 +514,12 @@ function ProductDetailInfo(props: any) {
                   <Typography
                     variant="body1"
                     color={
-                      productState.state.color === 'success'
+                      productDetail.state === true
                         ? theme.palette.success.main
                         : theme.palette.error.main
                     }
                   >
-                    {productState.state.content}
+                    {productDetail.state ? 'Còn hàng' : 'Không còn hàng'}
                   </Typography>
                 </Grid>
               </Grid>
@@ -392,7 +542,7 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {productState.description}
+                    {productDetail.description}
                   </Typography>
                 </Grid>
               </Grid>
@@ -415,7 +565,7 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {productState.ingredients}
+                    {productDetail.ingredients.join(', ')}
                   </Typography>
                 </Grid>
               </Grid>
@@ -438,7 +588,7 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {productState.howToUse}
+                    {productDetail.howToUse}
                   </Typography>
                 </Grid>
               </Grid>
@@ -461,7 +611,7 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {productState.preservation}
+                    {productDetail.preservation}
                   </Typography>
                 </Grid>
               </Grid>
@@ -509,8 +659,11 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <CheckboxButtonGroup
-                    object={sizeState}
-                    setObject={setSizeState}
+                    options={sizeOptions}
+                    value={form.size}
+                    onChange={(value) =>
+                      setForm((prev: any) => ({ ...prev, size: value }))
+                    }
                   />
                 </Grid>
               </Grid>
@@ -533,8 +686,11 @@ function ProductDetailInfo(props: any) {
                 </Grid>
                 <Grid item xs={9}>
                   <CheckboxButtonGroup
-                    object={materialState}
-                    setObject={setMaterialState}
+                    options={materialOptions}
+                    value={form.material}
+                    onChange={(value) =>
+                      setForm((prev: any) => ({ ...prev, material: value }))
+                    }
                   />
                 </Grid>
               </Grid>
@@ -556,10 +712,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <CheckboxButtonGroup
-                    object={priceState}
-                    setObject={setPriceState}
-                  />
+                  <Typography variant="body1">{formatPrice(price)}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -584,7 +737,7 @@ function ProductDetailInfo(props: any) {
                       variant="button"
                       color={theme.palette.common.white}
                     >
-                      Hạn sử dụng: 07/01/2023
+                      {`Hạn sử dụng: ${expireDate}`}
                     </Typography>
                   </Box>
                 </Grid>
@@ -607,10 +760,16 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <NumberInputWithButtons
-                    min={0}
-                    max={productState.maxQuantity}
-                  />
+                  {maxQuantity && (
+                    <NumberInputWithButtons
+                      min={0}
+                      max={maxQuantity}
+                      value={form.quantity}
+                      onChange={(value: number) => {
+                        setForm((prev: any) => ({ ...prev, quantity: value }));
+                      }}
+                    />
+                  )}
                 </Grid>
               </Grid>
             </Grid>
@@ -650,7 +809,7 @@ function ProductDetailInfo(props: any) {
 function Comments(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
-  const { productState, starState, setStarState } = context;
+  const { productDetail } = context;
   const avatarHeight = '50px';
   return (
     <>
@@ -718,17 +877,14 @@ function Comments(props: any) {
                       trên 5 sao
                     </Typography>
                   </Box>
-                  <ProductRating
-                    rating={productState.comments.ratingAverage}
-                    size="large"
-                  />
+                  <ProductRating rating={comments.ratingAverage} size="large" />
                 </Box>
               </Grid>
               <Grid item xs={8}>
-                <CheckboxButtonGroup
+                {/* <CheckboxButtonGroup
                   object={starState}
                   setObject={setStarState}
-                />
+                /> */}
               </Grid>
             </Grid>
           </Box>
@@ -745,7 +901,7 @@ function Comments(props: any) {
               px: 2,
             }}
           >
-            {productState.comments.items.map((comment: any) => (
+            {comments.items.map((comment: any) => (
               <Grid item xs={12}>
                 <Grid
                   container
@@ -844,52 +1000,18 @@ function Comments(props: any) {
 
 //#endregion
 
-// #region Context
-export interface ProductDetailContextType {
-  productState: any;
-  sizeState: any;
-  setSizeState: any;
-  materialState: any;
-  setMaterialState: any;
-  priceState: any;
-  setPriceState: any;
-  starState: any;
-  setStarState: any;
-}
-
-const initProductDetailContext: ProductDetailContextType = {
-  productState: {},
-  sizeState: {},
-  setSizeState: () => {},
-  materialState: {},
-  setMaterialState: () => {},
-  priceState: {},
-  setPriceState: () => {},
-  starState: {},
-  setStarState: () => {},
-};
-
-export const ProductDetailContext = createContext<ProductDetailContextType>(
-  initProductDetailContext,
-);
-// #endregion
-
 //#region Giả dữ liệu
 const initProduct = {
   id: 1,
   name: 'Bánh Croissant',
   type: 'Bánh mặn',
-  state: {
-    content: 'Còn hàng',
-    color: 'success', // success | error
-  },
+  state: true,
   description:
     'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
 
   ingredients: 'Bột mì, trứng, sữa, đường, muối',
   howToUse: 'Dùng ngay khi mở túi',
   preservation: 'Bảo quản ở nhiệt độ dưới 30 độ C',
-  maxQuantity: 10,
   images: [
     {
       src: banh1.src,
@@ -904,91 +1026,9 @@ const initProduct = {
       alt: '',
     },
   ],
-  comments: {
-    ratingAverage: 4.5,
-    numReviews: 123,
-    items: [
-      {
-        id: 1,
-        rating: 5,
-        comment: 'Ôi là trời',
-        time: '12:00 20/01/2023',
-        user: {
-          id: 1,
-          name: 'Nguyen Van A',
-          image: banh1.src,
-        },
-      },
-      {
-        id: 2,
-        rating: 5,
-        comment: 'Ôi là trời, cứu mẹ',
-        time: '09:00 20/01/2023',
-        user: {
-          id: 1,
-          name: 'Nguyen Van B',
-          image: banh2.src,
-        },
-      },
-    ],
-  },
-  prices: {
-    min: 150000,
-    max: 200000,
-    items: {
-      //Mỗi object ứng với 1 button của phần chọn size
-      price1: { display: 150000, value: 150000, checked: false },
-      price2: { display: 150000, value: 150000, checked: false },
-      price3: { display: 150000, value: 150000, checked: false },
-      price4: { display: 150000, value: 150000, checked: false },
-    },
-  },
-  sizes: {
-    //Mỗi object ứng với 1 button của phần chọn size
-    small: { display: 'Nhỏ', value: 'S', checked: false },
-    medium: { display: 'Vừa', value: 'M', checked: false },
-    large: { display: 'Lớn', value: 'L', checked: false },
-  },
-  materials: {
-    //Mỗi object ứng với 1 button của phần chọn size
-    strawbery: { display: 'Mức dâu', value: 'strawbery', checked: false },
-    coconut: { display: 'Mức dừa', value: 'coconut', checked: false },
-    pineapple: { display: 'Mức thơm', value: 'pineapple', checked: false },
-  },
-  similarProducts: [
-    {
-      id: 1,
-      image: banh1.src,
-      href: '#',
-      name: 'Bánh Croissant',
-      description:
-        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-    },
-    {
-      id: 1,
-      image: banh2.src,
-      href: '#',
-      name: '2',
-      description:
-        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-    },
-    {
-      id: 1,
-      image: banh3.src,
-      href: '#',
-      name: '3',
-      description:
-        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-    },
-    {
-      id: 1,
-      image: banh1.src,
-      href: '#',
-      name: '4',
-      description:
-        'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-    },
-  ],
+  prices: [25000, 35000, 100000],
+  sizes: ['nhỏ', 'vừa', 'lớn'],
+  materials: ['Mức dâu', 'Mức dừa', 'Mức thơm'],
 };
 
 const initStars = {
@@ -1003,28 +1043,39 @@ const initStars = {
 
 //#endregion
 
-export default function productDetail() {
+const ProductDetail = ({ productDetail }: { productDetail: string }) => {
   const theme = useTheme();
 
-  const [productState, setProductState] = useState(initProduct);
-  const [sizeState, setSizeState] = useState(productState.sizes);
-  const [materialState, setMaterialState] = useState(productState.materials);
-  const [priceState, setPriceState] = useState(productState.prices.items);
+  const convertedProductDetail: ProductDetail = useMemo(
+    () => JSON.parse(productDetail),
+    [ProductDetail],
+  );
 
   const [starState, setStarState] = useState(initStars);
+
+  const defaultBatch = useMemo(
+    () => convertedProductDetail.batches[0],
+    [convertedProductDetail],
+  );
+
+  const [form, setForm] = useState({
+    size: defaultBatch.size,
+    material: defaultBatch.material,
+    quantity: 0,
+  });
+
+  console.log(JSON.parse(productDetail));
+  console.log(form);
+
   return (
     <>
       <ProductDetailContext.Provider
         value={{
-          productState,
-          sizeState,
-          setSizeState,
-          materialState,
-          setMaterialState,
-          priceState,
-          setPriceState,
+          productDetail: convertedProductDetail,
           starState,
           setStarState,
+          form: form,
+          setForm: setForm,
         }}
       >
         <Box>
@@ -1103,11 +1154,76 @@ export default function productDetail() {
               descriptionHeight="32px"
               CustomCard={CustomCard}
               title={'Sản phẩm tương tự'}
-              productList={productState.similarProducts}
+              productList={similiarProducts}
             />
           </Box>
         </Box>
       </ProductDetailContext.Provider>
     </>
   );
-}
+};
+
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  if (!context.query.id)
+    return {
+      props: {
+        invalid: true,
+      },
+    };
+
+  // Get product
+  const productId = context.query.id;
+
+  const productRef = await getDoc(doc(db, `products/${productId}`));
+  const product = { id: productRef.id, ...productRef.data() } as ProductObject;
+
+  // Get product type
+  const productTypeRef = await getDoc(
+    doc(db, `productTypes/${product.productType_id}`),
+  );
+
+  const productTypeName = productTypeRef.data()?.name ?? 'Unknown';
+
+  // Get batches
+  const batchesQuery = query(
+    collection(db, 'batches'),
+    where('product_id', '==', productId),
+  );
+  const batchesSnapsshot = await getDocs(batchesQuery);
+  const batches: BatchObject[] = getDocsFromQuerySnapshot(
+    batchesSnapsshot,
+  ) as BatchObject[];
+
+  // Filter out batches that out of stock
+  const filteredBatches = batches.filter(
+    (batch) => batch.soldQuantity < batch.totalQuantity,
+  );
+
+  const stockAvailable = filteredBatches.length > 0;
+
+  // Get product images
+  const images = await getDownloadUrlsFromFirebaseStorage(product.images);
+
+  const productDetail: ProductDetail = {
+    id: product.id,
+    name: product.name,
+    type: productTypeName,
+    state: stockAvailable,
+    description: product.description,
+    ingredients: product.ingredients,
+    howToUse: product.howToUse,
+    preservation: product.preservation,
+    images: images.map((image: string) => ({ src: image, alt: product.name })),
+    batches: filteredBatches,
+  };
+
+  return {
+    props: {
+      productDetail: JSON.stringify(productDetail),
+    },
+  };
+};
+
+export default memo(ProductDetail);
