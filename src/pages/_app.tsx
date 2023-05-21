@@ -77,7 +77,6 @@ const MyApp = (props: AppProps) => {
           <CurrentLayout>
             <Component {...pageProps} />
           </CurrentLayout>
-          )
           <Snackbar
             open={snackbarOpen}
             autoHideDuration={6000}

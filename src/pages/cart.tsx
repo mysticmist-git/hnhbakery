@@ -566,7 +566,7 @@ const initproductBill = [
 //#endregion
 
 // #region Context
-export interface CartContextType {
+interface CartContextType {
   productBill: any;
 }
 
@@ -686,6 +686,9 @@ const Cart = () => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <CustomButton
+                      onClick={() => {
+                        router.push('/payment');
+                      }}
                       sx={{
                         py: 1.5,
                         width: '100%',

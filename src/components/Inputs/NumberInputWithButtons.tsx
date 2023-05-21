@@ -123,7 +123,7 @@ export function NumberInputWithButtons({
                   maxHeight: 'none',
                   height: 'auto',
                   alignSelf: 'stretch',
-                  pr: 1,
+                  pr: 2,
                 }}
               >
                 <Typography

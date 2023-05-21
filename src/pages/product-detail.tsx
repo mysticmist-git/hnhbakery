@@ -729,7 +729,29 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{formatPrice(price)}</Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'start',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 'normal',
+
+                        textDecoration: 'line-through',
+                        opacity: 0.5,
+                      }}
+                    >
+                      {formatPrice(price)}
+                    </Typography>
+                    <Typography variant="body1" sx={{}}>
+                      {formatPrice(price)}
+                    </Typography>
+                  </Box>
                 </Grid>
               </Grid>
             </Grid>
