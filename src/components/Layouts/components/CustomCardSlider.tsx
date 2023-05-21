@@ -68,61 +68,78 @@ export default function CustomCardSlider(props: any) {
 
   return (
     <>
-      <Typography
-        variant="h2"
-        color={theme.palette.secondary.main}
-        align={'center'}
+      <Grid
+        container
+        direction={'row'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        spacing={1}
+        width={'100%'}
+        height={'auto'}
       >
-        {title}
-      </Typography>
-      <Box>
-        <Carousel
-          animation="slide"
-          cycleNavigation={false}
-          autoPlay={false}
-          duration={duration}
-          sx={{ pt: 4 }}
-        >
-          {itemsDisplay.map((listColumn, i) => (
-            <Grid
-              container
-              key={i}
-              direction={'row'}
-              justifyContent={'center'}
-              spacing={2}
-              px={{ xs: 2, sm: 2, md: 4, lg: 8 }}
+        <Grid item xs={12}>
+          <Box>
+            <Typography
+              variant="h2"
+              color={theme.palette.secondary.main}
+              align={'center'}
             >
-              {listColumn.map((_item: any, i: React.Key | null | undefined) =>
-                Object.keys(_item).length > 0 ? (
-                  <Grid key={i} item xs={12 / listColumn.length}>
-                    <Grid
-                      container
-                      justifyContent={'center'}
-                      alignItems={'center'}
-                      width={'100%'}
-                    >
-                      <CustomCard
-                        imageHeight={imageHeight}
-                        imageWidth={imageWidth}
-                        descriptionHeight={descriptionHeight}
-                        cardInfo={{
-                          image: _item.image,
-                          name: _item.name,
-                          description: _item.description,
-                          href: _item.href,
-                        }}
-                        buttonOnclick={buttonOnclick}
-                      />
-                    </Grid>
-                  </Grid>
-                ) : (
-                  <Grid key={i} item xs={12 / listColumn.length}></Grid>
-                ),
-              )}
-            </Grid>
-          ))}
-        </Carousel>
-      </Box>
+              {title}
+            </Typography>
+          </Box>
+        </Grid>
+        <Grid item xs={12}>
+          <Box>
+            <Carousel
+              animation="slide"
+              cycleNavigation={false}
+              autoPlay={false}
+              duration={duration}
+              sx={{ pt: 4 }}
+            >
+              {itemsDisplay.map((listColumn, i) => (
+                <Grid
+                  container
+                  key={i}
+                  direction={'row'}
+                  justifyContent={'center'}
+                  spacing={2}
+                  px={{ xs: 2, sm: 2, md: 4, lg: 8 }}
+                >
+                  {listColumn.map(
+                    (_item: any, i: React.Key | null | undefined) =>
+                      Object.keys(_item).length > 0 ? (
+                        <Grid key={i} item xs={12 / listColumn.length}>
+                          <Grid
+                            container
+                            justifyContent={'center'}
+                            alignItems={'center'}
+                            width={'100%'}
+                          >
+                            <CustomCard
+                              imageHeight={imageHeight}
+                              imageWidth={imageWidth}
+                              descriptionHeight={descriptionHeight}
+                              cardInfo={{
+                                image: _item.image,
+                                name: _item.name,
+                                description: _item.description,
+                                href: _item.href,
+                              }}
+                              buttonOnclick={buttonOnclick}
+                            />
+                          </Grid>
+                        </Grid>
+                      ) : (
+                        <Grid key={i} item xs={12 / listColumn.length}></Grid>
+                      ),
+                  )}
+                </Grid>
+              ))}
+            </Carousel>
+          </Box>
+        </Grid>
+      </Grid>
     </>
   );
 }
