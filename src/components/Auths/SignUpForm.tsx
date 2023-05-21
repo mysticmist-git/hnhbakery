@@ -7,7 +7,14 @@ import {
   updateUserLogin,
 } from '@/lib/auth';
 import { Google } from '@mui/icons-material';
-import { Grid, TextField, Button, Link, Divider } from '@mui/material';
+import {
+  Grid,
+  TextField,
+  Button,
+  Link,
+  Divider,
+  Typography,
+} from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { UserCredential } from 'firebase/auth';
@@ -15,7 +22,8 @@ import { memo } from 'react';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
 import { useSnackbarService } from '@/lib/contexts';
-import { CustomTextField } from '../Inputs';
+import { CustomTextField, CustomTextFieldPassWord } from '../Inputs';
+import CustomButton from '../Inputs/Buttons/customButton';
 
 const SignUpForm = ({
   handleSignUp,
@@ -61,9 +69,9 @@ const SignUpForm = ({
         direction="row"
         justifyContent="center"
         alignItems="center"
-        spacing={2}
+        spacing={1}
       >
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12}>
           <CustomTextField
             placeholder="Họ và tên"
             fullWidth
@@ -86,6 +94,17 @@ const SignUpForm = ({
             id="bday"
           />
         </Grid>
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            placeholder="Số điện thoại"
+            fullWidth
+            required
+            type="tel"
+            autoComplete="tel"
+            name="tel"
+            id="tel"
+          />
+        </Grid>
         <Grid item xs={12}>
           <CustomTextField
             placeholder="Email"
@@ -98,7 +117,7 @@ const SignUpForm = ({
           />
         </Grid>
         <Grid item xs={12}>
-          <CustomTextField
+          <CustomTextFieldPassWord
             placeholder="Mật khẩu"
             required
             fullWidth
@@ -108,23 +127,54 @@ const SignUpForm = ({
             id="password"
           />
         </Grid>
+
+        <Grid item xs={12}>
+          <CustomButton
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 3,
+              mb: 2,
+            }}
+            children={() => <Typography variant="button">Đăng ký</Typography>}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography
+              variant="body2"
+              color={theme.palette.common.white}
+              sx={{ mr: 1 }}
+            >
+              Bạn đã có tài khoản?
+            </Typography>
+            <NextLink href="/auth/login" passHref legacyBehavior>
+              <Box
+                component={Link}
+                variant="button"
+                align="center"
+                color={theme.palette.common.white}
+                sx={{
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                Đăng nhập ngay
+              </Box>
+            </NextLink>
+          </Box>
+        </Grid>
       </Grid>
-      <Button
-        type="submit"
-        fullWidth
-        variant="contained"
-        sx={{
-          mt: 3,
-          mb: 2,
-          backgroundColor: 'secondary.main',
-          '&:hover': {
-            backgroundColor: 'secondary.dark',
-          },
-        }}
-      >
-        Đăng ký
-      </Button>
-      <Grid
+
+      {/* <Grid
         item
         xs={12}
         sx={{
@@ -145,20 +195,7 @@ const SignUpForm = ({
         >
           Đăng ký với Google
         </Button>
-      </Grid>
-      <Grid container justifyContent="flex-end">
-        <Grid item>
-          <NextLink href="/auth/login" passHref legacyBehavior>
-            <Link
-              variant="body2"
-              color={theme.palette.common.black}
-              style={{ textDecoration: 'none' }}
-            >
-              Đã có tài khoản? Đăng nhập ngay!
-            </Link>
-          </NextLink>
-        </Grid>
-      </Grid>
+      </Grid> */}
     </Box>
   );
 };

@@ -20,7 +20,16 @@ const CustomTextFieldPassWord = (props: any) => {
         InputProps={{
           disableUnderline: true,
           endAdornment: (
-            <InputAdornment position="end">
+            <InputAdornment
+              position="end"
+              sx={{
+                backgroundColor: theme.palette.common.white,
+                maxHeight: 'none',
+                height: 'auto',
+                alignSelf: 'stretch',
+                pr: 1,
+              }}
+            >
               <IconButton onClick={handleTogglePassword}>
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -40,13 +49,21 @@ const CustomTextFieldPassWord = (props: any) => {
           borderStyle: 'solid',
           overflow: 'hidden',
         }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.boxShadow = `0px 0px 5px 2px ${alpha(
-            theme.palette.secondary.main,
-            0.3,
-          )}`)
-        }
-        onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
+        sx={{
+          ...props.sx,
+          '&:hover': {
+            boxShadow: `0px 0px 5px 2px ${alpha(
+              theme.palette.secondary.main,
+              0.3,
+            )}`,
+          },
+          '& .MuiInputBase-root': {
+            p: 0,
+          },
+          '& .MuiInputAdornment-root': {
+            m: 0,
+          },
+        }}
         inputProps={{
           sx: {
             fontSize: theme.typography.body2.fontSize,

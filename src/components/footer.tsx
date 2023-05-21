@@ -83,7 +83,7 @@ const Footer = () => {
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
             position: 'absolute',
-            top: -80,
+            top: -79,
             left: 0,
             right: 0,
           }}

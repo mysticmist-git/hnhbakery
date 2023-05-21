@@ -168,21 +168,6 @@ function Navbar() {
   // #region useMemos
 
   const { email } = useMemo(() => AuthUser, [AuthUser]);
-  const styles = useMemo(
-    () => ({
-      appBar: {},
-      gridDesktop: { display: { xs: 'none', lg: 'block' } },
-      gridPhone: { display: { xs: 'block', lg: 'none' } },
-      boxLogo: {
-        position: 'absolute',
-        top: 0,
-        left: 44,
-        width: 117,
-        height: 166,
-      },
-    }),
-    [theme],
-  );
 
   // #endregion
 
@@ -258,8 +243,9 @@ function Navbar() {
               right: 0,
               background: `linear-gradient(to bottom, ${alpha(
                 theme.palette.common.black,
-                0.5,
+                0.7,
               )}, ${alpha(theme.palette.common.black, 0)})`,
+              backdropFilter: 'blur(1px)',
               boxShadow: 'none',
             }}
             position="fixed"
@@ -278,6 +264,7 @@ function Navbar() {
               background: alpha(theme.palette.common.white, 0.95),
               borderBottom: 1,
               borderColor: theme.palette.text.secondary,
+              backdropFilter: 'blur(2px)',
               boxShadow: 'none',
             }}
             position="fixed"

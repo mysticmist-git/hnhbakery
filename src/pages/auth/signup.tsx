@@ -18,6 +18,7 @@ import { useSnackbarService } from '@/lib/contexts';
 import { SignUpForm } from '@/components/Auths';
 import { alpha, Grid } from '@mui/material';
 import bg2 from '../../assets/Decorate/bg2.png';
+import banh1 from '../../assets/Carousel/3.jpg';
 
 const SignUp = () => {
   //region Hooks
@@ -113,9 +114,9 @@ const SignUp = () => {
             justifyContent: 'center',
             alignItems: 'center',
             background: `linear-gradient(to bottom, ${alpha(
-              theme.palette.common.black,
-              0.4,
-            )}, ${alpha(theme.palette.primary.main, 0.6)})`,
+              theme.palette.primary.main,
+              0.8,
+            )}, ${alpha(theme.palette.primary.main, 0.8)})`,
             backdropFilter: 'blur(1px)',
           }}
         >
@@ -125,47 +126,63 @@ const SignUp = () => {
             direction={'row'}
             justifyContent={'center'}
           >
-            <Grid item xs={12} sm={9} md={10} lg={9}>
-              <Grid
-                container
-                justifyContent={'center'}
-                alignItems={'center'}
-                direction={'row'}
+            <Grid item xs={12} sm={9} md={6} lg={6}>
+              <Box
                 sx={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundImage: `url(${banh1.src})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   borderRadius: '16px',
                   overflow: 'hidden',
-                  bgcolor: theme.palette.common.white,
                   border: 3,
                   borderColor: theme.palette.secondary.main,
                   boxShadow: 3,
-                  p: 4,
                 }}
               >
-                <Grid item xs={12}>
-                  <Typography
-                    variant="h3"
-                    align="center"
-                    color={theme.palette.secondary.main}
-                  >
-                    Chào mừng đến với
-                  </Typography>
+                <Grid
+                  container
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  direction={'row'}
+                  sx={{
+                    py: 8,
+                    px: 4,
+                    background: alpha(theme.palette.common.black, 0.75),
+                    backdropFilter: 'blur(1px)',
+                  }}
+                >
+                  <Grid item xs={12}>
+                    <Typography
+                      variant="h3"
+                      align="center"
+                      color={theme.palette.common.white}
+                    >
+                      Chào mừng đến với
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography
+                      variant="h2"
+                      align="center"
+                      color={theme.palette.common.white}
+                    >
+                      H&H Barkery
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SignUpForm
+                      handleSignUp={handleSignUp}
+                      validate={validate}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Copyright sx={{ mt: 5 }} />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Typography
-                    variant="h2"
-                    align="center"
-                    color={theme.palette.secondary.main}
-                  >
-                    H&H Barkery
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <SignUpForm handleSignUp={handleSignUp} validate={validate} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Copyright sx={{ mt: 5 }} />
-                </Grid>
-              </Grid>
+              </Box>
             </Grid>
           </Grid>
         </Box>

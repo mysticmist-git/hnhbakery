@@ -22,6 +22,7 @@ const ImageBackground = (props: any) => {
           height: '100%',
           bgcolor: alpha(theme.palette.common.black, 0.6),
           position: 'relative',
+          backdropFilter: 'blur(1px)',
         }}
       >
         <props.children />

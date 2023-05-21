@@ -637,14 +637,13 @@ const Cart = () => {
             )}
           />
 
-          <Box sx={{ px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+          <Box sx={{ pt: 12, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
               justifyContent={'center'}
               alignItems={'start'}
               spacing={4}
-              sx={{ pt: 8 }}
             >
               <Grid item xs={12}>
                 <ProductTable />
