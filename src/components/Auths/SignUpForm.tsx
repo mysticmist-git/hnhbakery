@@ -15,6 +15,7 @@ import { memo } from 'react';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
 import { useSnackbarService } from '@/lib/contexts';
+import { CustomTextField } from '../Inputs';
 
 const SignUpForm = ({
   handleSignUp,
@@ -57,47 +58,56 @@ const SignUpForm = ({
 
   return (
     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-      <Grid container spacing={2}>
+      <Grid
+        container
+        direction="row"
+        justifyContent="center"
+        alignItems="center"
+        spacing={2}
+      >
         <Grid item xs={12} sm={6}>
-          <CustomTextFieldWithLabel
-            autoComplete="given-name"
-            name="firstName"
-            required
+          <CustomTextField
+            placeholder="Họ và tên"
             fullWidth
-            id="firstName"
-            label="Tên"
+            required
+            type="text"
+            autoComplete="name"
+            name="name"
+            id="name"
             autoFocus
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <CustomTextFieldWithLabel
-            required
+          <CustomTextField
+            placeholder="Ngày sinh"
             fullWidth
-            id="lastName"
-            label="Last Name"
-            name="lastName"
-            autoComplete="Họ"
+            required
+            type="date"
+            autoComplete="bday"
+            name="bday"
+            id="bday"
           />
         </Grid>
         <Grid item xs={12}>
-          <CustomTextFieldWithLabel
-            required
+          <CustomTextField
+            placeholder="Email"
             fullWidth
-            id="email"
-            label="Địa chỉ Email"
-            name="email"
+            required
+            type="email"
             autoComplete="email"
+            name="email"
+            id="email"
           />
         </Grid>
         <Grid item xs={12}>
-          <CustomTextFieldWithLabel
+          <CustomTextField
+            placeholder="Mật khẩu"
             required
             fullWidth
-            name="password"
-            label="Mật khẩu"
             type="password"
-            id="password"
             autoComplete="new-password"
+            name="password"
+            id="password"
           />
         </Grid>
       </Grid>
@@ -131,6 +141,7 @@ const SignUpForm = ({
           color="secondary"
           sx={{
             mt: '1rem',
+            display: 'none',
           }}
           onClick={handleLoginWithGoogle}
         >
@@ -140,7 +151,11 @@ const SignUpForm = ({
       <Grid container justifyContent="flex-end">
         <Grid item>
           <NextLink href="/auth/login" passHref legacyBehavior>
-            <Link variant="body2" style={{ textDecoration: 'none' }}>
+            <Link
+              variant="body2"
+              color={theme.palette.common.black}
+              style={{ textDecoration: 'none' }}
+            >
               Đã có tài khoản? Đăng nhập ngay!
             </Link>
           </NextLink>

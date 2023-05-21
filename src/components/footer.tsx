@@ -67,17 +67,27 @@ const Footer = () => {
 
   return (
     <>
-      <Box sx={{ width: '100%', height: 'auto' }}>
-        <Box sx={{ bgcolor: theme.palette.common.white }}>
-          <Box
-            sx={{
-              height: '80px',
-              backgroundImage: `url(${bg9.src})`,
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-            }}
-          ></Box>
-        </Box>
+      <Box
+        sx={{
+          width: '100%',
+          mt: '50px',
+          height: 'auto',
+          position: 'relative',
+          overflow: 'visible',
+        }}
+      >
+        <Box
+          sx={{
+            height: '80px',
+            backgroundImage: `url(${bg9.src})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            position: 'absolute',
+            top: -80,
+            left: 0,
+            right: 0,
+          }}
+        ></Box>
         <Box
           sx={{
             bgcolor: theme.palette.secondary.dark,

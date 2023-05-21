@@ -7,8 +7,6 @@ const CustomTextField = (props: any) => {
     <>
       <TextField
         {...props}
-        placeholder={props.placeholder ? props.placeholder : ''}
-        type={props.type ? props.type : 'text'}
         hiddenLabel
         variant="filled"
         maxRows="1"

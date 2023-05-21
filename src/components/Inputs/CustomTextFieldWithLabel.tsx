@@ -7,9 +7,9 @@ export default function CustomTextFieldWithLabel(props: any) {
     <TextField
       {...props}
       color="secondary"
-      // InputProps={{
-      //   sx: { color: theme.palette.common.black },
-      // }}
+      InputProps={{
+        sx: { color: theme.palette.common.black },
+      }}
       sx={{
         '&:hover .MuiOutlinedInput-notchedOutline': {
           borderColor: theme.palette.secondary.main,

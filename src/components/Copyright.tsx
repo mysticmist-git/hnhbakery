@@ -15,7 +15,7 @@ const Copyright = (props: any) => {
         href="https://mui.com/"
         style={{ textDecoration: 'none' }}
       >
-        Your Website
+        H&H Barkery
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}

@@ -9,10 +9,7 @@ import React, {
 } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg2 from '../assets/Decorate/bg2.png';
-import bg3 from '../assets/Decorate/bg3.png';
-import bg8 from '../assets/Decorate/bg8.png';
 import bg10 from '../assets/Decorate/bg10.png';
-import bg11 from '../assets/Decorate/bg11.png';
 
 import { alpha } from '@mui/system';
 import CustomTextField from '@/components/Inputs/CustomTextField';
@@ -38,6 +35,10 @@ import {
   HomeContextType,
   CarouselImageItem,
 } from '@/lib/contexts/homeContext';
+import SolidDownWhite, {
+  DashDownWhite,
+  DashUpWhite,
+} from '@/components/Decorate/DecorateDivider';
 
 // #region Carousel
 
@@ -245,6 +246,7 @@ const DangKyKhuyenMai = memo((props: any) => {
         justifyContent={'center'}
         alignItems={'center'}
         spacing={2}
+        pb={4}
       >
         <Grid item xs={11}>
           <Typography
@@ -385,16 +387,8 @@ const Home = ({
               backdropFilter: 'blur(1px)',
             }}
           >
-            <CustomCarousel height="400px" duration={500} />
-            <Box
-              sx={{
-                height: '80px',
-                backgroundImage: `url(${bg3.src})`,
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
-                zIndex: 1,
-              }}
-            ></Box>
+            <CustomCarousel height="48vh" duration={500} />
+            <SolidDownWhite />
             <Box
               sx={{
                 py: 8,
@@ -423,15 +417,7 @@ const Home = ({
                 </Box>
               )}
             </Box>
-            <Box
-              sx={{
-                height: '80px',
-                backgroundImage: `url(${bg8.src})`,
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
-                zIndex: 1,
-              }}
-            ></Box>
+            <DashUpWhite />
             <Box
               sx={{
                 pb: 8,
@@ -446,21 +432,13 @@ const Home = ({
                 descriptionHeight="32px"
               />
             </Box>
-            <Box
-              sx={{
-                height: '80px',
-                backgroundImage: `url(${bg11.src})`,
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
-                zIndex: 1,
-              }}
-            ></Box>
+            <DashDownWhite />
             <Box
               sx={{
                 background: `linear-gradient(to bottom,${alpha(
-                  theme.palette.common.white,
+                  theme.palette.primary.main,
                   0.05,
-                )}, ${alpha(theme.palette.common.white, 1)})`,
+                )}, ${alpha(theme.palette.primary.main, 1)})`,
               }}
             >
               <DangKyKhuyenMai />

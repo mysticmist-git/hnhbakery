@@ -16,6 +16,8 @@ import theme from '@/styles/themes/lightTheme';
 import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { SignUpForm } from '@/components/Auths';
+import { alpha, Grid } from '@mui/material';
+import bg2 from '../../assets/Decorate/bg2.png';
 
 const SignUp = () => {
   //region Hooks
@@ -92,30 +94,85 @@ const SignUp = () => {
   //#endregion
 
   return (
-    <Container component="main" maxWidth="xs">
+    <>
       <Box
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          backgroundImage: `url(${bg2.src})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundAttachment: 'fixed',
+          backgroundPosition: 'center',
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography
-          sx={{ color: theme.palette.common.black }}
-          component="h1"
-          variant="h5"
-          textTransform={'uppercase'}
+        <Box
+          sx={{
+            height: 'auto',
+            pt: 8,
+            pb: 16,
+            minHeight: '650px',
+            px: { xs: 3, sm: 3, md: 5, lg: 9 },
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: `linear-gradient(to bottom, ${alpha(
+              theme.palette.common.black,
+              0.4,
+            )}, ${alpha(theme.palette.primary.main, 0.6)})`,
+            backdropFilter: 'blur(1px)',
+          }}
         >
-          Đăng ký
-        </Typography>
-        <SignUpForm handleSignUp={handleSignUp} validate={validate} />
+          <Grid
+            container
+            alignItems={'center'}
+            direction={'row'}
+            justifyContent={'center'}
+          >
+            <Grid item xs={12} sm={9} md={10} lg={9}>
+              <Grid
+                container
+                justifyContent={'center'}
+                alignItems={'center'}
+                direction={'row'}
+                sx={{
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  bgcolor: theme.palette.common.white,
+                  border: 3,
+                  borderColor: theme.palette.secondary.main,
+                  boxShadow: 3,
+                  p: 4,
+                }}
+              >
+                <Grid item xs={12}>
+                  <Typography
+                    variant="h3"
+                    align="center"
+                    color={theme.palette.secondary.main}
+                  >
+                    Chào mừng đến với
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography
+                    variant="h2"
+                    align="center"
+                    color={theme.palette.secondary.main}
+                  >
+                    H&H Barkery
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <SignUpForm handleSignUp={handleSignUp} validate={validate} />
+                </Grid>
+                <Grid item xs={12}>
+                  <Copyright sx={{ mt: 5 }} />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Box>
       </Box>
-      <Copyright sx={{ mt: 5 }} />
-    </Container>
+    </>
   );
 };
 

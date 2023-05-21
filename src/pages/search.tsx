@@ -925,11 +925,22 @@ const Search = () => {
           )}
         />
 
-        <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box
+          sx={{
+            pt: 8,
+            py: 12,
+            px: { xs: 2, sm: 2, md: 4, lg: 8 },
+            overflow: 'visible',
+          }}
+        >
           <Typography
             align="center"
             variant="h1"
             color={theme.palette.secondary.main}
+            overflow={'visible'}
+            sx={{
+              pt: 1.5,
+            }}
           >
             Tìm kiếm và tra cứu
           </Typography>
