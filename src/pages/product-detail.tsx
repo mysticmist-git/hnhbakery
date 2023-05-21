@@ -53,6 +53,7 @@ import {
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore';
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
+import { unique } from 'next/dist/build/utils';
 
 // Mock Data
 
@@ -342,12 +343,21 @@ function CheckboxButtonGroup({
 }
 
 function ProductDetailInfo(props: any) {
+  // #region Hooks
+
   const theme = useTheme();
   const { productDetail, form, setForm } =
     useContext<ProductDetailContextType>(ProductDetailContext);
 
+  // #endregion
+
+  // #region useMemos
+
   const sizeOptions = useMemo(() => {
-    return productDetail.batches.map((batch) => batch.size);
+    const sizes = productDetail.batches.map((batch) => batch.size);
+    const uniqueSizes = sizes.filter((size, i, arr) => arr.indexOf(size) === i);
+
+    return uniqueSizes;
   }, [productDetail]);
 
   const materialOptions = useMemo(() => {
@@ -359,13 +369,15 @@ function ProductDetailInfo(props: any) {
       .filter((batch) => batch.size === form.size)
       .map((batch) => batch.material);
 
-    console.log(newMaterials);
+    const uniqueMaterials = newMaterials.filter(
+      (material, i, arr) => arr.indexOf(material) === i,
+    );
 
-    setForm((prev: any) => ({ ...prev, material: newMaterials[0] }));
+    setForm((prev: any) => ({ ...prev, material: uniqueMaterials[0] }));
 
     console.log(form);
 
-    return newMaterials;
+    return uniqueMaterials;
   }, [form.size]);
 
   const price = useMemo(() => {
@@ -373,7 +385,7 @@ function ProductDetailInfo(props: any) {
       .filter((batch) => batch.size === form.size)
       .filter((batch) => batch.material === form.material)
       .map((batch) => batch.price)[0];
-  }, [form.material]);
+  }, [form.material, form.size]);
 
   const maxQuantity = useMemo(() => {
     return productDetail.batches
@@ -398,6 +410,23 @@ function ProductDetailInfo(props: any) {
 
     return 'Vui lòng điền các lựa chọn';
   }, [form.material]);
+
+  const priceRange = useMemo(() => {
+    const minPrice = Math.min(
+      ...productDetail.batches.map((batch) => batch.price),
+    );
+    const maxPrice = Math.max(
+      ...productDetail.batches.map((batch) => batch.price),
+    );
+
+    if (minPrice === maxPrice) {
+      return formatPrice(minPrice);
+    } else {
+      return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+    }
+  }, [productDetail]);
+
+  // #endregin
 
   return (
     <Grid
@@ -457,19 +486,7 @@ function ProductDetailInfo(props: any) {
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {formatPrice(
-                      Math.min(
-                        ...productDetail.batches.map((batch) => batch.price),
-                      ),
-                    ) +
-                      ' - ' +
-                      formatPrice(
-                        Math.max(
-                          ...productDetail.batches.map((batch) => batch.price),
-                        ),
-                      )}
-                  </Typography>
+                  <Typography variant="body1">{priceRange}</Typography>
                 </Grid>
               </Grid>
             </Grid>
