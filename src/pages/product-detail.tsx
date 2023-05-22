@@ -38,7 +38,7 @@ import {
   ProductDetailContextType,
 } from '@/lib/contexts/productDetail';
 import { ProductObject, ProductType } from '@/lib/models';
-import Batch, { BatchObject } from '@/lib/models/Batch';
+import { BatchObject } from '@/lib/models/Batch';
 import { db } from '@/firebase/config';
 import {
   collection,
