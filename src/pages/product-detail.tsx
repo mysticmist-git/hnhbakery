@@ -22,6 +22,7 @@ import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
 import { GetServerSidePropsContext } from 'next';
 import {
+  CartItem,
   ProductDetail,
   ProductDetailContext,
   ProductDetailContextType,
@@ -44,8 +45,9 @@ import {
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 import { useSnackbarService } from '@/lib/contexts';
 import { useAuthUser, withAuthUser } from 'next-firebase-auth';
-import { replaceInvalidDateByNull } from '@mui/x-date-pickers/internals';
 import { nanoid } from 'nanoid';
+import { useRouter } from 'next/router';
+import { LOCAL_CART_KEY } from '@/lib';
 
 // Mock Data
 
@@ -526,7 +528,11 @@ function Comments(props: any) {
 const SUCCESS_ADD_CART_MSG = 'Sản phẩm đã được thêm vào giỏ hàng.';
 const FAIL_ADD_CART_MSG = 'Thêm sản phẩm vào giỏ hàng thất bại.';
 const INVALID_DATA_MSG = 'Thông tin đặt hàng không hợp lệ';
-const LOCAL_CART_KEY: string = 'LOCAL_CART_KEY';
+
+interface CartItemAddingResult {
+  isSuccess: boolean;
+  msg: string;
+}
 
 const ProductDetailInfo = withAuthUser()((props: any) => {
   // #region Hooks
@@ -535,6 +541,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   const { productDetail, form, setForm } =
     useContext<ProductDetailContextType>(ProductDetailContext);
   const { id: userId } = useAuthUser();
+  const router = useRouter();
 
   const handleSnackbarAlert = useSnackbarService();
 
@@ -651,7 +658,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
     }
 
     // TODO: make this strong type
-    const result: any = await addProductToCart(data);
+    const result: CartItemAddingResult = await addProductToCart(data);
 
     if (result.isSuccess) {
       handleSnackbarAlert('success', result.msg);
@@ -664,25 +671,19 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
 
   // #region Methods
 
-  // TODO: finish this
-  interface cartData {
-    userId: string;
-    batchId: string;
-    quantity: number;
-    price: number;
-  }
-
-  const createDataFromForm = () => {
+  const createDataFromForm = (): CartItem => {
     const batchId = getBatchIdFromForm();
 
     return {
       id: nanoid(),
       userId: userId,
-      batch_id: batchId,
+      batchId: batchId,
+      productId: productDetail.id,
+      href: router.pathname,
       quantity: form.quantity,
       price: price,
       discountPrice: discountPrice,
-    };
+    } as CartItem;
   };
   const getBatchIdFromForm = () => {
     const batchId = productDetail.batches
@@ -693,16 +694,24 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   };
 
   // TODO: make this strong type
-  const validateData = (data: any): boolean => {
-    // console.log(data);
+  const validateData = (data: CartItem): boolean => {
+    if (!data) return false;
 
-    if (!data.batch_id || data.quantity < 0 || data.price < 0) return false;
+    if (
+      !data.batchId ||
+      !data.productId ||
+      data.quantity <= 0 ||
+      data.price < 0
+    )
+      return false;
 
     return true;
   };
 
   // TODO: make this strong type
-  const addProductToCart = async (data: any) => {
+  const addProductToCart = async (
+    data: CartItem,
+  ): Promise<CartItemAddingResult> => {
     const localResult = addProductToLocalCart(data);
 
     if (!localResult.isSuccess) {
@@ -721,7 +730,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
       };
     }
 
-    redirectToSucessPage();
+    redirectToCartPage();
 
     return {
       isSuccess: true,
@@ -730,7 +739,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   };
 
   // TODO: Finish this: addProductToLocalCart
-  const addProductToLocalCart = (data: any) => {
+  const addProductToLocalCart = (data: CartItem) => {
     const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
     try {
       if (!currentLocalCart) {
@@ -755,14 +764,16 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
     }
   };
 
-  const addProductToFirestoreCart = (data: any) => {
+  const addProductToFirestoreCart = (data: CartItem) => {
     return {
       isSuccess: true,
       msg: 'Thêm vào giỏ firestore thành công',
     };
   };
 
-  const redirectToSucessPage = () => {};
+  const redirectToCartPage = () => {
+    router.push('/cart');
+  };
   // #endregion
 
   return (
