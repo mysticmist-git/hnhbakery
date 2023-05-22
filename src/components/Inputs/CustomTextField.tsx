@@ -15,6 +15,7 @@ const CustomTextField = (props: any) => {
         }}
         inputProps={{
           sx: {
+            textAlign: props.textAlign ? props.textAlign : 'left',
             fontSize: theme.typography.body2.fontSize,
             color: theme.palette.common.black,
             fontWeight: theme.typography.body2.fontWeight,
