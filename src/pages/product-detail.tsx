@@ -679,7 +679,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
       userId: userId,
       batchId: batchId,
       productId: productDetail.id,
-      href: router.pathname,
+      href: `/product-detail?id=${productDetail.id}`,
       quantity: form.quantity,
       price: price,
       discountPrice: discountPrice,

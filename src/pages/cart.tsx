@@ -4,6 +4,7 @@ import {
   Grid,
   Link,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -15,7 +16,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { createContext, memo, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { theme } from '../../tailwind.config';
 import Banh1 from '../assets/Carousel/1.jpg';
 import Image from 'next/image';
@@ -31,9 +39,11 @@ import { LOCAL_CART_KEY } from '@/lib';
 import { getDownloadURL } from 'firebase/storage';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { db } from '@/firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
+import { Timestamp, doc, getDoc } from 'firebase/firestore';
 import { BatchObject } from '@/lib/models/Batch';
 import { ProductObject } from '@/lib/models';
+import { dateCalendarClasses } from '@mui/x-date-pickers';
+import { CartContextType } from '@/lib/contexts/cartContext';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -82,7 +92,7 @@ function UI_Price(props: any) {
 
 function UI_Quantity(props: any) {
   const theme = useTheme();
-  const { row, justifyContent = 'flex-start' } = props;
+  const { row, justifyContent = 'flex-start', onChange } = props;
 
   return (
     <>
@@ -92,6 +102,7 @@ function UI_Quantity(props: any) {
         max={row.maxQuantity}
         justifyContent={justifyContent}
         size="small"
+        onChange={onChange}
       />
     </>
   );
@@ -99,15 +110,42 @@ function UI_Quantity(props: any) {
 
 function UI_TotalPrice(props: any) {
   const theme = useTheme();
-  const { row } = props;
+  const { row }: { row: DisplayCartItem } = props;
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
+
+  const totalPrice = useMemo(() => {
+    return row.quantity * row.price;
+  }, [row.quantity, row.price]);
+
+  const totalDiscountPrice = useMemo(() => {
+    if (row.discountPrice && row.discountPrice > 0) {
+      return row.quantity * row.discountPrice;
+    }
+
+    return -1;
+  }, [row.quantity, row.discountPrice]);
 
   return (
     <>
       {isMd ? (
-        <Typography variant="button" color={theme.palette.common.black}>
-          {formatPrice(row.totalPrice)}
-        </Typography>
+        <Stack>
+          <Typography
+            variant="button"
+            color={theme.palette.common.black}
+            sx={{
+              fontWeight: totalDiscountPrice >= 0 ? 'normal' : 'bold',
+              textDecoration: totalDiscountPrice >= 0 ? 'line-through' : 'none',
+              opacity: totalDiscountPrice >= 0 ? 0.5 : 1,
+            }}
+          >
+            {formatPrice(totalPrice)}
+          </Typography>
+          {totalDiscountPrice > 0 && (
+            <Typography variant="button" color={theme.palette.common.black}>
+              {`${formatPrice(totalDiscountPrice)} (-${row.discountPercent}%)`}
+            </Typography>
+          )}
+        </Stack>
       ) : (
         <></>
       )}
@@ -149,10 +187,11 @@ function UI_Delete(props: any) {
   );
 }
 
-function ProductTable(props: any) {
+function ProductTable({ setProductBill }: any) {
   const theme = useTheme();
-  const context = useContext(CartContext);
+  const { productBill } = useContext<CartContextType>(CartContext);
   const imageHeight = '20vh';
+
   return (
     <>
       <TableContainer
@@ -192,7 +231,7 @@ function ProductTable(props: any) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {context.productBill.map((row: any) => (
+            {productBill.map((row: any) => (
               <TableRow
                 key={row.id}
                 sx={{
@@ -250,7 +289,23 @@ function ProductTable(props: any) {
                   <UI_Price row={row} />
                 </TableCell>
                 <TableCell align="center">
-                  <UI_Quantity row={row} justifyContent={'center'} />
+                  <UI_Quantity
+                    row={row}
+                    justifyContent={'center'}
+                    onChange={(quantity: number) => {
+                      console.log(quantity);
+
+                      if (setProductBill && quantity) {
+                        const indexOfUpdatedRow = productBill.indexOf(row);
+                        console.log(indexOfUpdatedRow);
+                        const updatedProductBill = [...productBill];
+                        updatedProductBill[indexOfUpdatedRow].quantity =
+                          quantity;
+
+                        setProductBill(() => updatedProductBill);
+                      }
+                    }}
+                  />
                 </TableCell>
                 <TableCell align="center">
                   <UI_TotalPrice row={row} />
@@ -276,7 +331,7 @@ function ProductTable(props: any) {
           },
         }}
       >
-        {context.productBill.map((row: any) => (
+        {productBill.map((row: any) => (
           <Grid item xs={12}>
             <Box
               sx={{
@@ -362,11 +417,16 @@ function ProductTable(props: any) {
 
 function TongTienHoaDon(props: any) {
   const theme = useTheme();
-  const context = useContext(CartContext);
-  let totalPriceBill: number = 0;
-  context.productBill.forEach((row: any) => {
-    totalPriceBill += row.totalPrice;
-  });
+  const context = useContext<CartContextType>(CartContext);
+
+  const totalPriceBill: number = useMemo(() => {
+    return context.productBill.reduce((acc, row) => {
+      if (row.discountPrice && row.discountPrice > 0)
+        return acc + row.quantity * row.discountPrice;
+      else return acc + row.quantity * row.price;
+    }, 0);
+  }, [context.productBill]);
+
   return (
     <Box
       sx={{
@@ -509,6 +569,7 @@ function createDataRow({
   quantity,
   maxQuantity,
   price,
+  discountPercent,
 }: DisplayCartItem) {
   return {
     id,
@@ -520,7 +581,7 @@ function createDataRow({
     price,
     quantity,
     maxQuantity,
-    totalPrice: quantity * price,
+    discountPercent,
   };
 }
 const headingTable = [
@@ -564,6 +625,7 @@ const initproductBill = [
     quantity: 5,
     maxQuantity: 10,
     price: 100000,
+    discountPercent: 20,
   }),
   createDataRow({
     id: '4',
@@ -665,7 +727,15 @@ const Cart = () => {
         const batch: BatchObject = {
           ...batchData.data(),
           id: batchData.id,
+          MFG: (batchData.data()?.MFG as Timestamp).toDate(),
+          EXP: (batchData.data()?.EXP as Timestamp).toDate(),
+          discountDate: (batchData.data()?.discountDate as Timestamp).toDate(),
         } as BatchObject;
+
+        const discountPrice =
+          new Date(batch.discountDate).getTime() < new Date().getTime()
+            ? batch.price - (batch.price * batch.discountPercent) / 100
+            : -1;
 
         const displayCartItem: DisplayCartItem = {
           id: item.id,
@@ -677,6 +747,8 @@ const Cart = () => {
           quantity: item.quantity,
           maxQuantity: batch.totalQuantity - batch.soldQuantity,
           price: batch.price,
+          discountPercent: batch.discountPercent,
+          discountPrice: discountPrice,
         };
 
         return displayCartItem;
@@ -687,12 +759,12 @@ const Cart = () => {
   };
 
   const displayCartItemsToView = (cartItems: DisplayCartItem[]) => {
-    console.log(cartItems);
-
     setProductBill(() => cartItems);
   };
 
   // #endregion
+
+  console.log();
 
   return (
     <>
@@ -760,7 +832,7 @@ const Cart = () => {
               spacing={4}
             >
               <Grid item xs={12}>
-                <ProductTable />
+                <ProductTable setProductBill={setProductBill} />
               </Grid>
 
               <Grid item xs={12} md={6}>

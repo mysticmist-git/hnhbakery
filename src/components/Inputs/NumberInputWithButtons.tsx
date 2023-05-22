@@ -12,18 +12,26 @@ import { CustomButton } from '@/components/Inputs/Buttons';
 export function NumberInputWithButtons({
   min,
   max,
-  value = 0,
+  value,
   size = 'large',
   justifyContent = 'flex-start',
   onChange,
-}: any) {
+}: {
+  min: number;
+  max: number;
+  value?: number;
+  size?: 'small' | 'large';
+  justifyContent?: 'flex-start' | 'center' | 'flex-end';
+  onChange?: (value: number) => void;
+}) {
   const style = {
     spacing: size === 'small' ? 0.5 : 1,
     button_py: size === 'small' ? 0.5 : 1.5,
     button_px: size === 'small' ? 0 : 3,
     input_p: size === 'small' ? 0.5 : 1.5,
   };
-  const [inputValue, setInputValue] = useState(value);
+
+  const [inputValue, setInputValue] = useState(value ?? min);
   const theme = useTheme();
 
   const handleAddClick = () => {
@@ -40,9 +48,9 @@ export function NumberInputWithButtons({
 
   const handleOnBlur = () => {
     if (inputValue < min) {
-      setInputValue(min);
+      setInputValue(() => min);
     } else if (inputValue > max) {
-      setInputValue(max);
+      setInputValue(() => max);
     }
   };
 
@@ -51,11 +59,9 @@ export function NumberInputWithButtons({
   }, [inputValue]);
 
   useEffect(() => {
-    setInputValue((prev: number) => value);
-  }, [value]);
-
-  useEffect(() => {
-    setInputValue((prev: number) => min);
+    if (!value && value! > max) {
+      setInputValue((prev: number) => min);
+    }
   }, [min, max]);
 
   return (

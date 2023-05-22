@@ -2,7 +2,7 @@ import { createContext } from 'react';
 
 // #region Context
 export interface CartContextType {
-  productBill: any;
+  productBill: DisplayCartItem[];
 }
 
 const initCartContext: CartContextType = {
@@ -22,6 +22,8 @@ export interface DisplayCartItem {
   quantity: number;
   maxQuantity: number;
   price: number;
+  discountPercent?: number;
+  discountPrice?: number;
 }
 
 // 1,
