@@ -15,7 +15,7 @@ const CustomTab = (props: any) => {
     <Tabs
       orientation={props.orientation ? props.orientation : 'horizontal'}
       textColor="primary"
-      indicatorColor="primary"
+      indicatorColor={props.down ? 'secondary' : 'primary'}
       value={context.tabs.value}
       onChange={(e: React.SyntheticEvent, newValue: number) =>
         context.handleSetTabState(newValue)

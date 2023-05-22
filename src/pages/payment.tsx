@@ -10,6 +10,7 @@ import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
+import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
 
 // #region Context
 interface PaymentContextType {
@@ -162,8 +163,6 @@ const MocGioGiaoHang = [
   },
 ];
 
-//#endregion
-
 const Payment = () => {
   const theme = useTheme();
 
@@ -209,6 +208,14 @@ const Payment = () => {
 
   //#endregion
 
+  const [open, setOpen] = useState(false);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
     <>
       <PaymentContext.Provider value={initPaymentContext}>
@@ -301,7 +308,7 @@ const Payment = () => {
               </Grid>
 
               <Grid item xs={'auto'}>
-                <CustomButton>
+                <CustomButton onClick={handleClickOpen}>
                   <Typography
                     variant="button"
                     color={theme.palette.common.white}
@@ -312,6 +319,7 @@ const Payment = () => {
               </Grid>
             </Grid>
           </Box>
+          <DialogHinhThucThanhToan open={open} handleClose={handleClose} />
         </Box>
       </PaymentContext.Provider>
     </>

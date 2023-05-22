@@ -1011,7 +1011,6 @@ const Products = ({ products }: { products: string }) => {
   //#endregion
 
   // #region scroll
-  const inputRef: RefObject<HTMLInputElement> = useRef(null);
 
   const handleClick = () => {
     const top: number = 280;
@@ -1104,7 +1103,6 @@ const Products = ({ products }: { products: string }) => {
                         maxRows="1"
                         onChange={handleChangeSearch}
                         onClick={handleClick}
-                        inputRef={inputRef}
                         InputProps={{
                           disableUnderline: true,
                           style: {
