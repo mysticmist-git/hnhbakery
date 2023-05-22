@@ -121,7 +121,8 @@ const similiarProducts = [
   },
 ];
 
-//#region Đọc export default trước rồi hả lên đây!
+// #region Đọc export default trước rồi hả lên đây!
+
 function ProductCarousel(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
@@ -281,7 +282,7 @@ function CheckboxButtonGroup({
   value?: string;
   onChange?: (value: string) => void;
 }) {
-  const [value, setValue] = useState<string>(options[0]);
+  const [value, setValue] = useState<string>(paramValue ?? options[0]);
 
   const handleClick = (newValue: string) => {
     if (newValue && newValue !== '') setValue(() => newValue);
@@ -294,10 +295,6 @@ function CheckboxButtonGroup({
 
     if (onChange) onChange(value);
   }, [value]);
-
-  useEffect(() => {
-    setValue(() => paramValue ?? options[0]);
-  }, [paramValue]);
 
   console.log(options);
 
@@ -380,11 +377,30 @@ function ProductDetailInfo(props: any) {
     return uniqueMaterials;
   }, [form.size]);
 
-  const price = useMemo(() => {
-    return productDetail.batches
+  const { price, discountPrice } = useMemo(() => {
+    const selectedBatch = productDetail.batches
       .filter((batch) => batch.size === form.size)
-      .filter((batch) => batch.material === form.material)
-      .map((batch) => batch.price)[0];
+      .filter((batch) => batch.material === form.material);
+
+    const price = selectedBatch.map((batch) => batch.price)[0];
+
+    const _discountInfo = selectedBatch
+      .map((batch) => ({
+        discountDate: batch.discountDate,
+        percent: batch.discountPercent,
+      }))
+      .filter(
+        (batch) =>
+          new Date(batch.discountDate).getTime() < new Date().getTime(),
+      )[0];
+
+    return {
+      price: price,
+      discountPrice: _discountInfo?.percent
+        ? parseFloat(price.toString()) -
+          (parseFloat(price.toString()) * _discountInfo.percent) / 100
+        : -1,
+    };
   }, [form.material, form.size]);
 
   const maxQuantity = useMemo(() => {
@@ -426,7 +442,7 @@ function ProductDetailInfo(props: any) {
     }
   }, [productDetail]);
 
-  // #endregin
+  // #endregion
 
   return (
     <Grid
@@ -740,17 +756,19 @@ function ProductDetailInfo(props: any) {
                     <Typography
                       variant="body1"
                       sx={{
-                        fontWeight: 'normal',
-
-                        textDecoration: 'line-through',
-                        opacity: 0.5,
+                        fontWeight: discountPrice >= 0 ? 'normal' : 'bold',
+                        textDecoration:
+                          discountPrice >= 0 ? 'line-through' : 'none',
+                        opacity: discountPrice >= 0 ? 0.5 : 1,
                       }}
                     >
                       {formatPrice(price)}
                     </Typography>
-                    <Typography variant="body1" sx={{}}>
-                      {formatPrice(price)}
-                    </Typography>
+                    {discountPrice >= 0 && (
+                      <Typography variant="body1" sx={{}}>
+                        {formatPrice(discountPrice)}
+                      </Typography>
+                    )}
                   </Box>
                 </Grid>
               </Grid>
@@ -1037,7 +1055,7 @@ function Comments(props: any) {
   );
 }
 
-//#endregion
+// #endregion
 
 //#region Giả dữ liệu
 const initProduct = {

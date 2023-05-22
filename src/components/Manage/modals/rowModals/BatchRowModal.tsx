@@ -295,6 +295,7 @@ const BatchRowModal = () => {
         ...displayingData,
         MFG: Timestamp.fromDate(new Date(displayingData.MFG)),
         EXP: Timestamp.fromDate(new Date(displayingData.EXP)),
+        discountDate: Timestamp.fromDate(new Date(displayingData.discountDate)),
       };
 
       console.log(dataForFirestoreAdding);

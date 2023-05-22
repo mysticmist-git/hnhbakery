@@ -436,6 +436,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
           <Stack direction="row" justifyContent={'space-between'} spacing={2}>
             <DateTimePicker
               label="Thời gian bắt đầu"
+              readOnly={readOnly}
               value={dayjs(state.displayingData?.discountDate)}
               shouldDisableDate={(day) => {
                 // Disable day before today
@@ -454,7 +455,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
                   type: ManageActionType.SET_DISPLAYING_DATA,
                   payload: {
                     ...state.displayingData,
-                    discountnDate: date.toDate(),
+                    discountDate: date.toDate(),
                   },
                 });
               }}
