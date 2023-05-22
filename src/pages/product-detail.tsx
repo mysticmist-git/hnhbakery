@@ -1177,15 +1177,14 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
                     width: '100%',
                     borderRadius: '8px',
                   }}
-                  children={() => (
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.common.white}
-                    >
-                      Thêm vào giỏ hàng
-                    </Typography>
-                  )}
-                />
+                >
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.common.white}
+                  >
+                    Thêm vào giỏ hàng
+                  </Typography>
+                </CustomButton>
               </Grid>
             </Grid>
           </Grid>

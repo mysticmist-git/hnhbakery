@@ -12,7 +12,7 @@ const CustomIconButton = (props: any) => {
       onMouseOver={(e) => (e.currentTarget.style.opacity = '0.7')}
       onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
     >
-      <props.children />
+      {props.children}
     </IconButton>
   );
 };

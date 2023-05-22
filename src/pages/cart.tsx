@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Typography,
+  alpha,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -130,22 +131,19 @@ function UI_Delete(props: any) {
               color: theme.palette.common.white,
             },
           }}
-          children={() => (
-            <DeleteIcon sx={{ color: theme.palette.common.white }} />
-          )}
-        />
+        >
+          <DeleteIcon sx={{ color: theme.palette.common.white }} />
+        </CustomIconButton>
       ) : (
-        <CustomButton
-          children={() => (
-            <Typography
-              sx={{ px: 4 }}
-              variant="button"
-              color={theme.palette.common.white}
-            >
-              Xóa
-            </Typography>
-          )}
-        />
+        <CustomButton>
+          <Typography
+            sx={{ px: 4 }}
+            variant="button"
+            color={theme.palette.common.white}
+          >
+            Xóa
+          </Typography>
+        </CustomButton>
       )}
     </>
   );
@@ -480,12 +478,18 @@ function GhiChuCuaBan(props: any) {
         sx={{
           alignSelf: 'stretch',
           justifySelf: 'stretch',
+          '&:hover': {
+            boxShadow: `0px 0px 5px 2px ${alpha(
+              theme.palette.secondary.main,
+              0.3,
+            )}`,
+          },
         }}
       >
         <CustomTextarea
           minRows={3}
           style={{ minHeight: '40px' }}
-          placeholder="Nhập ghi chú của bạn"
+          placeholder="Ghi chú cho đầu bếp bên mình"
         />
       </Box>
     </Box>
@@ -717,7 +721,7 @@ const Cart = () => {
                     spacing={2}
                   >
                     <Grid item xs={12}>
-                      <Link href="/" style={{ textDecoration: 'none' }}>
+                      <Link href="/products" style={{ textDecoration: 'none' }}>
                         <Typography
                           align="center"
                           variant="h3"
@@ -728,7 +732,7 @@ const Cart = () => {
                             },
                           }}
                         >
-                          Trang chủ
+                          Sản phẩm
                         </Typography>
                       </Link>
                     </Grid>
@@ -784,15 +788,14 @@ const Cart = () => {
                         width: '100%',
                         bgColor: theme.palette.secondary.dark,
                       }}
-                      children={() => (
-                        <Typography
-                          variant="button"
-                          color={theme.palette.common.white}
-                        >
-                          Tiếp tục mua hàng
-                        </Typography>
-                      )}
-                    />
+                    >
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
+                      >
+                        Tiếp tục mua hàng
+                      </Typography>
+                    </CustomButton>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <CustomButton
@@ -803,15 +806,14 @@ const Cart = () => {
                         py: 1.5,
                         width: '100%',
                       }}
-                      children={() => (
-                        <Typography
-                          variant="button"
-                          color={theme.palette.common.white}
-                        >
-                          Thanh toán
-                        </Typography>
-                      )}
-                    />
+                    >
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
+                      >
+                        Thanh toán
+                      </Typography>
+                    </CustomButton>
                   </Grid>
                 </Grid>
               </Grid>

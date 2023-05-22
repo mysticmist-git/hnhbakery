@@ -16,99 +16,8 @@ import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 import { CustomButton } from '@/components/Inputs/Buttons';
-
-//#region Hóa đơn của bạn
-const CustomAccordion = memo((props: any) => {
-  const theme = useTheme();
-  const heading = props.heading;
-  const Content = props.content;
-  return (
-    <Accordion
-      sx={{
-        '&.MuiPaper-root': {
-          backgroundColor: 'transparent',
-          borderRadius: '8px',
-          boxShadow: 'none',
-        },
-        width: '100%',
-      }}
-      disableGutters
-      defaultExpanded
-    >
-      <AccordionSummary
-        sx={{
-          bgcolor: theme.palette.secondary.main,
-          borderRadius: '8px 8px 0px 0px',
-        }}
-        expandIcon={
-          <ExpandMoreIcon sx={{ color: theme.palette.common.white }} />
-        }
-      >
-        <Typography variant="button" color={theme.palette.common.white}>
-          {heading}
-        </Typography>
-      </AccordionSummary>
-
-      <AccordionDetails
-        sx={{
-          bgcolor: theme.palette.common.white,
-          border: 3,
-          borderTop: 0,
-          borderColor: theme.palette.secondary.main,
-          borderRadius: '0 0 8px 8px',
-          p: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <Content />
-      </AccordionDetails>
-    </Accordion>
-  );
-});
-
-const CustomAccordionItem = memo((props: any) => {
-  const theme = useTheme();
-  const heading = props.heading;
-  const Content = props.content;
-  return (
-    <Accordion
-      sx={{
-        '&.MuiPaper-root': {
-          backgroundColor: 'transparent',
-          boxShadow: 'none',
-        },
-        width: '100%',
-      }}
-      disableGutters
-      defaultExpanded={props.defaultExpanded}
-    >
-      <AccordionSummary
-        sx={{
-          bgcolor: theme.palette.primary.main,
-          transition: 'opacity 0.2s',
-          '&:hover': {
-            opacity: 0.85,
-          },
-        }}
-        expandIcon={
-          <ExpandMoreIcon sx={{ color: theme.palette.text.secondary }} />
-        }
-      >
-        <Typography variant="button" color={theme.palette.common.black}>
-          {heading}
-        </Typography>
-      </AccordionSummary>
-
-      <AccordionDetails
-        sx={{
-          bgcolor: theme.palette.common.white,
-        }}
-      >
-        <Content />
-      </AccordionDetails>
-    </Accordion>
-  );
-});
+import { CustomAccordionFrame } from '../components/Layouts/components/CustomAccordionFrame';
+import { CustomAccordionItem } from '../components/Layouts/components/CustomAccordionItem';
 
 const ListBillItem = memo((props: any) => {
   const theme = useTheme();
@@ -128,7 +37,7 @@ const ListBillItem = memo((props: any) => {
             <CustomAccordionItem
               key={i}
               heading={item.heading}
-              content={item.content}
+              children={item.content}
               defaultExpanded={item.isOpen ? true : false}
             />
           ) : (
@@ -712,21 +621,19 @@ const Product = memo((props: any) => {
               ))}
 
               <Grid item xs={12}>
-                <CustomButton
-                  children={() => (
-                    <Link
-                      href={item.product.href}
-                      style={{ textDecoration: 'none' }}
+                <CustomButton>
+                  <Link
+                    href={item.product.href}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.white}
                     >
-                      <Typography
-                        variant="button"
-                        color={theme.palette.common.white}
-                      >
-                        Xem chi tiết
-                      </Typography>
-                    </Link>
-                  )}
-                />
+                      Xem chi tiết
+                    </Typography>
+                  </Link>
+                </CustomButton>
               </Grid>
             </Grid>
           </Grid>
@@ -967,10 +874,9 @@ const Search = () => {
             <Grid item>
               <CustomButton
                 sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
-                children={() => (
-                  <Typography variant="button">Tìm kiếm</Typography>
-                )}
-              />
+              >
+                <Typography variant="button">Tìm kiếm</Typography>
+              </CustomButton>
             </Grid>
           </Grid>
           <Grid
@@ -984,15 +890,15 @@ const Search = () => {
             spacing={4}
           >
             <Grid item md={4} xs={12}>
-              <CustomAccordion
+              <CustomAccordionFrame
                 heading="Hóa đơn của bạn"
-                content={ListBillItem}
+                children={ListBillItem}
               />
             </Grid>
             <Grid item md={8} xs={12}>
-              <CustomAccordion
+              <CustomAccordionFrame
                 heading="Danh sách sản phẩm"
-                content={ListProductItem}
+                children={ListProductItem}
               />
             </Grid>
           </Grid>

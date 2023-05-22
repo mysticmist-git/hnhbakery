@@ -119,18 +119,14 @@ export default function CustomCardWithButton(props: any) {
       <CardActions
         sx={{ p: 2, bgcolor: theme.palette.common.white, zIndex: 1 }}
       >
-        <CustomButton
-          sx={{ px: 2 }}
-          onClick={buttonOnclick}
-          children={() => (
-            <Typography
-              sx={{ color: theme.palette.common.white }}
-              variant="button"
-            >
-              Thêm vào giỏ hàng
-            </Typography>
-          )}
-        />
+        <CustomButton sx={{ px: 2 }} onClick={buttonOnclick}>
+          <Typography
+            sx={{ color: theme.palette.common.white }}
+            variant="button"
+          >
+            Thêm vào giỏ hàng
+          </Typography>
+        </CustomButton>
       </CardActions>
     </Card>
   );

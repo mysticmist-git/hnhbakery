@@ -83,12 +83,11 @@ export function NumberInputWithButtons({
             px: style.button_px,
             borderRadius: '8px',
           }}
-          children={() => (
-            <Typography variant="body1" color={theme.palette.common.white}>
-              -
-            </Typography>
-          )}
-        />
+        >
+          <Typography variant="body1" color={theme.palette.common.white}>
+            -
+          </Typography>
+        </CustomButton>
       </Grid>
       <Grid item>
         <TextField
@@ -173,12 +172,11 @@ export function NumberInputWithButtons({
             px: style.button_px,
             borderRadius: '8px',
           }}
-          children={() => (
-            <Typography variant="body1" color={theme.palette.common.white}>
-              +
-            </Typography>
-          )}
-        />
+        >
+          <Typography variant="body1" color={theme.palette.common.white}>
+            +
+          </Typography>
+        </CustomButton>
       </Grid>
     </Grid>
   );

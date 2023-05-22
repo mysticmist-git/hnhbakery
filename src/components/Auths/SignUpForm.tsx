@@ -137,8 +137,11 @@ const SignUpForm = ({
               mt: 3,
               mb: 2,
             }}
-            children={() => <Typography variant="button">Đăng ký</Typography>}
-          />
+          >
+            <Typography variant="button" color={theme.palette.common.white}>
+              Đăng ký
+            </Typography>
+          </CustomButton>
         </Grid>
 
         <Grid item xs={12}>
@@ -173,29 +176,6 @@ const SignUpForm = ({
           </Box>
         </Grid>
       </Grid>
-
-      {/* <Grid
-        item
-        xs={12}
-        sx={{
-          mb: '1rem',
-        }}
-      >
-        <Divider />
-        <Button
-          fullWidth
-          startIcon={<Google />}
-          variant="outlined"
-          color="secondary"
-          sx={{
-            mt: '1rem',
-            display: 'none',
-          }}
-          onClick={handleLoginWithGoogle}
-        >
-          Đăng ký với Google
-        </Button>
-      </Grid> */}
     </Box>
   );
 };
