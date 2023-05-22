@@ -4,24 +4,13 @@ import {
   Typography,
   useTheme,
   alpha,
-  styled,
   Rating,
   Button,
   Pagination,
   useMediaQuery,
-  Card,
-  CardActionArea,
   Box,
 } from '@mui/material';
-import React, {
-  createContext,
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import formatPrice from '@/utilities/formatCurrency';
 import Carousel from 'react-material-ui-carousel';
 import Link from 'next/link';
@@ -31,13 +20,13 @@ import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
 import banh1 from '../assets/Carousel/1.jpg';
 import banh2 from '../assets/Carousel/2.jpg';
 import banh3 from '../assets/Carousel/3.jpg';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import {
   ProductDetail,
   ProductDetailContext,
   ProductDetailContextType,
 } from '@/lib/contexts/productDetail';
-import { ProductObject, ProductType } from '@/lib/models';
+import { ProductObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
 import { db } from '@/firebase/config';
 import {
@@ -53,7 +42,10 @@ import {
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore';
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
-import { unique } from 'next/dist/build/utils';
+import { useSnackbarService } from '@/lib/contexts';
+import { useAuthUser, withAuthUser } from 'next-firebase-auth';
+import { replaceInvalidDateByNull } from '@mui/x-date-pickers/internals';
+import { nanoid } from 'nanoid';
 
 // Mock Data
 
@@ -339,12 +331,212 @@ function CheckboxButtonGroup({
   );
 }
 
-function ProductDetailInfo(props: any) {
+function Comments(props: any) {
+  const theme = useTheme();
+  const context = useContext(ProductDetailContext);
+  const { productDetail } = context;
+  const avatarHeight = '50px';
+  return (
+    <>
+      <Grid
+        container
+        direction={'row'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        spacing={2}
+      >
+        <Grid item xs={12} md={8} lg={12}>
+          <Typography
+            variant="h2"
+            align="center"
+            color={theme.palette.secondary.main}
+          >
+            Đánh giá
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} md={8} lg={12}>
+          <Box
+            sx={{
+              bgcolor: theme.palette.primary.light,
+              py: 3,
+              px: 4,
+              borderRadius: '8px',
+            }}
+          >
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
+            >
+              <Grid item xs={4}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: { sm: 'row', xs: 'column' },
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.secondary.main}
+                    >
+                      4.5
+                    </Typography>
+                    <Typography
+                      sx={{ ml: { sm: 1, xs: 0 } }}
+                      variant="body2"
+                      color={theme.palette.secondary.main}
+                    >
+                      trên 5 sao
+                    </Typography>
+                  </Box>
+                  <ProductRating rating={comments.ratingAverage} size="large" />
+                </Box>
+              </Grid>
+              <Grid item xs={8}>
+                {/* <CheckboxButtonGroup
+                  object={starState}
+                  setObject={setStarState}
+                /> */}
+              </Grid>
+            </Grid>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={8} lg={12}>
+          <Grid
+            container
+            direction={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            spacing={2}
+            sx={{
+              px: 2,
+            }}
+          >
+            {comments.items.map((comment: any) => (
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                  spacing={2}
+                >
+                  <Grid item xs={'auto'}>
+                    <Box
+                      sx={{
+                        borderRadius: '50%',
+                        position: 'relative',
+                        width: avatarHeight,
+                        height: avatarHeight,
+                        overflow: 'hidden',
+                        border: 1,
+                        borderColor: theme.palette.secondary.main,
+                      }}
+                    >
+                      <Box
+                        component={Image}
+                        src={comment.user.image}
+                        alt={comment.user.name}
+                        fill={true}
+                        loading="lazy"
+                        sx={{
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={true}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 'normal',
+                        }}
+                        color={theme.palette.common.black}
+                      >
+                        {comment.user.name}
+                      </Typography>
+                      <ProductRating rating={comment.rating} />
+                      <Typography
+                        variant="button"
+                        color={theme.palette.text.secondary}
+                        mt={1}
+                      >
+                        {comment.time}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.common.black}
+                        mt={1}
+                      >
+                        {comment.comment}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: theme.palette.text.secondary,
+                      }}
+                    ></Box>
+                  </Grid>
+                </Grid>
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12} md={8} lg={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Pagination
+              count={5}
+              shape="rounded"
+              boundaryCount={2}
+              siblingCount={1}
+              size="large"
+            />
+          </Box>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+const SUCCESS_ADD_CART_MSG = 'Sản phẩm đã được thêm vào giỏ hàng.';
+const FAIL_ADD_CART_MSG = 'Thêm sản phẩm vào giỏ hàng thất bại.';
+const INVALID_DATA_MSG = 'Thông tin đặt hàng không hợp lệ';
+const LOCAL_CART_KEY: string = 'LOCAL_CART_KEY';
+
+const ProductDetailInfo = withAuthUser()((props: any) => {
   // #region Hooks
 
   const theme = useTheme();
   const { productDetail, form, setForm } =
     useContext<ProductDetailContextType>(ProductDetailContext);
+  const { id: userId } = useAuthUser();
+
+  const handleSnackbarAlert = useSnackbarService();
 
   // #endregion
 
@@ -442,6 +634,135 @@ function ProductDetailInfo(props: any) {
     }
   }, [productDetail]);
 
+  // #endregion
+
+  // #region Handlers
+
+  const handleAddProductToCart = async () => {
+    const data = createDataFromForm();
+
+    console.log(data);
+
+    const isValid = validateData(data);
+
+    if (!isValid) {
+      handleSnackbarAlert('error', INVALID_DATA_MSG);
+      return;
+    }
+
+    // TODO: make this strong type
+    const result: any = await addProductToCart(data);
+
+    if (result.isSuccess) {
+      handleSnackbarAlert('success', result.msg);
+    } else {
+      handleSnackbarAlert('error', result.msg);
+    }
+  };
+
+  // #endregion
+
+  // #region Methods
+
+  // TODO: finish this
+  interface cartData {
+    userId: string;
+    batchId: string;
+    quantity: number;
+    price: number;
+  }
+
+  const createDataFromForm = () => {
+    const batchId = getBatchIdFromForm();
+
+    return {
+      id: nanoid(),
+      userId: userId,
+      batch_id: batchId,
+      quantity: form.quantity,
+      price: price,
+      discountPrice: discountPrice,
+    };
+  };
+  const getBatchIdFromForm = () => {
+    const batchId = productDetail.batches
+      .filter((batch) => batch.size === form.size)
+      .filter((batch) => batch.material === form.material)[0].id;
+
+    return batchId;
+  };
+
+  // TODO: make this strong type
+  const validateData = (data: any): boolean => {
+    // console.log(data);
+
+    if (!data.batch_id || data.quantity < 0 || data.price < 0) return false;
+
+    return true;
+  };
+
+  // TODO: make this strong type
+  const addProductToCart = async (data: any) => {
+    const localResult = addProductToLocalCart(data);
+
+    if (!localResult.isSuccess) {
+      return {
+        isSuccess: false,
+        msg: FAIL_ADD_CART_MSG,
+      };
+    }
+
+    const firestoreResult = await addProductToFirestoreCart(data);
+
+    if (!firestoreResult.isSuccess) {
+      return {
+        isSuccess: false,
+        msg: FAIL_ADD_CART_MSG,
+      };
+    }
+
+    redirectToSucessPage();
+
+    return {
+      isSuccess: true,
+      msg: SUCCESS_ADD_CART_MSG,
+    };
+  };
+
+  // TODO: Finish this: addProductToLocalCart
+  const addProductToLocalCart = (data: any) => {
+    const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
+    try {
+      if (!currentLocalCart) {
+        const firstCartItem = JSON.stringify([data]);
+        localStorage.setItem(LOCAL_CART_KEY, firstCartItem);
+      } else {
+        const currentCart = JSON.parse(currentLocalCart);
+        const updatedCart = [...currentCart, data];
+        localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(updatedCart));
+      }
+
+      return {
+        isSuccess: true,
+        msg: 'Thêm vào giỏ local thành công',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        isSuccess: false,
+        msg: FAIL_ADD_CART_MSG,
+      };
+    }
+  };
+
+  const addProductToFirestoreCart = (data: any) => {
+    return {
+      isSuccess: true,
+      msg: 'Thêm vào giỏ firestore thành công',
+    };
+  };
+
+  const redirectToSucessPage = () => {};
   // #endregion
 
   return (
@@ -839,7 +1160,7 @@ function ProductDetailInfo(props: any) {
                 alignItems={'start'}
               >
                 <CustomButton
-                  onClick={() => {}}
+                  onClick={handleAddProductToCart}
                   sx={{
                     py: 1.5,
                     width: '100%',
@@ -861,199 +1182,7 @@ function ProductDetailInfo(props: any) {
       </Grid>
     </Grid>
   );
-}
-
-function Comments(props: any) {
-  const theme = useTheme();
-  const context = useContext(ProductDetailContext);
-  const { productDetail } = context;
-  const avatarHeight = '50px';
-  return (
-    <>
-      <Grid
-        container
-        direction={'row'}
-        justifyContent={'center'}
-        alignItems={'center'}
-        spacing={2}
-      >
-        <Grid item xs={12} md={8} lg={12}>
-          <Typography
-            variant="h2"
-            align="center"
-            color={theme.palette.secondary.main}
-          >
-            Đánh giá
-          </Typography>
-        </Grid>
-
-        <Grid item xs={12} md={8} lg={12}>
-          <Box
-            sx={{
-              bgcolor: theme.palette.primary.light,
-              py: 3,
-              px: 4,
-              borderRadius: '8px',
-            }}
-          >
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              spacing={2}
-            >
-              <Grid item xs={4}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexDirection: { sm: 'row', xs: 'column' },
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.secondary.main}
-                    >
-                      4.5
-                    </Typography>
-                    <Typography
-                      sx={{ ml: { sm: 1, xs: 0 } }}
-                      variant="body2"
-                      color={theme.palette.secondary.main}
-                    >
-                      trên 5 sao
-                    </Typography>
-                  </Box>
-                  <ProductRating rating={comments.ratingAverage} size="large" />
-                </Box>
-              </Grid>
-              <Grid item xs={8}>
-                {/* <CheckboxButtonGroup
-                  object={starState}
-                  setObject={setStarState}
-                /> */}
-              </Grid>
-            </Grid>
-          </Box>
-        </Grid>
-
-        <Grid item xs={12} md={8} lg={12}>
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'center'}
-            alignItems={'center'}
-            spacing={2}
-            sx={{
-              px: 2,
-            }}
-          >
-            {comments.items.map((comment: any) => (
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                  spacing={2}
-                >
-                  <Grid item xs={'auto'}>
-                    <Box
-                      sx={{
-                        borderRadius: '50%',
-                        position: 'relative',
-                        width: avatarHeight,
-                        height: avatarHeight,
-                        overflow: 'hidden',
-                        border: 1,
-                        borderColor: theme.palette.secondary.main,
-                      }}
-                    >
-                      <Box
-                        component={Image}
-                        src={comment.user.image}
-                        alt={comment.user.name}
-                        fill={true}
-                        loading="lazy"
-                        sx={{
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={true}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 'normal',
-                        }}
-                        color={theme.palette.common.black}
-                      >
-                        {comment.user.name}
-                      </Typography>
-                      <ProductRating rating={comment.rating} />
-                      <Typography
-                        variant="button"
-                        color={theme.palette.text.secondary}
-                        mt={1}
-                      >
-                        {comment.time}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color={theme.palette.common.black}
-                        mt={1}
-                      >
-                        {comment.comment}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: theme.palette.text.secondary,
-                      }}
-                    ></Box>
-                  </Grid>
-                </Grid>
-              </Grid>
-            ))}
-          </Grid>
-        </Grid>
-
-        <Grid item xs={12} md={8} lg={12}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Pagination
-              count={5}
-              shape="rounded"
-              boundaryCount={2}
-              siblingCount={1}
-              size="large"
-            />
-          </Box>
-        </Grid>
-      </Grid>
-    </>
-  );
-}
+});
 
 // #endregion
 
