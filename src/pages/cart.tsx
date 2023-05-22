@@ -1,4 +1,5 @@
 import ImageBackground from '@/components/imageBackground';
+
 import {
   Box,
   Grid,
@@ -18,11 +19,15 @@ import {
 } from '@mui/material';
 import {
   createContext,
+  forwardRef,
   memo,
   useContext,
+  useRef,
   useEffect,
   useMemo,
   useState,
+  RefObject,
+  ForwardedRef,
 } from 'react';
 import { theme } from '../../tailwind.config';
 import Banh1 from '../assets/Carousel/1.jpg';
@@ -44,6 +49,8 @@ import { BatchObject } from '@/lib/models/Batch';
 import { ProductObject } from '@/lib/models';
 import { dateCalendarClasses } from '@mui/x-date-pickers';
 import { CartContextType } from '@/lib/contexts/cartContext';
+import productDetail from './product-detail';
+import { AppContext, AppContextType } from '@/lib/contexts/appContext';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -502,59 +509,63 @@ function TongTienHoaDon(props: any) {
   );
 }
 
-function GhiChuCuaBan(props: any) {
-  const theme = useTheme();
-  return (
-    <Box
-      sx={{
-        border: 3,
-        borderColor: theme.palette.secondary.main,
-        borderRadius: '8px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        bgcolor: theme.palette.common.white,
-      }}
-    >
-      <Box
-        sx={{
-          alignSelf: 'stretch',
-          p: 2,
+const GhiChuCuaBan = forwardRef(
+  (props: any, noteRef: ForwardedRef<HTMLTextAreaElement>) => {
+    const theme = useTheme();
 
-          bgcolor: theme.palette.secondary.main,
-        }}
-      >
-        <Typography
-          align="left"
-          variant="body1"
-          color={theme.palette.common.white}
-        >
-          Ghi chú
-        </Typography>
-      </Box>
+    return (
       <Box
         sx={{
-          alignSelf: 'stretch',
-          justifySelf: 'stretch',
-          '&:hover': {
-            boxShadow: `0px 0px 5px 2px ${alpha(
-              theme.palette.secondary.main,
-              0.3,
-            )}`,
-          },
+          border: 3,
+          borderColor: theme.palette.secondary.main,
+          borderRadius: '8px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          bgcolor: theme.palette.common.white,
         }}
       >
-        <CustomTextarea
-          minRows={3}
-          style={{ minHeight: '40px' }}
-          placeholder="Ghi chú cho đầu bếp bên mình"
-        />
+        <Box
+          sx={{
+            alignSelf: 'stretch',
+            p: 2,
+
+            bgcolor: theme.palette.secondary.main,
+          }}
+        >
+          <Typography
+            align="left"
+            variant="body1"
+            color={theme.palette.common.white}
+          >
+            Ghi chú
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            alignSelf: 'stretch',
+            justifySelf: 'stretch',
+            '&:hover': {
+              boxShadow: `0px 0px 5px 2px ${alpha(
+                theme.palette.secondary.main,
+                0.3,
+              )}`,
+            },
+          }}
+        >
+          <CustomTextarea
+            minRows={3}
+            style={{ minHeight: '40px' }}
+            placeholder="Ghi chú cho đầu bếp bên mình"
+            ref={noteRef}
+          />
+        </Box>
       </Box>
-    </Box>
-  );
-}
+    );
+  },
+);
 
 //#endregion
 
@@ -592,53 +603,53 @@ const headingTable = [
   'Xóa',
 ];
 
-const initproductBill = [
-  createDataRow({
-    id: '1',
-    href: '/',
-    image: Banh1.src,
-    name: 'Hàng than',
-    size: 'Nhỏ',
-    material: 'Mứt dâu',
-    quantity: 5,
-    maxQuantity: 10,
-    price: 100000,
-  }),
-  createDataRow({
-    id: '2',
-    href: '/',
-    image: Banh1.src,
-    name: 'Hàng than',
-    size: 'Nhỏ',
-    material: 'Mứt dâu',
-    quantity: 5,
-    maxQuantity: 10,
-    price: 100000,
-  }),
-  createDataRow({
-    id: '3',
-    href: '/',
-    image: Banh1.src,
-    name: 'Hàng than',
-    size: 'Nhỏ',
-    material: 'Mứt dâu',
-    quantity: 5,
-    maxQuantity: 10,
-    price: 100000,
-    discountPercent: 20,
-  }),
-  createDataRow({
-    id: '4',
-    href: '/',
-    image: Banh1.src,
-    name: 'Hàng than',
-    size: 'Nhỏ',
-    material: 'Mứt dâu',
-    quantity: 5,
-    maxQuantity: 10,
-    price: 100000,
-  }),
-];
+// const initproductBill = [
+//   createDataRow({
+//     id: '1',
+//     href: '/',
+//     image: Banh1.src,
+//     name: 'Hàng than',
+//     size: 'Nhỏ',
+//     material: 'Mứt dâu',
+//     quantity: 5,
+//     maxQuantity: 10,
+//     price: 100000,
+//   }),
+//   createDataRow({
+//     id: '2',
+//     href: '/',
+//     image: Banh1.src,
+//     name: 'Hàng than',
+//     size: 'Nhỏ',
+//     material: 'Mứt dâu',
+//     quantity: 5,
+//     maxQuantity: 10,
+//     price: 100000,
+//   }),
+//   createDataRow({
+//     id: '3',
+//     href: '/',
+//     image: Banh1.src,
+//     name: 'Hàng than',
+//     size: 'Nhỏ',
+//     material: 'Mứt dâu',
+//     quantity: 5,
+//     maxQuantity: 10,
+//     price: 100000,
+//     discountPercent: 20,
+//   }),
+//   createDataRow({
+//     id: '4',
+//     href: '/',
+//     image: Banh1.src,
+//     name: 'Hàng than',
+//     size: 'Nhỏ',
+//     material: 'Mứt dâu',
+//     quantity: 5,
+//     maxQuantity: 10,
+//     price: 100000,
+//   }),
+// ];
 
 //#endregion
 
@@ -646,12 +657,19 @@ const Cart = () => {
   // #region Hooks
 
   const theme = useTheme();
+  const { productBill: appProductBill, setProductBill: setAppProductBill } =
+    useContext<AppContextType>(AppContext);
   // #endregion
 
   // #region States
 
-  const [productBill, setProductBill] =
-    useState<DisplayCartItem[]>(initproductBill);
+  const [productBill, setProductBill] = useState<DisplayCartItem[]>([]);
+
+  // #endregion
+
+  // #region Refs
+
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   // #endregion
 
@@ -749,6 +767,8 @@ const Cart = () => {
           price: batch.price,
           discountPercent: batch.discountPercent,
           discountPrice: discountPrice,
+          MFG: batch.MFG,
+          EXP: batch.EXP,
         };
 
         return displayCartItem;
@@ -764,7 +784,14 @@ const Cart = () => {
 
   // #endregion
 
-  console.log();
+  // #region Handlers
+
+  const handlePayment = () => {
+    setAppProductBill(() => [...productBill]);
+    router.push('/payment');
+  };
+
+  // #endregion
 
   return (
     <>
@@ -774,52 +801,54 @@ const Cart = () => {
         }}
       >
         <Box sx={{ pb: 8 }}>
-          <ImageBackground>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              height={'100%'}
-              sx={{ px: 6 }}
-            >
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  spacing={2}
-                >
-                  <Grid item xs={12}>
-                    <Link href="/products" style={{ textDecoration: 'none' }}>
+          <ImageBackground
+            children={() => (
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'center'}
+                height={'100%'}
+                sx={{ px: 6 }}
+              >
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    spacing={2}
+                  >
+                    <Grid item xs={12}>
+                      <Link href="/products" style={{ textDecoration: 'none' }}>
+                        <Typography
+                          align="center"
+                          variant="h3"
+                          color={theme.palette.primary.main}
+                          sx={{
+                            '&:hover': {
+                              textDecoration: 'underline',
+                            },
+                          }}
+                        >
+                          Sản phẩm
+                        </Typography>
+                      </Link>
+                    </Grid>
+                    <Grid item xs={12}>
                       <Typography
                         align="center"
-                        variant="h3"
+                        variant="h2"
                         color={theme.palette.primary.main}
-                        sx={{
-                          '&:hover': {
-                            textDecoration: 'underline',
-                          },
-                        }}
                       >
-                        Sản phẩm
+                        Giỏ hàng
                       </Typography>
-                    </Link>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography
-                      align="center"
-                      variant="h2"
-                      color={theme.palette.primary.main}
-                    >
-                      Giỏ hàng
-                    </Typography>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          </ImageBackground>
+            )}
+          />
 
           <Box sx={{ pt: 12, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
@@ -834,7 +863,7 @@ const Cart = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <GhiChuCuaBan />
+                <GhiChuCuaBan ref={noteRef} />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -869,9 +898,7 @@ const Cart = () => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <CustomButton
-                      onClick={() => {
-                        router.push('/payment');
-                      }}
+                      onClick={handlePayment}
                       sx={{
                         py: 1.5,
                         width: '100%',

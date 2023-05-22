@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 // import { CacheProvider, EmotionCache } from '@emotion/react';
 import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 
@@ -18,6 +18,8 @@ import theme from '@/styles/themes/lightTheme';
 import { SnackbarService } from '@/lib/contexts';
 import NProgress from 'nprogress';
 import { TransitionUp } from '@/components/Transitions';
+import { AppContext } from '@/lib/contexts/appContext';
+import { DisplayCartItem } from '@/lib/contexts/cartContext';
 
 //Binding events.
 
@@ -37,6 +39,9 @@ initAuth();
 
 const MyApp = (props: AppProps) => {
   // #region States
+
+  // For the cart and payment page
+  const [productBill, setProductBill] = useState<DisplayCartItem[]>([]);
 
   // #endregion
 
@@ -72,26 +77,30 @@ const MyApp = (props: AppProps) => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       {/* <CacheProvider value={emotionCache}> */}
       <ThemeProvider theme={theme}>
-        <SnackbarService.Provider value={{ handleSnackbarAlert }}>
-          <CssBaseline />
-          <CurrentLayout>
-            <Component {...pageProps} />
-          </CurrentLayout>
-          <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={6000}
-            onClose={handleSnackbarClose}
-            TransitionComponent={TransitionUp}
-          >
-            <Alert
+        <AppContext.Provider
+          value={{ productBill: productBill, setProductBill: setProductBill }}
+        >
+          <SnackbarService.Provider value={{ handleSnackbarAlert }}>
+            <CssBaseline />
+            <CurrentLayout>
+              <Component {...pageProps} />
+            </CurrentLayout>
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
               onClose={handleSnackbarClose}
-              severity={snackbarSeverity}
-              sx={{ width: '100%' }}
+              TransitionComponent={TransitionUp}
             >
-              {snackbarText}
-            </Alert>
-          </Snackbar>
-        </SnackbarService.Provider>
+              <Alert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: '100%' }}
+              >
+                {snackbarText}
+              </Alert>
+            </Snackbar>
+          </SnackbarService.Provider>
+        </AppContext.Provider>
       </ThemeProvider>
       {/* </CacheProvider> */}
     </LocalizationProvider>

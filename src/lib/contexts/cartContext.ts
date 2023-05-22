@@ -24,6 +24,8 @@ export interface DisplayCartItem {
   price: number;
   discountPercent?: number;
   discountPrice?: number;
+  MFG: Date;
+  EXP: Date;
 }
 
 // 1,
