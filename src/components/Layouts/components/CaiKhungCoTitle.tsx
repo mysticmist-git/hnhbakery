@@ -3,11 +3,8 @@ import { Box } from '@mui/system';
 
 // #endregion
 export function CaiKhungCoTitle(props: any) {
-  const {
-    title = 'Title đâu?',
-    children = () => <></>,
-    fluidContent = false,
-  } = props;
+  const { title = 'Title đâu?', children, fluidContent = false } = props;
+
   const theme = useTheme();
   return (
     <>
@@ -47,7 +44,7 @@ export function CaiKhungCoTitle(props: any) {
             p: fluidContent ? 0 : 2,
           }}
         >
-          <props.children />
+          {children}
         </Box>
       </Box>
     </>

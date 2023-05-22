@@ -151,6 +151,7 @@ const totalBill = Products.reduce((total, product) => {
 const Payment = () => {
   const theme = useTheme();
   const [showDeliveryPrice, setShowDeliveryPrice] = useState(false);
+
   const handleShowSetDeliveryPrice = (value: boolean) => {
     setShowDeliveryPrice(value);
   };
@@ -219,36 +220,31 @@ const Payment = () => {
               spacing={4}
             >
               <Grid item xs={12}>
-                <CaiKhungCoTitle
-                  title={'Thông tin giao hàng'}
-                  children={() => (
-                    <FormGiaoHang
-                      handleShowSetDeliveryPrice={handleShowSetDeliveryPrice}
-                    />
-                  )}
-                />
+                <CaiKhungCoTitle title={'Thông tin giao hàng'}>
+                  <FormGiaoHang
+                    handleShowSetDeliveryPrice={handleShowSetDeliveryPrice}
+                  />
+                </CaiKhungCoTitle>
               </Grid>
 
               <Grid item xs={12} md={6}>
                 <CaiKhungCoTitle
                   title={'Danh sách sản phẩm'}
                   fluidContent={true}
-                  children={() => <DanhSachSanPham Products={Products} />}
-                />
+                >
+                  <DanhSachSanPham Products={Products} />
+                </CaiKhungCoTitle>
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <CaiKhungCoTitle
-                  title={'Đơn hàng của bạn'}
-                  children={() => (
-                    <DonHangCuaBan
-                      totalBill={totalBill}
-                      Sales={Sales}
-                      TimKiemMaSale={TimKiemMaSale}
-                      showDeliveryPrice={showDeliveryPrice}
-                    />
-                  )}
-                />
+                <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
+                  <DonHangCuaBan
+                    totalBill={totalBill}
+                    Sales={Sales}
+                    TimKiemMaSale={TimKiemMaSale}
+                    showDeliveryPrice={showDeliveryPrice}
+                  />
+                </CaiKhungCoTitle>
               </Grid>
             </Grid>
           </Box>

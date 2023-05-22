@@ -7,19 +7,25 @@ import { useEffect, useState } from 'react';
 
 export default function FormGiaoHang(props: any) {
   const { handleShowSetDeliveryPrice } = props;
+
   const [diaChi, setDiaChi] = useState('');
   const [thoiGianGiao, setThoiGianGiao] = useState('');
   const [ngayGiao, setNgayGiao] = useState('');
 
   useEffect(() => {
+    console.log(diaChi, thoiGianGiao, ngayGiao);
+
     if (diaChi !== '' && thoiGianGiao !== '' && ngayGiao !== '') {
+      console.log('Hi');
       handleShowSetDeliveryPrice(true);
     } else {
+      console.log('Hello');
       handleShowSetDeliveryPrice(false);
     }
   }, [diaChi, thoiGianGiao, ngayGiao]);
 
   const theme = useTheme();
+
   console.log(diaChi, thoiGianGiao, ngayGiao);
 
   return (
