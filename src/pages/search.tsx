@@ -796,36 +796,34 @@ const Search = () => {
       }}
     >
       <Box>
-        <ImageBackground
-          children={() => (
-            <Grid
-              sx={{ px: 6 }}
-              height={'100%'}
-              container
-              direction={'column'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              spacing={2}
-            >
-              <Grid item>
-                <Link href="#" style={{ textDecoration: 'none' }}>
-                  <Typography
-                    align="center"
-                    variant="h1"
-                    color={theme.palette.primary.main}
-                    sx={{
-                      '&:hover': {
-                        color: theme.palette.common.white,
-                      },
-                    }}
-                  >
-                    Tìm kiếm
-                  </Typography>
-                </Link>
-              </Grid>
+        <ImageBackground>
+          <Grid
+            sx={{ px: 6 }}
+            height={'100%'}
+            container
+            direction={'column'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            spacing={2}
+          >
+            <Grid item>
+              <Link href="#" style={{ textDecoration: 'none' }}>
+                <Typography
+                  align="center"
+                  variant="h1"
+                  color={theme.palette.primary.main}
+                  sx={{
+                    '&:hover': {
+                      color: theme.palette.common.white,
+                    },
+                  }}
+                >
+                  Tìm kiếm
+                </Typography>
+              </Link>
             </Grid>
-          )}
-        />
+          </Grid>
+        </ImageBackground>
 
         <Box
           sx={{

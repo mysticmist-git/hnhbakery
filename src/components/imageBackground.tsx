@@ -14,6 +14,7 @@ const ImageBackground = (props: any) => {
         backgroundImage: `url(${banh1.src})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
       <Box
@@ -25,7 +26,7 @@ const ImageBackground = (props: any) => {
           backdropFilter: 'blur(1px)',
         }}
       >
-        <props.children />
+        {props.children}
 
         <SolidUpWhite
           sx={{
@@ -41,6 +42,7 @@ const ImageBackground = (props: any) => {
             height: '30px',
             width: '100%',
             overflow: 'visible',
+            position: 'relative',
             background: `linear-gradient(to bottom, ${alpha(
               theme.palette.common.white,
               1,

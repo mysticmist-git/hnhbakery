@@ -213,54 +213,52 @@ const Payment = () => {
     <>
       <PaymentContext.Provider value={initPaymentContext}>
         <Box sx={{ pb: 8 }}>
-          <ImageBackground
-            children={() => (
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'center'}
-                height={'100%'}
-                sx={{ px: 6 }}
-              >
-                <Grid item xs={12}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    spacing={2}
-                  >
-                    <Grid item xs={12}>
-                      <Link href="/cart" style={{ textDecoration: 'none' }}>
-                        <Typography
-                          align="center"
-                          variant="h3"
-                          color={theme.palette.primary.main}
-                          sx={{
-                            '&:hover': {
-                              textDecoration: 'underline',
-                            },
-                          }}
-                        >
-                          Giỏ hàng
-                        </Typography>
-                      </Link>
-                    </Grid>
-                    <Grid item xs={12}>
+          <ImageBackground>
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              height={'100%'}
+              sx={{ px: 6 }}
+            >
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  spacing={2}
+                >
+                  <Grid item xs={12}>
+                    <Link href="/cart" style={{ textDecoration: 'none' }}>
                       <Typography
                         align="center"
-                        variant="h2"
+                        variant="h3"
                         color={theme.palette.primary.main}
+                        sx={{
+                          '&:hover': {
+                            textDecoration: 'underline',
+                          },
+                        }}
                       >
-                        Thông tin thanh toán
+                        Giỏ hàng
                       </Typography>
-                    </Grid>
+                    </Link>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography
+                      align="center"
+                      variant="h2"
+                      color={theme.palette.primary.main}
+                    >
+                      Thông tin thanh toán
+                    </Typography>
                   </Grid>
                 </Grid>
               </Grid>
-            )}
-          />
+            </Grid>
+          </ImageBackground>
 
           <Box sx={{ pt: 12, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid

@@ -14,20 +14,24 @@ import {
   Link,
   MenuItem,
   Select,
+  TextField,
   Typography,
   alpha,
   useTheme,
 } from '@mui/material';
 import React, {
+  RefObject,
   createContext,
   memo,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
+import bg12 from '../assets/Decorate/bg12.png';
 import GridView from '@mui/icons-material/GridView';
 import ListAlt from '@mui/icons-material/ListAlt';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -56,6 +60,7 @@ import ProductsContext, {
   ProductItem,
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
+import { CustomTextField } from '@/components/Inputs';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -72,6 +77,14 @@ const dateComparer = (a: Date, b: Date) => {
 // #region Filter
 
 const initGroupBoLoc = [
+  {
+    heading: 'Loại bánh',
+    heading_value: 'typeCake',
+    children: [
+      { display: 'Bánh kem', value: 'id loại bánh 1', isChecked: false },
+      { display: 'Bánh que', value: 'id loại bánh 2', isChecked: false },
+    ],
+  },
   {
     heading: 'Màu sắc',
     heading_value: 'color',
@@ -960,10 +973,6 @@ const Products = ({ products }: { products: string }) => {
 
   // #endregion
 
-  //#region Functions
-
-  //#endregion
-
   //#region Handlers
 
   function handdleCheckBox(heading_value: string, value: string) {
@@ -1001,6 +1010,19 @@ const Products = ({ products }: { products: string }) => {
 
   //#endregion
 
+  // #region scroll
+  const inputRef: RefObject<HTMLInputElement> = useRef(null);
+
+  const handleClick = () => {
+    const top: number = 280;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+  //#endregion
+
+  function handleChangeSearch(e: any) {
+    console.log(e.target.value);
+  }
+
   return (
     <>
       <ProductsContext.Provider
@@ -1015,38 +1037,36 @@ const Products = ({ products }: { products: string }) => {
         }}
       >
         <Box>
-          <ImageBackground
-            children={() => (
-              <Grid
-                sx={{ px: 6 }}
-                height={'100%'}
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'center'}
-                spacing={2}
-              >
-                <Grid item xs={12}>
-                  <Link href="#" style={{ textDecoration: 'none' }}>
-                    <Typography
-                      align="center"
-                      variant="h2"
-                      color={theme.palette.primary.main}
-                      sx={{
-                        '&:hover': {
-                          color: theme.palette.common.white,
-                        },
-                      }}
-                    >
-                      Tất cả sản phẩm
-                    </Typography>
-                  </Link>
-                </Grid>
+          <ImageBackground>
+            <Grid
+              sx={{ px: 6 }}
+              height={'100%'}
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Link href="#" style={{ textDecoration: 'none' }}>
+                  <Typography
+                    align="center"
+                    variant="h2"
+                    color={theme.palette.primary.main}
+                    sx={{
+                      '&:hover': {
+                        color: theme.palette.common.white,
+                      },
+                    }}
+                  >
+                    Tất cả sản phẩm
+                  </Typography>
+                </Link>
               </Grid>
-            )}
-          />
+            </Grid>
+          </ImageBackground>
 
-          <Box sx={{ py: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+          <Box sx={{ pt: 4, pb: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
@@ -1054,9 +1074,88 @@ const Products = ({ products }: { products: string }) => {
               alignItems={'start'}
               spacing={4}
             >
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        backgroundImage: `url(${bg12.src})`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        width: 'auto',
+                        height: 'auto',
+                      }}
+                    >
+                      <TextField
+                        placeholder="Tìm kiếm loại bánh ngon nhất?"
+                        hiddenLabel
+                        fullWidth
+                        type="text"
+                        autoFocus
+                        variant="filled"
+                        maxRows="1"
+                        onChange={handleChangeSearch}
+                        onClick={handleClick}
+                        inputRef={inputRef}
+                        InputProps={{
+                          disableUnderline: true,
+                          style: {
+                            color: theme.palette.common.black,
+                          },
+                        }}
+                        inputProps={{
+                          sx: {
+                            textAlign: 'center',
+                            fontSize: theme.typography.body1.fontSize,
+                            color: theme.palette.common.black,
+                            fontWeight: theme.typography.body2.fontWeight,
+                            fontFamily: theme.typography.body2.fontFamily,
+                            backgroundColor: alpha(
+                              theme.palette.primary.main,
+                              0.2,
+                            ),
+                            backdropFilter: 'blur(2px)',
+                            border: 3,
+                            borderColor: theme.palette.secondary.main,
+                            py: 1.5,
+                            borderRadius: '8px',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              backgroundColor: alpha(
+                                theme.palette.common.black,
+                                0.75,
+                              ),
+                              color: theme.palette.common.white,
+                              backdropFilter: 'blur(3px)',
+                            },
+                            '&:focus': {
+                              backgroundColor: alpha(
+                                theme.palette.common.black,
+                                0.75,
+                              ),
+                              color: theme.palette.common.white,
+                              backdropFilter: 'blur(3px)',
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Grid>
+
               <Grid item md={3} xs={12}>
                 <Filter />
               </Grid>
+
               <Grid item md={9} xs={12}>
                 <Grid
                   container

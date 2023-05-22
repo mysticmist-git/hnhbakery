@@ -211,7 +211,7 @@ function Navbar() {
 
   const handleScroll = () => {
     const currentScrollPos = window.pageYOffset;
-    if (currentScrollPos > 310) {
+    if (currentScrollPos > 180) {
       setIsScrolled(true);
     } else {
       setIsScrolled(false);
