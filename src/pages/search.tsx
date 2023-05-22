@@ -861,7 +861,7 @@ const initProductInfor = [
 //#endregion
 
 // #region Context
-export interface SearchContextType {
+interface SearchContextType {
   billInfor: any;
   productInfor: any;
 }
@@ -871,16 +871,11 @@ const initSearchContext: SearchContextType = {
   productInfor: [],
 };
 
-export const SearchContext =
-  createContext<SearchContextType>(initSearchContext);
+const SearchContext = createContext<SearchContextType>(initSearchContext);
 // #endregion
 
 const Search = () => {
   const theme = useTheme();
-  const styles = {
-    gridDesktop: { display: { xs: 'none', lg: 'block' } },
-    gridPhone: { display: { xs: 'block', lg: 'none' } },
-  };
 
   const [billInforState, setBillInforState] = useState<any>(initBillInfor);
   const [productInforState, setProductInforState] =
