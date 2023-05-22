@@ -14,7 +14,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { createContext, memo, useContext, useState } from 'react';
+import { createContext, memo, useContext, useEffect, useState } from 'react';
 import { theme } from '../../tailwind.config';
 import Banh1 from '../assets/Carousel/1.jpg';
 import Image from 'next/image';
@@ -24,6 +24,15 @@ import formatPrice from '@/utilities/formatCurrency';
 import { NumberInputWithButtons } from '@/components/Inputs/NumberInputWithButtons';
 import { CustomTextarea } from '../components/Inputs/CustomTextarea';
 import router from 'next/router';
+import { CartContext, DisplayCartItem } from '@/lib/contexts/cartContext';
+import { CartItem } from '@/lib/contexts/productDetail';
+import { LOCAL_CART_KEY } from '@/lib';
+import { getDownloadURL } from 'firebase/storage';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
+import { db } from '@/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { BatchObject } from '@/lib/models/Batch';
+import { ProductObject } from '@/lib/models';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -486,17 +495,17 @@ function GhiChuCuaBan(props: any) {
 //#endregion
 
 //#region Giả dữ liệu
-function createDataRow(
-  id: number,
-  href: string,
-  image: string,
-  name: string,
-  size: string,
-  material: string,
-  quantity: number,
-  maxQuantity: number,
-  price: number,
-) {
+function createDataRow({
+  id,
+  href,
+  image,
+  name,
+  size,
+  material,
+  quantity,
+  maxQuantity,
+  price,
+}: DisplayCartItem) {
   return {
     id,
     href,
@@ -517,69 +526,170 @@ const headingTable = [
   'Tổng',
   'Xóa',
 ];
+
 const initproductBill = [
-  createDataRow(
-    1,
-    '/',
-    Banh1.src,
-    'Hàng than',
-    'Nhỏ',
-    'Mứt dâu',
-    5,
-    10,
-    100000,
-  ),
-  createDataRow(
-    2,
-    '/',
-    Banh1.src,
-    'Hàng than',
-    'Nhỏ',
-    'Mứt dâu',
-    5,
-    10,
-    100000,
-  ),
-  createDataRow(
-    3,
-    '/',
-    Banh1.src,
-    'Hàng than',
-    'Nhỏ',
-    'Mứt dâu',
-    5,
-    10,
-    100000,
-  ),
-  createDataRow(
-    4,
-    '/',
-    Banh1.src,
-    'Hàng than',
-    'Nhỏ',
-    'Mứt dâu',
-    5,
-    10,
-    100000,
-  ),
+  createDataRow({
+    id: '1',
+    href: '/',
+    image: Banh1.src,
+    name: 'Hàng than',
+    size: 'Nhỏ',
+    material: 'Mứt dâu',
+    quantity: 5,
+    maxQuantity: 10,
+    price: 100000,
+  }),
+  createDataRow({
+    id: '2',
+    href: '/',
+    image: Banh1.src,
+    name: 'Hàng than',
+    size: 'Nhỏ',
+    material: 'Mứt dâu',
+    quantity: 5,
+    maxQuantity: 10,
+    price: 100000,
+  }),
+  createDataRow({
+    id: '3',
+    href: '/',
+    image: Banh1.src,
+    name: 'Hàng than',
+    size: 'Nhỏ',
+    material: 'Mứt dâu',
+    quantity: 5,
+    maxQuantity: 10,
+    price: 100000,
+  }),
+  createDataRow({
+    id: '4',
+    href: '/',
+    image: Banh1.src,
+    name: 'Hàng than',
+    size: 'Nhỏ',
+    material: 'Mứt dâu',
+    quantity: 5,
+    maxQuantity: 10,
+    price: 100000,
+  }),
 ];
+
 //#endregion
 
-// #region Context
-interface CartContextType {
-  productBill: any;
-}
-
-const initCartContext: CartContextType = {
-  productBill: [],
-};
-
-export const CartContext = createContext<CartContextType>(initCartContext);
-// #endregion
-
 const Cart = () => {
+  // #region Hooks
+
   const theme = useTheme();
-  const [productBill, setProductBill] = useState(initproductBill);
+  // #endregion
+
+  // #region States
+
+  const [productBill, setProductBill] =
+    useState<DisplayCartItem[]>(initproductBill);
+
+  // #endregion
+
+  // #region useEffects
+
+  useEffect(() => {
+    getCartItems();
+  }, []);
+
+  // #endregion
+
+  // #region Methods
+
+  const getCartItems = async () => {
+    const localCartItems = getLocalCartitem();
+
+    try {
+      const firestoreCartItems = await getFirestoreCartItem();
+
+      const finalCartItems = syncLocalCartItemToFirestore(
+        localCartItems,
+        firestoreCartItems,
+      );
+
+      const displayCartItems = await fetchCartItemData(finalCartItems);
+
+      displayCartItemsToView(displayCartItems);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getLocalCartitem = (): CartItem[] => {
+    const cartItemsString = localStorage.getItem(LOCAL_CART_KEY);
+
+    if (cartItemsString) {
+      return JSON.parse(cartItemsString);
+    }
+
+    return [];
+  };
+
+  const getFirestoreCartItem = async (): Promise<CartItem[]> => {
+    return [];
+  };
+
+  const syncLocalCartItemToFirestore = (
+    localCartItems: any,
+    firestoreCartItems: any,
+  ): CartItem[] => {
+    // TODO: Do this
+    return localCartItems;
+  };
+
+  const fetchCartItemData = async (
+    cartItems: CartItem[],
+  ): Promise<DisplayCartItem[]> => {
+    // TODO: implement
+
+    if (!cartItems || cartItems.length <= 0) return [];
+
+    const displayCartItems = await Promise.all(
+      cartItems.map(async (item) => {
+        const productRef = doc(db, 'products', item.productId);
+        const productData = await getDoc(productRef);
+        const product: ProductObject = {
+          ...productData.data(),
+          id: productData.id,
+        } as ProductObject;
+
+        const batchRef = doc(db, 'batches', item.batchId);
+        const batchData = await getDoc(batchRef);
+        const batch: BatchObject = {
+          ...batchData.data(),
+          id: batchData.id,
+        } as BatchObject;
+
+        const displayCartItem: DisplayCartItem = {
+          id: item.id,
+          href: item.href,
+          name: product.name,
+          image: await getDownloadUrlFromFirebaseStorage(product.images[0]),
+          size: batch.size,
+          material: batch.material,
+          quantity: item.quantity,
+          maxQuantity: batch.totalQuantity - batch.soldQuantity,
+          price: batch.price,
+        };
+
+        return displayCartItem;
+      }),
+    );
+
+    return displayCartItems;
+  };
+
+  const displayCartItemsToView = (cartItems: DisplayCartItem[]) => {
+    console.log(cartItems);
+
+    setProductBill(() => cartItems);
+  };
+
+  // #endregion
+
   return (
     <>
       <CartContext.Provider

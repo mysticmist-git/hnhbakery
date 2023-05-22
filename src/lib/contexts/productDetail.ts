@@ -34,3 +34,14 @@ export interface ProductDetailContextType {
 export const ProductDetailContext = createContext<ProductDetailContextType>(
   initProductDetailContext,
 );
+
+export interface CartItem {
+  id: string;
+  userId: string;
+  productId: string;
+  batchId: string;
+  href: string;
+  quantity: number;
+  price: number;
+  discountPrice: number;
+}
