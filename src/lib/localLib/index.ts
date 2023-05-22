@@ -1,4 +1,4 @@
-export { DEFAULT_ROW, crudTargets, manageReducer } from './manage';
+export { crudTargets, manageReducer } from './manage';
 
 export { checkIfDataChanged, isDataChanged, memoize } from './manage-modal';
 

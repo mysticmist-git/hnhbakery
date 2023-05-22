@@ -1,9 +1,8 @@
 import { DocumentData } from 'firebase/firestore';
-import Batch from './Batch';
 import Product from './Product';
 import ProductType from './ProductType';
 
-export type UnionType = Product | ProductType | Batch | null;
+// export type UnionType = Product | ProductType | Batch | null;
 
 /**
  * Define a general interface for all collection object

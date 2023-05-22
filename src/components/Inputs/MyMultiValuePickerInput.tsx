@@ -55,6 +55,10 @@ const MyMultiValuePickerInput = (
     if (!props.value) setCurrentValue(() => props.options[0]);
   }, [props.options]);
 
+  useEffect(() => {
+    if (props.value) setCurrentValue(() => props.value ?? props.options[0]);
+  }, [props.value]);
+
   //#endregion
 
   //#region Handlers

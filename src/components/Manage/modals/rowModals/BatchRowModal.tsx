@@ -1,4 +1,4 @@
-import React, { memo, useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 
 import BatchForm from '../forms/BatchForm';
 import RowModalLayout from './RowModalLayout';
@@ -20,8 +20,8 @@ import {
 const BatchRowModal = () => {
   //#region States
 
-  const [originalDisplayingData, setOriginalDisplayingData] =
-    useState<DocumentData | null>(null);
+  // const [originalDisplayingData, setOriginalDisplayingData] =
+  //   useState<DocumentData | null>(null);
 
   //#endregion
 
@@ -35,7 +35,11 @@ const BatchRowModal = () => {
 
   //#region useEffects
 
-  useEffect(() => {
+  //#endregion
+
+  // #region useMemos
+
+  const originalDisplayingData = useMemo(() => {
     // Check if displaying data exist.
     // If no then alert and close the modal
     if (!state.displayingData) {
@@ -44,13 +48,13 @@ const BatchRowModal = () => {
         type: ManageActionType.SET_CRUD_MODAL_OPEN,
         payload: false,
       });
-      return;
+      return null;
     }
 
-    setOriginalDisplayingData(() => state.displayingData);
-  }, []);
+    return state.displayingData;
+  }, [state.displayingData]);
 
-  //#endregion
+  // #endregion
 
   //#region Functions
 
@@ -70,6 +74,13 @@ const BatchRowModal = () => {
       return {
         isValid: false,
         errorMessage: 'Chọn sản phẩm',
+      };
+    }
+
+    if (data.price <= 0) {
+      return {
+        isValid: false,
+        errorMessage: 'Giá sai',
       };
     }
 
@@ -115,12 +126,25 @@ const BatchRowModal = () => {
       };
     }
 
-    if (data.price <= 0) {
+    if (!data.discountDate) {
       return {
         isValid: false,
-        errorMessage: 'Giá sai',
+        errorMessage: 'Nhập thời điểm giảm giá',
       };
     }
+
+    if (data.discountDate < data.MFG || data.discountDate > data.EXP) {
+      return {
+        isValid: false,
+        errorMessage: 'Thời điểm giảm giá không hợp lệ',
+      };
+    }
+
+    if (data.discountPercent < 0 || data.discountPercent > 100)
+      return {
+        isValid: false,
+        errorMessage: 'Giá khuyến mãi phải lớn hơn 0 và nhỏ hơn 100',
+      };
 
     return {
       isValid: true,
@@ -271,6 +295,7 @@ const BatchRowModal = () => {
         ...displayingData,
         MFG: Timestamp.fromDate(new Date(displayingData.MFG)),
         EXP: Timestamp.fromDate(new Date(displayingData.EXP)),
+        discountDate: Timestamp.fromDate(new Date(displayingData.discountDate)),
       };
 
       console.log(dataForFirestoreAdding);
@@ -300,6 +325,8 @@ const BatchRowModal = () => {
   };
 
   //#endregion
+
+  console.log(state.displayingData);
 
   return (
     <RowModalLayout

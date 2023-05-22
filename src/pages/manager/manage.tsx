@@ -38,8 +38,8 @@ import {
   manageReducer,
   ManageActionType,
   crudTargets,
-  DEFAULT_ROW,
   ManageState,
+  generateDefaultRow,
 } from '@/lib/localLib/manage';
 import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { useSnackbarService } from '@/lib/contexts';
@@ -137,26 +137,13 @@ export default function Manage({
   //#region Functions
 
   const resetDisplayingData = () => {
-    switch (state.selectedTarget.collectionName) {
-      case CollectionName.ProductTypes:
-        dispatch({
-          type: ManageActionType.SET_DISPLAYING_DATA,
-          payload: DEFAULT_ROW.PRODUCT_TYPE,
-        });
-        break;
-      case CollectionName.Products:
-        dispatch({
-          type: ManageActionType.SET_DISPLAYING_DATA,
-          payload: DEFAULT_ROW.PRODUCT,
-        });
-        break;
-      case CollectionName.Batches:
-        dispatch({
-          type: ManageActionType.SET_DISPLAYING_DATA,
-          payload: DEFAULT_ROW.BATCH,
-        });
-        break;
-    }
+    const collectionName = state.selectedTarget.collectionName;
+    if (collectionName === CollectionName.None) return;
+
+    dispatch({
+      type: ManageActionType.SET_DISPLAYING_DATA,
+      payload: generateDefaultRow(collectionName),
+    });
   };
 
   //#endregion

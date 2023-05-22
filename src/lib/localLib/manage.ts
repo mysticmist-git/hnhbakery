@@ -1,5 +1,5 @@
 import { CollectionName } from '@/lib/models/utilities';
-import { DocumentData, Timestamp } from 'firebase/firestore';
+import { DocumentData, Timestamp, collection } from 'firebase/firestore';
 import { Dispatch } from 'react';
 
 export const crudTargets: CrudTarget[] = [
@@ -128,7 +128,7 @@ export const manageReducer = (state: ManageState, action: any) => {
       };
 
     default:
-      return state;
+      return { ...state };
   }
 };
 
@@ -137,39 +137,56 @@ export interface CrudTarget {
   label: string;
 }
 
-export const DEFAULT_ROW = {
-  PRODUCT_TYPE: {
-    id: '',
-    name: '',
-    description: '',
-    image: '',
-    isActive: true,
-  },
-  PRODUCT: {
-    id: '',
-    productType_id: '',
-    name: '',
-    description: '',
-    ingredients: [],
-    materials: [],
-    colors: [],
-    sizes: [],
-    howToUse: '',
-    preservation: '',
-    images: [],
-    isActive: true,
-  },
-  BATCH: {
-    id: '',
-    totalQuantity: 0,
-    soldQuantity: 0,
-    MFG: new Date(),
-    EXP: new Date(new Date().setDate(new Date().getDate() + 1)),
-    material: '',
-    size: '',
-    color: '',
-    price: 0,
-    discount: [],
-    product_id: '',
-  },
+export const generateDefaultRow = (collectionName: CollectionName) => {
+  switch (collectionName) {
+    case CollectionName.ProductTypes:
+      return {
+        id: '',
+        name: '',
+        description: '',
+        image: '',
+        isActive: true,
+      };
+    case CollectionName.Products:
+      return {
+        id: '',
+        productType_id: '',
+        name: '',
+        description: '',
+        ingredients: [],
+        materials: [],
+        colors: [],
+        sizes: [],
+        howToUse: '',
+        preservation: '',
+        images: [],
+        isActive: true,
+      };
+    case CollectionName.Batches:
+      const MFG = new Date();
+
+      const EXP = new Date();
+      EXP.setDate(MFG.getDate() + 1);
+
+      const discountDate = new Date(EXP);
+      discountDate.setHours(discountDate.getHours() - 6);
+
+      const discountPercent = 30;
+
+      return {
+        id: '',
+        totalQuantity: 0,
+        soldQuantity: 0,
+        MFG: MFG,
+        EXP: EXP,
+        material: '',
+        size: '',
+        price: 0,
+        discountDate: discountDate,
+        discountPercent: discountPercent,
+        product_id: '',
+      };
+    default:
+      return {};
+  }
 };

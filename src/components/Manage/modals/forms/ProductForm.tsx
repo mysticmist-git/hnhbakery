@@ -10,6 +10,7 @@ import {
   Tabs,
   Autocomplete,
   Stack,
+  Divider,
 } from '@mui/material';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/config';
@@ -405,20 +406,7 @@ const ProductForm = ({
               });
             }}
           />
-          <MyMultiValueInput
-            readOnly={readOnly}
-            label={'Vật liệu'}
-            values={state.displayingData?.materials ?? []}
-            onChange={(values) => {
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: {
-                  ...state.displayingData,
-                  materials: values,
-                },
-              });
-            }}
-          />
+
           <MyMultiValueCheckerInput
             readOnly={readOnly}
             label={'Màu sắc'}
@@ -435,39 +423,32 @@ const ProductForm = ({
             }}
           />
 
+          <Divider
+            sx={{
+              my: 1,
+            }}
+          />
+
+          {/* <MyMultiValueInput
+            readOnly={readOnly}
+            label={'Vật liệu'}
+            values={state.displayingData?.materials ?? []}
+            onChange={(values) => {
+              dispatch({
+                type: ManageActionType.SET_DISPLAYING_DATA,
+                payload: {
+                  ...state.displayingData,
+                  materials: values,
+                },
+              });
+            }}
+          />
+
           <MyMultiValueCheckerInput
             readOnly={readOnly}
             label={'Kích cỡ'}
             values={state.displayingData?.sizes ?? []}
             options={sizes}
-            onChange={(values) => {
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: {
-                  ...state.displayingData,
-                  sizes: values,
-                },
-              });
-            }}
-          />
-          {/* <MyMultiValueInput
-            readOnly={readOnly}
-            label={'Màu sắc'}
-            values={state.displayingData?.colors ?? []}
-            onChange={(values) => {
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: {
-                  ...state.displayingData,
-                  colors: values,
-                },
-              });
-            }}
-          />
-          <MyMultiValueInput
-            readOnly={readOnly}
-            label={'Kích cỡ'}
-            values={state.displayingData?.sizes ?? []}
             onChange={(values) => {
               dispatch({
                 type: ManageActionType.SET_DISPLAYING_DATA,
