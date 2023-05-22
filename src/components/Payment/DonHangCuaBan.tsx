@@ -5,7 +5,15 @@ import formatPrice from '@/utilities/formatCurrency';
 import { RenderSale } from './RenderSale';
 
 export function DonHangCuaBan(props: any) {
-  const { totalBill, Sales, TimKiemMaSale, showDeliveryPrice } = props;
+  const {
+    tamTinh,
+    khuyenMai,
+    tongBill,
+    Sales,
+    TimKiemMaSale,
+    showDeliveryPrice,
+    handleChooseSale,
+  } = props;
   const theme = useTheme();
   return (
     <>
@@ -42,15 +50,14 @@ export function DonHangCuaBan(props: any) {
                     py: '12px',
                     px: 3,
                   }}
-                  children={() => (
-                    <Typography
-                      variant="button"
-                      color={theme.palette.common.white}
-                    >
-                      Sử dụng
-                    </Typography>
-                  )}
-                />
+                >
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    Sử dụng
+                  </Typography>
+                </CustomButton>
               </Grid>
             </Grid>
           </Box>
@@ -64,7 +71,7 @@ export function DonHangCuaBan(props: any) {
             alignItems={'start'}
             spacing={1}
           >
-            <RenderSale Sales={Sales} />
+            <RenderSale Sales={Sales} handleChooseSale={handleChooseSale} />
 
             <Grid item xs={12}>
               <Box
@@ -98,7 +105,7 @@ export function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {formatPrice(totalBill)}
+                  {formatPrice(tamTinh)}
                 </Typography>
               </Box>
             </Grid>
@@ -125,7 +132,7 @@ export function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {showDeliveryPrice ? formatPrice(20000) : formatPrice(0)}
+                  {formatPrice(showDeliveryPrice)}
                 </Typography>
               </Box>
             </Grid>
@@ -152,7 +159,7 @@ export function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {formatPrice(-100000)}
+                  {formatPrice(-1 * khuyenMai)}
                 </Typography>
               </Box>
             </Grid>
@@ -189,7 +196,7 @@ export function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.secondary.main}
                 >
-                  {formatPrice(100000)}
+                  {formatPrice(tongBill)}
                 </Typography>
               </Box>
             </Grid>

@@ -322,8 +322,9 @@ const TypeView = memo((props: any) => {
             <CustomIconButton
               key={i}
               onClick={() => context.handleSetViewState(item.value)}
-              children={() => item.Icon}
-            />
+            >
+              {item.Icon}
+            </CustomIconButton>
           ))}
         </Grid>
       </Grid>
@@ -632,28 +633,24 @@ const CakeCard = memo((props: any) => {
                 borderRadius: '8px',
               }}
             >
-              <CustomIconButton
-                children={() => (
-                  <>
-                    <ShoppingCartIcon
-                      sx={{
-                        color: theme.palette.common.white,
-                        display: isList ? 'none' : 'block',
-                      }}
-                    />
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.common.white}
-                      display={isList ? 'block' : 'none'}
-                      sx={{
-                        px: 0.5,
-                      }}
-                    >
-                      Thêm vào giỏ hàng
-                    </Typography>
-                  </>
-                )}
-              />
+              <CustomIconButton>
+                <ShoppingCartIcon
+                  sx={{
+                    color: theme.palette.common.white,
+                    display: isList ? 'none' : 'block',
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.white}
+                  display={isList ? 'block' : 'none'}
+                  sx={{
+                    px: 0.5,
+                  }}
+                >
+                  Thêm vào giỏ hàng
+                </Typography>
+              </CustomIconButton>
             </Box>
           </Grid>
         </Grid>

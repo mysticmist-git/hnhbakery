@@ -1,26 +1,15 @@
 import ImageBackground from '@/components/imageBackground';
-import {
-  Grid,
-  Typography,
-  useTheme,
-  ListItemText,
-  Button,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Select,
-} from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Link from 'next/link';
-import { createContext, memo, useRef, useState } from 'react';
-import { theme } from '../../tailwind.config';
+import { createContext, memo, useEffect, useRef, useState } from 'react';
 import { CaiKhungCoTitle } from '../components/Layouts/components/CaiKhungCoTitle';
 import Banh1 from '../assets/Carousel/3.jpg';
 import { DanhSachSanPham } from '../components/Payment/DanhSachSanPham';
 import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
-import products from './products';
+import CustomButton from '@/components/Inputs/Buttons/customButton';
 
 // #region Context
 interface PaymentContextType {
@@ -36,6 +25,7 @@ export const PaymentContext =
 
 // #endregion
 
+//#region Giả dữ liệu
 function createProduct(
   id: number,
   name: string,
@@ -144,19 +134,80 @@ const Sales = [
   ),
 ];
 
-const totalBill = Products.reduce((total, product) => {
-  return total + product.totalPrice;
-}, 0);
+const MocGioGiaoHang = [
+  {
+    value: 'Buổi sáng (07:30 - 11:30)',
+    label: 'Buổi sáng',
+    description: '(07:30 - 11:30)',
+  },
+  {
+    value: 'Buổi trưa (11:30 - 13:00)',
+    label: 'Buổi trưa',
+    description: '(11:30 - 13:00)',
+  },
+  {
+    value: 'Buổi chiều (13:00 - 17:00)',
+    label: 'Buổi chiều',
+    description: '(13:00 - 17:00)',
+  },
+  {
+    value: 'Buổi tối (17:00 - 21:00)',
+    label: 'Buổi tối',
+    description: '(17:00 - 21:00)',
+  },
+  {
+    value: 'Cụ thể',
+    label: 'Cụ thể',
+    description: 'Chọn mốc thời gian',
+  },
+];
+
+//#endregion
 
 const Payment = () => {
   const theme = useTheme();
-  const [showDeliveryPrice, setShowDeliveryPrice] = useState(false);
 
-  const handleShowSetDeliveryPrice = (value: boolean) => {
-    setShowDeliveryPrice(value);
+  //#region Hook
+  const [phiVanChuyen, setPhiVanChuyen] = useState(0);
+
+  const handleSetPhiVanChuyen = (value: number) => {
+    setPhiVanChuyen(value);
   };
 
+  const tamTinh = Products.reduce((total, product) => {
+    return total + product.totalPrice;
+  }, 0);
+
+  const [khuyenMai, setKhuyenMai] = useState(0);
+
   const TimKiemMaSale = () => {};
+
+  const [chooseSale, setChooseSale] = useState('');
+  const handleChooseSale = (id: string) => {
+    setChooseSale(id);
+    if (id) {
+      const sale: any = Sales.find((sale: any) => sale.id === id);
+      if (tamTinh * sale.percentage < sale.maxDiscountPrice) {
+        setKhuyenMai(tamTinh * sale.percentage);
+      } else {
+        setKhuyenMai(sale.maxDiscountPrice);
+      }
+    } else {
+      setKhuyenMai(0);
+    }
+  };
+
+  const [tongBill, setTongBill] = useState(0);
+
+  const handleTongBill = () => {
+    setTongBill(tamTinh - khuyenMai + phiVanChuyen);
+  };
+
+  useEffect(() => {
+    handleTongBill();
+  }, [tamTinh, khuyenMai, phiVanChuyen]);
+
+  //#endregion
 
   return (
     <>
@@ -222,7 +273,8 @@ const Payment = () => {
               <Grid item xs={12}>
                 <CaiKhungCoTitle title={'Thông tin giao hàng'}>
                   <FormGiaoHang
-                    handleShowSetDeliveryPrice={handleShowSetDeliveryPrice}
+                    handleSetPhiVanChuyen={handleSetPhiVanChuyen}
+                    MocGioGiaoHang={MocGioGiaoHang}
                   />
                 </CaiKhungCoTitle>
               </Grid>
@@ -239,12 +291,26 @@ const Payment = () => {
               <Grid item xs={12} md={6}>
                 <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
                   <DonHangCuaBan
-                    totalBill={totalBill}
+                    tamTinh={tamTinh}
+                    khuyenMai={khuyenMai}
+                    tongBill={tongBill}
                     Sales={Sales}
                     TimKiemMaSale={TimKiemMaSale}
-                    showDeliveryPrice={showDeliveryPrice}
+                    showDeliveryPrice={phiVanChuyen}
+                    handleChooseSale={handleChooseSale}
                   />
                 </CaiKhungCoTitle>
+              </Grid>
+
+              <Grid item xs={'auto'}>
+                <CustomButton>
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    Phương thức thanh toán
+                  </Typography>
+                </CustomButton>
               </Grid>
             </Grid>
           </Box>

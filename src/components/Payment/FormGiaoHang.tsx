@@ -6,27 +6,24 @@ import { CustomTextarea } from '@/components/Inputs/CustomTextarea';
 import { useEffect, useState } from 'react';
 
 export default function FormGiaoHang(props: any) {
-  const { handleShowSetDeliveryPrice } = props;
+  const { MocGioGiaoHang, handleSetPhiVanChuyen } = props;
 
   const [diaChi, setDiaChi] = useState('');
-  const [thoiGianGiao, setThoiGianGiao] = useState('');
+  const [thoiGianGiao, setThoiGianGiao] = useState(MocGioGiaoHang[0].value);
   const [ngayGiao, setNgayGiao] = useState('');
 
   useEffect(() => {
     console.log(diaChi, thoiGianGiao, ngayGiao);
 
     if (diaChi !== '' && thoiGianGiao !== '' && ngayGiao !== '') {
-      console.log('Hi');
-      handleShowSetDeliveryPrice(true);
+      handleSetPhiVanChuyen(100000);
+      // tôi muốn kiểu có 1 cái api tính khoảng cách từ địa chỉ nhập đến trường UIT và cho ra phí vận chuyển!
     } else {
-      console.log('Hello');
-      handleShowSetDeliveryPrice(false);
+      handleSetPhiVanChuyen(0);
     }
   }, [diaChi, thoiGianGiao, ngayGiao]);
 
   const theme = useTheme();
-
-  console.log(diaChi, thoiGianGiao, ngayGiao);
 
   return (
     <>
@@ -120,7 +117,7 @@ export default function FormGiaoHang(props: any) {
               direction="row"
               spacing={1}
               justifyContent={'center'}
-              alignItems={'center'}
+              alignItems={'start'}
             >
               <Grid item xs={6}>
                 <Grid
@@ -180,11 +177,11 @@ export default function FormGiaoHang(props: any) {
                       <Grid item xs={12}>
                         <ChooseTime
                           required
-                          value={thoiGianGiao}
-                          placeholder="Chọn mốc thời gian"
+                          thoiGianGiao={thoiGianGiao}
                           handleSetThoiGianGiao={(value: string) =>
                             setThoiGianGiao(value)
                           }
+                          options={MocGioGiaoHang}
                           fullWidth
                           select
                           type="text"

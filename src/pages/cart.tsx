@@ -122,22 +122,19 @@ function UI_Delete(props: any) {
               color: theme.palette.common.white,
             },
           }}
-          children={() => (
-            <DeleteIcon sx={{ color: theme.palette.common.white }} />
-          )}
-        />
+        >
+          <DeleteIcon sx={{ color: theme.palette.common.white }} />
+        </CustomIconButton>
       ) : (
-        <CustomButton
-          children={() => (
-            <Typography
-              sx={{ px: 4 }}
-              variant="button"
-              color={theme.palette.common.white}
-            >
-              Xóa
-            </Typography>
-          )}
-        />
+        <CustomButton>
+          <Typography
+            sx={{ px: 4 }}
+            variant="button"
+            color={theme.palette.common.white}
+          >
+            Xóa
+          </Typography>
+        </CustomButton>
       )}
     </>
   );
@@ -681,15 +678,14 @@ const Cart = () => {
                         width: '100%',
                         bgColor: theme.palette.secondary.dark,
                       }}
-                      children={() => (
-                        <Typography
-                          variant="button"
-                          color={theme.palette.common.white}
-                        >
-                          Tiếp tục mua hàng
-                        </Typography>
-                      )}
-                    />
+                    >
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
+                      >
+                        Tiếp tục mua hàng
+                      </Typography>
+                    </CustomButton>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <CustomButton
@@ -700,15 +696,14 @@ const Cart = () => {
                         py: 1.5,
                         width: '100%',
                       }}
-                      children={() => (
-                        <Typography
-                          variant="button"
-                          color={theme.palette.common.white}
-                        >
-                          Thanh toán
-                        </Typography>
-                      )}
-                    />
+                    >
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
+                      >
+                        Thanh toán
+                      </Typography>
+                    </CustomButton>
                   </Grid>
                 </Grid>
               </Grid>

@@ -137,8 +137,11 @@ const SignUpForm = ({
               mt: 3,
               mb: 2,
             }}
-            children={() => <Typography variant="button">Đăng ký</Typography>}
-          />
+          >
+            <Typography variant="button" color={theme.palette.common.white}>
+              Đăng ký
+            </Typography>
+          </CustomButton>
         </Grid>
 
         <Grid item xs={12}>

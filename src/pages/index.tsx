@@ -292,15 +292,11 @@ const DangKyKhuyenMai = memo((props: any) => {
                   py: '12px',
                   px: 3,
                 }}
-                children={() => (
-                  <Typography
-                    variant="button"
-                    color={theme.palette.common.white}
-                  >
-                    Đăng ký
-                  </Typography>
-                )}
-              />
+              >
+                <Typography variant="button" color={theme.palette.common.white}>
+                  Đăng ký
+                </Typography>
+              </CustomButton>
             </Grid>
           </Grid>
         </Grid>

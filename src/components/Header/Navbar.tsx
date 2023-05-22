@@ -116,8 +116,9 @@ function CustomToolBarContent(props: any) {
                   : theme.palette.common.white,
               }}
               onClick={() => handleSetDrawerOpenState(true)}
-              children={() => <Menu />}
-            />
+            >
+              <Menu />
+            </CustomIconButton>
 
             <CustomDrawer />
           </Grid>

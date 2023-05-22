@@ -120,6 +120,7 @@ function RenderSaleItem(props: any) {
 }
 export function RenderSale(props: any) {
   const theme = useTheme();
+  const { handleChooseSale } = props;
   const { Sales = [] } = props;
   const [checkedSales, setCheckedSales] = useState(
     Sales.map(function (sale: any) {
@@ -132,6 +133,11 @@ export function RenderSale(props: any) {
       checkedSales.map((sale: any) => {
         if (sale.id === id) {
           sale.isChecked = !sale.isChecked;
+          if (sale.isChecked) {
+            handleChooseSale(sale.id);
+          } else {
+            handleChooseSale('');
+          }
         } else {
           sale.isChecked = false;
         }

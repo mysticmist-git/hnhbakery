@@ -329,15 +329,14 @@ const Login = () => {
                             py: 1.5,
                             borderRadius: '8px',
                           }}
-                          children={() => (
-                            <Typography
-                              sx={{ color: theme.palette.common.white }}
-                              variant="body2"
-                            >
-                              Đăng nhập
-                            </Typography>
-                          )}
-                        />
+                        >
+                          <Typography
+                            sx={{ color: theme.palette.common.white }}
+                            variant="body2"
+                          >
+                            Đăng nhập
+                          </Typography>
+                        </CustomButton>
                       </Grid>
                       <Grid item xs={12}>
                         <Button

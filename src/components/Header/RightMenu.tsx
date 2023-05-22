@@ -41,19 +41,17 @@ const RightMenu = (props: any) => {
             ? theme.palette.secondary.main
             : theme.palette.common.white,
         }}
-        children={() => <ShoppingCart />}
-      />
+      >
+        <ShoppingCart />
+      </CustomIconButton>
       {context.isSignIn ? (
         <NavbarAvatar photoURL={photoURL} />
       ) : (
-        <CustomButton
-          children={() => (
-            <Typography variant="button" color={theme.palette.common.white}>
-              Đăng nhập
-            </Typography>
-          )}
-          onClick={handleLoginRoute}
-        />
+        <CustomButton onClick={handleLoginRoute}>
+          <Typography variant="button" color={theme.palette.common.white}>
+            Đăng nhập
+          </Typography>
+        </CustomButton>
       )}
     </>
   );

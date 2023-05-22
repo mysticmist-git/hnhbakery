@@ -621,21 +621,19 @@ const Product = memo((props: any) => {
               ))}
 
               <Grid item xs={12}>
-                <CustomButton
-                  children={() => (
-                    <Link
-                      href={item.product.href}
-                      style={{ textDecoration: 'none' }}
+                <CustomButton>
+                  <Link
+                    href={item.product.href}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.white}
                     >
-                      <Typography
-                        variant="button"
-                        color={theme.palette.common.white}
-                      >
-                        Xem chi tiết
-                      </Typography>
-                    </Link>
-                  )}
-                />
+                      Xem chi tiết
+                    </Typography>
+                  </Link>
+                </CustomButton>
               </Grid>
             </Grid>
           </Grid>
@@ -876,10 +874,9 @@ const Search = () => {
             <Grid item>
               <CustomButton
                 sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
-                children={() => (
-                  <Typography variant="button">Tìm kiếm</Typography>
-                )}
-              />
+              >
+                <Typography variant="button">Tìm kiếm</Typography>
+              </CustomButton>
             </Grid>
           </Grid>
           <Grid
