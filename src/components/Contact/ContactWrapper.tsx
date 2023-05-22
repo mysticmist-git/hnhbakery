@@ -1,65 +1,45 @@
-import { Card, Container, Divider, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  Container,
+  Divider,
+  Typography,
+  useTheme,
+  Grid,
+  alpha,
+} from '@mui/material';
 import { Stack } from '@mui/system';
 import { memo } from 'react';
 import contactImage from '@/assets/contact-img.jpg';
+import bg10 from '../../assets/Decorate/bg10.png';
 import Image from 'next/image';
 
-const ContactWrapper = ({
-  title,
-  children = '',
-}: {
-  title: string;
-  children?: React.ReactNode;
-}) => {
+const ContactWrapper = ({ children = '' }: { children?: React.ReactNode }) => {
+  const theme = useTheme();
   return (
-    <Container
+    <Box
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        paddingTop: 8,
+        mt: 8,
+        border: 3,
+        borderColor: theme.palette.secondary.main,
+        borderRadius: '8px',
+        overflow: 'hidden',
+        backgroundImage: `url(${contactImage.src})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
-      <Card
+      <Box
         sx={{
-          width: 1000,
+          backgroundColor: alpha(theme.palette.common.black, 0.75),
+          backdropFilter: 'blur(1px)',
+          p: 2,
         }}
       >
-        <Stack width={'100%'} overflow={'hidden'}>
-          <Image
-            src={contactImage}
-            alt="Contact"
-            style={{
-              width: '100%',
-              height: 250,
-              objectFit: 'cover',
-              objectPosition: '50% -160px',
-            }}
-          />
-
-          <Divider
-            sx={{
-              color: (theme) => theme.palette.common.black,
-            }}
-          />
-
-          <Stack p={4} rowGap={3} width={'100%'}>
-            <Typography variant="h2">Liên hệ</Typography>
-            <Divider
-              sx={{
-                color: (theme) => theme.palette.common.black,
-              }}
-            />
-            <Typography variant="body2">{title}</Typography>
-            <Divider
-              sx={{
-                color: (theme) => theme.palette.common.black,
-              }}
-            />
-            {children}
-          </Stack>
-        </Stack>
-      </Card>
-    </Container>
+        {children}
+      </Box>
+    </Box>
   );
 };
 

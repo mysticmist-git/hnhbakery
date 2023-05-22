@@ -105,7 +105,7 @@ export default function DialogHinhThucThanhToan(props: any) {
           '& .MuiDialog-paper': {
             backgroundColor: theme.palette.common.white,
             borderRadius: '8px',
-            width: '50vw',
+            width: { md: '50vw', xs: '85vw' },
           },
           transition: 'all 0.5s ease-in-out',
         }}
