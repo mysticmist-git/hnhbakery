@@ -173,29 +173,6 @@ const SignUpForm = ({
           </Box>
         </Grid>
       </Grid>
-
-      {/* <Grid
-        item
-        xs={12}
-        sx={{
-          mb: '1rem',
-        }}
-      >
-        <Divider />
-        <Button
-          fullWidth
-          startIcon={<Google />}
-          variant="outlined"
-          color="secondary"
-          sx={{
-            mt: '1rem',
-            display: 'none',
-          }}
-          onClick={handleLoginWithGoogle}
-        >
-          Đăng ký với Google
-        </Button>
-      </Grid> */}
     </Box>
   );
 };

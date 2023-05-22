@@ -10,7 +10,7 @@ const ImageBackground = (props: any) => {
     <Box
       sx={{
         width: '100%',
-        height: '380px',
+        height: '340px',
         backgroundImage: `url(${banh1.src})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
@@ -38,7 +38,7 @@ const ImageBackground = (props: any) => {
         />
         <Box
           sx={{
-            height: '80px',
+            height: '30px',
             width: '100%',
             overflow: 'visible',
             background: `linear-gradient(to bottom, ${alpha(

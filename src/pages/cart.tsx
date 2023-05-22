@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Typography,
+  alpha,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -471,12 +472,18 @@ function GhiChuCuaBan(props: any) {
         sx={{
           alignSelf: 'stretch',
           justifySelf: 'stretch',
+          '&:hover': {
+            boxShadow: `0px 0px 5px 2px ${alpha(
+              theme.palette.secondary.main,
+              0.3,
+            )}`,
+          },
         }}
       >
         <CustomTextarea
           minRows={3}
           style={{ minHeight: '40px' }}
-          placeholder="Nhập ghi chú của bạn"
+          placeholder="Ghi chú cho đầu bếp bên mình"
         />
       </Box>
     </Box>
@@ -607,7 +614,7 @@ const Cart = () => {
                     spacing={2}
                   >
                     <Grid item xs={12}>
-                      <Link href="/" style={{ textDecoration: 'none' }}>
+                      <Link href="/products" style={{ textDecoration: 'none' }}>
                         <Typography
                           align="center"
                           variant="h3"
@@ -618,7 +625,7 @@ const Cart = () => {
                             },
                           }}
                         >
-                          Trang chủ
+                          Sản phẩm
                         </Typography>
                       </Link>
                     </Grid>
