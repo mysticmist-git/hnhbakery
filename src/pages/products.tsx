@@ -787,14 +787,16 @@ const ProductList = memo((props: any) => {
 
       console.log(colorChecks);
 
+      console.log(productList);
+
       return [
         ...productList.filter((product) => {
           for (const color of colorChecks) {
-            if (!product.colors.includes(color!)) {
-              return false;
+            if (product.colors.includes(color!)) {
+              return true;
             }
           }
-          return true;
+          return false;
         }),
       ];
     }
@@ -1337,6 +1339,7 @@ async function fetchProductTypesWithLowestPrices(
           image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
           href: `${DETAIL_PATH}?id=${productData.id}`,
           totalSoldQuantity: await getTotalSoldQuantity(productData.id),
+          colors: productData.colors,
         } as ProductItem;
       }),
     );
@@ -1367,14 +1370,11 @@ export async function getServerSideProps() {
     );
 
     const sizes = productBatches.map((batch) => batch.size);
-    const colors = productBatches.map((batch) => batch.color);
+
     return {
       ...product,
       sizes: sizes.filter(function (item, pos) {
         return sizes.indexOf(item) == pos;
-      }),
-      colors: colors.filter((item, pos) => {
-        return colors.indexOf(item) == pos;
       }),
     };
   });
