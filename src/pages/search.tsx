@@ -8,7 +8,14 @@ import {
   AccordionDetails,
   Link,
 } from '@mui/material';
-import React, { useState, createContext, useContext, memo } from 'react';
+import React, {
+  useState,
+  createContext,
+  useContext,
+  memo,
+  RefObject,
+  useRef,
+} from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
@@ -788,6 +795,14 @@ const Search = () => {
   const [productInforState, setProductInforState] =
     useState<any>(initProductInfor);
 
+  // #region scroll
+
+  const handleClick = () => {
+    const top: number = 280;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+  //#endregion
+
   return (
     <SearchContext.Provider
       value={{
@@ -827,8 +842,8 @@ const Search = () => {
 
         <Box
           sx={{
-            pt: 8,
-            py: 12,
+            pt: 4,
+            pb: 12,
             px: { xs: 2, sm: 2, md: 4, lg: 8 },
             overflow: 'visible',
           }}
@@ -849,8 +864,8 @@ const Search = () => {
             variant="body2"
             color={theme.palette.common.black}
           >
-            Tìm kiếm loại bánh, tên bánh, mã hóa đơn, các chính sách, điều khoản
-            dịch vụ, …
+            Tìm kiếm hóa đơn, theo dõi đơn hàng, các chính sách, điều khoản dịch
+            vụ, …
           </Typography>
           <Grid
             sx={{
@@ -864,9 +879,10 @@ const Search = () => {
           >
             <Grid item xs={true}>
               <CustomTextField
+                onClick={handleClick}
                 fullWidth
-                placeholder="Loại bánh, tên bánh, mã hóa đơn,..."
-                type="email"
+                placeholder="Mã hóa đơn, chính sách đổi trả, chính sách bảo mật, điều khoản dịch vụ,..."
+                type="text"
               />
             </Grid>
             <Grid item>

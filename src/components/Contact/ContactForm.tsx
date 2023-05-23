@@ -1,12 +1,24 @@
 import { db } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
 import { sendContact } from '@/lib/firestore/firestoreLib';
-import { Button, Divider, Grid, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  Divider,
+  Grid,
+  TextField,
+  Typography,
+  alpha,
+} from '@mui/material';
 import { addDoc, collection } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
 import { Router, useRouter } from 'next/router';
 import { title } from 'process';
 import React, { createRef, memo, useRef } from 'react';
+import CustomTextField from '../Inputs/CustomTextField';
+import theme from '@/styles/themes/lightTheme';
+import { CustomTextarea } from '../Inputs/CustomTextarea';
+import CustomButton from '../Inputs/Buttons/customButton';
 
 const ContactForm = () => {
   // #region Refs
@@ -76,68 +88,117 @@ const ContactForm = () => {
   // #endregion
 
   return (
-    <Grid container spacing={1} component={'form'} onSubmit={handleSubmit}>
-      <Grid item xs={5.9} gap={1} display={'flex'} direction={'column'}>
-        <TextField
-          inputRef={nameRef}
-          error={nameRef?.current?.value === ''}
-          fullWidth
-          title="Họ và tên"
-          placeholder="Họ và tên"
-          name="name"
-          type="text"
-        />
-        <TextField
-          inputRef={phoneRef}
-          error={phoneRef?.current?.value === ''}
-          name="phone"
-          fullWidth
-          title="Số điện thoại"
-          placeholder="Số điện thoại"
-          type="tel"
-        />
-        <TextField
-          inputRef={emailRef}
-          error={emailRef?.current?.value === ''}
-          fullWidth
-          title="Email"
-          placeholder="Email"
-          name="email"
-          type="email"
-        />
+    <Grid
+      container
+      justifyContent={'center'}
+      alignItems={'start'}
+      direction={'row'}
+      spacing={2}
+      component={'form'}
+      onSubmit={handleSubmit}
+    >
+      <Grid item xs={12}>
+        <Grid
+          container
+          justifyContent={'center'}
+          alignItems={'start'}
+          direction={'row'}
+          spacing={1}
+        >
+          <Grid item xs={12}>
+            <Typography variant="button" color={theme.palette.common.white}>
+              Thông tin liên hệ
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <CustomTextField
+              inputRef={nameRef}
+              error={nameRef?.current?.value === ''}
+              fullWidth
+              placeholder="Họ và tên"
+              required
+              autoComplete="name"
+              name="name"
+              type="text"
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <CustomTextField
+              inputRef={phoneRef}
+              error={phoneRef?.current?.value === ''}
+              name="phone"
+              fullWidth
+              placeholder="Số điện thoại"
+              type="tel"
+              autoComplete="tel"
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <CustomTextField
+              inputRef={emailRef}
+              error={emailRef?.current?.value === ''}
+              fullWidth
+              placeholder="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+            />
+          </Grid>
+        </Grid>
       </Grid>
-      <Grid item xs={0.2} justifyContent={'center'} display={'flex'}>
-        <Divider
-          orientation="vertical"
-          sx={{
-            color: (theme) => theme.palette.common.black,
-          }}
-        />
+
+      <Grid item xs={12}>
+        <Grid
+          container
+          justifyContent={'center'}
+          alignItems={'start'}
+          direction={'row'}
+          spacing={1}
+        >
+          <Grid item xs={12}>
+            <Typography variant="button" color={theme.palette.common.white}>
+              Nội dung iên hệ
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <CustomTextField
+              inputRef={titleRef}
+              error={titleRef?.current?.value === ''}
+              fullWidth
+              placeholder="Chủ đề"
+              name="title"
+              type="text"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                border: 3,
+                borderColor: theme.palette.secondary.main,
+                borderRadius: '8px',
+                overflow: 'hidden',
+                bgcolor: theme.palette.common.white,
+              }}
+            >
+              <CustomTextarea
+                // inputRef={contentRef}
+                // error={contentRef?.current?.value === ''}
+                placeholder="Mô tả"
+                name="content"
+                style={{
+                  minHeight: '132px',
+                }}
+              />
+            </Box>
+          </Grid>
+        </Grid>
       </Grid>
-      <Grid item xs={5.9} gap={1} display={'flex'} direction={'column'}>
-        <TextField
-          inputRef={titleRef}
-          error={titleRef?.current?.value === ''}
-          fullWidth
-          title="Tựa đề"
-          placeholder="Tựa đề của bạn..."
-          name="title"
-          type="text"
-        />
-        <TextField
-          inputRef={contentRef}
-          error={contentRef?.current?.value === ''}
-          fullWidth
-          title="Nội dung"
-          placeholder="Nội dung liên hệ"
-          multiline
-          rows={5}
-          name="content"
-          type="text"
-        />
-        <Button color="secondary" variant="contained" type="submit">
-          Gửi
-        </Button>
+      <Grid item xs={'auto'}>
+        <CustomButton type="submit" sx={{ px: 8 }}>
+          <Typography variant="button" color={theme.palette.common.white}>
+            Gửi
+          </Typography>
+        </CustomButton>
       </Grid>
     </Grid>
   );

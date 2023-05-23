@@ -36,6 +36,7 @@ import { Ref } from '@/lib/contexts/payment';
 import { DeliveryObject } from '@/lib/models/Delivery';
 import { BillObject } from '@/lib/models/Bill';
 import { BillDetailObject } from '@/lib/models/BillDetail';
+import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
 
 // #region Context
 interface PaymentContextType {
@@ -187,8 +188,6 @@ const MocGioGiaoHang = [
     description: 'Chọn mốc thời gian',
   },
 ];
-
-//#endregion
 
 const Payment = () => {
   //#region Hooks
@@ -351,6 +350,14 @@ const Payment = () => {
 
   // #endregion
 
+  const [open, setOpen] = useState(false);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
     <>
       <PaymentContext.Provider value={initPaymentContext}>
@@ -444,7 +451,7 @@ const Payment = () => {
               </Grid>
 
               <Grid item xs={'auto'}>
-                <CustomButton onClick={handleProceedPayment}>
+                <CustomButton onClick={handleClickOpen}>
                   <Typography
                     variant="button"
                     color={theme.palette.common.white}
@@ -455,6 +462,7 @@ const Payment = () => {
               </Grid>
             </Grid>
           </Box>
+          <DialogHinhThucThanhToan open={open} handleClose={handleClose} />
         </Box>
       </PaymentContext.Provider>
     </>

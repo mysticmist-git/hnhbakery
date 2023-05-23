@@ -1011,7 +1011,6 @@ const Products = ({ products }: { products: string }) => {
   //#endregion
 
   // #region scroll
-  const inputRef: RefObject<HTMLInputElement> = useRef(null);
 
   const handleClick = () => {
     const top: number = 280;
@@ -1066,7 +1065,7 @@ const Products = ({ products }: { products: string }) => {
             </Grid>
           </ImageBackground>
 
-          <Box sx={{ pt: 4, pb: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+          <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
@@ -1104,7 +1103,6 @@ const Products = ({ products }: { products: string }) => {
                         maxRows="1"
                         onChange={handleChangeSearch}
                         onClick={handleClick}
-                        inputRef={inputRef}
                         InputProps={{
                           disableUnderline: true,
                           style: {
