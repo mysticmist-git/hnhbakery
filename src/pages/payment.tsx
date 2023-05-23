@@ -382,7 +382,7 @@ const Payment = () => {
   return (
     <>
       <PaymentContext.Provider value={initPaymentContext}>
-        <Box sx={{ pb: 8 }}>
+        <Box sx={{ pb: 16 }}>
           <ImageBackground>
             <Grid
               container
@@ -430,7 +430,7 @@ const Payment = () => {
             </Grid>
           </ImageBackground>
 
-          <Box sx={{ pt: 12, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+          <Box sx={{ pt: 4, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
               container
               direction={'row'}
