@@ -922,10 +922,19 @@ const ProductList = memo((props: any) => {
 
     return filteredProductList;
   }
+  function removeAccents(str: string) {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
 
   function searchProductList(productList: ProductItem[], searchText: string) {
     return productList.filter((product) => {
-      return product.name.toLowerCase().includes(searchText.toLowerCase());
+      return removeAccents(product.name.toLowerCase()).includes(
+        searchText.toLowerCase(),
+      );
     });
   }
 

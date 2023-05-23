@@ -14,7 +14,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { ref } from 'firebase/storage';
 import { Router, useRouter } from 'next/router';
 import { title } from 'process';
-import React, { createRef, memo, useRef } from 'react';
+import React, { HTMLInputTypeAttribute, createRef, memo, useRef } from 'react';
 import CustomTextField from '../Inputs/CustomTextField';
 import theme from '@/styles/themes/lightTheme';
 import { CustomTextarea } from '../Inputs/CustomTextarea';
@@ -27,7 +27,7 @@ const ContactForm = () => {
   const phoneRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   // #endregion
 
@@ -112,7 +112,7 @@ const ContactForm = () => {
           </Grid>
           <Grid item xs={12}>
             <CustomTextField
-              inputRef={nameRef}
+              ref={nameRef}
               error={nameRef?.current?.value === ''}
               fullWidth
               placeholder="Họ và tên"
@@ -124,7 +124,7 @@ const ContactForm = () => {
           </Grid>
           <Grid item xs={6}>
             <CustomTextField
-              inputRef={phoneRef}
+              ref={phoneRef}
               error={phoneRef?.current?.value === ''}
               name="phone"
               fullWidth
@@ -135,7 +135,7 @@ const ContactForm = () => {
           </Grid>
           <Grid item xs={6}>
             <CustomTextField
-              inputRef={emailRef}
+              ref={emailRef}
               error={emailRef?.current?.value === ''}
               fullWidth
               placeholder="Email"
@@ -162,7 +162,7 @@ const ContactForm = () => {
           </Grid>
           <Grid item xs={12}>
             <CustomTextField
-              inputRef={titleRef}
+              ref={titleRef}
               error={titleRef?.current?.value === ''}
               fullWidth
               placeholder="Chủ đề"
@@ -183,6 +183,7 @@ const ContactForm = () => {
               <CustomTextarea
                 // inputRef={contentRef}
                 // error={contentRef?.current?.value === ''}
+                ref={contentRef}
                 placeholder="Mô tả"
                 name="content"
                 style={{
