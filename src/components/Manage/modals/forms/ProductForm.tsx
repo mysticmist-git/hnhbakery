@@ -429,7 +429,7 @@ const ProductForm = ({
             }}
           />
 
-          {/* <MyMultiValueInput
+          <MyMultiValueInput
             readOnly={readOnly}
             label={'Vật liệu'}
             values={state.displayingData?.materials ?? []}
@@ -458,7 +458,7 @@ const ProductForm = ({
                 },
               });
             }}
-          /> */}
+          />
         </Stack>
       </TabPanel>
     </>

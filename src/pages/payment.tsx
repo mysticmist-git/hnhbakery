@@ -37,20 +37,11 @@ import { DeliveryObject } from '@/lib/models/Delivery';
 import { BillObject } from '@/lib/models/Bill';
 import { BillDetailObject } from '@/lib/models/BillDetail';
 import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
-
-// #region Context
-interface PaymentContextType {
-  productBill: any;
-}
-
-const initPaymentContext: PaymentContextType = {
-  productBill: [],
-};
-
-export const PaymentContext =
-  createContext<PaymentContextType>(initPaymentContext);
-
-// #endregion
+import { DataArrayOutlined } from '@mui/icons-material';
+import {
+  PaymentContext,
+  initPaymentContext,
+} from '@/lib/contexts/paymentContext';
 
 //#region Giả dữ liệu
 function createProduct(
@@ -324,6 +315,8 @@ const Payment = () => {
   };
 
   const handleProceedPayment = async () => {
+    console.log('Running...');
+
     const billData = createBillData();
     const billRef = await addDoc(collection(db, 'bills'), billData);
 
@@ -346,6 +339,34 @@ const Payment = () => {
       batch.set(docRef, billDetail);
     });
     await batch.commit();
+
+    const reqData = {
+      billId: billRef.id,
+      totalPrice: tamTinh,
+      paymentDescription: `THANH TOAN CHO DON HANG ${billRef.id}`,
+    };
+
+    console.log(reqData);
+
+    fetch('/api/create-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+
+        if (data.url) {
+          console.log(data.url);
+          window.location.href = data.url;
+        }
+      })
+      .catch((error) => console.error(error));
+
+    console.log('Finishing...');
   };
 
   // #endregion
@@ -462,7 +483,11 @@ const Payment = () => {
               </Grid>
             </Grid>
           </Box>
-          <DialogHinhThucThanhToan open={open} handleClose={handleClose} />
+          <DialogHinhThucThanhToan
+            open={open}
+            handleClose={handleClose}
+            handlePayment={() => handleProceedPayment()}
+          />
         </Box>
       </PaymentContext.Provider>
     </>

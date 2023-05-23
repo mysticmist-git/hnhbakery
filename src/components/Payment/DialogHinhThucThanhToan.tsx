@@ -3,14 +3,12 @@ import {
   DialogTitle,
   Typography,
   DialogContent,
-  DialogActions,
   Box,
   useTheme,
   alpha,
   Grid,
+  Button,
 } from '@mui/material';
-import { CustomTextField } from '../Inputs';
-import { CustomButton } from '../Inputs/Buttons';
 import bg from '../../assets/Decorate/bg10.png';
 import vnpay from '../../assets/Decorate/vnpay.jpg';
 import momo from '../../assets/Decorate/MOMO.jpg';
@@ -20,17 +18,24 @@ import CustomIconButton from '../Inputs/Buttons/customIconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { getCollection } from '@/lib/firestore';
 import { PaymentObject } from '@/lib/models/Payment';
-import { SettingsApplicationsTwoTone } from '@mui/icons-material';
+import Link from 'next/link';
 
-function PTTT_item(props: any) {
+interface Props {
+  billId: string;
+  totalPrice: number;
+  paymentDescription: string;
+}
+
+function PTTT_item({ item, onClick }: { item: any; onClick: any }) {
   const theme = useTheme();
-  const { item } = props;
-  const { name, image, href } = item;
+  const { name, image } = item;
 
   const [isHover, setIsHover] = useState(false);
 
   return (
     <Box
+      component={Button}
+      onClick={() => onClick()}
       sx={{
         width: '100%',
         height: '25vh',
@@ -77,9 +82,15 @@ function PTTT_item(props: any) {
   );
 }
 
-export default function DialogHinhThucThanhToan(props: any) {
-  const { open, handleClose } = props;
-
+export default function DialogHinhThucThanhToan({
+  open,
+  handleClose,
+  handlePayment,
+}: {
+  open: boolean;
+  handleClose: any;
+  handlePayment: any;
+}) {
   // #region Hooks
 
   const theme = useTheme();
@@ -163,7 +174,7 @@ export default function DialogHinhThucThanhToan(props: any) {
           >
             {PTTTs.map((item: PaymentObject, index: number) => (
               <Grid item key={index} xs={12}>
-                <PTTT_item item={item} />
+                <PTTT_item item={item} onClick={() => handlePayment()} />
               </Grid>
             ))}
           </Grid>

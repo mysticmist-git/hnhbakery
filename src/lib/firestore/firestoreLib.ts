@@ -207,7 +207,7 @@ export function getDocsFromQuerySnapshot(
 export async function getBestSellterProducts(): Promise<ProductObject[]> {
   // Constants
   const minSoldQuantity = 5;
-  const queryLimit = 6;
+  const queryLimit = 7;
 
   // Create a reference to the batches collection
   const batchesRef = collection(db, 'batches');
