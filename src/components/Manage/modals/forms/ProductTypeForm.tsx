@@ -58,6 +58,7 @@ const ProductTypeForm = ({
           priority
           style={{
             borderRadius: '0.4rem',
+            objectFit: 'contain',
           }}
         />
 

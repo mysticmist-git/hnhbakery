@@ -33,6 +33,7 @@ export interface ProductsContextType {
   SortList: any;
   handleSetSortList: any;
   ProductList: ProductItem[];
+  searchText: string;
 }
 
 export const initProductsContext: ProductsContextType = {
@@ -44,6 +45,8 @@ export const initProductsContext: ProductsContextType = {
   handleCheckBox: () => {},
   handleSetViewState: () => {},
   handleSetSortList: () => {},
+
+  searchText: '',
 };
 
 const ProductsContext = createContext<ProductsContextType>(initProductsContext);
