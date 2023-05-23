@@ -1235,19 +1235,27 @@ const initStars = {
 //#endregion
 
 const ProductDetail = ({ productDetail }: { productDetail: string }) => {
+  // #region Hooks
+
   const theme = useTheme();
+
+  // #endregion
+
+  // #region useMemos
 
   const convertedProductDetail: ProductDetail = useMemo(
     () => JSON.parse(productDetail),
     [ProductDetail],
   );
 
-  const [starState, setStarState] = useState(initStars);
-
   const defaultBatch = useMemo(
     () => convertedProductDetail.batches[0],
     [convertedProductDetail],
   );
+
+  // #endregion
+
+  // #region States
 
   const [form, setForm] = useState({
     size: defaultBatch.size,
@@ -1255,8 +1263,13 @@ const ProductDetail = ({ productDetail }: { productDetail: string }) => {
     quantity: 0,
   });
 
-  console.log(JSON.parse(productDetail));
-  console.log(form);
+  const [starState, setStarState] = useState(initStars);
+
+  // #endregion
+
+  // #region useEffects
+
+  // #endregion
 
   return (
     <>

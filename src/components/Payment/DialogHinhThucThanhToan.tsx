@@ -15,22 +15,12 @@ import bg from '../../assets/Decorate/bg10.png';
 import vnpay from '../../assets/Decorate/vnpay.jpg';
 import momo from '../../assets/Decorate/MOMO.jpg';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CustomIconButton from '../Inputs/Buttons/customIconButton';
 import CloseIcon from '@mui/icons-material/Close';
-
-const PTTTs = [
-  {
-    name: 'VNPay',
-    image: vnpay.src,
-    href: '',
-  },
-  {
-    name: 'MoMo',
-    image: momo.src,
-    href: '',
-  },
-];
+import { getCollection } from '@/lib/firestore';
+import { PaymentObject } from '@/lib/models/Payment';
+import { SettingsApplicationsTwoTone } from '@mui/icons-material';
 
 function PTTT_item(props: any) {
   const theme = useTheme();
@@ -38,6 +28,7 @@ function PTTT_item(props: any) {
   const { name, image, href } = item;
 
   const [isHover, setIsHover] = useState(false);
+
   return (
     <Box
       sx={{
@@ -88,7 +79,38 @@ function PTTT_item(props: any) {
 
 export default function DialogHinhThucThanhToan(props: any) {
   const { open, handleClose } = props;
+
+  // #region Hooks
+
   const theme = useTheme();
+
+  // #endregion
+
+  // #region States
+
+  const [PTTTs, setPTTTs] = useState<PaymentObject>([]);
+
+  // #endregion
+
+  useEffect(() => {
+    const getPayments = async () => {
+      const payments = await getCollection<PaymentObject>('payments');
+
+      // TODO: WTF is this code?
+      for (const pttt of payments) {
+        if (pttt.name === 'VNPay') {
+          pttt.image = vnpay.src;
+        } else if (pttt.name === 'Momo') {
+          pttt.image = momo.src;
+        }
+      }
+
+      setPTTTs(() => [...payments]);
+    };
+
+    getPayments();
+  }, []);
+
   return (
     <>
       <Dialog
@@ -139,7 +161,7 @@ export default function DialogHinhThucThanhToan(props: any) {
             alignItems="center"
             spacing={2}
           >
-            {PTTTs.map((item, index) => (
+            {PTTTs.map((item: PaymentObject, index: number) => (
               <Grid item key={index} xs={12}>
                 <PTTT_item item={item} />
               </Grid>

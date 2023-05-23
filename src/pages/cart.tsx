@@ -911,8 +911,6 @@ const Cart = () => {
 
   // #endregion
 
-  console.log(productBill);
-
   return (
     <>
       <CartContext.Provider
