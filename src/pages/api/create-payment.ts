@@ -23,7 +23,7 @@ function sortObject(obj: any): any {
 const vnp_TmnCode = 'SLC8HSYX';
 const vnp_HashSecret = 'WEDDYNUFAGHXDZZYACHJPKQVIPNGUKCW';
 const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-var vnp_ReturnUrl = 'http://localhost:3000/payment/result';
+var vnp_ReturnUrl = 'http://localhost:3000/payment-result';
 
 const handler = async (req: any, res: any) => {
   try {
@@ -43,6 +43,7 @@ const handler = async (req: any, res: any) => {
     var createDate = dateFormat(date, 'yyyymmddHHmmss');
     var orderId = req.body.billId;
     var amount = req.body.totalPrice;
+    // var bankCode = 'NCB';
     var bankCode = '';
 
     var orderInfo = req.body.paymentDescription;

@@ -58,6 +58,7 @@ import { CustomIconButton } from '@/components/Inputs/Buttons';
 import ProductsContext, {
   BoLocItem,
   ProductItem,
+  ProductsContextType,
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
 import { CustomTextField } from '@/components/Inputs';
@@ -92,7 +93,7 @@ const initGroupBoLoc = [
       {
         display: 'Đỏ',
         value: '#F43545',
-        readValue: 'đỏ',
+        realValue: 'đỏ',
         color: true,
         isChecked: false,
       },
@@ -676,7 +677,7 @@ const ProductList = memo((props: any) => {
   //#region Hooks
 
   const theme = useTheme();
-  const context = useContext(ProductsContext);
+  const context = useContext<ProductsContextType>(ProductsContext);
 
   //#endregion
 
@@ -699,9 +700,18 @@ const ProductList = memo((props: any) => {
   const displayProducts: ProductItem[] = useMemo(() => {
     const filteredProductList = filterProductList(context.ProductList);
     const sortedProductList = sortProductList(filteredProductList);
+    const searchResultProductList = searchProductList(
+      sortedProductList,
+      context.searchText,
+    );
 
-    return sortedProductList;
-  }, [context.ProductList, context.SortList, context.GroupBoLoc]);
+    return searchResultProductList;
+  }, [
+    context.ProductList,
+    context.SortList,
+    context.GroupBoLoc,
+    context.searchText,
+  ]);
 
   //#endregion
 
@@ -763,7 +773,11 @@ const ProductList = memo((props: any) => {
         (item) => item.heading_value === 'color',
       );
 
+      console.log(colorFilter);
+
       if (!colorFilter) return [...productList];
+
+      console.log(colorFilter.children.filter((item) => item.isChecked));
 
       const colorChecks = colorFilter.children
         .filter((item) => item.isChecked)
@@ -771,14 +785,18 @@ const ProductList = memo((props: any) => {
 
       if (colorChecks.length === 0) return [...productList];
 
+      console.log(colorChecks);
+
+      console.log(productList);
+
       return [
         ...productList.filter((product) => {
           for (const color of colorChecks) {
-            if (!product.colors.includes(color!)) {
-              return false;
+            if (product.colors.includes(color!)) {
+              return true;
             }
           }
-          return true;
+          return false;
         }),
       ];
     }
@@ -905,6 +923,12 @@ const ProductList = memo((props: any) => {
     return filteredProductList;
   }
 
+  function searchProductList(productList: ProductItem[], searchText: string) {
+    return productList.filter((product) => {
+      return product.name.toLowerCase().includes(searchText.toLowerCase());
+    });
+  }
+
   //#endregion
 
   return (
@@ -946,6 +970,7 @@ const Products = ({ products }: { products: string }) => {
     useState<BoLocItem[]>(initGroupBoLoc);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
+  const [searchText, setSearchText] = useState('');
 
   //#endregion
 
@@ -1008,6 +1033,10 @@ const Products = ({ products }: { products: string }) => {
     }));
   }
 
+  function handleChangeSearch(e: any) {
+    setSearchText(() => e.target.value);
+  }
+
   //#endregion
 
   // #region scroll
@@ -1018,9 +1047,9 @@ const Products = ({ products }: { products: string }) => {
   };
   //#endregion
 
-  function handleChangeSearch(e: any) {
-    console.log(e.target.value);
-  }
+  // #region Methods
+
+  // #endregion
 
   return (
     <>
@@ -1033,6 +1062,7 @@ const Products = ({ products }: { products: string }) => {
           SortList: sortListState,
           handleSetSortList: handleSetSortList,
           ProductList: productListState,
+          searchText: searchText,
         }}
       >
         <Box>
@@ -1101,6 +1131,7 @@ const Products = ({ products }: { products: string }) => {
                         autoFocus
                         variant="filled"
                         maxRows="1"
+                        value={searchText}
                         onChange={handleChangeSearch}
                         onClick={handleClick}
                         InputProps={{
@@ -1308,6 +1339,7 @@ async function fetchProductTypesWithLowestPrices(
           image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
           href: `${DETAIL_PATH}?id=${productData.id}`,
           totalSoldQuantity: await getTotalSoldQuantity(productData.id),
+          colors: productData.colors,
         } as ProductItem;
       }),
     );
@@ -1338,14 +1370,11 @@ export async function getServerSideProps() {
     );
 
     const sizes = productBatches.map((batch) => batch.size);
-    const colors = productBatches.map((batch) => batch.color);
+
     return {
       ...product,
       sizes: sizes.filter(function (item, pos) {
         return sizes.indexOf(item) == pos;
-      }),
-      colors: colors.filter((item, pos) => {
-        return colors.indexOf(item) == pos;
       }),
     };
   });
