@@ -1,11 +1,12 @@
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import formatPrice from '@/utilities/formatCurrency';
+import { DisplayCartItem } from '@/lib/contexts/cartContext';
 
 export function DanhSachSanPham_Item(props: any) {
-  const { item } = props;
+  const { item }: { item: DisplayCartItem } = props;
   const {
     id,
     name,
@@ -16,9 +17,8 @@ export function DanhSachSanPham_Item(props: any) {
     MFG,
     EXP,
     price,
-    discount,
     discountPrice,
-    totalPrice,
+    discountPercent,
   } = item;
   const theme = useTheme();
   const [isHover, setIsHover] = useState(false);
@@ -34,6 +34,13 @@ export function DanhSachSanPham_Item(props: any) {
       transform: 'scale(1.5) rotate(5deg)',
     },
   };
+
+  const totalPrice = useMemo(() => {
+    const appliedPrice =
+      discountPrice && discountPrice > 0 ? discountPrice : price;
+
+    return appliedPrice * quantity;
+  }, [quantity, discountPrice, price]);
 
   return (
     <>
@@ -179,7 +186,13 @@ export function DanhSachSanPham_Item(props: any) {
                   Sản xuất:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {MFG}
+                  {new Date(MFG).toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  })}
                 </Typography>
               </Box>
             </Grid>
@@ -206,7 +219,13 @@ export function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {EXP}
+                  {new Date(EXP).toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  })}
                 </Typography>
               </Box>
             </Grid>
@@ -238,25 +257,30 @@ export function DanhSachSanPham_Item(props: any) {
                     variant="body2"
                     color={theme.palette.text.secondary}
                     sx={{
-                      textDecoration: 'line-through',
+                      textDecoration:
+                        discountPrice && discountPrice > 0
+                          ? 'line-through'
+                          : 'none',
                       lineHeight: theme.typography.button.lineHeight,
                     }}
                   >
                     {formatPrice(price)}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    align="right"
-                    color={theme.palette.success.main}
-                    sx={{
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {'(-' +
-                      discount * 100 +
-                      '%) ' +
-                      formatPrice(price - discountPrice)}
-                  </Typography>
+                  {discountPrice && discountPrice > 0 && (
+                    <Typography
+                      variant="body2"
+                      align="right"
+                      color={theme.palette.success.main}
+                      sx={{
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {'(-' +
+                        discountPercent! +
+                        '%) ' +
+                        formatPrice(discountPrice)}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Grid>

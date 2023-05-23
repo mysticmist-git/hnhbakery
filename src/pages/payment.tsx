@@ -2,7 +2,15 @@ import ImageBackground from '@/components/imageBackground';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Link from 'next/link';
-import { createContext, memo, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { CaiKhungCoTitle } from '../components/Layouts/components/CaiKhungCoTitle';
 import Banh1 from '../assets/Carousel/3.jpg';
 import { DanhSachSanPham } from '../components/Payment/DanhSachSanPham';
@@ -10,6 +18,24 @@ import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
+import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import { TwoUsers } from 'react-iconly';
+import { useRouter } from 'next/router';
+import { useSnackbarService } from '@/lib/contexts';
+import productDetail from './product-detail';
+import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import {
+  Timestamp,
+  addDoc,
+  collection,
+  doc,
+  writeBatch,
+} from 'firebase/firestore';
+import { db } from '@/firebase/config';
+import { Ref } from '@/lib/contexts/payment';
+import { DeliveryObject } from '@/lib/models/Delivery';
+import { BillObject } from '@/lib/models/Bill';
+import { BillDetailObject } from '@/lib/models/BillDetail';
 
 // #region Context
 interface PaymentContextType {
@@ -54,7 +80,7 @@ function createProduct(
   };
 }
 
-const Products = [
+const productBill = [
   createProduct(
     1,
     'Bánh Croissant',
@@ -165,24 +191,121 @@ const MocGioGiaoHang = [
 //#endregion
 
 const Payment = () => {
-  const theme = useTheme();
+  //#region Hooks
 
-  //#region Hook
+  const theme = useTheme();
+  const { productBill } = useContext<AppContextType>(AppContext);
+  const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  // #region useMemos
+
+  const tamTinh = useMemo(() => {
+    return productBill.reduce((acc, row) => {
+      if (row.discountPrice && row.discountPrice > 0)
+        return acc + row.quantity * row.discountPrice;
+      else return acc + row.quantity * row.price;
+    }, 0);
+  }, [productBill]);
+
+  //  #endregion
+
+  // #region States
+
   const [phiVanChuyen, setPhiVanChuyen] = useState(0);
+  const [khuyenMai, setKhuyenMai] = useState(0);
+  const [chooseSale, setChooseSale] = useState('');
+  const [tongBill, setTongBill] = useState(0);
+
+  // #endregion
+
+  // #region refs
+
+  const formGiaoHangRef = useRef<Ref>(null);
+
+  // #endregion
+
+  // #region useEffects
+
+  useEffect(() => {
+    if (!productBill || productBill.length <= 0) {
+      handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
+      router.push('/cart');
+    }
+  }, []);
+
+  useEffect(() => {
+    handleTongBill();
+  }, [tamTinh, khuyenMai, phiVanChuyen]);
+
+  // #endregion
+
+  // #region Methods
+
+  const TimKiemMaSale = () => {};
+
+  const mapProductBillToBillDetailObject = (
+    productBill: DisplayCartItem[],
+    billId: string,
+  ) => {
+    return productBill.map((item) => {
+      return createBillDetailData(item, billId);
+    });
+  };
+
+  const createBillData = (): BillObject => {
+    const billData: BillObject = {
+      totalPrice: tamTinh,
+      noteDelivery: '',
+      noteCart: '',
+      state: 0,
+    } as BillObject;
+
+    return billData;
+  };
+
+  const createDeliveryData = (billId: string) => {
+    const otherInfos = formGiaoHangRef.current?.getOtherInfos();
+
+    const deliveryData: DeliveryObject = {
+      name: otherInfos?.name,
+      tel: otherInfos?.tel,
+      email: otherInfos?.email,
+      address: otherInfos?.diaChi,
+      note: otherInfos?.deliveryNote,
+      state: 'inProcress',
+      bill_id: billId,
+    } as DeliveryObject;
+
+    return deliveryData;
+  };
+
+  const createBillDetailData = (
+    productBill: DisplayCartItem,
+    billId: string,
+  ): BillDetailObject => {
+    const billDetailData: BillDetailObject = {
+      amount: productBill.quantity,
+      price: productBill.price,
+      discount: productBill.discountPercent,
+      discountPrice: productBill.discountPrice,
+      batch_id: productBill.batchId,
+      bill_id: billId,
+    } as BillDetailObject;
+
+    return billDetailData;
+  };
+
+  // #endregion
+
+  // #region Handlers
 
   const handleSetPhiVanChuyen = (value: number) => {
     setPhiVanChuyen(value);
   };
 
-  const tamTinh = Products.reduce((total, product) => {
-    return total + product.totalPrice;
-  }, 0);
-
-  const [khuyenMai, setKhuyenMai] = useState(0);
-
-  const TimKiemMaSale = () => {};
-
-  const [chooseSale, setChooseSale] = useState('');
   const handleChooseSale = (id: string) => {
     setChooseSale(id);
     if (id) {
@@ -197,17 +320,36 @@ const Payment = () => {
     }
   };
 
-  const [tongBill, setTongBill] = useState(0);
-
   const handleTongBill = () => {
     setTongBill(tamTinh - khuyenMai + phiVanChuyen);
   };
 
-  useEffect(() => {
-    handleTongBill();
-  }, [tamTinh, khuyenMai, phiVanChuyen]);
+  const handleProceedPayment = async () => {
+    const billData = createBillData();
+    const billRef = await addDoc(collection(db, 'bills'), billData);
 
-  //#endregion
+    const deliveryData = createDeliveryData(billRef.id);
+    const deliveryRef = await addDoc(
+      collection(db, 'deliveries'),
+      deliveryData,
+    );
+
+    const billDetails = mapProductBillToBillDetailObject(
+      productBill,
+      billRef.id,
+    );
+
+    // Make a firestore batch commit
+    const batch = writeBatch(db);
+    const billDetailsCollection = collection(db, 'bill_details');
+    billDetails.forEach((billDetail) => {
+      const docRef = doc(billDetailsCollection);
+      batch.set(docRef, billDetail);
+    });
+    await batch.commit();
+  };
+
+  // #endregion
 
   return (
     <>
@@ -273,6 +415,7 @@ const Payment = () => {
                   <FormGiaoHang
                     handleSetPhiVanChuyen={handleSetPhiVanChuyen}
                     MocGioGiaoHang={MocGioGiaoHang}
+                    ref={formGiaoHangRef}
                   />
                 </CaiKhungCoTitle>
               </Grid>
@@ -282,7 +425,7 @@ const Payment = () => {
                   title={'Danh sách sản phẩm'}
                   fluidContent={true}
                 >
-                  <DanhSachSanPham Products={Products} />
+                  <DanhSachSanPham Products={productBill} />
                 </CaiKhungCoTitle>
               </Grid>
 
@@ -301,7 +444,7 @@ const Payment = () => {
               </Grid>
 
               <Grid item xs={'auto'}>
-                <CustomButton>
+                <CustomButton onClick={handleProceedPayment}>
                   <Typography
                     variant="button"
                     color={theme.palette.common.white}

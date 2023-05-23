@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import { CartItem } from './productDetail';
 
 // #region Context
 export interface CartContextType {
@@ -12,28 +13,16 @@ const initCartContext: CartContextType = {
 export const CartContext = createContext<CartContextType>(initCartContext);
 // #endregion
 
-export interface DisplayCartItem {
-  id: string;
-  href: string;
+export interface DisplayCartItem extends CartItem {
   image: string;
   name: string;
   size: string;
   material: string;
-  quantity: number;
   maxQuantity: number;
-  price: number;
   discountPercent?: number;
-  discountPrice?: number;
   MFG: Date;
   EXP: Date;
 }
 
-// 1,
-// '/',
-// Banh1.src,
-// 'Hàng than',
-// 'Nhỏ',
-// 'Mứt dâu',
-// 5,
-// 10,
-// 100000,
+export const SUCCESS_SAVE_CART_MSG = 'Đã lưu cập nhật giỏ hàng';
+export const FAIL_SAVE_CART_MSG = 'Cập nhật giỏ hàng thất bại';

@@ -1,12 +1,14 @@
 import { TextField, alpha, useTheme } from '@mui/material';
-import React, { memo } from 'react';
+import React, { ForwardedRef, forwardRef, memo } from 'react';
 
-const CustomTextField = (props: any) => {
+const CustomTextField = (props: any, ref: ForwardedRef<HTMLInputElement>) => {
   const theme = useTheme();
+
   return (
     <>
       <TextField
         {...props}
+        inputRef={ref}
         hiddenLabel
         variant="filled"
         maxRows="1"
@@ -47,4 +49,4 @@ const CustomTextField = (props: any) => {
     </>
   );
 };
-export default memo(CustomTextField);
+export default forwardRef<HTMLInputElement, any>(CustomTextField);

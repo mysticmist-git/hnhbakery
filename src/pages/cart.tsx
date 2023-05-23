@@ -38,8 +38,13 @@ import formatPrice from '@/utilities/formatCurrency';
 import { NumberInputWithButtons } from '@/components/Inputs/NumberInputWithButtons';
 import { CustomTextarea } from '../components/Inputs/CustomTextarea';
 import router from 'next/router';
-import { CartContext, DisplayCartItem } from '@/lib/contexts/cartContext';
-import { CartItem } from '@/lib/contexts/productDetail';
+import {
+  CartContext,
+  DisplayCartItem,
+  FAIL_SAVE_CART_MSG,
+  SUCCESS_SAVE_CART_MSG,
+} from '@/lib/contexts/cartContext';
+import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import { LOCAL_CART_KEY } from '@/lib';
 import { getDownloadURL } from 'firebase/storage';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
@@ -51,6 +56,7 @@ import { dateCalendarClasses } from '@mui/x-date-pickers';
 import { CartContextType } from '@/lib/contexts/cartContext';
 import productDetail from './product-detail';
 import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import { useSnackbarService } from '@/lib/contexts';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -162,12 +168,13 @@ function UI_TotalPrice(props: any) {
 
 function UI_Delete(props: any) {
   const theme = useTheme();
-  const { row } = props;
+  const { row, onDelete } = props;
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
   return (
     <>
       {isMd ? (
         <CustomIconButton
+          onClick={() => onDelete(row.id)}
           sx={{
             bgcolor: theme.palette.secondary.main,
             borderRadius: '8px',
@@ -180,7 +187,7 @@ function UI_Delete(props: any) {
           <DeleteIcon sx={{ color: theme.palette.common.white }} />
         </CustomIconButton>
       ) : (
-        <CustomButton>
+        <CustomButton onClick={() => onDelete(row.id)}>
           <Typography
             sx={{ px: 4 }}
             variant="button"
@@ -194,13 +201,36 @@ function UI_Delete(props: any) {
   );
 }
 
-function ProductTable({ setProductBill }: any) {
+function ProductTable({ setProductBill, handleSaveCart }: any) {
   const theme = useTheme();
   const { productBill } = useContext<CartContextType>(CartContext);
   const imageHeight = '20vh';
 
+  const handleDeleteRow = (id: string) => {
+    setProductBill((prev: DisplayCartItem[]) =>
+      prev.filter((item) => item.id !== id),
+    );
+  };
+
   return (
     <>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'end',
+        }}
+      >
+        <CustomButton onClick={handleSaveCart}>
+          <Typography
+            sx={{ px: 4 }}
+            variant="button"
+            color={theme.palette.common.white}
+          >
+            Lưu giỏ hàng
+          </Typography>
+        </CustomButton>
+      </Box>
+
       <TableContainer
         component={Paper}
         sx={{
@@ -208,6 +238,7 @@ function ProductTable({ setProductBill }: any) {
           borderRadius: '8px',
           border: 3,
           borderColor: theme.palette.secondary.main,
+          marginTop: 1,
           display: {
             xs: 'none',
             md: 'block',
@@ -318,7 +349,7 @@ function ProductTable({ setProductBill }: any) {
                   <UI_TotalPrice row={row} />
                 </TableCell>
                 <TableCell align="center">
-                  <UI_Delete row={row} />
+                  <UI_Delete row={row} onDelete={handleDeleteRow} />
                 </TableCell>
               </TableRow>
             ))}
@@ -409,7 +440,7 @@ function ProductTable({ setProductBill }: any) {
                       <UI_TotalPrice row={row} />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_Delete row={row} />
+                      <UI_Delete row={row} onDelete={handleDeleteRow} />
                     </Grid>
                   </Grid>
                 </Grid>
@@ -659,6 +690,8 @@ const Cart = () => {
   const theme = useTheme();
   const { productBill: appProductBill, setProductBill: setAppProductBill } =
     useContext<AppContextType>(AppContext);
+  const handleSnackbarAlert = useSnackbarService();
+
   // #endregion
 
   // #region States
@@ -756,17 +789,13 @@ const Cart = () => {
             : -1;
 
         const displayCartItem: DisplayCartItem = {
-          id: item.id,
-          href: item.href,
+          ...item,
           name: product.name,
           image: await getDownloadUrlFromFirebaseStorage(product.images[0]),
           size: batch.size,
           material: batch.material,
-          quantity: item.quantity,
           maxQuantity: batch.totalQuantity - batch.soldQuantity,
-          price: batch.price,
           discountPercent: batch.discountPercent,
-          discountPrice: discountPrice,
           MFG: batch.MFG,
           EXP: batch.EXP,
         };
@@ -782,16 +811,107 @@ const Cart = () => {
     setProductBill(() => cartItems);
   };
 
+  const saveCurrentProductBill = async (): Promise<CartItemAddingResult> => {
+    const data = getCurrentProductBills();
+
+    const localResult = updateCartToLocal(data);
+
+    if (!localResult.isSuccess) {
+      return {
+        isSuccess: false,
+        msg: FAIL_SAVE_CART_MSG,
+      };
+    }
+
+    const firestoreResult = await updateCartToFirestore(data);
+
+    if (!firestoreResult.isSuccess) {
+      return {
+        isSuccess: false,
+        msg: FAIL_SAVE_CART_MSG,
+      };
+    }
+
+    return {
+      isSuccess: true,
+      msg: SUCCESS_SAVE_CART_MSG,
+    };
+  };
+
+  const getCurrentProductBills = (): CartItem[] => {
+    const updatedCartItems: CartItem[] = productBill.map((item) => {
+      return {
+        id: item.id,
+        userId: item.userId,
+        productId: item.productId,
+        batchId: item.batchId,
+        href: item.href,
+        quantity: item.quantity,
+        price: item.price,
+        discountPrice: item.discountPrice,
+      };
+    });
+
+    // console.log(productBill);
+    // console.log(updatedCartItems);
+
+    return updatedCartItems;
+  };
+
+  const updateCartToLocal = (cartItems: CartItem[]): CartItemAddingResult => {
+    const json = JSON.stringify(cartItems);
+
+    try {
+      localStorage.setItem(LOCAL_CART_KEY, json);
+
+      return {
+        isSuccess: true,
+        msg: SUCCESS_SAVE_CART_MSG,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        isSuccess: false,
+        msg: FAIL_SAVE_CART_MSG,
+      };
+    }
+  };
+
+  const updateCartToFirestore = (
+    cartItems: CartItem[],
+  ): CartItemAddingResult => {
+    return {
+      isSuccess: true,
+      msg: SUCCESS_SAVE_CART_MSG,
+    };
+  };
+
+  const saveCart = async () => {
+    const result = await saveCurrentProductBill();
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  };
+
   // #endregion
 
   // #region Handlers
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
+    await saveCart();
+
     setAppProductBill(() => [...productBill]);
+
     router.push('/payment');
   };
 
+  const handleContinueToSurf = async () => {
+    await saveCart();
+    router.push('/products');
+  };
+
   // #endregion
+
+  console.log(productBill);
 
   return (
     <>
@@ -859,7 +979,10 @@ const Cart = () => {
               spacing={4}
             >
               <Grid item xs={12}>
-                <ProductTable setProductBill={setProductBill} />
+                <ProductTable
+                  setProductBill={setProductBill}
+                  handleSaveCart={() => saveCart()}
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -879,9 +1002,7 @@ const Cart = () => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <CustomButton
-                      onClick={() => {
-                        router.push('/products');
-                      }}
+                      onClick={handleContinueToSurf}
                       sx={{
                         py: 1.5,
                         width: '100%',

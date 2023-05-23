@@ -23,9 +23,13 @@ import banh3 from '../assets/Carousel/3.jpg';
 import { GetServerSidePropsContext } from 'next';
 import {
   CartItem,
+  CartItemAddingResult,
+  FAIL_ADD_CART_MSG,
+  INVALID_DATA_MSG,
   ProductDetail,
   ProductDetailContext,
   ProductDetailContextType,
+  SUCCESS_ADD_CART_MSG,
 } from '@/lib/contexts/productDetail';
 import { ProductObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
@@ -525,15 +529,6 @@ function Comments(props: any) {
   );
 }
 
-const SUCCESS_ADD_CART_MSG = 'Sản phẩm đã được thêm vào giỏ hàng.';
-const FAIL_ADD_CART_MSG = 'Thêm sản phẩm vào giỏ hàng thất bại.';
-const INVALID_DATA_MSG = 'Thông tin đặt hàng không hợp lệ';
-
-interface CartItemAddingResult {
-  isSuccess: boolean;
-  msg: string;
-}
-
 const ProductDetailInfo = withAuthUser()((props: any) => {
   // #region Hooks
 
@@ -739,7 +734,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   };
 
   // TODO: Finish this: addProductToLocalCart
-  const addProductToLocalCart = (data: CartItem) => {
+  const addProductToLocalCart = (data: CartItem): CartItemAddingResult => {
     const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
     try {
       if (!currentLocalCart) {
