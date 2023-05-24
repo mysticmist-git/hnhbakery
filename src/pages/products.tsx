@@ -11,7 +11,7 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
-  Link,
+  Link as MuiLink,
   MenuItem,
   Select,
   TextField,
@@ -20,6 +20,7 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg12 from '../assets/Decorate/bg12.png';
@@ -29,6 +30,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
 import {
+  getCollection,
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
@@ -42,6 +44,7 @@ import ProductsContext, {
   ProductsContextType,
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
+import { ProductTypeObject } from '@/lib/models';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -462,6 +465,7 @@ const productDefault: ProductItem = {
   MFG: new Date(),
   description: 'Bánh ngon dữ lắm bà ơi',
   totalSoldQuantity: 15,
+  productType_id: '0',
   href: '#',
 };
 
@@ -519,6 +523,7 @@ const CakeCard = memo((props: any) => {
       }}
     >
       <CardActionArea
+        LinkComponent={Link}
         href={props.href ? props.href : productDefault.href}
         sx={{
           width: isList ? '50%' : '100%',
@@ -748,12 +753,38 @@ const ProductList = memo((props: any) => {
   function filterProductList(productList: ProductItem[]): ProductItem[] {
     //#region Local Functions
 
+    function filterProductType(productList: ProductItem[]): ProductItem[] {
+      const productTypeFilter = context.GroupBoLoc.find(
+        (item) => item.heading_value === 'typeCake',
+      );
+
+      console.log(productTypeFilter);
+
+      if (!productTypeFilter) return [...productList];
+
+      const productTypeIdChecked = productTypeFilter.children
+        .filter((item) => item.isChecked)
+        .map((item) => item.value);
+
+      console.log(productTypeIdChecked);
+
+      if (productTypeIdChecked.length === 0) return [...productList];
+
+      console.log(productList);
+
+      const productTypeFilteredResult = [
+        ...productList.filter((product) => {
+          return productTypeIdChecked.includes(product.productType_id);
+        }),
+      ];
+
+      return productTypeFilteredResult;
+    }
+
     function filterColor(productList: ProductItem[]): ProductItem[] {
       const colorFilter = context.GroupBoLoc.find(
         (item) => item.heading_value === 'color',
       );
-
-      console.log(colorFilter);
 
       if (!colorFilter) return [...productList];
 
@@ -767,12 +798,10 @@ const ProductList = memo((props: any) => {
 
       console.log(colorChecks);
 
-      console.log(productList);
-
       return [
         ...productList.filter((product) => {
-          for (const color of colorChecks) {
-            if (product.colors.includes(color!)) {
+          for (const color of product.colors) {
+            if (colorChecks.includes(color)) {
               return true;
             }
           }
@@ -900,6 +929,8 @@ const ProductList = memo((props: any) => {
     // Filter Price
     filteredProductList = filterPrice(filteredProductList);
 
+    filteredProductList = filterProductType(filteredProductList);
+
     return filteredProductList;
   }
   function removeAccents(str: string) {
@@ -952,11 +983,119 @@ const ProductList = memo((props: any) => {
 
 //#endregion
 
-const Products = ({ products }: { products: string }) => {
+// #region Functions
+
+const generateGroupBoLoc = (stringifiedProductTypesNamesAndIds: string) => {
+  const productTypesNamesAndIds: { id: string; name: string }[] = JSON.parse(
+    stringifiedProductTypesNamesAndIds,
+  );
+
+  const children = productTypesNamesAndIds.map((productType) => ({
+    display: productType.name,
+    value: productType.id,
+    isChecked: false,
+  }));
+
+  const productTypeFilter = {
+    heading: 'Loại bánh',
+    heading_value: 'typeCake',
+    children: children,
+  };
+
+  return [
+    productTypeFilter,
+    {
+      heading: 'Màu sắc',
+      heading_value: 'color',
+      children: [
+        {
+          display: 'Đỏ',
+          value: '#F43545',
+          realValue: 'đỏ',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Cam',
+          value: '#FA8901',
+          realValue: 'cam',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Vàng',
+          value: '#C4A705',
+          realValue: 'vàng',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Lục',
+          value: '#00BA71',
+          realValue: 'lục',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Lam',
+          value: '#00C2DE',
+          realValue: 'lam',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Chàm',
+          value: '#00418D',
+          realValue: 'chàm',
+          color: true,
+          isChecked: false,
+        },
+        {
+          display: 'Tím',
+          value: '#5F2879',
+          realValue: 'tím',
+          color: true,
+          isChecked: false,
+        },
+      ],
+    },
+    {
+      heading: 'Size bánh',
+      heading_value: 'size',
+      children: [
+        { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
+        { display: 'Thường', value: 'vừa', isChecked: false },
+        { display: 'Lớn', value: 'lớn', isChecked: false },
+      ],
+    },
+    {
+      heading: 'Giá bánh',
+      heading_value: 'price',
+      children: [
+        { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
+        { display: '100,000đ - 200,000đ', value: '100-200', isChecked: false },
+        { display: '200,000đ - 300,000đ', value: '200-300', isChecked: false },
+        { display: '300,000đ - 400,000đ', value: '300-400', isChecked: false },
+        { display: 'Trên 500,000đ', value: '>500', isChecked: false },
+      ],
+    },
+  ];
+};
+
+// #endregion
+
+const Products = ({
+  products,
+  productTypesNamesAndIds: stringifiedProductTypesNamesAndIds,
+}: {
+  products: string;
+  productTypesNamesAndIds: string;
+}) => {
   //#region States
 
-  const [groupBoLocState, setGroupBoLocState] =
-    useState<BoLocItem[]>(initGroupBoLoc);
+  const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>(
+    generateGroupBoLoc(stringifiedProductTypesNamesAndIds),
+  );
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
   const [searchText, setSearchText] = useState('');
@@ -1036,10 +1175,6 @@ const Products = ({ products }: { products: string }) => {
   };
   //#endregion
 
-  // #region Methods
-
-  // #endregion
-
   return (
     <>
       <ProductsContext.Provider
@@ -1066,7 +1201,7 @@ const Products = ({ products }: { products: string }) => {
               spacing={2}
             >
               <Grid item xs={12}>
-                <Link href="#" style={{ textDecoration: 'none' }}>
+                <MuiLink href="#" style={{ textDecoration: 'none' }}>
                   <Typography
                     align="center"
                     variant="h2"
@@ -1079,7 +1214,7 @@ const Products = ({ products }: { products: string }) => {
                   >
                     Tất cả sản phẩm
                   </Typography>
-                </Link>
+                </MuiLink>
               </Grid>
             </Grid>
           </ImageBackground>
@@ -1216,13 +1351,6 @@ const Products = ({ products }: { products: string }) => {
 
 //#region Local Functions
 
-function firestoreTimestampToISOString(timestamp: Timestamp): string {
-  const jsDate = timestamp.toDate();
-  const isoString = jsDate.toISOString();
-
-  return isoString;
-}
-
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
     const batches = await getCollectionWithQuery<BatchObject>(
@@ -1308,6 +1436,7 @@ async function fetchProductTypesWithLowestPrices(
           href: `${DETAIL_PATH}?id=${productData.id}`,
           totalSoldQuantity: await getTotalSoldQuantity(productData.id),
           colors: productData.colors,
+          productType_id: productData.productType_id,
         } as ProductItem;
       }),
     );
@@ -1332,6 +1461,14 @@ export async function getStaticProps() {
     lowestPricesAndTheirMFGs,
   );
 
+  const productTypes = await getCollection<ProductTypeObject>('productTypes');
+  const productTypesNamesAndIds = productTypes.map((productType) => {
+    return {
+      name: productType.name,
+      id: productType.id,
+    };
+  });
+
   const products = fetchedProducts.map((product) => {
     const productBatches: BatchObject[] = batches.filter(
       (batch) => batch.product_id === product.id,
@@ -1350,6 +1487,7 @@ export async function getStaticProps() {
   return {
     props: {
       products: JSON.stringify(products),
+      productTypesNamesAndIds: JSON.stringify(productTypesNamesAndIds),
     },
   };
 }

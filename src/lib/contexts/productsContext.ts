@@ -10,6 +10,7 @@ export interface ProductItem {
   MFG: Date;
   description: string;
   totalSoldQuantity: number;
+  productType_id: string;
   href: string;
 }
 

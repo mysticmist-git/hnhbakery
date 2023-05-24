@@ -11,7 +11,9 @@ const Contact = () => {
       'Cảm ơn bạn đã ghé thăm trang web của tiệm bánh và sử dụng form đóng góp. Chúng mình rất trân trọng ý kiến đóng góp của bạn! Sớm thôi chúng mình sẽ liên hệ với bạn ngay. Xin cảm ơn!',
     [],
   );
+
   const theme = useTheme();
+
   return (
     <Box
       sx={{

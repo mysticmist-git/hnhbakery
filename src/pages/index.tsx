@@ -1,12 +1,5 @@
-import { Box, Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
-import React, {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  useMemo,
-  memo,
-} from 'react';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useState, useContext, memo } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg2 from '../assets/Decorate/bg2.png';
 import bg10 from '../assets/Decorate/bg10.png';

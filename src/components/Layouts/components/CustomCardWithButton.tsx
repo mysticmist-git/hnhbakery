@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function CustomCardWithButton(props: any) {
   const theme = useTheme();
@@ -56,6 +57,7 @@ export default function CustomCardWithButton(props: any) {
       sx={{ borderRadius: '16px', width: imageWidth }}
     >
       <CardActionArea
+        LinkComponent={Link}
         href={cardInfo.href}
         sx={{ width: '100%', height: 'auto' }}
       >
