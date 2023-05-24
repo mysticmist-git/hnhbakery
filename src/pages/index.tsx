@@ -39,6 +39,7 @@ import SolidDownWhite, {
   DashDownWhite,
   DashUpWhite,
 } from '@/components/Decorate/DecorateDivider';
+import { GetServerSidePropsContext } from 'next';
 
 // #region Carousel
 
@@ -442,6 +443,7 @@ const Home = ({
     </>
   );
 };
+
 //#region Local Functions
 
 async function fetchTypeCakesAndGetTheirImagesToo(
@@ -490,7 +492,12 @@ async function fetchBestSellerProductsAndTheirImagesToo(
 
 //#endregion
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59',
+  );
+
   const productTypes = await getCollection<ProductTypeObject>('productTypes');
   const bestSellerProducts = await getBestSellterProducts();
 

@@ -16,9 +16,9 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import CustomIconButton from '../Inputs/Buttons/customIconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { getCollection } from '@/lib/firestore';
 import { PaymentObject } from '@/lib/models/Payment';
 import Link from 'next/link';
+import { getCollection } from '@/lib/firestore/firestoreLib';
 
 interface Props {
   billId: string;

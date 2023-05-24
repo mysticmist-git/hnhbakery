@@ -19,16 +19,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import React, {
-  RefObject,
-  createContext,
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg12 from '../assets/Decorate/bg12.png';
@@ -38,21 +29,11 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import formatPrice from '@/utilities/formatCurrency';
 import ImageBackground from '@/components/imageBackground';
 import {
-  getCollection,
+  getCollectionWithQuery,
+  getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import { ProductObject } from '@/lib/models';
-import { db } from '@/firebase/config';
-import {
-  Timestamp,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
+import { Timestamp, where } from 'firebase/firestore';
 import { BatchObject } from '@/lib/models/Batch';
 import { CustomIconButton } from '@/components/Inputs/Buttons';
 import ProductsContext, {
@@ -61,7 +42,6 @@ import ProductsContext, {
   ProductsContextType,
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
-import { CustomTextField } from '@/components/Inputs';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -1245,19 +1225,9 @@ function firestoreTimestampToISOString(timestamp: Timestamp): string {
 
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
-    const batchesRef = collection(db, 'batches');
-    const batchesQuery = query(batchesRef, where('EXP', '>=', Timestamp.now()));
-
-    const batchSnapshots = await getDocs(batchesQuery);
-
-    const batches = batchSnapshots.docs.map(
-      (batch) =>
-        ({
-          id: batch.id,
-          ...batch.data(),
-          MFG: batch.data().MFG.toDate(),
-          EXP: batch.data().EXP.toDate(),
-        } as BatchObject),
+    const batches = await getCollectionWithQuery<BatchObject>(
+      'batches',
+      where('EXP', '>=', Timestamp.now()),
     );
 
     return batches;
@@ -1308,16 +1278,9 @@ async function fetchLowestPriceAndMFGBatchProductIds(
 }
 
 async function getTotalSoldQuantity(productId: string): Promise<number> {
-  const batchesRef = collection(db, 'batches');
-  const batchesQuery = query(batchesRef, where('product_id', '==', productId));
-  const batchesSnapshot = await getDocs(batchesQuery);
-
-  const batches: BatchObject[] = batchesSnapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-      } as BatchObject),
+  const batches = await getCollectionWithQuery<BatchObject>(
+    'batches',
+    where('product_id', '==', productId),
   );
 
   const totalSoldQuantity: number = batches.reduce((acc, batch) => {
@@ -1333,11 +1296,7 @@ async function fetchProductTypesWithLowestPrices(
   try {
     const products = await Promise.all(
       lowestPricesAndTheirMFGs.map(async ({ id, price, MFG }) => {
-        const productDoc = await getDoc(doc(db, 'products', id));
-        const productData = {
-          id: productDoc.id,
-          ...productDoc.data(),
-        } as ProductObject;
+        const productData = await getDocFromFirestore('products', id);
 
         return {
           id: productData.id,
@@ -1362,7 +1321,7 @@ async function fetchProductTypesWithLowestPrices(
 
 //#endregion
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const batches = await fetchAvailableBatches();
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(

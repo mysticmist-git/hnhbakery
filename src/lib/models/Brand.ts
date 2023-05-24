@@ -1,10 +1,3 @@
-import {
-  doc,
-  DocumentData,
-  getDoc,
-  QueryDocumentSnapshot,
-} from 'firebase/firestore';
-
 export interface BrandObject {
   id: string;
   brand_name: string;

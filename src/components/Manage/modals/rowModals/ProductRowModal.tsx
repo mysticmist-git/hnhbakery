@@ -13,9 +13,9 @@ import ProductForm from '../forms/ProductForm';
 import {
   getDownloadUrlFromFirebaseStorage,
   uploadImageToFirebaseStorage,
-  addDocumentToFirestore,
+  addDocToFirestore,
   deleteImageFromFirebaseStorage,
-  updateDocumentToFirestore,
+  updateDocToFirestore,
 } from '@/lib/firestore/firestoreLib';
 import { NewValueChip } from '../forms/components';
 
@@ -200,12 +200,12 @@ const ProductRowModal = () => {
       };
 
       // Add new document to Firestore
-      const docId = await addDocumentToFirestore(data, collectionName);
+      const docRef = await addDocToFirestore(data, collectionName);
 
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [...state.mainDocs, { ...data, id: docId }],
+        payload: [...state.mainDocs, { ...data, id: docRef.id }],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
@@ -301,7 +301,7 @@ const ProductRowModal = () => {
       }
 
       // Update document to firestore
-      updateDocumentToFirestore(displayingData, collectionName);
+      updateDocToFirestore(displayingData, collectionName);
 
       // Update state
       dispatch({

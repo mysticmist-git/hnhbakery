@@ -1,6 +1,6 @@
-import { db } from '@/firebase/config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { CollectionName } from '../models/utilities';
+import { where } from 'firebase/firestore';
+import { getCollectionWithQuery } from '../firestore/firestoreLib';
+import { Reference } from '../models/Reference';
 
 interface ReferenceServiceInterface {
   getColors: () => Promise<string[]>;
@@ -11,14 +11,13 @@ class ReferencesService implements ReferenceServiceInterface {
   constructor() {}
 
   async getColors(): Promise<string[]> {
-    const referencesRef = collection(db, CollectionName.References);
-    const referencesQuery = query(referencesRef, where('name', '==', 'colors'));
-
     try {
-      const colorsSnapshot = await getDocs(referencesQuery);
-      const colors: string[] = colorsSnapshot.docs[0].data().values ?? [];
+      const colors = await getCollectionWithQuery<Reference>(
+        'references',
+        where('name', '==', 'colors'),
+      );
 
-      return colors;
+      return colors[0].values ?? [];
     } catch (error) {
       console.log(error);
       return [];
@@ -26,13 +25,12 @@ class ReferencesService implements ReferenceServiceInterface {
   }
 
   async getSizes(): Promise<string[]> {
-    const referencesRef = collection(db, CollectionName.References);
-    const referencesQuery = query(referencesRef, where('name', '==', 'sizes'));
     try {
-      const colorsSnapshot = await getDocs(referencesQuery);
-      const sizes: string[] = colorsSnapshot.docs[0].data().values ?? [];
-
-      return sizes;
+      const sizes = await getCollectionWithQuery<Reference>(
+        'references',
+        where('name', '==', 'sizes'),
+      );
+      return sizes[0].values ?? [];
     } catch (error) {
       console.log(error);
       return [];

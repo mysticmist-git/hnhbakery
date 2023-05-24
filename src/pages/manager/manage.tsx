@@ -15,26 +15,18 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import {
-  getDocs,
-  collection,
-  DocumentData,
-  Timestamp,
-  doc,
-  deleteDoc,
-} from 'firebase/firestore';
-import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { DocumentData, doc, deleteDoc } from 'firebase/firestore';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { Add } from '@mui/icons-material';
 import { CollectionName } from '@/lib/models/utilities';
-import { getDocsFromQuerySnapshot } from '@/lib/firestore/firestoreLib';
+import { getCollection } from '@/lib/firestore/firestoreLib';
 import RowModal from '@/components/Manage/modals/rowModals/RowModal';
 import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
 import {
-  ManageContextType,
   manageReducer,
   ManageActionType,
   crudTargets,
@@ -44,8 +36,6 @@ import {
 import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { useSnackbarService } from '@/lib/contexts';
 import { ManageContext } from '@/lib/contexts/manageContext';
-import { DocumentContext } from 'next/document';
-import search from '../search';
 
 //#region Constants
 
@@ -82,6 +72,7 @@ export default function Manage({
       crudTargets.find((t) => t.collectionName === paramCollectionName) ??
       crudTargets[0],
   });
+
   const [justLoaded, setJustLoaded] = useState(true);
 
   //#endregion
@@ -486,10 +477,15 @@ export default function Manage({
  * @returns {Object} The server-side props object.
  */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  // Extract the collection name from the query parameter of the URL.
-  const collectionName = context.query && context.query.collectionName;
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59',
+  );
 
-  console.log(collectionName);
+  // Extract the collection name from the query parameter of the URL.
+  const collectionName: string | null = context.query.collectionName as
+    | string
+    | null;
 
   // If the collection name is not present in the URL, redirect to the first collection.
   if (!collectionName || collectionName === 'undefined') {
@@ -503,11 +499,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   // Get the documents from the specified collection.
-  const collectionRef = collection(db, collectionName as string);
-  const querySnapshot = await getDocs(collectionRef);
-
-  const rawMainDocs = getDocsFromQuerySnapshot(querySnapshot);
-
+  const rawMainDocs = await getCollection<DocumentData>(collectionName);
   const mainDocs = JSON.stringify(rawMainDocs);
 
   console.group(rawMainDocs);

@@ -1,12 +1,16 @@
 import { storage, db } from '@/firebase/config';
 import {
   DocumentData,
+  DocumentReference,
+  QueryConstraint,
   QuerySnapshot,
   Timestamp,
   addDoc,
   collection,
+  deleteDoc,
   doc,
   documentId,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -21,46 +25,84 @@ import {
   deleteObject,
 } from 'firebase/storage';
 import { memoize } from '../localLib/manage-modal';
-import { CollectionName } from '../models/utilities';
-import { ProductObject, ProductTypeObject } from '../models';
-import { display } from '@mui/system';
+import { ProductObject } from '../models';
 
 //#region Document Related Functions
 
-export const addDocumentToFirestore = async (
-  data: DocumentData,
-  collectionName: CollectionName,
-): Promise<string> => {
+export const getDocFromFirestore = async (
+  collectionName: string,
+  documentId: string,
+): Promise<DocumentData> => {
   try {
-    delete data.id;
-
-    const docRef = await addDoc(collection(db, collectionName), data);
-    return docRef.id;
-  } catch (e) {
-    console.log('Error adding new document to firestore: ', e);
-    return '';
+    const docRef = doc(db, collectionName, documentId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { ...docSnap.data(), id: docSnap.id };
+    } else {
+      throw new Error('Document does not exist');
+    }
+  } catch (error) {
+    throw new Error(`Error: ${error}`);
   }
 };
 
-export async function updateDocumentToFirestore(
-  displayingData: DocumentData,
-  collectionName: CollectionName,
-): Promise<boolean> {
-  // Null check
-  if (!displayingData) return false;
+export const addDocToFirestore = async (
+  data: DocumentData,
+  collectionName: string,
+): Promise<DocumentReference<DocumentData>> => {
+  try {
+    delete data.id;
+    const docRef = await addDoc(collection(db, collectionName), data);
+    return docRef;
+  } catch (e) {
+    throw new Error(`Error: ${e}`);
+  }
+};
 
-  const id = displayingData.id;
+export const addDocsToFirestore = async (
+  data: DocumentData[],
+  collectionName: string,
+): Promise<DocumentReference<DocumentData>[]> => {
+  try {
+    const docRefs = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const docRef = await addDoc(collection(db, collectionName), data[i]);
+
+      docRefs.push(docRef);
+    }
+
+    return docRefs;
+  } catch (e) {
+    throw new Error(`Error: ${e}`);
+  }
+};
+
+export async function updateDocToFirestore(
+  data: DocumentData,
+  collectionName: string,
+) {
+  // Null check
+  if (!data) throw Error('Data is null');
+  const id = data.id;
 
   try {
-    await updateDoc(doc(db, collectionName, id), displayingData);
-
-    return true;
+    await updateDoc(doc(db, collectionName, id), data);
   } catch (error) {
-    console.log('Error: ', error);
-
-    return false;
+    throw new Error(`Error: ${error}`);
   }
 }
+
+export const deleteDocFromFirestore = async (
+  collectionName: string,
+  documentId: string,
+) => {
+  try {
+    await deleteDoc(doc(db, collectionName, documentId));
+  } catch (error) {
+    throw new Error(`Error: ${error}`);
+  }
+};
 
 //#endregion
 
@@ -84,8 +126,7 @@ export const uploadImageToFirebaseStorage = async (
     const uploadImage = await uploadBytes(storageRef, file);
     return uploadImage.metadata.fullPath;
   } catch (error) {
-    console.log('Image upload fail, error: ', error);
-    return '';
+    throw new Error(`Error: ${error}`);
   }
 };
 
@@ -95,19 +136,18 @@ export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
   try {
     await deleteObject(storageRef);
   } catch (error) {
-    console.log('Error deleting storage object: ', error);
-    return '';
+    throw new Error(`Error: ${error}`);
   }
 };
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
   async (paths: string[]) => {
     if (!paths) {
-      return null;
+      throw new Error('Paths is null');
     }
 
     if (paths.length === 0) {
-      return [];
+      throw new Error('Paths is empty');
     }
 
     try {
@@ -115,15 +155,15 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
       const urls = await Promise.all(promises);
       return urls;
     } catch (error) {
-      console.log('Error: ', error);
-      return null;
+      throw new Error(`Error: ${error}`);
     }
   },
 );
+
 export const getDownloadUrlFromFirebaseStorage = memoize(
   async (path: string) => {
     if (!path) {
-      return null;
+      throw new Error('Path is null');
     }
 
     try {
@@ -131,8 +171,7 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
       console.log(url);
       return url;
     } catch (error) {
-      console.log('Error: ', error);
-      return null;
+      throw new Error(`Error: ${error}`);
     }
   },
 );
@@ -140,26 +179,6 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
 //#endregion
 
 //#region Get Collection Functions
-
-//#region Specific Functions (You can just delete this, i keep it just in case)
-
-export async function getProductTypes(): Promise<ProductTypeObject[]> {
-  const productTypeCollectionRef = collection(db, 'productTypes');
-
-  const querySnapshot = await getDocs(productTypeCollectionRef);
-
-  const productTypes: ProductTypeObject[] = querySnapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-      } as ProductTypeObject),
-  );
-
-  return productTypes ?? [];
-}
-
-//#endregion
 
 export async function getCollection<T>(collectionName: string): Promise<T[]> {
   if (!collectionName) return [];
@@ -176,8 +195,28 @@ export async function getCollection<T>(collectionName: string): Promise<T[]> {
       } as T),
   );
 
-  return docs ?? [];
+  if (!docs) throw new Error('Docs are null');
+
+  return docs;
 }
+
+export const getCollectionWithQuery = async <T>(
+  collectionName: string,
+  ...queryConstraints: QueryConstraint[]
+): Promise<T[]> => {
+  const collectionRef = collection(db, collectionName);
+
+  const collectionQuery = query(collectionRef, ...queryConstraints);
+
+  try {
+    const querySnapshot = await getDocs(collectionQuery);
+    const docs = getDocsFromQuerySnapshot(querySnapshot);
+
+    return docs as T[];
+  } catch (error) {
+    throw new Error(`Error: ${error}`);
+  }
+};
 
 /**
  * Returns an array of DocumentData obtained from a QuerySnapshot.
@@ -210,31 +249,21 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   const queryLimit = 7;
 
   // Create a reference to the batches collection
-  const batchesRef = collection(db, 'batches');
-
-  const batchQuery = query(
-    batchesRef,
+  const batches = await getCollectionWithQuery<ProductObject>(
+    'batches',
     where('soldQuantity', '>=', minSoldQuantity),
     orderBy('soldQuantity', 'desc'),
     limit(queryLimit),
   );
 
-  // Retrieve the results and use the productType_id to query the productTypes collection
-  const querySnapshot = await getDocs(batchQuery);
-
-  const productIds = querySnapshot.docs.map((doc) => doc.data().product_id);
+  const productIds = batches.map((doc) => doc.product_id);
 
   // Check if there are any products
   if (productIds.length === 0) return [];
 
-  const productsRef = collection(db, 'products');
-  const productQuery = query(
-    productsRef,
+  const products = getCollectionWithQuery<ProductObject>(
+    'products',
     where(documentId(), 'in', productIds),
-  );
-  const productsSnapshot = await getDocs(productQuery);
-  const products = productsSnapshot.docs.map(
-    (doc) => ({ id: doc.id, ...doc.data() } as ProductObject),
   );
   // Do something with the productTypes
 

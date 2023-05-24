@@ -13,8 +13,8 @@ import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
 import { ManageContext } from '@/lib/contexts';
 import {
-  addDocumentToFirestore,
-  updateDocumentToFirestore,
+  addDocToFirestore,
+  updateDocToFirestore,
 } from '@/lib/firestore/firestoreLib';
 
 const BatchRowModal = () => {
@@ -195,7 +195,7 @@ const BatchRowModal = () => {
       };
 
       // Add new document to Firestore
-      const docId = await addDocumentToFirestore(
+      const docRef = await addDocToFirestore(
         dataForFirestoreAdding,
         collectionName,
       );
@@ -203,7 +203,10 @@ const BatchRowModal = () => {
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [...state.mainDocs, { ...state.displayingData, id: docId }],
+        payload: [
+          ...state.mainDocs,
+          { ...state.displayingData, id: docRef.id },
+        ],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
@@ -301,14 +304,7 @@ const BatchRowModal = () => {
       console.log(dataForFirestoreAdding);
 
       // Update document to firestore
-      const isSucess = await updateDocumentToFirestore(
-        dataForFirestoreAdding,
-        collectionName,
-      );
-
-      if (!isSucess) {
-        throw new Error('Update row failed');
-      }
+      await updateDocToFirestore(dataForFirestoreAdding, collectionName);
 
       // Update state
       dispatch({

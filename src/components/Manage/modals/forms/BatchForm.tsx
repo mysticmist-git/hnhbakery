@@ -6,23 +6,16 @@ import {
   Stack,
   useTheme,
   Typography,
-  FormControlLabel,
-  List,
   Divider,
 } from '@mui/material';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase/config';
-import { CollectionName } from '@/lib/models/utilities';
 import { ProductObject } from '@/lib/models';
-import { DatePicker, DateTimePicker, TimePicker } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import { ManageContext, useSnackbarService } from '@/lib/contexts';
-import {
-  MyMultiValueCheckerInput,
-  MyMultiValuePickerInput,
-} from '@/components/Inputs';
+import { MyMultiValuePickerInput } from '@/components/Inputs';
+import { getCollection } from '@/lib/firestore/firestoreLib';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region Hooks
@@ -82,7 +75,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const justGetProducts = await getProducts();
+      const justGetProducts = await getCollection<ProductObject>('products');
 
       if (justGetProducts.length === 0) {
         handleSnackbarAlert(
@@ -132,27 +125,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#endregion
 
   //#region Methods
-
-  async function getProducts(): Promise<ProductObject[]> {
-    try {
-      const collectionRef = collection(db, CollectionName.Products);
-      const snapshot = await getDocs(collectionRef);
-      const data = snapshot.docs.map((doc) => {
-        const docData = doc.data();
-        return {
-          id: doc.id,
-          ...docData,
-        };
-      }) as ProductObject[];
-
-      console.log(data);
-
-      return data;
-    } catch (error) {
-      console.log('Error fetching product types: ', error);
-      return [];
-    }
-  }
 
   //#endregion
 

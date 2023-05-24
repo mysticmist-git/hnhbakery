@@ -12,9 +12,6 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/firebase/config';
-import { CollectionName } from '@/lib/models/utilities';
 import placeholderImage from '@/assets/placeholder-image.png';
 import TabPanel from './components/TabPanel';
 import { a11yProps } from './lib';
@@ -26,13 +23,14 @@ import {
   MyMultiValueInput,
   MyMultiValueCheckerInput,
 } from '@/components/Inputs';
-import { getCollection } from '@/lib/firestore';
 import {
   ReferenceServiceInterface,
   ReferenceServiceProxy,
   ReferencesService,
 } from '@/lib/services/ReferenceService';
 import { ManageContext } from '@/lib/contexts';
+import { getCollectionWithQuery } from '@/lib/firestore/firestoreLib';
+import { ProductTypeObject } from '@/lib/models';
 
 //#region Types
 
@@ -78,9 +76,10 @@ const ProductForm = ({
   useEffect(() => {
     async function getProductTypes() {
       try {
-        const collectionRef = collection(db, CollectionName.ProductTypes);
-        const snapshot = await getDocs(collectionRef);
-        const data = snapshot.docs.map((doc) => {
+        const docs = await getCollectionWithQuery<ProductTypeObject>(
+          'productTypes',
+        );
+        const data = docs.map((doc) => {
           const docData = doc.data();
           return {
             id: doc.id,

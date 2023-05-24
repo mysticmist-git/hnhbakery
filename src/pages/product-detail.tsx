@@ -31,27 +31,19 @@ import {
   ProductDetailContextType,
   SUCCESS_ADD_CART_MSG,
 } from '@/lib/contexts/productDetail';
-import { ProductObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
-import { db } from '@/firebase/config';
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore';
-import {
-  getDocsFromQuerySnapshot,
-  getDownloadUrlsFromFirebaseStorage,
-} from '@/lib/firestore';
+import { where } from 'firebase/firestore';
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 import { useSnackbarService } from '@/lib/contexts';
 import { useAuthUser, withAuthUser } from 'next-firebase-auth';
 import { nanoid } from 'nanoid';
 import { useRouter } from 'next/router';
 import { LOCAL_CART_KEY } from '@/lib';
+import {
+  getCollectionWithQuery,
+  getDocFromFirestore,
+  getDownloadUrlsFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
 
 // Mock Data
 
@@ -1370,6 +1362,11 @@ const ProductDetail = ({ productDetail }: { productDetail: string }) => {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59',
+  );
+
   if (!context.query.id)
     return {
       props: {
@@ -1378,27 +1375,22 @@ export const getServerSideProps = async (
     };
 
   // Get product
-  const productId = context.query.id;
-
-  const productRef = await getDoc(doc(db, `products/${productId}`));
-  const product = { id: productRef.id, ...productRef.data() } as ProductObject;
+  const productId = context.query.id as string;
+  const product = await getDocFromFirestore('products', productId);
 
   // Get product type
-  const productTypeRef = await getDoc(
-    doc(db, `productTypes/${product.productType_id}`),
+  const productType = await getDocFromFirestore(
+    'productTypes',
+    product.productType_id,
   );
 
-  const productTypeName = productTypeRef.data()?.name ?? 'Unknown';
+  const productTypeName = productType.name ?? 'Unknown';
 
   // Get batches
-  const batchesQuery = query(
-    collection(db, 'batches'),
+  const batches: BatchObject[] = await getCollectionWithQuery<BatchObject>(
+    'batches',
     where('product_id', '==', productId),
   );
-  const batchesSnapsshot = await getDocs(batchesQuery);
-  const batches: BatchObject[] = getDocsFromQuerySnapshot(
-    batchesSnapsshot,
-  ) as BatchObject[];
 
   // Filter out batches that out of stock
   const filteredBatches = batches.filter(

@@ -18,7 +18,6 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  createContext,
   forwardRef,
   memo,
   useContext,
@@ -26,11 +25,8 @@ import {
   useEffect,
   useMemo,
   useState,
-  RefObject,
   ForwardedRef,
 } from 'react';
-import { theme } from '../../tailwind.config';
-import Banh1 from '../assets/Carousel/1.jpg';
 import Image from 'next/image';
 import { CustomButton, CustomIconButton } from '@/components/Inputs/Buttons';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -46,17 +42,13 @@ import {
 } from '@/lib/contexts/cartContext';
 import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import { LOCAL_CART_KEY } from '@/lib';
-import { getDownloadURL } from 'firebase/storage';
-import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
-import { db } from '@/firebase/config';
-import { Timestamp, doc, getDoc } from 'firebase/firestore';
-import { BatchObject } from '@/lib/models/Batch';
-import { ProductObject } from '@/lib/models';
-import { dateCalendarClasses } from '@mui/x-date-pickers';
 import { CartContextType } from '@/lib/contexts/cartContext';
-import productDetail from './product-detail';
 import { AppContext, AppContextType } from '@/lib/contexts/appContext';
 import { useSnackbarService } from '@/lib/contexts';
+import {
+  getDocFromFirestore,
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -766,22 +758,8 @@ const Cart = () => {
 
     const displayCartItems = await Promise.all(
       cartItems.map(async (item) => {
-        const productRef = doc(db, 'products', item.productId);
-        const productData = await getDoc(productRef);
-        const product: ProductObject = {
-          ...productData.data(),
-          id: productData.id,
-        } as ProductObject;
-
-        const batchRef = doc(db, 'batches', item.batchId);
-        const batchData = await getDoc(batchRef);
-        const batch: BatchObject = {
-          ...batchData.data(),
-          id: batchData.id,
-          MFG: (batchData.data()?.MFG as Timestamp).toDate(),
-          EXP: (batchData.data()?.EXP as Timestamp).toDate(),
-          discountDate: (batchData.data()?.discountDate as Timestamp).toDate(),
-        } as BatchObject;
+        const product = await getDocFromFirestore('products', item.productId);
+        const batch = await getDocFromFirestore('batches', item.batchId);
 
         const discountPrice =
           new Date(batch.discountDate).getTime() < new Date().getTime()
