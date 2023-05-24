@@ -44,6 +44,7 @@ import {
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
+import { GridRenderedRowsIntervalChangeParams } from '@mui/x-data-grid';
 
 // Mock Data
 
@@ -1228,7 +1229,11 @@ const initStars = {
 
 //#endregion
 
-const ProductDetail = ({ productDetail }: { productDetail: string }) => {
+const ProductDetail = ({
+  productDetailJSONString,
+}: {
+  productDetailJSONString: string;
+}) => {
   // #region Hooks
 
   const theme = useTheme();
@@ -1238,13 +1243,8 @@ const ProductDetail = ({ productDetail }: { productDetail: string }) => {
   // #region useMemos
 
   const convertedProductDetail: ProductDetail = useMemo(
-    () => JSON.parse(productDetail),
+    () => JSON.parse(productDetailJSONString),
     [ProductDetail],
-  );
-
-  const defaultBatch = useMemo(
-    () => convertedProductDetail.batches[0],
-    [convertedProductDetail],
   );
 
   // #endregion
@@ -1252,16 +1252,14 @@ const ProductDetail = ({ productDetail }: { productDetail: string }) => {
   // #region States
 
   const [form, setForm] = useState({
-    size: defaultBatch.size,
-    material: defaultBatch.material,
+    size: convertedProductDetail.batches[0].size,
+    material: convertedProductDetail.batches[0].material,
     quantity: 0,
   });
 
   const [starState, setStarState] = useState(initStars);
 
   // #endregion
-
-  // #region useEffects
 
   // #endregion
 
@@ -1362,11 +1360,6 @@ const ProductDetail = ({ productDetail }: { productDetail: string }) => {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
-  context.res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59',
-  );
-
   if (!context.query.id)
     return {
       props: {
@@ -1417,7 +1410,7 @@ export const getServerSideProps = async (
 
   return {
     props: {
-      productDetail: JSON.stringify(productDetail),
+      productDetailJSONString: JSON.stringify(productDetail),
     },
   };
 };

@@ -382,7 +382,9 @@ const Home = ({
             }}
           >
             <CustomCarousel height="48vh" duration={500} />
+
             <SolidDownWhite />
+
             <Box
               sx={{
                 py: 8,
