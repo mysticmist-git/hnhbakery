@@ -47,73 +47,76 @@ import {
   initPaymentContext,
 } from '@/lib/contexts/paymentContext';
 
-//#region Giả dữ liệu
-function createProduct(
-  id: number,
-  name: string,
-  image: string,
-  size: string,
-  material: string,
-  quantity: number,
-  MFG: string,
-  EXP: string,
-  price: number,
-  discount: number,
-) {
-  return {
-    id,
-    name,
-    image,
-    size,
-    material,
-    quantity,
-    MFG,
-    EXP,
-    price,
-    discount,
-    discountPrice: price * discount,
-    totalPrice: price * (1 - discount) * quantity,
-  };
-}
+// #region Giả dữ liệu
 
-const productBill = [
-  createProduct(
-    1,
-    'Bánh Croissant',
-    Banh1.src,
-    'Vừa',
-    'Dâu',
-    3,
-    '07:00 07/01/2023',
-    '22:00 07/01/2023',
-    100000,
-    0.2,
-  ),
-  createProduct(
-    2,
-    'Bánh kem',
-    Banh1.src,
-    'Lớn',
-    'Dâu',
-    1,
-    '07:00 07/01/2023',
-    '22:00 07/01/2023',
-    100000,
-    0.2,
-  ),
-  createProduct(
-    3,
-    'Bánh kem',
-    Banh1.src,
-    'Lớn',
-    'Dâu',
-    1,
-    '07:00 07/01/2023',
-    '22:00 07/01/2023',
-    100000,
-    0.2,
-  ),
-];
+// function createProduct(
+//   id: number,
+//   name: string,
+//   image: string,
+//   size: string,
+//   material: string,
+//   quantity: number,
+//   MFG: string,
+//   EXP: string,
+//   price: number,
+//   discount: number,
+// ) {
+//   return {
+//     id,
+//     name,
+//     image,
+//     size,
+//     material,
+//     quantity,
+//     MFG,
+//     EXP,
+//     price,
+//     discount,
+//     discountPrice: price * discount,
+//     totalPrice: price * (1 - discount) * quantity,
+//   };
+// }
+
+// const productBill = [
+//   createProduct(
+//     1,
+//     'Bánh Croissant',
+//     Banh1.src,
+//     'Vừa',
+//     'Dâu',
+//     3,
+//     '07:00 07/01/2023',
+//     '22:00 07/01/2023',
+//     100000,
+//     0.2,
+//   ),
+//   createProduct(
+//     2,
+//     'Bánh kem',
+//     Banh1.src,
+//     'Lớn',
+//     'Dâu',
+//     1,
+//     '07:00 07/01/2023',
+//     '22:00 07/01/2023',
+//     100000,
+//     0.2,
+//   ),
+//   createProduct(
+//     3,
+//     'Bánh kem',
+//     Banh1.src,
+//     'Lớn',
+//     'Dâu',
+//     1,
+//     '07:00 07/01/2023',
+//     '22:00 07/01/2023',
+//     100000,
+//     0.2,
+//   ),
+// ];
+
+// #endregion
 
 function createSale(
   id: number,
@@ -197,12 +200,12 @@ const Payment = () => {
   // #region useMemos
 
   const tamTinh = useMemo(() => {
-    return productBill.reduce((acc, row) => {
+    return state.productBill.reduce((acc, row) => {
       if (row.discountPrice && row.discountPrice > 0)
         return acc + row.quantity * row.discountPrice;
       else return acc + row.quantity * row.price;
     }, 0);
-  }, [productBill]);
+  }, [state.productBill]);
 
   //  #endregion
 
@@ -224,7 +227,7 @@ const Payment = () => {
   // #region useEffects
 
   useEffect(() => {
-    if (!productBill || productBill.length <= 0) {
+    if (!state.productBill || state.productBill.length <= 0) {
       handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
       router.push('/cart');
     }
@@ -318,7 +321,18 @@ const Payment = () => {
     setTongBill(tamTinh - khuyenMai + phiVanChuyen);
   };
 
-  const handleProceedPayment = async () => {
+  const handleProceedPayment = async (type: string | undefined) => {
+    if (!type) {
+      handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
+      router.push('/cart');
+      return;
+    }
+
+    if (type === 'Momo') {
+      handleSnackbarAlert('error', 'Momo chưa được hỗ trợ');
+      return;
+    }
+
     console.log('Running...');
 
     const billData = createBillData();
@@ -376,6 +390,7 @@ const Payment = () => {
   // #endregion
 
   const [open, setOpen] = useState(false);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -457,7 +472,7 @@ const Payment = () => {
                   title={'Danh sách sản phẩm'}
                   fluidContent={true}
                 >
-                  <DanhSachSanPham Products={productBill} />
+                  <DanhSachSanPham Products={state.productBill} />
                 </CaiKhungCoTitle>
               </Grid>
 
@@ -490,7 +505,7 @@ const Payment = () => {
           <DialogHinhThucThanhToan
             open={open}
             handleClose={handleClose}
-            handlePayment={() => handleProceedPayment()}
+            handlePayment={handleProceedPayment}
           />
         </Box>
       </PaymentContext.Provider>

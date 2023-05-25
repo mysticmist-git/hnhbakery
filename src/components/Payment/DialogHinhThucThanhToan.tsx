@@ -26,7 +26,7 @@ interface Props {
   paymentDescription: string;
 }
 
-function PTTT_item({ item, onClick }: { item: any; onClick: any }) {
+function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
   const theme = useTheme();
   const { name, image } = item;
 
@@ -89,7 +89,7 @@ export default function DialogHinhThucThanhToan({
 }: {
   open: boolean;
   handleClose: any;
-  handlePayment: any;
+  handlePayment: (type: string | undefined) => void;
 }) {
   // #region Hooks
 
@@ -174,7 +174,10 @@ export default function DialogHinhThucThanhToan({
           >
             {PTTTs.map((item: PaymentObject, index: number) => (
               <Grid item key={index} xs={12}>
-                <PTTT_item item={item} onClick={() => handlePayment()} />
+                <PTTT_item
+                  item={item}
+                  onClick={() => handlePayment(item.name)}
+                />
               </Grid>
             ))}
           </Grid>
