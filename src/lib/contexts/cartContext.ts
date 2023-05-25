@@ -19,7 +19,10 @@ export interface DisplayCartItem extends CartItem {
   size: string;
   material: string;
   maxQuantity: number;
-  discountPercent?: number;
+  price: number;
+  discountPercent: number;
+  discountPrice: number;
+  discountDate: Date;
   MFG: Date;
   EXP: Date;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer, useState } from 'react';
 // import { CacheProvider, EmotionCache } from '@emotion/react';
 import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 import '@/styles/nprogress.scss';
@@ -21,7 +21,11 @@ import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
 import { SnackbarService } from '@/lib/contexts';
 import { TransitionUp } from '@/components/Transitions';
-import { AppContext } from '@/lib/contexts/appContext';
+import {
+  AppContext,
+  appReducer,
+  initialState,
+} from '@/lib/contexts/appContext';
 import { DisplayCartItem } from '@/lib/contexts/cartContext';
 import Layout from '@/components/Layouts/Layout';
 import Head from 'next/head';
@@ -42,7 +46,7 @@ const MyApp = (props: AppProps) => {
   // #region States
 
   // For the cart and payment page
-  const [productBill, setProductBill] = useState<DisplayCartItem[]>([]);
+  const [state, dispatch] = useReducer(appReducer, initialState);
 
   // #endregion
 
@@ -77,9 +81,7 @@ const MyApp = (props: AppProps) => {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         {/* <CacheProvider value={emotionCache}> */}
         <ThemeProvider theme={theme}>
-          <AppContext.Provider
-            value={{ productBill: productBill, setProductBill: setProductBill }}
-          >
+          <AppContext.Provider value={{ state, dispatch }}>
             <SnackbarService.Provider value={{ handleSnackbarAlert }}>
               <CssBaseline />
               <Layout>

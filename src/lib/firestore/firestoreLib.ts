@@ -2,6 +2,7 @@ import { storage, db } from '@/firebase/config';
 import {
   DocumentData,
   DocumentReference,
+  DocumentSnapshot,
   QueryConstraint,
   QuerySnapshot,
   Timestamp,
@@ -38,11 +39,11 @@ export const getDocFromFirestore = async (
   try {
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { ...docSnap.data(), id: docSnap.id };
-    } else {
-      throw new Error('Document does not exist');
-    }
+    const docData = getDocFromQuerySnapshot(docSnap);
+
+    if (!docData) throw new Error('Doc data is null');
+
+    return docData;
   } catch (error) {
     throw new Error(`Error: ${error}`);
   }
@@ -245,6 +246,25 @@ export function getDocsFromQuerySnapshot(
   });
 }
 
+export function getDocFromQuerySnapshot(
+  docSnapshot: DocumentSnapshot<DocumentData>,
+): DocumentData | null {
+  // Null check
+  if (!docSnapshot) return null;
+
+  // Get doc
+  const data = docSnapshot.data();
+
+  if (!data) return null;
+
+  Object.keys(data).forEach((key) => {
+    if (data[key] instanceof Timestamp) {
+      data[key] = data[key].toDate();
+    }
+  });
+
+  return { ...data, id: docSnapshot.id };
+}
 export async function getBestSellterProducts(): Promise<ProductObject[]> {
   // Constants
   const minSoldQuantity = 5;

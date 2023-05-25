@@ -43,7 +43,12 @@ import {
 import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import { LOCAL_CART_KEY } from '@/lib';
 import { CartContextType } from '@/lib/contexts/cartContext';
-import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import {
+  AppContext,
+  AppContextType,
+  AppDispatchAction,
+  AppState,
+} from '@/lib/contexts/appContext';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   getDocFromFirestore,
@@ -86,11 +91,30 @@ function UI_Price(props: any) {
   const { row } = props;
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
+  const hasDiscount = useMemo(() => {
+    console.log(row);
+
+    return row.discountPrice && row.discountPrice > 0;
+  }, []);
+
   return (
     <>
-      <Typography variant={'button'} color={theme.palette.common.black}>
+      <Typography
+        variant={'button'}
+        color={theme.palette.common.black}
+        sx={{
+          fontWeight: hasDiscount ? 'none' : 'bold',
+          textDecoration: hasDiscount ? 'line-through' : 'none',
+          opacity: hasDiscount ? 0.5 : 1,
+        }}
+      >
         {formatPrice(row.price) + (isMd ? '' : ' /sản phẩm')}
       </Typography>
+      {hasDiscount && (
+        <Typography variant={'button'} color={theme.palette.common.black}>
+          {formatPrice(row.discountPrice) + (isMd ? '' : ' /sản phẩm')}
+        </Typography>
+      )}
     </>
   );
 }
@@ -118,17 +142,13 @@ function UI_TotalPrice(props: any) {
   const { row }: { row: DisplayCartItem } = props;
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
-  const totalPrice = useMemo(() => {
-    return row.quantity * row.price;
-  }, [row.quantity, row.price]);
-
-  const totalDiscountPrice = useMemo(() => {
+  const finalTotalPrice = useMemo(() => {
     if (row.discountPrice && row.discountPrice > 0) {
       return row.quantity * row.discountPrice;
     }
 
-    return -1;
-  }, [row.quantity, row.discountPrice]);
+    return row.quantity * row.price;
+  }, [row.quantity]);
 
   return (
     <>
@@ -138,18 +158,11 @@ function UI_TotalPrice(props: any) {
             variant="button"
             color={theme.palette.common.black}
             sx={{
-              fontWeight: totalDiscountPrice >= 0 ? 'normal' : 'bold',
-              textDecoration: totalDiscountPrice >= 0 ? 'line-through' : 'none',
-              opacity: totalDiscountPrice >= 0 ? 0.5 : 1,
+              fontWeight: 'bold',
             }}
           >
-            {formatPrice(totalPrice)}
+            {formatPrice(finalTotalPrice)}
           </Typography>
-          {totalDiscountPrice > 0 && (
-            <Typography variant="button" color={theme.palette.common.black}>
-              {`${formatPrice(totalDiscountPrice)} (-${row.discountPercent}%)`}
-            </Typography>
-          )}
         </Stack>
       ) : (
         <></>
@@ -680,8 +693,7 @@ const Cart = () => {
   // #region Hooks
 
   const theme = useTheme();
-  const { productBill: appProductBill, setProductBill: setAppProductBill } =
-    useContext<AppContextType>(AppContext);
+  const { state, dispatch } = useContext<AppContextType>(AppContext);
   const handleSnackbarAlert = useSnackbarService();
 
   // #endregion
@@ -709,7 +721,7 @@ const Cart = () => {
   // #region Methods
 
   const getCartItems = async () => {
-    const localCartItems = getLocalCartitem();
+    const localCartItems = getLocalCartItems();
 
     try {
       const firestoreCartItems = await getFirestoreCartItem();
@@ -727,7 +739,7 @@ const Cart = () => {
     }
   };
 
-  const getLocalCartitem = (): CartItem[] => {
+  const getLocalCartItems = (): CartItem[] => {
     const cartItemsString = localStorage.getItem(LOCAL_CART_KEY);
 
     if (cartItemsString) {
@@ -758,8 +770,13 @@ const Cart = () => {
 
     const displayCartItems = await Promise.all(
       cartItems.map(async (item) => {
-        const product = await getDocFromFirestore('products', item.productId);
         const batch = await getDocFromFirestore('batches', item.batchId);
+        const product = await getDocFromFirestore('products', batch.product_id);
+
+        console.log(new Date(batch.discountDate).getTime());
+        console.log(
+          new Date(batch.discountDate).getTime() < new Date().getTime(),
+        );
 
         const discountPrice =
           new Date(batch.discountDate).getTime() < new Date().getTime()
@@ -773,7 +790,10 @@ const Cart = () => {
           size: batch.size,
           material: batch.material,
           maxQuantity: batch.totalQuantity - batch.soldQuantity,
+          price: batch.price,
           discountPercent: batch.discountPercent,
+          discountPrice: discountPrice,
+          discountDate: batch.discountDate,
           MFG: batch.MFG,
           EXP: batch.EXP,
         };
@@ -877,7 +897,15 @@ const Cart = () => {
   const handlePayment = async () => {
     await saveCart();
 
-    setAppProductBill(() => [...productBill]);
+    dispatch({
+      type: AppDispatchAction.SET_PRODUCT_BILL,
+      payload: [...productBill],
+    });
+
+    dispatch({
+      type: AppDispatchAction.SET_CART_NOTE,
+      payload: noteRef.current?.value,
+    });
 
     router.push('/payment');
   };

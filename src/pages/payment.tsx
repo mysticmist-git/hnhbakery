@@ -18,7 +18,11 @@ import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
-import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import {
+  AppContext,
+  AppContextType,
+  AppState,
+} from '@/lib/contexts/appContext';
 import { TwoUsers } from 'react-iconly';
 import { useRouter } from 'next/router';
 import { useSnackbarService } from '@/lib/contexts';
@@ -184,7 +188,7 @@ const Payment = () => {
   //#region Hooks
 
   const theme = useTheme();
-  const { productBill } = useContext<AppContextType>(AppContext);
+  const { state, dispatch } = useContext<AppContextType>(AppContext);
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
@@ -327,7 +331,7 @@ const Payment = () => {
     );
 
     const billDetails = mapProductBillToBillDetailObject(
-      productBill,
+      state.productBill,
       billRef.id,
     );
 

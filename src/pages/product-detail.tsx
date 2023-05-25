@@ -668,11 +668,8 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
       id: nanoid(),
       userId: userId,
       batchId: batchId,
-      productId: productDetail.id,
-      href: `/product-detail?id=${productDetail.id}`,
       quantity: form.quantity,
-      price: price,
-      discountPrice: discountPrice,
+      href: `/product-detail?id=${productDetail.id}`,
     } as CartItem;
   };
   const getBatchIdFromForm = () => {
@@ -687,13 +684,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   const validateData = (data: CartItem): boolean => {
     if (!data) return false;
 
-    if (
-      !data.batchId ||
-      !data.productId ||
-      data.quantity <= 0 ||
-      data.price < 0
-    )
-      return false;
+    if (!data.batchId || data.quantity <= 0) return false;
 
     return true;
   };
@@ -1240,16 +1231,6 @@ const ProductDetail = ({
 
   const theme = useTheme();
   const router = useRouter();
-
-  // #endregion
-
-  // #region Methods
-
-  const checkValidation = (): boolean => {
-    if (invalid) return false;
-
-    return true;
-  };
 
   // #endregion
 
