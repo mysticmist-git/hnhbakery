@@ -2,50 +2,31 @@ import ImageBackground from '@/components/imageBackground';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Link from 'next/link';
-import {
-  createContext,
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { CaiKhungCoTitle } from '../components/Layouts/components/CaiKhungCoTitle';
-import Banh1 from '../assets/Carousel/3.jpg';
 import { DanhSachSanPham } from '../components/Payment/DanhSachSanPham';
 import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
-import {
-  AppContext,
-  AppContextType,
-  AppState,
-} from '@/lib/contexts/appContext';
-import { TwoUsers } from 'react-iconly';
+import { AppContext, AppContextType } from '@/lib/contexts/appContext';
 import { useRouter } from 'next/router';
 import { useSnackbarService } from '@/lib/contexts';
-import productDetail from './product-detail';
 import { DisplayCartItem } from '@/lib/contexts/cartContext';
-import {
-  Timestamp,
-  addDoc,
-  collection,
-  doc,
-  writeBatch,
-} from 'firebase/firestore';
-import { db } from '@/firebase/config';
 import { Ref } from '@/lib/contexts/payment';
 import { DeliveryObject } from '@/lib/models/Delivery';
 import { BillObject } from '@/lib/models/Bill';
 import { BillDetailObject } from '@/lib/models/BillDetail';
 import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
-import { DataArrayOutlined } from '@mui/icons-material';
 import {
   PaymentContext,
   initPaymentContext,
 } from '@/lib/contexts/paymentContext';
+import { useAuthUser, withAuthUser } from 'next-firebase-auth';
+import {
+  addDocToFirestore,
+  addDocsToFirestore,
+} from '@/lib/firestore/firestoreLib';
 
 // #region Giả dữ liệu
 
@@ -194,6 +175,7 @@ const Payment = () => {
   const { state, dispatch } = useContext<AppContextType>(AppContext);
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
+  const { id: userId } = useAuthUser();
 
   //#endregion
 
@@ -252,12 +234,14 @@ const Payment = () => {
     });
   };
 
-  const createBillData = (): BillObject => {
+  const createBillData = (paymentId: string | undefined): BillObject => {
     const billData: BillObject = {
-      totalPrice: tamTinh,
-      noteDelivery: '',
-      noteCart: '',
+      totalPrice: tongBill,
+      noteDelivery: formGiaoHangRef.current?.getOtherInfos().deliveryNote,
+      noteCart: state.cartNote,
       state: 0,
+      payment_id: paymentId,
+      user_id: userId,
     } as BillObject;
 
     return billData;
@@ -321,28 +305,32 @@ const Payment = () => {
     setTongBill(tamTinh - khuyenMai + phiVanChuyen);
   };
 
-  const handleProceedPayment = async (type: string | undefined) => {
+  const checkPaymentValidation = (type: string | undefined): boolean => {
     if (!type) {
       handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
       router.push('/cart');
-      return;
+      return false;
     }
 
     if (type === 'Momo') {
       handleSnackbarAlert('error', 'Momo chưa được hỗ trợ');
-      return;
+      return false;
     }
 
-    console.log('Running...');
+    return true;
+  };
 
-    const billData = createBillData();
-    const billRef = await addDoc(collection(db, 'bills'), billData);
+  const addAllNecessariesInfoToFirestore = async (
+    paymentId: string | undefined,
+  ): Promise<{
+    billData: BillObject;
+    deliveryData: DeliveryObject;
+  }> => {
+    const billData = createBillData(paymentId);
+    const billRef = await addDocToFirestore(billData, 'bills');
 
     const deliveryData = createDeliveryData(billRef.id);
-    const deliveryRef = await addDoc(
-      collection(db, 'deliveries'),
-      deliveryData,
-    );
+    const deliveryRef = await addDocToFirestore(deliveryData, 'deliveries');
 
     const billDetails = mapProductBillToBillDetailObject(
       state.productBill,
@@ -350,41 +338,79 @@ const Payment = () => {
     );
 
     // Make a firestore batch commit
-    const batch = writeBatch(db);
-    const billDetailsCollection = collection(db, 'bill_details');
-    billDetails.forEach((billDetail) => {
-      const docRef = doc(billDetailsCollection);
-      batch.set(docRef, billDetail);
-    });
-    await batch.commit();
+    const billDetailRefs = await addDocsToFirestore(
+      billDetails,
+      'bill_details',
+    );
 
-    const reqData = {
-      billId: billRef.id,
-      totalPrice: tamTinh,
-      paymentDescription: `THANH TOAN CHO DON HANG ${billRef.id}`,
+    return {
+      billData: { ...billData, id: billRef.id },
+      deliveryData: { ...deliveryData, id: deliveryRef.id },
     };
+  };
 
-    console.log(reqData);
+  const sendPaymentRequestToVNPay = async (reqData: {
+    billId: string;
+    totalPrice: number;
+    paymentDescription: string;
+  }) => {
+    try {
+      const response: Response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reqData),
+      });
 
-    fetch('/api/create-payment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reqData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
+      const data = await response.json();
+
+      if (data) {
         console.log(data);
+        return data;
+      } else {
+        throw new Error('Something went wrong');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-        if (data.url) {
-          console.log(data.url);
-          window.location.href = data.url;
-        }
-      })
-      .catch((error) => console.error(error));
+  const handleProceedPayment = async (
+    id: string | undefined,
+    type: string | undefined,
+  ) => {
+    try {
+      if (!checkPaymentValidation(type)) return;
 
-    console.log('Finishing...');
+      console.log('Running...');
+
+      const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
+        id,
+      );
+
+      console.log({
+        billData,
+        deliveryData,
+      });
+
+      const reqData = {
+        billId: billData.id as string,
+        totalPrice: tongBill,
+        paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
+      };
+
+      console.log(reqData);
+
+      const data = await sendPaymentRequestToVNPay(reqData);
+
+      window.location.href = data.url;
+
+      console.log('Finishing...');
+    } catch (error: any) {
+      console.log(error);
+      handleSnackbarAlert('error', error.message);
+    }
   };
 
   // #endregion
@@ -513,4 +539,4 @@ const Payment = () => {
   );
 };
 
-export default memo(Payment);
+export default withAuthUser()(memo(Payment));

@@ -89,7 +89,7 @@ export default function DialogHinhThucThanhToan({
 }: {
   open: boolean;
   handleClose: any;
-  handlePayment: (type: string | undefined) => void;
+  handlePayment: (id: string | undefined, type: string | undefined) => void;
 }) {
   // #region Hooks
 
@@ -176,7 +176,7 @@ export default function DialogHinhThucThanhToan({
               <Grid item key={index} xs={12}>
                 <PTTT_item
                   item={item}
-                  onClick={() => handlePayment(item.name)}
+                  onClick={() => handlePayment(item.id, item.name)}
                 />
               </Grid>
             ))}
