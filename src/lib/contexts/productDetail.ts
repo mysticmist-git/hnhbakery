@@ -1,5 +1,8 @@
 import { createContext } from 'react';
 import { BatchObject } from '../models/Batch';
+export interface ExtendedBatchObject extends BatchObject {
+  discountPrice: number;
+}
 
 export interface ProductDetail {
   id: string;

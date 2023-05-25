@@ -1230,22 +1230,36 @@ const initStars = {
 //#endregion
 
 const ProductDetail = ({
+  invalid,
   productDetailJSONString,
 }: {
+  invalid?: boolean;
   productDetailJSONString: string;
 }) => {
   // #region Hooks
 
   const theme = useTheme();
+  const router = useRouter();
+
+  // #endregion
+
+  // #region Methods
+
+  const checkValidation = (): boolean => {
+    if (invalid) return false;
+
+    return true;
+  };
 
   // #endregion
 
   // #region useMemos
 
-  const convertedProductDetail: ProductDetail = useMemo(
-    () => JSON.parse(productDetailJSONString),
-    [ProductDetail],
-  );
+  const convertedProductDetail: ProductDetail = useMemo(() => {
+    {
+      return JSON.parse(productDetailJSONString);
+    }
+  }, [ProductDetail]);
 
   // #endregion
 
@@ -1258,8 +1272,6 @@ const ProductDetail = ({
   });
 
   const [starState, setStarState] = useState(initStars);
-
-  // #endregion
 
   // #endregion
 
@@ -1360,59 +1372,98 @@ const ProductDetail = ({
 export const getServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
-  if (!context.query.id)
+  context.res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59',
+  );
+
+  if (!context.query.id) {
+    // Redirect
     return {
-      props: {
-        invalid: true,
+      redirect: {
+        destination: '/',
+        permanent: false,
       },
     };
+  }
 
-  // Get product
-  const productId = context.query.id as string;
-  const product = await getDocFromFirestore('products', productId);
+  try {
+    // Get product
+    const productId = context.query.id as string;
+    const product = await getDocFromFirestore('products', productId);
 
-  // Get product type
-  const productType = await getDocFromFirestore(
-    'productTypes',
-    product.productType_id,
-  );
+    // Get product type
+    const productType = await getDocFromFirestore(
+      'productTypes',
+      product.productType_id,
+    );
 
-  const productTypeName = productType.name ?? 'Unknown';
+    const productTypeName = productType.name ?? 'Unknown';
 
-  // Get batches
-  const batches: BatchObject[] = await getCollectionWithQuery<BatchObject>(
-    'batches',
-    where('product_id', '==', productId),
-  );
+    // Get batches
+    const batches: BatchObject[] = await getCollectionWithQuery<BatchObject>(
+      'batches',
+      where('product_id', '==', productId),
+    );
 
-  // Filter out batches that out of stock
-  const filteredBatches = batches.filter(
-    (batch) => batch.soldQuantity < batch.totalQuantity,
-  );
+    // Filter out batches that is expired
+    // Filter out batches that out of stock
+    const filteredBatches = batches.filter(
+      (batch) =>
+        batch.soldQuantity < batch.totalQuantity &&
+        new Date(batch.EXP).getTime() > new Date().getTime(),
+    );
 
-  const stockAvailable = filteredBatches.length > 0;
+    const stockAvailable = filteredBatches.length > 0;
 
-  // Get product images
-  const images = await getDownloadUrlsFromFirebaseStorage(product.images);
+    // Generate discount prices
+    const batchesWithDiscountPrices = filteredBatches.map((batch) => {
+      if (new Date(batch.discountDate).getTime() <= new Date().getTime()) {
+        return {
+          ...batch,
+          discountPrice:
+            batch.price - (batch.price * batch.discountPercent) / 100,
+        };
+      } else {
+        return {
+          ...batch,
+          discountPrice: -1,
+        };
+      }
+    });
 
-  const productDetail: ProductDetail = {
-    id: product.id,
-    name: product.name,
-    type: productTypeName,
-    state: stockAvailable,
-    description: product.description,
-    ingredients: product.ingredients,
-    howToUse: product.howToUse,
-    preservation: product.preservation,
-    images: images.map((image: string) => ({ src: image, alt: product.name })),
-    batches: filteredBatches,
-  };
+    // Get product images
+    const images = await getDownloadUrlsFromFirebaseStorage(product.images);
 
-  return {
-    props: {
-      productDetailJSONString: JSON.stringify(productDetail),
-    },
-  };
+    const productDetail: ProductDetail = {
+      id: product.id,
+      name: product.name,
+      type: productTypeName,
+      state: stockAvailable,
+      description: product.description,
+      ingredients: product.ingredients,
+      howToUse: product.howToUse,
+      preservation: product.preservation,
+      images: images.map((image: string) => ({
+        src: image,
+        alt: product.name,
+      })),
+      batches: batchesWithDiscountPrices,
+    };
+
+    return {
+      props: {
+        productDetailJSONString: JSON.stringify(productDetail),
+      },
+    };
+  } catch (error) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 };
 
 export default memo(ProductDetail);
