@@ -977,113 +977,24 @@ const ProductList = memo((props: any) => {
             />
           </Grid>
         ))}
+        {displayProducts.length <= 0 && (
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              mt: 6,
+            }}
+          >
+            <Typography variant="h2">Không tìm thấy sản phẩm nào</Typography>
+          </Box>
+        )}
       </Grid>
     </>
   );
 });
 
 //#endregion
-
-// #region Functions
-
-const generateGroupBoLoc = (stringifiedProductTypesNamesAndIds: string) => {
-  const productTypesNamesAndIds: { id: string; name: string }[] = JSON.parse(
-    stringifiedProductTypesNamesAndIds,
-  );
-
-  const children = productTypesNamesAndIds.map((productType) => ({
-    display: productType.name,
-    value: productType.id,
-    isChecked: false,
-  }));
-
-  const productTypeFilter = {
-    heading: 'Loại bánh',
-    heading_value: 'typeCake',
-    children: children,
-  };
-
-  return [
-    productTypeFilter,
-    {
-      heading: 'Màu sắc',
-      heading_value: 'color',
-      children: [
-        {
-          display: 'Đỏ',
-          value: '#F43545',
-          realValue: 'đỏ',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Cam',
-          value: '#FA8901',
-          realValue: 'cam',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Vàng',
-          value: '#C4A705',
-          realValue: 'vàng',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Lục',
-          value: '#00BA71',
-          realValue: 'lục',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Lam',
-          value: '#00C2DE',
-          realValue: 'lam',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Chàm',
-          value: '#00418D',
-          realValue: 'chàm',
-          color: true,
-          isChecked: false,
-        },
-        {
-          display: 'Tím',
-          value: '#5F2879',
-          realValue: 'tím',
-          color: true,
-          isChecked: false,
-        },
-      ],
-    },
-    {
-      heading: 'Size bánh',
-      heading_value: 'size',
-      children: [
-        { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
-        { display: 'Thường', value: 'vừa', isChecked: false },
-        { display: 'Lớn', value: 'lớn', isChecked: false },
-      ],
-    },
-    {
-      heading: 'Giá bánh',
-      heading_value: 'price',
-      children: [
-        { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
-        { display: '100,000đ - 200,000đ', value: '100-200', isChecked: false },
-        { display: '200,000đ - 300,000đ', value: '200-300', isChecked: false },
-        { display: '300,000đ - 400,000đ', value: '300-400', isChecked: false },
-        { display: 'Trên 500,000đ', value: '>500', isChecked: false },
-      ],
-    },
-  ];
-};
-
-// #endregion
 
 const Products = ({
   products,
@@ -1092,6 +1003,140 @@ const Products = ({
   products: string;
   productTypesNamesAndIds: string;
 }) => {
+  //#region Hooks
+
+  const theme = useTheme();
+  const router = useRouter();
+
+  // #endregion
+
+  // #region functions
+
+  const generateGroupBoLoc = (stringifiedProductTypesNamesAndIds: string) => {
+    const productTypesNamesAndIds: { id: string; name: string }[] = JSON.parse(
+      stringifiedProductTypesNamesAndIds,
+    );
+
+    let children = productTypesNamesAndIds.map((productType) => ({
+      display: productType.name,
+      value: productType.id,
+      isChecked: false,
+    }));
+
+    // This is to handle if a product type is selected from the index.tsx page
+    const initialProductTypeCheckk = router.query.product_type;
+
+    children = children.map((item) => {
+      if (item.value === initialProductTypeCheckk) {
+        return {
+          ...item,
+          isChecked: !item.isChecked,
+        };
+      } else {
+        return { ...item };
+      }
+    });
+
+    const productTypeFilter = {
+      heading: 'Loại bánh',
+      heading_value: 'typeCake',
+      children: children,
+    };
+
+    return [
+      productTypeFilter,
+      {
+        heading: 'Màu sắc',
+        heading_value: 'color',
+        children: [
+          {
+            display: 'Đỏ',
+            value: '#F43545',
+            realValue: 'đỏ',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Cam',
+            value: '#FA8901',
+            realValue: 'cam',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Vàng',
+            value: '#C4A705',
+            realValue: 'vàng',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Lục',
+            value: '#00BA71',
+            realValue: 'lục',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Lam',
+            value: '#00C2DE',
+            realValue: 'lam',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Chàm',
+            value: '#00418D',
+            realValue: 'chàm',
+            color: true,
+            isChecked: false,
+          },
+          {
+            display: 'Tím',
+            value: '#5F2879',
+            realValue: 'tím',
+            color: true,
+            isChecked: false,
+          },
+        ],
+      },
+      {
+        heading: 'Size bánh',
+        heading_value: 'size',
+        children: [
+          { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
+          { display: 'Thường', value: 'vừa', isChecked: false },
+          { display: 'Lớn', value: 'lớn', isChecked: false },
+        ],
+      },
+      {
+        heading: 'Giá bánh',
+        heading_value: 'price',
+        children: [
+          { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
+          {
+            display: '100,000đ - 200,000đ',
+            value: '100-200',
+            isChecked: false,
+          },
+          {
+            display: '200,000đ - 300,000đ',
+            value: '200-300',
+            isChecked: false,
+          },
+          {
+            display: '300,000đ - 400,000đ',
+            value: '300-400',
+            isChecked: false,
+          },
+          { display: 'Trên 500,000đ', value: '>500', isChecked: false },
+        ],
+      },
+    ];
+  };
+
+  // #endregion
+
   //#region States
 
   const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>(
@@ -1103,23 +1148,7 @@ const Products = ({
 
   //#endregion
 
-  //#region Hooks
-
-  const theme = useTheme();
-  const router = useRouter();
-
   //#region UseEffects
-
-  useEffect(() => {
-    // Check query
-    const productTypeId = router.query.product_type;
-
-    if (!productTypeId) return;
-
-    console.log(productTypeId);
-
-    handdleCheckBox('typeCake', productTypeId as string);
-  }, []);
 
   useEffect(() => {
     //Van Hen
