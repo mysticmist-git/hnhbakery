@@ -45,6 +45,7 @@ import ProductsContext, {
 } from '@/lib/contexts/productsContext';
 import Image from 'next/image';
 import { ProductTypeObject } from '@/lib/models';
+import { useRouter } from 'next/router';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -1105,10 +1106,20 @@ const Products = ({
   //#region Hooks
 
   const theme = useTheme();
-
-  //#endregion
+  const router = useRouter();
 
   //#region UseEffects
+
+  useEffect(() => {
+    // Check query
+    const productTypeId = router.query.product_type;
+
+    if (!productTypeId) return;
+
+    console.log(productTypeId);
+
+    handdleCheckBox('typeCake', productTypeId as string);
+  }, []);
 
   useEffect(() => {
     //Van Hen

@@ -458,7 +458,7 @@ async function fetchTypeCakesAndGetTheirImagesToo(
         image: type.url,
         name: type.name,
         description: type.description,
-        href: type.id,
+        href: `/products?product_type=${type.id}`,
       } as TypeCakeItem),
   );
 }

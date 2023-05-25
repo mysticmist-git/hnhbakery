@@ -26,6 +26,8 @@ import {
 } from 'firebase/storage';
 import { memoize } from '../localLib/manage-modal';
 import { ProductObject } from '../models';
+import { filterDuplicates } from '../utilities';
+import { productionBrowserSourceMaps } from '../../../next.config';
 
 //#region Document Related Functions
 
@@ -248,7 +250,6 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   const minSoldQuantity = 5;
   const queryLimit = 7;
 
-  // Create a reference to the batches collection
   const batches = await getCollectionWithQuery<ProductObject>(
     'batches',
     where('soldQuantity', '>=', minSoldQuantity),
@@ -256,9 +257,16 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
     limit(queryLimit),
   );
 
-  const productIds = batches.map((doc) => doc.product_id);
+  const filterExpireBatchs = batches.filter(
+    (batch) => new Date(batch.EXP).getTime() > new Date().getTime(),
+  );
 
-  // Check if there are any products
+  const productIds = filterDuplicates<string>(
+    filterExpireBatchs.map((doc) => doc.product_id),
+  );
+
+  console.log(productIds);
+
   if (productIds.length === 0) return [];
 
   const products = getCollectionWithQuery<ProductObject>(

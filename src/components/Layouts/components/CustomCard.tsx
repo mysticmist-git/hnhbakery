@@ -9,6 +9,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import banh1 from '../../../assets/Carousel/3.jpg';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function CustomCard(props: any) {
   const theme = useTheme();
@@ -55,6 +56,7 @@ export default function CustomCard(props: any) {
         sx={{ borderRadius: '16px', width: imageWidth }}
       >
         <CardActionArea
+          LinkComponent={Link}
           href={cardInfo.href}
           sx={{ width: '100%', height: 'auto' }}
         >
