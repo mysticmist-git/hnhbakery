@@ -13,84 +13,164 @@ import {
 import Copyright from '@/components/Copyright';
 import { useRouter } from 'next/router';
 import theme from '@/styles/themes/lightTheme';
-import { SignUpProps, AuthResult, AuthErrorCode, addUser } from '@/lib/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { SignUpForm } from '@/components/Auths';
 import { alpha, Grid } from '@mui/material';
 import bg2 from '../../assets/Decorate/bg2.png';
 import banh1 from '../../assets/Carousel/3.jpg';
+import { UserObject } from '@/lib/models/User';
+import {
+  addUserWithEmailAndPassword,
+  SignupData,
+  SignupUser,
+} from '@/lib/auth/auth';
+import { Timestamp } from 'firebase/firestore';
+import { generateKey } from 'crypto';
+
+enum SignupValidationMsg {
+  Success = 'Đăng ký thành công',
+  Error = 'Đăng ký thất bại',
+  EMPTY_NAME = 'Vui lòng nhập tên',
+  EMPTY_MAIL = 'Vui lòng nhập Mail',
+  EMPTY_BIRTH = 'Vui lòng nhập ngày sinh',
+  SHORT_PASSWORD = 'Mật khẩu phải có ít nhất 6 ký tự',
+  EMPTY_PASSWORD = 'Vui lòng nhập mật khẩu',
+  EMTPY_CONFIRM_PASSWORD = 'Vui lòng nhập lại mật khẩu',
+  CONFIRM_PASSWORD_NOT_MATCH = 'Nhập lại mật khẩu không khớp',
+  EMPTY_TEL = 'Vui lòng nhập số điện thoại',
+}
+
+enum SignupErrorCode {
+  EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use',
+  NETWORK_REQUEST_FAILED = 'auth/network-request-failed',
+}
+
+enum SignupErrorMsg {
+  EMAIL_ALREADY_IN_USE = 'Email đã được sử dụng.',
+  NETWORK_REQUEST_FAILED = 'Lỗi mạng',
+  DEFAULT = 'Lỗi không biết',
+}
 
 const SignUp = () => {
-  //region Hooks
+  // #region Hooks
 
-  const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
+  const router = useRouter();
 
-  //#endregion
+  // #endregion
 
-  //#region Handlers
+  // #region Handlers
 
-  const handleSignUp = async (
-    props: SignUpProps,
-  ): Promise<UserCredential | undefined> => {
-    const result: AuthResult = await signUpUser(props);
+  const validateSignupData = (data: SignupData) => {
+    console.log(data);
 
-    if (result.result === 'successful') {
-      router.push('/');
-      handleSnackbarAlert('success', 'Đăng ký thành công');
-      addUser(result.userCredential!);
-      return result.userCredential;
+    if (!data.name || data.name === '') {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_NAME);
+      return false;
     }
 
-    switch (result.errorCode) {
-      case AuthErrorCode.EMAIL_ALREADY_IN_USE:
-        handleSnackbarAlert('error', 'Email đã được sử dụng');
-      case AuthErrorCode.NETWORK_REQUEST_FAILED:
-        handleSnackbarAlert('error', 'Lỗi mạng');
-      default:
-        handleSnackbarAlert('error', `Đã có lỗi xảy ra: ${result.errorCode}`);
+    if (!data.mail || data.mail === '') {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_MAIL);
+      return false;
     }
-  };
 
-  //#endregion
-
-  //#region Functions
-
-  const signUpUser = async (props: SignUpProps): Promise<AuthResult> => {
-    try {
-      const userCredential: UserCredential =
-        await createUserWithEmailAndPassword(auth, props.email, props.password);
-      const result: AuthResult = {
-        result: 'successful',
-        userCredential: userCredential,
-      };
-      return result;
-    } catch (error: any) {
-      const errorCode = error?.code;
-      const errorMessage = error.message;
-      const returnedError: AuthResult = {
-        result: 'fail',
-        errorCode,
-        errorMessage,
-      };
-      return returnedError;
+    if (!data.tel || data.tel === '') {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_TEL);
+      return false;
     }
-  };
 
-  const validate = (data: any): boolean => {
-    if (
-      data.firstName === '' ||
-      data.lastName === '' ||
-      data.email === '' ||
-      data.password === ''
-    ) {
+    if (!data.birthday) {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_BIRTH);
+      return false;
+    }
+
+    if (!data.password || data.password === '') {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_PASSWORD);
+      return false;
+    }
+
+    if (data.password.length < 6) {
+      handleSnackbarAlert('error', SignupValidationMsg.SHORT_PASSWORD);
+      return false;
+    }
+
+    if (!data.confirmPassword || data.confirmPassword === '') {
+      handleSnackbarAlert('error', SignupValidationMsg.EMTPY_CONFIRM_PASSWORD);
+      return false;
+    }
+
+    if (data.password !== data.confirmPassword) {
+      handleSnackbarAlert(
+        'error',
+        SignupValidationMsg.CONFIRM_PASSWORD_NOT_MATCH,
+      );
       return false;
     }
 
     return true;
   };
 
-  //#endregion
+  const createUserObjectFromUSignupData = (
+    userData: SignupData,
+  ): SignupUser => {
+    return {
+      mail: userData.mail,
+      password: userData.password,
+      name: userData.name,
+      birthday: Timestamp.fromDate(userData.birthday as Date),
+      tel: userData.tel,
+      isActive: true,
+      role_id: 'customer',
+      accountType: 'email_n_password',
+    } as SignupUser;
+  };
+
+  const handleSignup = async (createData: () => SignupData) => {
+    const signupData = createData();
+
+    const validateResult = validateSignupData(signupData);
+
+    if (!validateResult) {
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        signupData.mail!,
+        signupData.password!,
+      );
+
+      const user = createUserObjectFromUSignupData(signupData);
+
+      addUserWithEmailAndPassword(userCredential.user.uid, user);
+
+      handleSnackbarAlert('success', 'Đăng ký thành công!');
+
+      router.push('/');
+    } catch (error: any) {
+      console.log(error);
+      handleSignupError(error.code);
+    }
+  };
+
+  const handleSignupError = (errorCode: string) => {
+    if (!errorCode || errorCode === '') return;
+
+    switch (errorCode) {
+      case SignupErrorCode.EMAIL_ALREADY_IN_USE:
+        handleSnackbarAlert('error', SignupErrorMsg.EMAIL_ALREADY_IN_USE);
+        break;
+      case SignupErrorCode.NETWORK_REQUEST_FAILED:
+        handleSnackbarAlert('error', SignupErrorMsg.NETWORK_REQUEST_FAILED);
+        break;
+      default:
+        handleSnackbarAlert('error', SignupErrorMsg.DEFAULT);
+        break;
+    }
+  };
+
+  // #endregion
 
   return (
     <>
@@ -173,10 +253,7 @@ const SignUp = () => {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <SignUpForm
-                      handleSignUp={handleSignUp}
-                      validate={validate}
-                    />
+                    <SignUpForm handleSignUp={handleSignup} />
                   </Grid>
                   <Grid item xs={12}>
                     <Copyright sx={{ mt: 5 }} />

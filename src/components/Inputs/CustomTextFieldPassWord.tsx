@@ -1,20 +1,31 @@
 import { IconButton, TextField, alpha, useTheme } from '@mui/material';
-import React, { memo, useState } from 'react';
+import React, {
+  ForwardedRef,
+  forwardRef,
+  memo,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-const CustomTextFieldPassWord = (props: any) => {
+const CustomTextFieldPassWord = (
+  props: any,
+  ref: ForwardedRef<HTMLInputElement>,
+) => {
   const theme = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
   };
+
   return (
     <>
       <TextField
         {...props}
+        inputRef={ref}
         placeholder={props.placeholder ? props.placeholder : ''}
         type={showPassword ? 'text' : 'password'}
         InputProps={{
@@ -78,4 +89,4 @@ const CustomTextFieldPassWord = (props: any) => {
     </>
   );
 };
-export default memo(CustomTextFieldPassWord);
+export default forwardRef<HTMLInputElement, any>(CustomTextFieldPassWord);

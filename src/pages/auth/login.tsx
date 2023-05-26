@@ -17,13 +17,17 @@ import banh1 from '../../assets/Carousel/3.jpg';
 import theme from '@/styles/themes/lightTheme';
 import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
 import CustomTextField from '@/components/Inputs/CustomTextField';
-import { SignInProps, AuthErrorCode, SignInPropsFromObject } from '@/lib/auth';
-import { handleLoginWithGoogle } from '@/lib/auth';
-import { signUserInWithEmailAndPassword } from '@/lib/auth/auth';
 import { useSnackbarService } from '@/lib/contexts';
 import { CustomButton } from '@/components/Inputs/Buttons';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import bg2 from '../../assets/Decorate/bg2.png';
+import {
+  SignInInfo,
+  AuthErrorCode,
+  handleLoginWithGoogle,
+} from '@/lib/auth/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase/config';
 
 //#endregion
 
@@ -61,45 +65,47 @@ const Login = () => {
 
   //#endregion
 
+  // #region UseRefs
+
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  // #endregion
+
   //#region Handlers
 
-  const handleSignIn = async (props: SignInProps) => {
-    const result = await signUserInWithEmailAndPassword(props);
-
-    if (result.result === 'successful') {
-      router.push('/');
-      handleSnackbarAlert('success', authMessages.signInSucesful);
-    } else {
-      switch (result.errorCode) {
-        case AuthErrorCode.EMAIL_ALREADY_IN_USE:
-          handleSnackbarAlert('error', authMessages.emailExisted);
-          break;
-        case AuthErrorCode.NETWORK_REQUEST_FAILED:
-          handleSnackbarAlert('error', authMessages.networkError);
-          break;
-        default:
-          handleSnackbarAlert('error', authMessages.error);
-          break;
-      }
-      return;
-    }
+  const getSigninInfo = (): SignInInfo => {
+    return {
+      email: emailRef.current?.value || '',
+      password: passwordRef.current?.value || '',
+    };
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const data = new FormData(event.currentTarget);
-    const dataObject = Object.fromEntries(data.entries());
-
-    const signInData = SignInPropsFromObject(dataObject);
-
-    if (signInData.email === '' || signInData.password === '') {
+  const validateSigninInfo = (props: SignInInfo) => {
+    if (props.email === '' || props.password === '') {
       handleSnackbarAlert('error', 'Vui lòng nhập đầy đủ thông tin');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    const signinInfo = getSigninInfo();
+
+    if (!validateSigninInfo(signinInfo)) {
       return;
     }
 
-    // The notification will be handle by this function
-    await handleSignIn(signInData);
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        signinInfo.email,
+        signinInfo.password,
+      );
+    } catch (error) {
+      console.log(error);
+      handleSnackbarAlert('error', `Lỗi: ${error}`);
+    }
   };
 
   //#endregion
@@ -246,13 +252,11 @@ const Login = () => {
                       justifyContent={'center'}
                       alignItems={'center'}
                       direction={'row'}
-                      component="form"
-                      noValidate
-                      onSubmit={handleSubmit}
                       spacing={1}
                     >
                       <Grid item xs={12}>
                         <CustomTextField
+                          ref={emailRef}
                           required
                           fullWidth
                           id="email"
@@ -264,6 +268,7 @@ const Login = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <CustomTextFieldPassWord
+                          ref={passwordRef}
                           required
                           fullWidth
                           name="password"
@@ -323,7 +328,7 @@ const Login = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <CustomButton
-                          type="submit"
+                          onClick={handleLogin}
                           fullWidth
                           sx={{
                             py: 1.5,

@@ -1,69 +1,53 @@
-import {
-  NotifierType,
-  SignUpProps,
-  SignUpPropsFromObject,
-  addUser,
-  handleLoginWithGoogle,
-  updateUserLogin,
-} from '@/lib/auth';
-import { Google } from '@mui/icons-material';
-import {
-  Grid,
-  TextField,
-  Button,
-  Link,
-  Divider,
-  Typography,
-} from '@mui/material';
+import { Grid, Link, Typography } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
-import { UserCredential } from 'firebase/auth';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import theme from '@/styles/themes/lightTheme';
-import CustomTextFieldWithLabel from '../Inputs/CustomTextFieldWithLabel';
-import { useSnackbarService } from '@/lib/contexts';
 import { CustomTextField, CustomTextFieldPassWord } from '../Inputs';
 import CustomButton from '../Inputs/Buttons/customButton';
+import { UserObject } from '@/lib/models/User';
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import { Timestamp } from 'firebase/firestore';
+import { SignupData, SignupUser } from '@/lib/auth/auth';
+
+const USER_ROLE_ID = 'user';
 
 const SignUpForm = ({
   handleSignUp,
-  validate,
 }: {
-  handleSignUp: (props: SignUpProps) => Promise<UserCredential | undefined>;
-  validate: (data: any) => boolean;
+  handleSignUp: (createData: () => SignupData) => Promise<void>;
 }) => {
-  //#region Hooks
+  // #region Refs
 
-  const handleSnackbarAlert = useSnackbarService();
+  const nameRef = useRef<HTMLInputElement>(null);
+  const birthdayRef = useRef<HTMLInputElement>(null);
+  const telRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
-  //#endregion
+  // #endregion
 
-  //#region Handlers
+  const createSignupData = (): SignupData => {
+    return {
+      name: nameRef.current?.value,
+      birthday: new Date(birthdayRef.current?.value as string),
+      tel: telRef.current?.value,
+      mail: emailRef.current?.value,
+      password: passwordRef.current?.value,
+      confirmPassword: confirmPasswordRef.current?.value,
+    };
+  };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const dataObject = Object.fromEntries(data.entries());
-
-    const signUpData = SignUpPropsFromObject(dataObject);
-
-    if (!validate(signUpData)) {
-      handleSnackbarAlert('error', 'Vui lòng điền đủ thông tin');
-      return;
-    }
-
-    const userCredential = await handleSignUp(signUpData);
-
-    if (userCredential) {
-      addUser(userCredential);
-      updateUserLogin(userCredential);
-    }
+  const handleSignup = () => {
+    handleSignUp(createSignupData);
   };
 
   //#endregion
 
   return (
-    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+    <Box component="form" noValidate sx={{ mt: 3 }}>
       <Grid
         container
         direction="row"
@@ -73,6 +57,7 @@ const SignUpForm = ({
       >
         <Grid item xs={12}>
           <CustomTextField
+            ref={nameRef}
             placeholder="Họ và tên"
             fullWidth
             required
@@ -84,18 +69,14 @@ const SignUpForm = ({
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <CustomTextField
-            placeholder="Ngày sinh"
-            fullWidth
-            required
-            type="date"
-            autoComplete="bday"
-            name="bday"
-            id="bday"
+          <DatePicker
+            inputRef={birthdayRef}
+            defaultValue={dayjs(new Date('2000-01-01'))}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
           <CustomTextField
+            ref={telRef}
             placeholder="Số điện thoại"
             fullWidth
             required
@@ -107,6 +88,7 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12}>
           <CustomTextField
+            ref={emailRef}
             placeholder="Email"
             fullWidth
             required
@@ -118,7 +100,20 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12}>
           <CustomTextFieldPassWord
+            ref={passwordRef}
             placeholder="Mật khẩu"
+            required
+            fullWidth
+            type="password"
+            autoComplete="new-password"
+            name="password"
+            id="password"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <CustomTextFieldPassWord
+            ref={confirmPasswordRef}
+            placeholder="Nhập lại mật khẩu"
             required
             fullWidth
             type="password"
@@ -130,7 +125,7 @@ const SignUpForm = ({
 
         <Grid item xs={12}>
           <CustomButton
-            type="submit"
+            onClick={handleSignup}
             fullWidth
             variant="contained"
             sx={{
