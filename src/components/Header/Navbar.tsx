@@ -162,15 +162,21 @@ function Navbar() {
 
   //#endregion
 
-  // #region Ons
+  // #region useEffects
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setIsSignInState(true);
-    } else {
-      setIsSignInState(false);
-    }
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('navbar onAuthStateChanged');
+
+      if (user) {
+        setIsSignInState(() => true);
+      } else {
+        setIsSignInState(() => false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // #endregion
 

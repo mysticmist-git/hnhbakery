@@ -7,7 +7,6 @@ import React from 'react';
 import { TabItem } from '.';
 
 const CustomTab = (props: any) => {
-  const theme = useTheme();
   const context = useContext(NavbarContext);
   const [hoveredIndex, setHoveredIndex] = React.useState(-1);
 

@@ -13,7 +13,7 @@ import {
   ViewInAr,
 } from '@mui/icons-material';
 import { useSnackbarService } from '@/lib/contexts';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import theme from '@/styles/themes/lightTheme';
 import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
 import { UserObject } from '@/lib/models/User';
@@ -81,22 +81,33 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   // #region Ons
 
-  onAuthStateChanged(auth, (user) => {
-    const doStuffs = async (_user: User) => {
-      const userId = _user.uid;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const doStuffs = async (_user: User) => {
+        const userId = _user.uid;
 
-      try {
-        const user = (await getDocFromFirestore('users', userId)) as UserObject;
+        try {
+          const user = (await getDocFromFirestore(
+            'users',
+            userId,
+          )) as UserObject;
 
-        setIsCustomer(() => user.role_id === 'customer');
-      } catch (error: any) {
-        console.log(error);
-        handleSnackbarAlert('error', `Lỗi: ${error.message}`);
-      }
-    };
+          setIsCustomer(() => user.role_id === 'customer');
+        } catch (error: any) {
+          console.log(error);
+          handleSnackbarAlert('error', `Lỗi: ${error.message}`);
+        }
+      };
 
-    if (user) doStuffs(user);
-  });
+      console.log('navbar onAuthStateChanged');
+
+      if (user) doStuffs(user);
+
+      return () => {
+        unsubscribe();
+      };
+    });
+  }, []);
 
   // #endregion
 

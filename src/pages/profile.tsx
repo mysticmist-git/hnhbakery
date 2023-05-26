@@ -25,16 +25,17 @@ const Profile = () => {
 
   // #region useEffects
 
-  // #region Ons
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('hi');
+      if (user) {
+        setUserId(user.uid);
+        setAvatarSrc(user.photoURL ?? '');
+      }
+    });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setUserId(user.uid);
-      setAvatarSrc(user.photoURL ?? '');
-    }
-  });
-
-  // #endregion
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {

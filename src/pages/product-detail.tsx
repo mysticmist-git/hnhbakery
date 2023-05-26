@@ -762,13 +762,20 @@ const ProductDetailInfo = (props: any) => {
   };
   // #endregion
 
-  // #region Ons
+  // #region useEffects
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setUserId(user.uid);
-    }
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('hi');
+      if (user) {
+        setUserId(user.uid);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   // #endregion
 

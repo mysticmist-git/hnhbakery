@@ -1,6 +1,6 @@
 import { Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useContext, useMemo, memo, useState } from 'react';
+import { useContext, useMemo, memo, useState, useEffect } from 'react';
 import { CustomIconButton, CustomButton } from '../Inputs/Buttons';
 import NavbarAvatar from '../NavbarAvatar';
 import { NavbarContext } from './Navbar';
@@ -35,13 +35,19 @@ const RightMenu = (props: any) => {
 
   //#endregion
 
-  // #region Ons
+  // #region UseEffects
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setPhotoURL(user.photoURL ?? '');
-    }
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('hi');
+
+      if (user) {
+        setPhotoURL(user.photoURL ?? '');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // #endregion
 
