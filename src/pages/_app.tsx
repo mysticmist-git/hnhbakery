@@ -13,7 +13,6 @@ Router.events.on('routeChangeError', () => NProgress.done());
 // const clientSideEmotionCache = createEmotionCache();
 
 import { AppProps } from 'next/app';
-import initAuth from '@/next-firebase-auth/initAuth';
 import { Router, useRouter } from 'next/router';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -30,18 +29,6 @@ import { DisplayCartItem } from '@/lib/contexts/cartContext';
 import Layout from '@/components/Layouts/Layout';
 import Head from 'next/head';
 
-//Binding events.
-
-//#region Top
-
-// interface MyAppProps extends AppProps {
-//   emotionCache: EmotionCache;
-// }
-
-initAuth();
-
-//#endregion
-
 const MyApp = (props: AppProps) => {
   // #region States
 
@@ -53,15 +40,6 @@ const MyApp = (props: AppProps) => {
   //#region Hooks
 
   const { Component, pageProps } = props;
-  const router = useRouter();
-
-  //#endregion
-
-  //#region useEffects
-
-  //#endregion
-
-  //#region Snackbar
 
   const {
     snackbarOpen,

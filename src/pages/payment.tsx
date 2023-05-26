@@ -22,11 +22,11 @@ import {
   PaymentContext,
   initPaymentContext,
 } from '@/lib/contexts/paymentContext';
-import { useAuthUser, withAuthUser } from 'next-firebase-auth';
 import {
   addDocToFirestore,
   addDocsToFirestore,
 } from '@/lib/firestore/firestoreLib';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 // #region Giả dữ liệu
 
@@ -175,7 +175,7 @@ const Payment = () => {
   const { state, dispatch } = useContext<AppContextType>(AppContext);
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
-  const { id: userId } = useAuthUser();
+  const auth = getAuth();
 
   //#endregion
 
@@ -197,6 +197,7 @@ const Payment = () => {
   const [khuyenMai, setKhuyenMai] = useState(0);
   const [chooseSale, setChooseSale] = useState('');
   const [tongBill, setTongBill] = useState(0);
+  const [userId, setUserId] = useState('');
 
   // #endregion
 
@@ -415,6 +416,16 @@ const Payment = () => {
 
   // #endregion
 
+  // #region Ons
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setUserId(user.uid);
+    }
+  });
+
+  // #endregion
+
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -539,4 +550,4 @@ const Payment = () => {
   );
 };
 
-export default withAuthUser()(memo(Payment));
+export default memo(Payment);

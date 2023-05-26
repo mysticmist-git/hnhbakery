@@ -102,6 +102,9 @@ const Login = () => {
         signinInfo.email,
         signinInfo.password,
       );
+
+      handleSnackbarAlert('success', 'Đăng nhập thành công');
+      router.push('/');
     } catch (error) {
       console.log(error);
       handleSnackbarAlert('error', `Lỗi: ${error}`);

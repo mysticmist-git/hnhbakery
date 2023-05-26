@@ -2,7 +2,7 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { auth } from '@/firebase/config';
 import { SxProps, Theme, Typography } from '@mui/material';
@@ -59,13 +59,19 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   const handleLogout = async () => {
     await signOut(auth);
+    handleClose();
     handleSnackbarAlert('success', 'Đã đăng xuất tài khoản');
-    router.push('/');
   };
 
   //#endregion
 
-  //#region Styles
+  // #region
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      router.push('/');
+    }
+  });
 
   //#endregion
 

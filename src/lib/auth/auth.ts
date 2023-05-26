@@ -61,8 +61,7 @@ export const handleLoginWithGoogle = async () => {
   try {
     const userCredential = await signInWithPopup(auth, provider);
 
-    addUser(userCredential);
-    updateUserLogin(userCredential);
+    addUserWithGoogleLogin(userCredential);
 
     // Redirect to home page after successful login
     router.push('/');
@@ -70,17 +69,6 @@ export const handleLoginWithGoogle = async () => {
     console.log(error);
   }
 };
-export const signUserInWithEmailAndPassword = async (props: {
-  email: string;
-  password: string;
-}): Promise<AuthResult> => {
-  try {
-    const userCredential: UserCredential = await signInWithEmailAndPassword(
-      auth,
-      props.email,
-      props.password,
-    );
-    const user = userCredential;
 
 export interface SignInInfo {
   email: string;

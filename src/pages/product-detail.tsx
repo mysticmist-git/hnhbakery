@@ -35,7 +35,6 @@ import { BatchObject } from '@/lib/models/Batch';
 import { where } from 'firebase/firestore';
 import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 import { useSnackbarService } from '@/lib/contexts';
-import { useAuthUser, withAuthUser } from 'next-firebase-auth';
 import { nanoid } from 'nanoid';
 import { useRouter } from 'next/router';
 import { LOCAL_CART_KEY } from '@/lib';
@@ -45,6 +44,7 @@ import {
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
 import { GridRenderedRowsIntervalChangeParams } from '@mui/x-data-grid';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 // Mock Data
 
@@ -522,15 +522,14 @@ function Comments(props: any) {
   );
 }
 
-const ProductDetailInfo = withAuthUser()((props: any) => {
+const ProductDetailInfo = (props: any) => {
   // #region Hooks
 
   const theme = useTheme();
   const { productDetail, form, setForm } =
     useContext<ProductDetailContextType>(ProductDetailContext);
-  const { id: userId } = useAuthUser();
+  const auth = getAuth();
   const router = useRouter();
-
   const handleSnackbarAlert = useSnackbarService();
 
   // #endregion
@@ -630,6 +629,12 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
       return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
     }
   }, [productDetail]);
+
+  // #endregion
+
+  // #region States
+
+  const [userId, setUserId] = useState<string>('');
 
   // #endregion
 
@@ -755,6 +760,16 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
   const redirectToCartPage = () => {
     router.push('/cart');
   };
+  // #endregion
+
+  // #region Ons
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setUserId(user.uid);
+    }
+  });
+
   // #endregion
 
   return (
@@ -1173,7 +1188,7 @@ const ProductDetailInfo = withAuthUser()((props: any) => {
       </Grid>
     </Grid>
   );
-});
+};
 
 // #endregion
 

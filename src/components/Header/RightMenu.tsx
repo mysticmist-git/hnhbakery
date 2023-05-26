@@ -1,11 +1,11 @@
 import { Typography, useTheme } from '@mui/material';
-import { useAuthUser } from 'next-firebase-auth';
 import { useRouter } from 'next/router';
-import { useContext, useMemo, memo } from 'react';
+import { useContext, useMemo, memo, useState } from 'react';
 import { CustomIconButton, CustomButton } from '../Inputs/Buttons';
 import NavbarAvatar from '../NavbarAvatar';
 import { NavbarContext } from './Navbar';
 import { ShoppingCart } from '@mui/icons-material';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const RightMenu = (props: any) => {
   //#region Hooks
@@ -13,10 +13,15 @@ const RightMenu = (props: any) => {
   const theme = useTheme();
   const context = useContext(NavbarContext);
   const router = useRouter();
-  const AuthUser = useAuthUser();
-  const { photoURL } = useMemo(() => AuthUser, [AuthUser]);
+  const auth = getAuth();
 
   //#endregion
+
+  // #region States
+
+  const [photoURL, setPhotoURL] = useState('');
+
+  // #endregion
 
   //#region Handlers
 
@@ -29,6 +34,16 @@ const RightMenu = (props: any) => {
   }
 
   //#endregion
+
+  // #region Ons
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setPhotoURL(user.photoURL ?? '');
+    }
+  });
+
+  // #endregion
 
   return (
     <>
@@ -45,7 +60,7 @@ const RightMenu = (props: any) => {
         <ShoppingCart />
       </CustomIconButton>
       {context.isSignIn ? (
-        <NavbarAvatar photoURL={photoURL} />
+        <NavbarAvatar photoURL={photoURL ?? ''} />
       ) : (
         <CustomButton onClick={handleLoginRoute}>
           <Typography variant="button" color={theme.palette.common.white}>

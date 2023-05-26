@@ -3,12 +3,9 @@ import {
   Box,
   Grid,
   Slide,
-  Tab,
-  Tabs,
   Toolbar,
   Typography,
   alpha,
-  useScrollTrigger,
   useTheme,
 } from '@mui/material';
 import logo from '@/assets/Logo.png';
@@ -23,12 +20,12 @@ import React, {
 import Menu from '@mui/icons-material/Menu';
 import { useRouter } from 'next/router';
 import Skeleton_img from '../Skeletons/skeleton_img';
-import { useAuthUser, withAuthUser } from 'next-firebase-auth';
 import { CustomIconButton } from '../Inputs/Buttons';
 import { CustomTab, NavbarContextType } from '.';
 import CustomDrawer from './CustomDrawer';
 import RightMenu from './RightMenu';
 import Link from 'next/link';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 //#region Tab
 
@@ -160,26 +157,22 @@ function Navbar() {
 
   //#region Hooks
 
-  const router = useRouter();
-  const AuthUser = useAuthUser();
+  const auth = getAuth();
   const theme = useTheme();
 
   //#endregion
 
-  // #region useMemos
+  // #region Ons
 
-  const { email } = useMemo(() => AuthUser, [AuthUser]);
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setIsSignInState(true);
+    } else {
+      setIsSignInState(false);
+    }
+  });
 
   // #endregion
-
-  //#region UseEffects
-
-  useEffect(() => {
-    setIsSignInState(() => Boolean(email));
-    console.log('User Signed In!');
-  }, [email]);
-
-  //#endregion
 
   //#region Handlers
 
@@ -280,4 +273,4 @@ function Navbar() {
   );
 }
 
-export default withAuthUser()(memo(Navbar));
+export default memo(Navbar);

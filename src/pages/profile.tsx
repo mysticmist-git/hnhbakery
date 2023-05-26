@@ -1,42 +1,47 @@
 import { LeftProfileColumn, RightProfileColumn } from '@/components/Profile';
 import { Card, Container, Grid, useTheme } from '@mui/material';
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { useAuthUser, withAuthUser } from 'next-firebase-auth';
 import avatar from '../assets/Logo.png';
 import { Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { UserObject } from '@/lib/models/User';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const Profile = () => {
   // #region states
 
   const [userData, setUserData] = useState<UserObject>({} as UserObject);
+  const [avatarSrc, setAvatarSrc] = useState('');
+  const [userId, setUserId] = useState('');
 
   // #endregion
 
   // #region Hooks
 
   const theme = useTheme();
-  const authUserContext = useAuthUser();
-
-  // #endregion
-
-  // #region useMemos
-
-  const avatarSrc = useMemo(() => {
-    return authUserContext.photoURL ?? avatar.src;
-  }, [authUserContext.photoURL]);
+  const auth = getAuth();
 
   // #endregion
 
   // #region useEffects
 
+  // #region Ons
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setUserId(user.uid);
+      setAvatarSrc(user.photoURL ?? '');
+    }
+  });
+
+  // #endregion
+
   useEffect(() => {
     const getUser = async () => {
-      if (!authUserContext.id) return null;
+      if (!userId || userId === '') return null;
 
       // Get users
-      const userDoc = await getDoc(doc(db, 'users', authUserContext.id));
+      const userDoc = await getDoc(doc(db, 'users', userId));
 
       const userData = {
         id: userDoc.id,
@@ -50,7 +55,7 @@ const Profile = () => {
     };
 
     getUser();
-  }, []);
+  }, [userId]);
 
   // #endregion
 
@@ -87,4 +92,4 @@ const Profile = () => {
   );
 };
 
-export default withAuthUser()(memo(Profile));
+export default memo(Profile);
