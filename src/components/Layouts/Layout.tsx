@@ -3,14 +3,21 @@ import React, { useMemo } from 'react';
 import ManageLayout from './ManageLayout';
 import DefaultLayout from './DefaultLayout';
 import Head from 'next/head';
+import NoLayout from './components/NoLayout';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
-  const CurrentLayout = useMemo(
-    () => (router.pathname.includes('/manager') ? ManageLayout : DefaultLayout),
-    [router.pathname],
-  );
+  const CurrentLayout = useMemo(() => {
+    switch (router.pathname) {
+      case '/manager':
+        return ManageLayout;
+      case '/test':
+        return NoLayout;
+      default:
+        return DefaultLayout;
+    }
+  }, [router.pathname]);
 
   return (
     <>

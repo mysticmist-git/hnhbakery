@@ -1,18 +1,6 @@
-import {
-  Box,
-  Card,
-  Container,
-  Divider,
-  Typography,
-  useTheme,
-  Grid,
-  alpha,
-} from '@mui/material';
-import { Stack } from '@mui/system';
+import { Box, useTheme, alpha } from '@mui/material';
 import { memo } from 'react';
 import contactImage from '@/assets/contact-img.jpg';
-import bg10 from '../../assets/Decorate/bg10.png';
-import Image from 'next/image';
 
 const ContactWrapper = ({ children = '' }: { children?: React.ReactNode }) => {
   const theme = useTheme();

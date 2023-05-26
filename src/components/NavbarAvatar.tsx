@@ -2,14 +2,21 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { User, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { auth } from '@/firebase/config';
 import { SxProps, Theme, Typography } from '@mui/material';
-import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
+import {
+  AccountCircle,
+  KeyboardReturnTwoTone,
+  Logout,
+  ViewInAr,
+} from '@mui/icons-material';
 import { useSnackbarService } from '@/lib/contexts';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import theme from '@/styles/themes/lightTheme';
+import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
+import { UserObject } from '@/lib/models/User';
 
 interface Props {
   photoURL: string | null;
@@ -27,6 +34,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   //#region States
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isCustomer, setIsCustomer] = useState(true);
 
   //#endregion
 
@@ -34,6 +42,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
+  const auth = getAuth();
 
   //#endregion
 
@@ -61,19 +70,35 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     await signOut(auth);
     handleClose();
     handleSnackbarAlert('success', 'Đã đăng xuất tài khoản');
+    router.push('/');
   };
 
   //#endregion
 
   // #region
 
+  //#endregion
+
+  // #region Ons
+
   onAuthStateChanged(auth, (user) => {
-    if (user) {
-      router.push('/');
-    }
+    const doStuffs = async (_user: User) => {
+      const userId = _user.uid;
+
+      try {
+        const user = (await getDocFromFirestore('users', userId)) as UserObject;
+
+        setIsCustomer(() => user.role_id === 'customer');
+      } catch (error: any) {
+        console.log(error);
+        handleSnackbarAlert('error', `Lỗi: ${error.message}`);
+      }
+    };
+
+    if (user) doStuffs(user);
   });
 
-  //#endregion
+  // #endregion
 
   return (
     <>
@@ -85,12 +110,14 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
             Tài khoản
           </Typography>
         </MenuItem>
-        <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
-          <ViewInAr />
-          <Typography variant="body2" color={theme.palette.common.black}>
-            Quản lý
-          </Typography>
-        </MenuItem>
+        {!isCustomer && (
+          <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
+            <ViewInAr />
+            <Typography variant="body2" color={theme.palette.common.black}>
+              Quản lý
+            </Typography>
+          </MenuItem>
+        )}
         <MenuItem onClick={handleLogout} sx={menuItemSx}>
           <Logout />
           <Typography variant="body2" color={theme.palette.common.black}>

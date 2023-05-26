@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer } from 'react';
 // import { CacheProvider, EmotionCache } from '@emotion/react';
 import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 import '@/styles/nprogress.scss';
@@ -13,7 +13,7 @@ Router.events.on('routeChangeError', () => NProgress.done());
 // const clientSideEmotionCache = createEmotionCache();
 
 import { AppProps } from 'next/app';
-import { Router, useRouter } from 'next/router';
+import { Router } from 'next/router';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import useSnackbar from '@/lib/hooks/useSnackbar';
@@ -25,7 +25,6 @@ import {
   appReducer,
   initialState,
 } from '@/lib/contexts/appContext';
-import { DisplayCartItem } from '@/lib/contexts/cartContext';
 import Layout from '@/components/Layouts/Layout';
 import Head from 'next/head';
 
@@ -82,7 +81,6 @@ const MyApp = (props: AppProps) => {
             </SnackbarService.Provider>
           </AppContext.Provider>
         </ThemeProvider>
-        {/* </CacheProvider> */}
       </LocalizationProvider>
     </>
   );

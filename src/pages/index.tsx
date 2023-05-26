@@ -342,6 +342,7 @@ const Home = ({
         }),
       );
     };
+
     importImages();
   }, []);
 

@@ -1,4 +1,3 @@
-import { display } from '@mui/system';
 import { DocumentData } from 'firebase/firestore';
 
 // Get image if there's any
@@ -7,6 +6,7 @@ export const memoize = (fn: any) => {
   return async (...args: any[]) => {
     const key = JSON.stringify(args);
     if (cache.has(key)) {
+      console.log('cache');
       return cache.get(key);
     }
     const result = await fn(...args);

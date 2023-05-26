@@ -28,7 +28,6 @@ import {
 import { memoize } from '../localLib/manage-modal';
 import { ProductObject } from '../models';
 import { filterDuplicates } from '../utilities';
-import { productionBrowserSourceMaps } from '../../../next.config';
 
 //#region Document Related Functions
 
@@ -171,7 +170,6 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
 
     try {
       const url = await getDownloadURL(ref(storage, path));
-      console.log(url);
       return url;
     } catch (error) {
       throw new Error(`Error: ${error}`);
