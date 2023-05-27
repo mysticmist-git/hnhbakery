@@ -1,6 +1,5 @@
 import { createContext } from 'react';
-import { ManageState, crudTargets, ManageContextType } from '../localLib';
-import { CollectionName } from '../models/utilities';
+import { ManageContextType } from '../localLib';
 
 export const ManageContext = createContext<ManageContextType>(
   {} as ManageContextType,

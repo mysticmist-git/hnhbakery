@@ -188,13 +188,7 @@ export async function getCollection<T>(collectionName: string): Promise<T[]> {
 
   const querySnapshot = await getDocs(collectionRef);
 
-  const docs: T[] = querySnapshot.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-      } as T),
-  );
+  const docs = getDocsFromQuerySnapshot(querySnapshot) as T[];
 
   if (!docs) throw new Error('Docs are null');
 

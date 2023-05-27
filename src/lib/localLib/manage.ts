@@ -28,6 +28,7 @@ export enum ManageActionType {
   SET_DELETING_ID = 'SET_DELETING_ID',
   UPDATE_SPECIFIC_DOC = 'UPDATE_SPECIFIC_DOC',
   SET_SEARCH_TEXT = 'SET_SEARCH_TEXT',
+  SET_DISPLAY_ACTIVE_ONLY = 'SET_DISPLAY_ACTIVE_ONLY',
 }
 
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
@@ -43,6 +44,7 @@ export interface ManageState {
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
   deletingId: string;
+  isDisplayActiveOnly: boolean;
 }
 
 export interface ManageContextType {
@@ -125,6 +127,12 @@ export const manageReducer = (state: ManageState, action: any) => {
       return {
         ...state,
         crudModalMode: action.payload,
+      };
+
+    case ManageActionType.SET_DISPLAY_ACTIVE_ONLY:
+      return {
+        ...state,
+        isDisplayActiveOnly: action.payload,
       };
 
     default:

@@ -11,6 +11,8 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  FormControlLabel,
+  Switch,
   TextField,
   Typography,
   useTheme,
@@ -53,6 +55,7 @@ const initManageState: ManageState = {
   crudModalOpen: false,
   crudModalMode: 'none',
   deletingId: '',
+  isDisplayActiveOnly: true,
 };
 
 //#endregion
@@ -393,6 +396,30 @@ export default function Manage({
               onInputChange={handleSearch}
             />
           )}
+
+          <FormControlLabel
+            labelPlacement="start"
+            control={
+              <Switch
+                color="secondary"
+                checked={state.isDisplayActiveOnly}
+                onChange={(e) => {
+                  dispatch({
+                    type: ManageActionType.SET_DISPLAY_ACTIVE_ONLY,
+                    payload: e.target.checked,
+                  });
+                }}
+              />
+            }
+            label="Chỉ hiện còn cung cấp"
+          />
+
+          <Divider
+            orientation="vertical"
+            sx={{
+              mx: 1,
+            }}
+          />
 
           <TableActionButton
             startIcon={<Add />}

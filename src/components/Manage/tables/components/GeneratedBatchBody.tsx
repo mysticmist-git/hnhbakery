@@ -10,18 +10,13 @@ import { ManageContextType } from '@/lib/localLib/manage';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
-  const {
-    state,
-    dispatch,
-    handleViewRow,
-    handleDeleteRowOnFirestore: handleDeleteRow,
-  } = useContext<ManageContextType>(ManageContext);
+  const { state } = useContext<ManageContextType>(ManageContext);
 
   useEffect(() => {
     // Load product names with productIds
     const getProductNames = async () => {
       try {
-        const docs = await Promise.all(
+        const docs: DocumentData[] = await Promise.all(
           state.mainDocs.map(async (document) => {
             const docRef = doc(
               db,
@@ -39,14 +34,21 @@ const GeneratedBatchTableBody = () => {
           }),
         );
 
-        setDisplayMainDocs(() => docs);
+        // Filter isActive
+        const filterActiveDocs = docs.filter((doc) =>
+          state.isDisplayActiveOnly
+            ? new Date(doc.EXP).getTime() > new Date().getTime()
+            : true,
+        );
+
+        setDisplayMainDocs(() => filterActiveDocs);
       } catch (err) {
         console.log('Err', err);
       }
     };
 
     getProductNames();
-  }, [state.mainDocs]);
+  }, [state.mainDocs, state.isDisplayActiveOnly]);
 
   const TableBody = useMemo(() => {
     return (

@@ -1,20 +1,8 @@
-import { db } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
 import { sendContact } from '@/lib/firestore/firestoreLib';
-import {
-  Box,
-  Button,
-  Divider,
-  Grid,
-  TextField,
-  Typography,
-  alpha,
-} from '@mui/material';
-import { addDoc, collection } from 'firebase/firestore';
-import { ref } from 'firebase/storage';
-import { Router, useRouter } from 'next/router';
-import { title } from 'process';
-import React, { HTMLInputTypeAttribute, createRef, memo, useRef } from 'react';
+import * as material from '@mui/material';
+import { useRouter } from 'next/router';
+import React, { memo, useRef } from 'react';
 import CustomTextField from '../Inputs/CustomTextField';
 import theme from '@/styles/themes/lightTheme';
 import { CustomTextarea } from '../Inputs/CustomTextarea';
@@ -88,7 +76,7 @@ const ContactForm = () => {
   // #endregion
 
   return (
-    <Grid
+    <material.Grid
       container
       justifyContent={'center'}
       alignItems={'start'}
@@ -97,20 +85,23 @@ const ContactForm = () => {
       component={'form'}
       onSubmit={handleSubmit}
     >
-      <Grid item xs={12}>
-        <Grid
+      <material.Grid item xs={12}>
+        <material.Grid
           container
           justifyContent={'center'}
           alignItems={'start'}
           direction={'row'}
           spacing={1}
         >
-          <Grid item xs={12}>
-            <Typography variant="button" color={theme.palette.common.white}>
+          <material.Grid item xs={12}>
+            <material.Typography
+              variant="button"
+              color={theme.palette.common.white}
+            >
               Thông tin liên hệ
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
+            </material.Typography>
+          </material.Grid>
+          <material.Grid item xs={12}>
             <CustomTextField
               ref={nameRef}
               error={nameRef?.current?.value === ''}
@@ -121,8 +112,8 @@ const ContactForm = () => {
               name="name"
               type="text"
             />
-          </Grid>
-          <Grid item xs={6}>
+          </material.Grid>
+          <material.Grid item xs={6}>
             <CustomTextField
               ref={phoneRef}
               error={phoneRef?.current?.value === ''}
@@ -132,8 +123,8 @@ const ContactForm = () => {
               type="tel"
               autoComplete="tel"
             />
-          </Grid>
-          <Grid item xs={6}>
+          </material.Grid>
+          <material.Grid item xs={6}>
             <CustomTextField
               ref={emailRef}
               error={emailRef?.current?.value === ''}
@@ -143,24 +134,27 @@ const ContactForm = () => {
               type="email"
               autoComplete="email"
             />
-          </Grid>
-        </Grid>
-      </Grid>
+          </material.Grid>
+        </material.Grid>
+      </material.Grid>
 
-      <Grid item xs={12}>
-        <Grid
+      <material.Grid item xs={12}>
+        <material.Grid
           container
           justifyContent={'center'}
           alignItems={'start'}
           direction={'row'}
           spacing={1}
         >
-          <Grid item xs={12}>
-            <Typography variant="button" color={theme.palette.common.white}>
+          <material.Grid item xs={12}>
+            <material.Typography
+              variant="button"
+              color={theme.palette.common.white}
+            >
               Nội dung iên hệ
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
+            </material.Typography>
+          </material.Grid>
+          <material.Grid item xs={12}>
             <CustomTextField
               ref={titleRef}
               error={titleRef?.current?.value === ''}
@@ -169,9 +163,9 @@ const ContactForm = () => {
               name="title"
               type="text"
             />
-          </Grid>
-          <Grid item xs={12}>
-            <Box
+          </material.Grid>
+          <material.Grid item xs={12}>
+            <material.Box
               sx={{
                 border: 3,
                 borderColor: theme.palette.secondary.main,
@@ -190,18 +184,21 @@ const ContactForm = () => {
                   minHeight: '132px',
                 }}
               />
-            </Box>
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={'auto'}>
+            </material.Box>
+          </material.Grid>
+        </material.Grid>
+      </material.Grid>
+      <material.Grid item xs={'auto'}>
         <CustomButton type="submit" sx={{ px: 8 }}>
-          <Typography variant="button" color={theme.palette.common.white}>
+          <material.Typography
+            variant="button"
+            color={theme.palette.common.white}
+          >
             Gửi
-          </Typography>
+          </material.Typography>
         </CustomButton>
-      </Grid>
-    </Grid>
+      </material.Grid>
+    </material.Grid>
   );
 };
 

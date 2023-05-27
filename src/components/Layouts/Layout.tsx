@@ -5,17 +5,24 @@ import DefaultLayout from './DefaultLayout';
 import Head from 'next/head';
 import NoLayout from './components/NoLayout';
 
+const pathnameResolver = (pathname: string, desiredPaths: string[]) => {
+  for (const desiredPath of desiredPaths) {
+    if (pathname.includes(desiredPath)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const CurrentLayout = useMemo(() => {
-    switch (router.pathname) {
-      case '/manager':
-        return ManageLayout;
-      case '/test':
-        return NoLayout;
-      default:
-        return DefaultLayout;
+    if (pathnameResolver(router.pathname, ['manage'])) {
+      return ManageLayout;
+    } else {
+      return DefaultLayout;
     }
   }, [router.pathname]);
 
