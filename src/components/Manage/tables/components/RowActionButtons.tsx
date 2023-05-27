@@ -6,6 +6,7 @@ import { TableActionButton } from '../TableActionButton';
 import { ManageContext } from '@/lib/contexts';
 import { memo, useContext } from 'react';
 import { ManageContextType } from '@/lib/localLib/manage';
+import { Typography } from '@mui/material';
 
 const RowActionButtons = ({ doc }: { doc: DocumentData }) => {
   const {
@@ -30,7 +31,7 @@ const RowActionButtons = ({ doc }: { doc: DocumentData }) => {
           handleViewRow(doc);
         }}
       >
-        Xem
+        <Typography variant="body2">Xem</Typography>
       </TableActionButton>
       <TableActionButton
         variant="contained"
@@ -43,7 +44,7 @@ const RowActionButtons = ({ doc }: { doc: DocumentData }) => {
         }}
         onClick={() => handleDeleteRow(doc.id)}
       >
-        Xóa
+        <Typography variant="body2">Xóa</Typography>
       </TableActionButton>
     </Box>
   );

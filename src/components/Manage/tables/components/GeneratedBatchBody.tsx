@@ -7,6 +7,7 @@ import { CollectionName } from '@/lib/models/utilities';
 import { DocumentData, doc, getDoc } from 'firebase/firestore';
 import RowActionButtons from './RowActionButtons';
 import { ManageContextType } from '@/lib/localLib/manage';
+import formatCurrency from '@/utilities/formatCurrency';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
@@ -59,43 +60,66 @@ const GeneratedBatchTableBody = () => {
             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
           >
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {index + 1}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {doc.productName}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {doc.soldQuantity}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {doc.totalQuantity}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {new Date(doc.MFG).toLocaleDateString('vi-VN', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric',
                 })}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {new Date(doc.EXP).toLocaleDateString('vi-VN', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric',
                 })}
               </Typography>
             </TableCell>
+            <TableCell>{formatCurrency(doc.price)}</TableCell>
             <TableCell>
               <RowActionButtons doc={doc} />
             </TableCell>

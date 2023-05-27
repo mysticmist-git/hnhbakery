@@ -383,6 +383,7 @@ const Home = ({
               sx={{
                 py: 8,
                 display: 'flex',
+                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -397,14 +398,7 @@ const Home = ({
                 buttonOnclick={() => {}}
               />
               {bestSellerState.length <= 0 && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography variant="h2">Không có dữ liệu</Typography>
-                </Box>
+                <Typography variant="h2">Không có dữ liệu</Typography>
               )}
             </Box>
             <DashUpWhite />

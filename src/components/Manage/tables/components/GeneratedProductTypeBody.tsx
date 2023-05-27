@@ -23,22 +23,41 @@ const GeneratedProductTypeTableBody = () => {
             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
           >
             <TableCell component="th" scope="row">
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.common.black,
+                }}
+              >
                 {index + 1}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.common.black }}
+              >
                 {doc.name}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography sx={{ color: theme.palette.common.black }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.common.black,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: '2',
+                  WebkitBoxOrient: 'vertical',
+                }}
+              >
                 {doc.description}
               </Typography>
             </TableCell>
             <TableCell>
               <Typography
+                variant="body2"
                 sx={{
                   color: doc.isActive
                     ? theme.palette.success.main

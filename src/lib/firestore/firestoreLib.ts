@@ -36,6 +36,8 @@ export const getDocFromFirestore = async (
   documentId: string,
 ): Promise<DocumentData> => {
   try {
+    console.log(documentId);
+
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
     const docData = getDocFromQuerySnapshot(docSnap);
@@ -43,8 +45,8 @@ export const getDocFromFirestore = async (
     if (!docData) throw new Error('Doc data is null');
 
     return docData;
-  } catch (error) {
-    throw new Error(`Error: ${error}`);
+  } catch (error: any) {
+    throw new Error(`Lỗi: ${error.message}`);
   }
 };
 

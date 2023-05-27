@@ -89,7 +89,7 @@ export const MainListItems = memo(() => {
         />
         {isActive('dashboard') && <Check color="secondary" />}
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton onClick={() => router.push('/manager/orders')}>
         <ListItemIcon>
           <ShoppingCartIcon sx={iconSxProps('orders')} />
         </ListItemIcon>
@@ -100,7 +100,7 @@ export const MainListItems = memo(() => {
         />
         {isActive('orders') && <Check color="secondary" />}
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton onClick={() => router.push('/manager/customers')}>
         <ListItemIcon>
           <PeopleIcon sx={iconSxProps('customers')} />
         </ListItemIcon>
@@ -113,7 +113,7 @@ export const MainListItems = memo(() => {
         />
         {isActive('customers') && <Check color="secondary" />}
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton onClick={() => router.push('/manager/reports')}>
         <ListItemIcon>
           <BarChartIcon sx={iconSxProps('reports')} />
         </ListItemIcon>
@@ -124,7 +124,7 @@ export const MainListItems = memo(() => {
         />
         {isActive('reports') && <Check color="secondary" />}
       </ListItemButton>
-      <ListItemButton sx={itemSxProps('manage')}>
+      <ListItemButton onClick={() => router.push('/manager/manage')}>
         <ListItemIcon>
           <LayersIcon sx={iconSxProps('manage')} />
         </ListItemIcon>

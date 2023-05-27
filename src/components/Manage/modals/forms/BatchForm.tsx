@@ -413,10 +413,8 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
               shouldDisableDate={(day) => {
                 // Disable day before today
                 return (
-                  day.isBefore(
-                    dayjs(state.displayingData?.MFG).subtract(1, 'day'),
-                  ) ||
-                  day.isAfter(dayjs(state.displayingData?.MFG).add(1, 'day'))
+                  day.isBefore(dayjs(state.displayingData?.MFG)) ||
+                  day.isAfter(dayjs(state.displayingData?.EXP))
                 );
               }}
               format="DD/MM/YYYY | HH:mm"

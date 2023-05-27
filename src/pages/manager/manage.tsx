@@ -411,9 +411,10 @@ export default function Manage({
                 }}
               />
             }
-            label="Chỉ hiện còn cung cấp"
+            label={
+              <Typography variant="body2">Chỉ hiện còn cung cấp</Typography>
+            }
           />
-
           <Divider
             orientation="vertical"
             sx={{
@@ -429,7 +430,7 @@ export default function Manage({
             }}
             onClick={handleNewRow}
           >
-            {rowText}
+            <Typography variant="body2">{rowText}</Typography>
           </TableActionButton>
         </Box>
 

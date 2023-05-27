@@ -13,7 +13,7 @@ const GeneratedTableHead = () => {
         return (
           <>
             <TableCell>STT</TableCell>
-            <TableCell width={150}>Tên sản phẩm</TableCell>
+            <TableCell width={200}>Tên sản phẩm</TableCell>
             <TableCell>Mô tả</TableCell>
             <TableCell width={150}>Trạng thái</TableCell>
             <TableCell align="center">Hành động</TableCell>
@@ -24,7 +24,7 @@ const GeneratedTableHead = () => {
           <>
             <TableCell>STT</TableCell>
             <TableCell width={150}>Tên sản phẩm</TableCell>
-            <TableCell>Loại sản phẩm</TableCell>
+            <TableCell width={150}>Loại sản phẩm</TableCell>
             <TableCell>Mô tả</TableCell>
             <TableCell width={150}>Trạng thái</TableCell>
             <TableCell align="center">Hành động</TableCell>
@@ -39,6 +39,7 @@ const GeneratedTableHead = () => {
             <TableCell align="center">Tổng</TableCell>
             <TableCell align="center">Ngày sản xuất</TableCell>
             <TableCell align="center">Ngày hết hạn</TableCell>
+            <TableCell align="center">Giá</TableCell>
             <TableCell align="center">Hành động</TableCell>
           </>
         );

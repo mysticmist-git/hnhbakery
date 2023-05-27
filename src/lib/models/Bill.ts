@@ -12,4 +12,5 @@ export interface BillObject extends DocumentData {
   payment_id?: string;
   sale_id: string;
   user_id?: string;
+  created_at?: Date;
 }
