@@ -74,19 +74,9 @@ export const MainListItems = memo(() => {
 
   const router = useRouter();
 
-  //#endregion
-
-  //#region States
-
-  //#endregion
-
-  //#region Console.Logs
-
-  //#endregion
-
   return (
     <React.Fragment>
-      <ListItemButton>
+      <ListItemButton onClick={() => router.push('/manager/dashboard')}>
         <ListItemIcon>
           <DashboardIcon sx={iconSxProps('dashboard')} />
         </ListItemIcon>
