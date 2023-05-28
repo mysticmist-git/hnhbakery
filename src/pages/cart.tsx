@@ -54,9 +54,11 @@ import {
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
+import React from 'react';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
+  const hello = 5;
   const theme = useTheme();
   const { row } = props;
   return (
@@ -92,8 +94,6 @@ function UI_Price(props: any) {
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
   const hasDiscount = useMemo(() => {
-    console.log(row);
-
     return row.discountPrice && row.discountPrice > 0;
   }, []);
 
@@ -336,11 +336,8 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
                     row={row}
                     justifyContent={'center'}
                     onChange={(quantity: number) => {
-                      console.log(quantity);
-
                       if (setProductBill && quantity) {
                         const indexOfUpdatedRow = productBill.indexOf(row);
-                        console.log(indexOfUpdatedRow);
                         const updatedProductBill = [...productBill];
                         updatedProductBill[indexOfUpdatedRow].quantity =
                           quantity;
@@ -733,7 +730,14 @@ const Cart = () => {
 
       const displayCartItems = await fetchCartItemData(finalCartItems);
 
-      displayCartItemsToView(displayCartItems);
+      const temps = displayCartItems.filter(item => {
+        return new Date(item.EXP).getTime() > new Date().getTime();
+      })
+
+      console.log(temps);
+
+      // TODO: Please actually remove the Ids from localStorage
+      displayCartItemsToView(temps);
     } catch (error) {
       console.log(error);
     }
@@ -772,11 +776,6 @@ const Cart = () => {
       cartItems.map(async (item) => {
         const batch = await getDocFromFirestore('batches', item.batchId);
         const product = await getDocFromFirestore('products', batch.product_id);
-
-        console.log(new Date(batch.discountDate).getTime());
-        console.log(
-          new Date(batch.discountDate).getTime() < new Date().getTime(),
-        );
 
         const discountPrice =
           new Date(batch.discountDate).getTime() < new Date().getTime()
@@ -849,9 +848,6 @@ const Cart = () => {
         discountPrice: item.discountPrice,
       };
     });
-
-    // console.log(productBill);
-    // console.log(updatedCartItems);
 
     return updatedCartItems;
   };

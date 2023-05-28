@@ -36,8 +36,6 @@ export const getDocFromFirestore = async (
   documentId: string,
 ): Promise<DocumentData> => {
   try {
-    console.log(documentId);
-
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
     const docData = getDocFromQuerySnapshot(docSnap);
@@ -278,8 +276,6 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   const productIds = filterDuplicates<string>(
     filterExpireBatchs.map((doc) => doc.product_id),
   );
-
-  console.log(productIds);
 
   if (productIds.length === 0) return [];
 

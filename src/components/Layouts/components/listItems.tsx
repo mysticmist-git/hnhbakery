@@ -130,7 +130,7 @@ export const MainListItems = memo(() => {
         </ListItemIcon>
         <ListItemText
           primary={
-            <Typography sx={typographySxProps('manage')}>Quản lý</Typography>
+            <Typography sx={typographySxProps('manage')}>Kho hàng</Typography>
           }
         />
         {isActive('manage') && <Check color="secondary" />}

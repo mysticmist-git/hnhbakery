@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import dateFormat, { masks } from 'dateformat';
 import queryString from 'qs';
 import crypto from 'crypto';
-import requestIp from 'request-ip';
 
 function sortObject(obj: any): any {
   var sorted: any = {};
