@@ -31,117 +31,7 @@ import {
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { SaleObject } from '@/lib/models';
 
-// #region Giả dữ liệu
-
-// function createProduct(
-//   id: number,
-//   name: string,
-//   image: string,
-//   size: string,
-//   material: string,
-//   quantity: number,
-//   MFG: string,
-//   EXP: string,
-//   price: number,
-//   discount: number,
-// ) {
-//   return {
-//     id,
-//     name,
-//     image,
-//     size,
-//     material,
-//     quantity,
-//     MFG,
-//     EXP,
-//     price,
-//     discount,
-//     discountPrice: price * discount,
-//     totalPrice: price * (1 - discount) * quantity,
-//   };
-// }
-
-// const productBill = [
-//   createProduct(
-//     1,
-//     'Bánh Croissant',
-//     Banh1.src,
-//     'Vừa',
-//     'Dâu',
-//     3,
-//     '07:00 07/01/2023',
-//     '22:00 07/01/2023',
-//     100000,
-//     0.2,
-//   ),
-//   createProduct(
-//     2,
-//     'Bánh kem',
-//     Banh1.src,
-//     'Lớn',
-//     'Dâu',
-//     1,
-//     '07:00 07/01/2023',
-//     '22:00 07/01/2023',
-//     100000,
-//     0.2,
-//   ),
-//   createProduct(
-//     3,
-//     'Bánh kem',
-//     Banh1.src,
-//     'Lớn',
-//     'Dâu',
-//     1,
-//     '07:00 07/01/2023',
-//     '22:00 07/01/2023',
-//     100000,
-//     0.2,
-//   ),
-// ];
-
 // #endregion
-
-function createSale(
-  id: number,
-  name: string,
-  code: string,
-  image: string,
-  percentage: number,
-  maxDiscountPrice: number,
-  endDate: string,
-) {
-  return {
-    id,
-    name,
-    code,
-    image,
-    percentage,
-    maxDiscountPrice,
-    endDate,
-  };
-}
-
-const Sales = [
-  createSale(
-    1,
-    'Black Friday',
-    'SALE-001',
-    bfriday.src,
-    0.1,
-    50000,
-    '07/01/2022',
-  ),
-  createSale(
-    2,
-    'Black Friday',
-    'SALE-001',
-    bfriday.src,
-    0.1,
-    50000,
-    '07/01/2022',
-  ),
-];
 
 const MocGioGiaoHang = [
   {
@@ -246,8 +136,11 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     });
   };
 
-  const createBillData = (paymentId: string | undefined): BillObject => {
-    const billData: BillObject = {
+  const createBillData = (
+    paymentId: string | undefined,
+    chosenSale: SaleObject | null,
+  ): BillObject => {
+    let billData: BillObject = {
       totalPrice: tongBill,
       noteDelivery: formGiaoHangRef.current?.getOtherInfos().deliveryNote,
       noteCart: state.cartNote,
@@ -256,11 +149,21 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       user_id: userId,
     } as BillObject;
 
+    if (chosenSale) {
+      billData = {
+        ...billData,
+        sale_id: chosenSale.id,
+      } as BillObject;
+    }
+
     return billData;
   };
 
   const createDeliveryData = (billId: string) => {
     const otherInfos = formGiaoHangRef.current?.getOtherInfos();
+
+    const date = new Date(otherInfos?.ngayGiao as string);
+    const time =  otherInfos?.thoiGianGiao;
 
     const deliveryData: DeliveryObject = {
       name: otherInfos?.name,
@@ -271,6 +174,8 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       state: 'inProcress',
       bill_id: billId,
       price: phiVanChuyen,
+      date: date,
+      time: time,
     } as DeliveryObject;
 
     return deliveryData;
@@ -345,11 +250,12 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const addAllNecessariesInfoToFirestore = async (
     paymentId: string | undefined,
+    chosenSale: SaleObject | null,
   ): Promise<{
     billData: BillObject;
     deliveryData: DeliveryObject;
   }> => {
-    const billData = createBillData(paymentId);
+    const billData = createBillData(paymentId, chosenSale);
     const billRef = await addDocToFirestore(billData, 'bills');
 
     const deliveryData = createDeliveryData(billRef.id);
@@ -410,6 +316,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
         id,
+        chosenSale,
       );
 
       console.log({

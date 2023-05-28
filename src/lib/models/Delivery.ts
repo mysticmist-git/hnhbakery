@@ -7,7 +7,8 @@ export interface DeliveryObject extends DocumentData {
   email?: string;
   address?: string;
   note?: string;
-  time?: Date;
+  date?: Date;
+  time?: string;
   startAt?: Date;
   endAt?: Date;
   state?: 'fail' | 'success' | 'inProcress' | 'inTransit';
