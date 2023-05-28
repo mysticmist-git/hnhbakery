@@ -2,17 +2,14 @@ import { Box, Checkbox, Grid, Typography, useTheme } from '@mui/material';
 import Image from 'next/image';
 import { useState } from 'react';
 import formatPrice from '@/utilities/formatCurrency';
+import { SaleObject } from '@/lib/models';
 
 function RenderSaleItem(props: any) {
   const theme = useTheme();
-  const { sale, checkedSales, handleSetCheckedSales } = props;
-  const { id, name, code, image, percentage, maxDiscountPrice, endDate } = sale;
+  const { sale, chosenSale, handleChooseSale } = props;
+  const { id, name, code, image, percent, maxSalePrice, end_at } = sale;
 
   const [isHover, setIsHover] = useState(false);
-
-  const handleSetISChecked = () => {
-    handleSetCheckedSales(id);
-  };
 
   const style = {
     normal: {
@@ -91,14 +88,21 @@ function RenderSaleItem(props: any) {
               <Grid item xs={12}>
                 <Typography variant="body2" color={theme.palette.common.black}>
                   {'Giảm: ' +
-                    percentage * 100 +
+                    percent +
                     '%, tối đa ' +
-                    formatPrice(maxDiscountPrice)}
+                    formatPrice(maxSalePrice)}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {'Hạn sử dụng: ' + endDate}
+                  {'Hạn sử dụng: ' +
+                    new Date(end_at).toLocaleString('vi-VN', {
+                      year: 'numeric',
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
                 </Typography>
               </Grid>
             </Grid>
@@ -107,10 +111,12 @@ function RenderSaleItem(props: any) {
             <Checkbox
               sx={{ color: theme.palette.secondary.main }}
               color="secondary"
-              checked={
-                checkedSales.find((item: any) => item.id === id)?.isChecked
-              }
-              onChange={handleSetISChecked}
+              checked={chosenSale && id === chosenSale.id}
+              onChange={() => {
+                console.log(sale);
+                console.log(chosenSale);
+                handleChooseSale(sale);
+              }}
             />
           </Grid>
         </Grid>
@@ -120,31 +126,8 @@ function RenderSaleItem(props: any) {
 }
 export function RenderSale(props: any) {
   const theme = useTheme();
-  const { handleChooseSale } = props;
-  const { Sales = [] } = props;
-  const [checkedSales, setCheckedSales] = useState(
-    Sales.map(function (sale: any) {
-      return { id: sale.id, isChecked: false };
-    }),
-  );
-
-  const handleSetCheckedSales = (id: number) => {
-    setCheckedSales(
-      checkedSales.map((sale: any) => {
-        if (sale.id === id) {
-          sale.isChecked = !sale.isChecked;
-          if (sale.isChecked) {
-            handleChooseSale(sale.id);
-          } else {
-            handleChooseSale('');
-          }
-        } else {
-          sale.isChecked = false;
-        }
-        return sale;
-      }),
-    );
-  };
+  const { handleChooseSale, chosenSale } = props;
+  const { Sales = [] }: { Sales: SaleObject[] } = props;
 
   return (
     <>
@@ -152,8 +135,8 @@ export function RenderSale(props: any) {
         <RenderSaleItem
           key={i}
           sale={sale}
-          checkedSales={checkedSales}
-          handleSetCheckedSales={handleSetCheckedSales}
+          chosenSale={chosenSale}
+          handleChooseSale={handleChooseSale}
         />
       ))}
     </>

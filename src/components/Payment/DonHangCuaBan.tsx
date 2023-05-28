@@ -13,6 +13,7 @@ export function DonHangCuaBan(props: any) {
     TimKiemMaSale,
     showDeliveryPrice,
     handleChooseSale,
+    chosenSale,
   } = props;
   const theme = useTheme();
   return (
@@ -71,7 +72,11 @@ export function DonHangCuaBan(props: any) {
             alignItems={'start'}
             spacing={1}
           >
-            <RenderSale Sales={Sales} handleChooseSale={handleChooseSale} />
+            <RenderSale
+              Sales={Sales}
+              chosenSale={chosenSale}
+              handleChooseSale={handleChooseSale}
+            />
 
             <Grid item xs={12}>
               <Box

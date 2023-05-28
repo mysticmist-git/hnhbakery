@@ -25,8 +25,11 @@ import {
 import {
   addDocToFirestore,
   addDocsToFirestore,
+  getCollection,
+  getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { SaleObject } from '@/lib/models';
 
 // #region Giả dữ liệu
 
@@ -168,7 +171,7 @@ const MocGioGiaoHang = [
   },
 ];
 
-const Payment = () => {
+const Payment = ({ salesJSON }: { salesJSON: string }) => {
   //#region Hooks
 
   const theme = useTheme();
@@ -189,13 +192,21 @@ const Payment = () => {
     }, 0);
   }, [state.productBill]);
 
+  const sales = useMemo(() => {
+    if (!salesJSON || salesJSON === '') return null;
+
+    const parsedSales = JSON.parse(salesJSON) as SaleObject[];
+    console.log(parsedSales);
+    return parsedSales;
+  }, [salesJSON]);
+
   //  #endregion
 
   // #region States
 
   const [phiVanChuyen, setPhiVanChuyen] = useState(0);
   const [khuyenMai, setKhuyenMai] = useState(0);
-  const [chooseSale, setChooseSale] = useState('');
+  const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
   const [tongBill, setTongBill] = useState(0);
   const [userId, setUserId] = useState('');
 
@@ -259,6 +270,7 @@ const Payment = () => {
       note: otherInfos?.deliveryNote,
       state: 'inProcress',
       bill_id: billId,
+      price: phiVanChuyen,
     } as DeliveryObject;
 
     return deliveryData;
@@ -288,14 +300,24 @@ const Payment = () => {
     setPhiVanChuyen(value);
   };
 
-  const handleChooseSale = (id: string) => {
-    setChooseSale(id);
-    if (id) {
-      const sale: any = Sales.find((sale: any) => sale.id === id);
-      if (tamTinh * sale.percentage < sale.maxDiscountPrice) {
-        setKhuyenMai(tamTinh * sale.percentage);
+  const handleChooseSale = (newChosenSale: SaleObject) => {
+    console.log(newChosenSale);
+
+    if (newChosenSale) {
+      if (newChosenSale.id === chosenSale?.id) {
+        setChosenSale(() => null);
+        setKhuyenMai(() => 0);
       } else {
-        setKhuyenMai(sale.maxDiscountPrice);
+        setChosenSale(() => newChosenSale);
+
+        if (
+          (tamTinh * newChosenSale.percent) / 100 <
+          newChosenSale.maxSalePrice
+        ) {
+          setKhuyenMai(() => (tamTinh * newChosenSale.percent) / 100);
+        } else {
+          setKhuyenMai(newChosenSale.maxSalePrice);
+        }
       }
     } else {
       setKhuyenMai(0);
@@ -524,10 +546,11 @@ const Payment = () => {
                     tamTinh={tamTinh}
                     khuyenMai={khuyenMai}
                     tongBill={tongBill}
-                    Sales={Sales}
+                    Sales={sales}
                     TimKiemMaSale={TimKiemMaSale}
                     showDeliveryPrice={phiVanChuyen}
                     handleChooseSale={handleChooseSale}
+                    chosenSale={chosenSale}
                   />
                 </CaiKhungCoTitle>
               </Grid>
@@ -553,6 +576,33 @@ const Payment = () => {
       </PaymentContext.Provider>
     </>
   );
+};
+
+export const getServerSideProps = async () => {
+  let sales = await getCollection<SaleObject>('sales');
+
+  // Get downloadURL
+
+  sales = await Promise.all(
+    sales.map(async (sale) => {
+      const image = sale.image;
+      const downloadURL = await getDownloadUrlFromFirebaseStorage(image);
+      return {
+        ...sale,
+        image: downloadURL,
+      };
+    }),
+  );
+
+  const salesJSON = JSON.stringify(sales);
+
+  console.log(salesJSON);
+
+  return {
+    props: {
+      salesJSON,
+    },
+  };
 };
 
 export default memo(Payment);
