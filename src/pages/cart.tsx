@@ -39,6 +39,7 @@ import {
   DisplayCartItem,
   FAIL_SAVE_CART_MSG,
   SUCCESS_SAVE_CART_MSG,
+  saveCart,
 } from '@/lib/contexts/cartContext';
 import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import { LOCAL_CART_KEY } from '@/lib';
@@ -636,55 +637,6 @@ const headingTable = [
   'Xóa',
 ];
 
-// const initproductBill = [
-//   createDataRow({
-//     id: '1',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-//   createDataRow({
-//     id: '2',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-//   createDataRow({
-//     id: '3',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//     discountPercent: 20,
-//   }),
-//   createDataRow({
-//     id: '4',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-// ];
-
-//#endregion
 
 const Cart = () => {
   // #region Hooks
@@ -730,14 +682,13 @@ const Cart = () => {
 
       const displayCartItems = await fetchCartItemData(finalCartItems);
 
+      // TODO: Please actually remove the Ids from localStorage
       const temps = displayCartItems.filter((item) => {
         return new Date(item.EXP).getTime() > new Date().getTime();
       });
 
-      console.log(temps);
-
-      // TODO: Please actually remove the Ids from localStorage
       displayCartItemsToView(temps);
+      handleSaveCart();
     } catch (error) {
       console.log(error);
     }
@@ -805,90 +756,15 @@ const Cart = () => {
     setProductBill(() => cartItems);
   };
 
-  const saveCurrentProductBill = async (): Promise<CartItemAddingResult> => {
-    const data = getCurrentProductBills();
 
-    const localResult = updateCartToLocal(data);
 
-    if (!localResult.isSuccess) {
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-
-    const firestoreResult = await updateCartToFirestore(data);
-
-    if (!firestoreResult.isSuccess) {
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-
-    return {
-      isSuccess: true,
-      msg: SUCCESS_SAVE_CART_MSG,
-    };
-  };
-
-  const getCurrentProductBills = (): CartItem[] => {
-    const updatedCartItems: CartItem[] = productBill.map((item) => {
-      return {
-        id: item.id,
-        userId: item.userId,
-        productId: item.productId,
-        batchId: item.batchId,
-        href: item.href,
-        quantity: item.quantity,
-        price: item.price,
-        discountPrice: item.discountPrice,
-      };
-    });
-
-    return updatedCartItems;
-  };
-
-  const updateCartToLocal = (cartItems: CartItem[]): CartItemAddingResult => {
-    const json = JSON.stringify(cartItems);
-
-    try {
-      localStorage.setItem(LOCAL_CART_KEY, json);
-
-      return {
-        isSuccess: true,
-        msg: SUCCESS_SAVE_CART_MSG,
-      };
-    } catch (error) {
-      console.log(error);
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-  };
-
-  const updateCartToFirestore = (
-    cartItems: CartItem[],
-  ): CartItemAddingResult => {
-    return {
-      isSuccess: true,
-      msg: SUCCESS_SAVE_CART_MSG,
-    };
-  };
-
-  const saveCart = async () => {
-    const result = await saveCurrentProductBill();
-
-    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  };
 
   // #endregion
 
   // #region Handlers
 
   const handlePayment = async () => {
-    await saveCart();
+    handleSaveCart();
 
     dispatch({
       type: AppDispatchAction.SET_PRODUCT_BILL,
@@ -904,9 +780,17 @@ const Cart = () => {
   };
 
   const handleContinueToSurf = async () => {
-    await saveCart();
+    handleSaveCart();
+
     router.push('/products');
   };
+
+  const handleSaveCart = async () => {
+    const result = await saveCart(productBill);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+
+  }
 
   // #endregion
 
@@ -978,7 +862,9 @@ const Cart = () => {
               <Grid item xs={12}>
                 <ProductTable
                   setProductBill={setProductBill}
-                  handleSaveCart={() => saveCart()}
+                  handleSaveCart={() => {
+                    handleSaveCart();
+                  }}
                 />
               </Grid>
 

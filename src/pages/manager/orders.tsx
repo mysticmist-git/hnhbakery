@@ -9,6 +9,7 @@ import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
 import { BillObject } from '@/lib/models/Bill';
 import { BillDetailObject } from '@/lib/models/BillDetail';
+import { DeliveryObject } from '@/lib/models/Delivery';
 import formatPrice from '@/utilities/formatCurrency';
 import { Close } from '@mui/icons-material';
 import {
@@ -164,7 +165,7 @@ const MyListItem = ({ billDetail }: { billDetail: AssembledBillDetail }) => {
             {formatPrice(
               billDetail.discountPrice && billDetail.discountPrice < 0
                 ? billDetail.price ?? 0
-                : billDetail.discountPrice ?? 0,
+                : billDetail.discountPrice ?? 0
             )}
           </Typography>
         </Stack>
@@ -191,7 +192,7 @@ const MyModal = ({
   //#region States
 
   const [billDetails, setBillDetails] = useState<AssembledBillDetail | null>(
-    null,
+    null
   );
 
   //#endregion
@@ -204,31 +205,25 @@ const MyModal = ({
     const getData = async (bill: CustomBill) => {
       const billDetails = await getCollectionWithQuery<BillDetailObject>(
         'bill_details',
-        where('bill_id', '==', bill.id),
+        where('bill_id', '==', bill.id)
       );
 
       const assembledBillDetails = await Promise.all(
         billDetails.map(async (detail) => {
           const batch = (await getDocFromFirestore(
             'batches',
-            detail.batch_id!,
+            detail.batch_id!
           )) as BatchObject;
-
-          console.log(batch);
 
           const product = (await getDocFromFirestore(
             'products',
-            batch.product_id,
+            batch.product_id
           )) as ProductObject;
-
-          console.log(product);
 
           const productType = (await getDocFromFirestore(
             'productTypes',
-            product.productType_id,
+            product.productType_id
           )) as ProductTypeObject;
-
-          console.log(productType);
 
           return {
             ...detail,
@@ -237,10 +232,8 @@ const MyModal = ({
             material: batch.material,
             size: batch.size,
           };
-        }),
+        })
       );
-
-      console.log(assembledBillDetails);
 
       setBillDetails(() => assembledBillDetails);
     };
@@ -324,18 +317,33 @@ const MyModal = ({
                         <MyListItem billDetail={billDetail} />
                       </ListItem>
                     );
-                  },
+                  }
                 )}
               </List>
 
               <Divider />
 
               <Box
-                sx={{ display: 'flex', justifyContent: 'end', marginTop: 1 }}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'end',
+                  marginTop: 1,
+                }}
               >
-                <Typography>
-                  Tổng tiền: {formatPrice(bill?.totalPrice ?? 0)}
-                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h5">Phí vận chuyển: </Typography>
+                  <Typography variant="body1">
+                    {formatPrice(bill?.deliveryPrice ?? 0)}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h5">Tổng tiền:</Typography>
+                  <Typography variant="body1">
+                    {formatPrice(bill?.totalPrice ?? 0)}
+                  </Typography>
+                </Stack>
               </Box>
             </Grid>
           </Grid>
@@ -362,7 +370,7 @@ const Order = ({ bills }: { bills: string }) => {
 
   const [open, setOpen] = React.useState(false);
   const [currentViewBill, setCurrentViewBill] = useState<CustomBill | null>(
-    null,
+    null
   );
 
   //#endregion
@@ -370,9 +378,7 @@ const Order = ({ bills }: { bills: string }) => {
   //#region  UseMemos
 
   const billsData: CustomBill[] = useMemo(() => {
-    const parsedBills = JSON.parse(bills) as CustomBill[];
-
-    console.log(parsedBills);
+    const parsedBills = JSON.parse(bills) as CustomBill[] ?? [];
 
     return parsedBills;
   }, []);
@@ -386,8 +392,6 @@ const Order = ({ bills }: { bills: string }) => {
 
   const handleViewBill = (value: CustomBill) => {
     handleOpen();
-
-    console.log(value);
 
     setCurrentViewBill(() => value);
   };
@@ -424,6 +428,7 @@ const Order = ({ bills }: { bills: string }) => {
 
 interface CustomBill extends BillObject {
   customerName?: string;
+  deliveryPrice?: number;
 }
 
 export const getServerSideProps = async () => {
@@ -439,20 +444,28 @@ export const getServerSideProps = async () => {
         if (Boolean(bill.user_id && bill.user_id !== '')) {
           const customer = await getDocFromFirestore(
             'users',
-            bill.user_id as string,
+            bill.user_id as string
           );
 
           customerName = customer.name;
         }
 
+        const deliveries = await getCollectionWithQuery<DeliveryObject>(
+          'deliveries',
+          where('bill_id', '==', bill.id)
+        );
+
+        console.log(deliveries);
+
+        const deliveryPrice = deliveries[0].price;
+
         return {
           ...bill,
           customerName: customerName,
+          deliveryPrice: deliveryPrice,
         } as CustomBill;
-      }),
+      })
     );
-
-    console.log(finalBills);
 
     return {
       props: {

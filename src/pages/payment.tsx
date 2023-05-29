@@ -9,10 +9,14 @@ import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
-import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import {
+  AppContext,
+  AppContextType,
+  AppDispatchAction,
+} from '@/lib/contexts/appContext';
 import { useRouter } from 'next/router';
 import { useSnackbarService } from '@/lib/contexts';
-import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import { DisplayCartItem, saveCart } from '@/lib/contexts/cartContext';
 import { Ref } from '@/lib/contexts/payment';
 import { DeliveryObject } from '@/lib/models/Delivery';
 import { BillObject } from '@/lib/models/Bill';
@@ -162,7 +166,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const createDeliveryData = (billId: string) => {
     const otherInfos = formGiaoHangRef.current?.getOtherInfos();
 
-    const date = new Date(otherInfos?.ngayGiao as string);
+    const date = otherInfos?.ngayGiao;
     const time = otherInfos?.thoiGianGiao;
 
     const deliveryData: DeliveryObject = {
@@ -195,6 +199,18 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     } as BillDetailObject;
 
     return billDetailData;
+  };
+
+  const clearCacheData = () => {
+    dispatch({
+      type: AppDispatchAction.SET_PRODUCT_BILL,
+      payload: [],
+    });
+
+    dispatch({
+      type: AppDispatchAction.SET_CART_NOTE,
+      payload: '',
+    });
   };
 
   // #endregion
@@ -336,11 +352,19 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       window.location.href = data.url;
 
+      clearCacheData();
+
       console.log('Finishing...');
     } catch (error: any) {
       console.log(error);
       handleSnackbarAlert('error', error.message);
     }
+  };
+
+  const handleSaveCart = async () => {
+    const result = await saveCart(state.productBill);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
   };
 
   // #endregion

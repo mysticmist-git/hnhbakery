@@ -13,19 +13,21 @@ import {
   useState,
 } from 'react';
 import { OtherInfos, Ref } from '@/lib/contexts/payment';
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
 
 const FormGiaoHang = forwardRef<Ref, any>(
   (
     props: any,
     ref: ForwardedRef<{
       getOtherInfos: () => OtherInfos;
-    }>,
+    }>
   ) => {
     const { MocGioGiaoHang, handleSetPhiVanChuyen } = props;
 
     const [diaChi, setDiaChi] = useState('');
     const [thoiGianGiao, setThoiGianGiao] = useState(MocGioGiaoHang[0].value);
-    const [ngayGiao, setNgayGiao] = useState('');
+    const [ngayGiao, setNgayGiao] = useState<Date>(new Date());
 
     // #region refs
 
@@ -39,7 +41,8 @@ const FormGiaoHang = forwardRef<Ref, any>(
     useEffect(() => {
       console.log(diaChi, thoiGianGiao, ngayGiao);
 
-      if (diaChi !== '' && thoiGianGiao !== '' && ngayGiao !== '') {
+      if (diaChi !== '' && thoiGianGiao !== '' && ngayGiao) {
+        console.log('set phi van chuyen')
         handleSetPhiVanChuyen(100000);
         // tôi muốn kiểu có 1 cái api tính khoảng cách từ địa chỉ nhập đến trường UIT và cho ra phí vận chuyển!
       } else {
@@ -64,7 +67,7 @@ const FormGiaoHang = forwardRef<Ref, any>(
           },
         };
       },
-      [diaChi, thoiGianGiao, ngayGiao],
+      [diaChi, thoiGianGiao, ngayGiao]
     );
 
     const theme = useTheme();
@@ -192,14 +195,18 @@ const FormGiaoHang = forwardRef<Ref, any>(
                           </Typography>
                         </Grid>
                         <Grid item xs={12}>
-                          <CustomTextField
-                            required
-                            value={ngayGiao}
-                            onChange={(e: any) => setNgayGiao(e.target.value)}
-                            fullWidth
-                            type="date"
-                            name="date"
-                            id="date"
+                          <DatePicker
+                            value={dayjs(ngayGiao)}
+                            disablePast
+                            format="DD/MM/YYYY"
+                            onChange={(value) =>
+                              setNgayGiao(() => value?.toDate() ?? new Date())
+                            }
+                            sx={{
+                              border: (theme) =>
+                                `3px solid ${theme.palette.secondary.main}`,
+                              borderRadius: '8px',
+                            }}
                           />
                         </Grid>
                       </Grid>
@@ -268,7 +275,7 @@ const FormGiaoHang = forwardRef<Ref, any>(
                           '&:hover': {
                             boxShadow: `0px 0px 5px 2px ${alpha(
                               theme.palette.secondary.main,
-                              0.3,
+                              0.3
                             )}`,
                           },
                         }}
@@ -293,7 +300,7 @@ const FormGiaoHang = forwardRef<Ref, any>(
         </Box>
       </>
     );
-  },
+  }
 );
 
 export default memo(FormGiaoHang);
