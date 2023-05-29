@@ -1,5 +1,6 @@
 import { TabPanel } from '@/components/Manage/modals/forms/components';
 import { useSnackbarService } from '@/lib/contexts';
+import { billStatusParse } from '@/lib/contexts/orders';
 import {
   getCollection,
   getCollectionWithQuery,
@@ -27,6 +28,7 @@ import {
   ListItem,
   Modal,
   Paper,
+  Skeleton,
   Stack,
   Tab,
   Table,
@@ -81,19 +83,6 @@ const MyTable = ({
   billsData: CustomBill[];
   handleViewBill: (value: CustomBill) => void;
 }) => {
-  const billStatusParse = (state: number) => {
-    switch (state) {
-      case -1:
-        return 'Hủy';
-      case 0:
-        return 'Chưa thanh toán';
-      case 1:
-        return 'Đã thanh toán';
-      default:
-        return 'Lỗi';
-    }
-  };
-
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -101,7 +90,7 @@ const MyTable = ({
           <TableRow>
             <TableCell>Mã đơn</TableCell>
             <TableCell align="right">Khách hàng</TableCell>
-            <TableCell align="right">Ngày đặt</TableCell>
+            <TableCell align="center">Ngày đặt</TableCell>
             <TableCell align="right">Tổng đơn</TableCell>
             <TableCell align="right">Tình trạng</TableCell>
             <TableCell align="center">Hành động</TableCell>
@@ -150,7 +139,6 @@ const MyTable = ({
                   >
                     Xem
                   </Button>
-                  <Button variant="contained">Xóa</Button>
                 </Stack>
               </TableCell>
             </TableRow>
@@ -303,11 +291,9 @@ const MyModal = ({
           <Grid container paddingY={2}>
             {/* Left  */}
             <Grid item xs={5.5}>
-              <Typography variant="h6">Thông tin chung</Typography>
-              <Divider sx={{ my: 1 }} />
               {/* Mã đơn */}
               <Stack direction="row" spacing={1} alignItems={'center'}>
-                <Typography variant="body1">Mã đơn: </Typography>
+                <Typography variant="h6">Mã đơn: </Typography>
                 <Typography
                   sx={{
                     fontWeight: 'normal',
@@ -316,6 +302,69 @@ const MyModal = ({
                   {bill?.id ?? 'Null value'}
                 </Typography>
               </Stack>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="body1">Thông tin chung</Typography>
+              <Divider sx={{ my: 1 }} />
+
+              {/* Khách hàng */}
+              <Stack direction="row" spacing={1} alignItems={'center'}>
+                <Typography variant="h6">Khách hàng:</Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 'normal',
+                  }}
+                >
+                  {bill?.customerName ?? 'Không tìm thấy'}
+                </Typography>
+              </Stack>
+
+              {/* Số điện thoại */}
+              <Stack direction="row" spacing={1} alignItems={'center'}>
+                <Typography variant="h6">Số điện thoại:</Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 'normal',
+                  }}
+                >
+                  {bill?.customerTel ?? 'Không tìm thấy'}
+                </Typography>
+              </Stack>
+
+              {/* Địa chỉ */}
+              <Stack direction="row" spacing={1} alignItems={'center'}>
+                <Typography variant="h6">Địa chỉ:</Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 'normal',
+                  }}
+                >
+                  {bill?.customerAddress ?? 'Không tìm thấy'}
+                </Typography>
+              </Stack>
+
+              <Divider sx={{ my: 1 }} />
+
+              {/* Trạng thái */}
+              <Stack direction="row" spacing={1} alignItems={'center'}>
+                <Typography variant="h6">Trạng thái: </Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 'normal',
+                    color: bill?.state === 1 ? 'green' : 'red',
+                  }}
+                >
+                  {billStatusParse(bill?.state ?? -2)}
+                </Typography>
+              </Stack>
+
+              <Divider sx={{ my: 1 }} />
+
+              {/* Note */}
+              <Typography variant="body1">Ghi chú</Typography>
+              <Divider sx={{ my: 1 }} />
+              <Typography sx={{ fontWeight: 'normal' }}>
+                {bill?.note ?? 'Không'}
+              </Typography>
             </Grid>
 
             <Grid
@@ -336,6 +385,7 @@ const MyModal = ({
               <Divider sx={{ my: 1 }} />
 
               {/* Item List */}
+              {!billDetails && <Skeleton variant="rectangular" height={60} />}
               <List>
                 {billDetails?.map(
                   (billDetail: BillDetailObject, index: number) => {
@@ -359,22 +409,21 @@ const MyModal = ({
                   marginTop: 1,
                 }}
               >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5">Phí vận chuyển: </Typography>
-                  <Typography variant="body1">
-                    {formatPrice(bill?.deliveryPrice ?? 0)}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5">Sale: </Typography>
-                  <Typography variant="body1">
-                    {bill?.salePercent ?? 0}%
-                  </Typography>
-                </Stack>
+                {/* Sale */}
+                {bill?.sale_id && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="h5">Sale: </Typography>
+                    <Typography variant="body1">
+                      {`${bill?.sale_id} | ${bill?.salePercent ?? 0}%`}
+                    </Typography>
+                  </Stack>
+                )}
+
+                {/* Tổng tiền */}
                 <Stack direction="row" spacing={1} alignItems="start">
-                  <Typography variant="h5">Tổng tiền:</Typography>
+                  <Typography variant="h5">Giá trị đơn hàng:</Typography>
                   <Stack>
-                    {(bill?.originalPrice ?? 0) > 0 && (
+                    {bill?.sale_id && (
                       <Typography
                         variant="body1"
                         sx={{
@@ -389,6 +438,28 @@ const MyModal = ({
                       {formatPrice(bill?.totalPrice ?? 0)}
                     </Typography>
                   </Stack>
+                </Stack>
+
+                {/* Phí vận chuyển */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h5">Phí vận chuyển: </Typography>
+                  <Typography variant="body1">
+                    {formatPrice(bill?.deliveryPrice ?? 0)}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              <Divider sx={{ my: 1 }} />
+              {/* Thành tiền */}
+
+              <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+                <Stack direction="row" spacing={1} alignItems="start">
+                  <Typography variant="h5">Thành tiền:</Typography>
+                  <Typography variant="body1">
+                    {formatPrice(
+                      (bill?.totalPrice ?? 0) + (bill?.deliveryPrice ?? 0)
+                    )}
+                  </Typography>
                 </Stack>
               </Box>
             </Grid>
@@ -474,6 +545,8 @@ const Order = ({ bills }: { bills: string }) => {
 
 interface CustomBill extends BillObject {
   customerName?: string;
+  customerTel?: string;
+  customerAddress?: string;
   deliveryPrice?: number;
   salePercent?: number;
 }
@@ -486,17 +559,7 @@ export const getServerSideProps = async () => {
 
     finalBills = await Promise.all(
       bills.map(async (bill) => {
-        let customerName = '';
         let salePercent: number = 0;
-
-        if (Boolean(bill.user_id && bill.user_id !== '')) {
-          const customer = await getDocFromFirestore(
-            'users',
-            bill.user_id as string
-          );
-
-          customerName = customer.name;
-        }
 
         if (Boolean(bill.sale_id && bill.sale_id !== '')) {
           const sale = await getDocFromFirestore(
@@ -507,6 +570,7 @@ export const getServerSideProps = async () => {
           console.log(sale);
 
           salePercent = sale.percent;
+          // saleId = sale.id;
         }
 
         const deliveries = await getCollectionWithQuery<DeliveryObject>(
@@ -514,11 +578,16 @@ export const getServerSideProps = async () => {
           where('bill_id', '==', bill.id)
         );
 
+        const customerName = deliveries[0].name;
+        const customerTel = deliveries[0].tel;
+        const customerAddress = deliveries[0].address;
         const deliveryPrice = deliveries[0].price;
 
         return {
           ...bill,
           customerName: customerName,
+          customerTel: customerTel,
+          customerAddress: customerAddress,
           deliveryPrice: deliveryPrice,
           salePercent: salePercent,
         } as CustomBill;

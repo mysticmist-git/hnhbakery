@@ -5,8 +5,7 @@ export interface BillObject extends DocumentData {
   paymentTime?: Date;
   originalPrice?: number;
   totalPrice?: number;
-  noteDelivery?: string;
-  noteCart?: string;
+  note?: string;
   state?: 1 | 0 | -1;
   rating?: 1 | 2 | 3 | 4 | 5;
   comment?: string;

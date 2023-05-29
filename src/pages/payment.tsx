@@ -149,8 +149,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       totalPrice: tamTinh - khuyenMai,
       originalPrice: tamTinh,
       saleAmount: khuyenMai,
-      noteDelivery: formGiaoHangRef.current?.getOtherInfos().deliveryNote,
-      noteCart: state.cartNote,
+      note: state.cartNote,
       state: 0,
       payment_id: paymentId,
       user_id: userId,
@@ -205,7 +204,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     return billDetailData;
   };
 
-  const clearCacheData = () => {
+  const clearCacheData = async () => {
     dispatch({
       type: AppDispatchAction.SET_PRODUCT_BILL,
       payload: [],
@@ -215,6 +214,10 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       type: AppDispatchAction.SET_CART_NOTE,
       payload: '',
     });
+
+    const result = await saveCart([]);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
   };
 
   // #endregion
@@ -340,7 +343,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       );
 
       clearCacheData();
-      handleSaveCart();
 
       console.log({
         billData,
