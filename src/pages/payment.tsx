@@ -129,7 +129,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const mapProductBillToBillDetailObject = (
     productBill: DisplayCartItem[],
-    billId: string,
+    billId: string
   ) => {
     return productBill.map((item) => {
       return createBillDetailData(item, billId);
@@ -138,7 +138,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const createBillData = (
     paymentId: string | undefined,
-    chosenSale: SaleObject | null,
+    chosenSale: SaleObject | null
   ): BillObject => {
     let billData: BillObject = {
       totalPrice: tongBill,
@@ -163,7 +163,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     const otherInfos = formGiaoHangRef.current?.getOtherInfos();
 
     const date = new Date(otherInfos?.ngayGiao as string);
-    const time =  otherInfos?.thoiGianGiao;
+    const time = otherInfos?.thoiGianGiao;
 
     const deliveryData: DeliveryObject = {
       name: otherInfos?.name,
@@ -183,7 +183,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const createBillDetailData = (
     productBill: DisplayCartItem,
-    billId: string,
+    billId: string
   ): BillDetailObject => {
     const billDetailData: BillDetailObject = {
       amount: productBill.quantity,
@@ -250,7 +250,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const addAllNecessariesInfoToFirestore = async (
     paymentId: string | undefined,
-    chosenSale: SaleObject | null,
+    chosenSale: SaleObject | null
   ): Promise<{
     billData: BillObject;
     deliveryData: DeliveryObject;
@@ -263,13 +263,13 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
     const billDetails = mapProductBillToBillDetailObject(
       state.productBill,
-      billRef.id,
+      billRef.id
     );
 
     // Make a firestore batch commit
     const billDetailRefs = await addDocsToFirestore(
       billDetails,
-      'bill_details',
+      'bill_details'
     );
 
     return {
@@ -307,7 +307,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const handleProceedPayment = async (
     id: string | undefined,
-    type: string | undefined,
+    type: string | undefined
   ) => {
     try {
       if (!checkPaymentValidation(type)) return;
@@ -316,7 +316,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
         id,
-        chosenSale,
+        chosenSale
       );
 
       console.log({
@@ -369,6 +369,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const handleClose = () => {
     setOpen(false);
   };
+
   return (
     <>
       <PaymentContext.Provider value={initPaymentContext}>
@@ -498,7 +499,7 @@ export const getServerSideProps = async () => {
         ...sale,
         image: downloadURL,
       };
-    }),
+    })
   );
 
   const salesJSON = JSON.stringify(sales);

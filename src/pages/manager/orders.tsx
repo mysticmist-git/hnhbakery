@@ -47,6 +47,7 @@ interface AssembledBillDetail extends BillDetailObject {
   material?: string;
   size?: string;
 }
+
 const modalStyle = {
   // These 4 below are positionings I used for larger
   // height viewports - centered

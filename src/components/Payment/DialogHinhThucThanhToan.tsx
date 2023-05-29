@@ -107,7 +107,6 @@ export default function DialogHinhThucThanhToan({
     const getPayments = async () => {
       const payments = await getCollection<PaymentObject>('payments');
 
-      // TODO: WTF is this code?
       for (const pttt of payments) {
         if (pttt.name === 'VNPay') {
           pttt.image = vnpay.src;

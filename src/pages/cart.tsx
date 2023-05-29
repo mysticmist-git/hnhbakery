@@ -730,9 +730,9 @@ const Cart = () => {
 
       const displayCartItems = await fetchCartItemData(finalCartItems);
 
-      const temps = displayCartItems.filter(item => {
+      const temps = displayCartItems.filter((item) => {
         return new Date(item.EXP).getTime() > new Date().getTime();
-      })
+      });
 
       console.log(temps);
 
@@ -761,15 +761,12 @@ const Cart = () => {
     localCartItems: any,
     firestoreCartItems: any,
   ): CartItem[] => {
-    // TODO: Do this
     return localCartItems;
   };
 
   const fetchCartItemData = async (
     cartItems: CartItem[],
   ): Promise<DisplayCartItem[]> => {
-    // TODO: implement
-
     if (!cartItems || cartItems.length <= 0) return [];
 
     const displayCartItems = await Promise.all(

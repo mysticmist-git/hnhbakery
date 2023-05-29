@@ -652,7 +652,6 @@ const ProductDetailInfo = (props: any) => {
       return;
     }
 
-    // TODO: make this strong type
     const result: CartItemAddingResult = await addProductToCart(data);
 
     if (result.isSuccess) {
@@ -685,7 +684,6 @@ const ProductDetailInfo = (props: any) => {
     return batchId;
   };
 
-  // TODO: make this strong type
   const validateData = (data: CartItem): boolean => {
     if (!data) return false;
 
@@ -694,7 +692,6 @@ const ProductDetailInfo = (props: any) => {
     return true;
   };
 
-  // TODO: make this strong type
   const addProductToCart = async (
     data: CartItem,
   ): Promise<CartItemAddingResult> => {
@@ -724,7 +721,6 @@ const ProductDetailInfo = (props: any) => {
     };
   };
 
-  // TODO: Finish this: addProductToLocalCart
   const addProductToLocalCart = (data: CartItem): CartItemAddingResult => {
     const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
     try {
