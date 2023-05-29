@@ -34,6 +34,7 @@ import {
 } from '@/lib/firestore/firestoreLib';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { SaleObject } from '@/lib/models';
+import { Timestamp } from 'firebase/firestore';
 
 // #endregion
 
@@ -145,12 +146,15 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     chosenSale: SaleObject | null
   ): BillObject => {
     let billData: BillObject = {
-      totalPrice: tongBill,
+      totalPrice: tamTinh - khuyenMai,
+      originalPrice: tamTinh,
+      saleAmount: khuyenMai,
       noteDelivery: formGiaoHangRef.current?.getOtherInfos().deliveryNote,
       noteCart: state.cartNote,
       state: 0,
       payment_id: paymentId,
       user_id: userId,
+      created_at: new Date(),
     } as BillObject;
 
     if (chosenSale) {
@@ -335,6 +339,9 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
         chosenSale
       );
 
+      clearCacheData();
+      handleSaveCart();
+
       console.log({
         billData,
         deliveryData,
@@ -351,8 +358,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       const data = await sendPaymentRequestToVNPay(reqData);
 
       window.location.href = data.url;
-
-      clearCacheData();
 
       console.log('Finishing...');
     } catch (error: any) {
@@ -387,12 +392,78 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
+    const result = validateForm();
+
+    if (!result.isValid) {
+      handleSnackbarAlert('error', result.msg);
+      return;
+    }
+
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  //#region Methods
+
+  interface FormValidationResult {
+    isValid: boolean;
+    msg: string;
+  }
+  const validateForm = (): FormValidationResult => {
+    const otherInfos = formGiaoHangRef.current?.getOtherInfos();
+
+    if (otherInfos?.name === '') {
+      return {
+        isValid: false,
+        msg: 'Vui lòng nhập họ tên',
+      };
+    }
+
+    if (otherInfos?.tel === '') {
+      return {
+        msg: 'Vui lòng nhập số điện thoại',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.diaChi === '') {
+      return {
+        msg: 'Vui lòng nhập địa chỉ',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.email === '') {
+      return {
+        msg: 'Vui lòng nhập email',
+        isValid: false,
+      };
+    }
+
+    if (!otherInfos?.ngayGiao) {
+      return {
+        msg: 'Vui lòng chọn ngày giao',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.thoiGianGiao === '') {
+      return {
+        msg: 'Vui lòng chọn thời gian giao',
+        isValid: false,
+      };
+    }
+
+    return {
+      isValid: true,
+      msg: '',
+    };
+  };
+
+  //#endregion
 
   return (
     <>

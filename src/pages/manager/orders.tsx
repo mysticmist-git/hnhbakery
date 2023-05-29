@@ -117,8 +117,21 @@ const MyTable = ({
                 {row.id}
               </TableCell>
               <TableCell align="right">{row.customerName}</TableCell>
-              <TableCell align="right">{row.created_at}</TableCell>
-              <TableCell align="right">{row.totalPrice}</TableCell>
+              <TableCell align="right">
+                {new Date(row.created_at ?? new Date()).toLocaleString(
+                  'vi-VI',
+                  {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  }
+                )}
+              </TableCell>
+              <TableCell align="right">
+                {formatPrice(row?.totalPrice ?? 0)}
+              </TableCell>
               <TableCell align="right">
                 <Typography
                   variant="body2"
@@ -161,13 +174,23 @@ const MyListItem = ({ billDetail }: { billDetail: AssembledBillDetail }) => {
           <Typography>x {billDetail.amount}</Typography>
         </Stack>
         <Stack direction={'row'} spacing={1} justifyContent="end">
-          <Typography>
-            {formatPrice(
-              billDetail.discountPrice && billDetail.discountPrice < 0
-                ? billDetail.price ?? 0
-                : billDetail.discountPrice ?? 0
-            )}
+          <Typography
+            sx={
+              (billDetail.discountPrice ?? -1) <= 0
+                ? {}
+                : {
+                    fontWeight: 'normal',
+                    textDecoration: 'line-through',
+                  }
+            }
+          >
+            {formatPrice(billDetail.price ?? 0)}
           </Typography>
+          {(billDetail.discountPrice ?? -1) > 0 && (
+            <Typography>
+              {formatPrice(billDetail.discountPrice ?? 0)}
+            </Typography>
+          )}
         </Stack>
       </Stack>
     </Card>
@@ -249,6 +272,10 @@ const MyModal = ({
 
   //#endregion
 
+  //#region UseMemos
+
+  //#endregion
+
   return (
     <Modal
       open={open}
@@ -313,7 +340,7 @@ const MyModal = ({
                 {billDetails?.map(
                   (billDetail: BillDetailObject, index: number) => {
                     return (
-                      <ListItem key={1}>
+                      <ListItem key={index}>
                         <MyListItem billDetail={billDetail} />
                       </ListItem>
                     );
@@ -339,10 +366,29 @@ const MyModal = ({
                   </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5">Tổng tiền:</Typography>
+                  <Typography variant="h5">Sale: </Typography>
                   <Typography variant="body1">
-                    {formatPrice(bill?.totalPrice ?? 0)}
+                    {bill?.salePercent ?? 0}%
                   </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="start">
+                  <Typography variant="h5">Tổng tiền:</Typography>
+                  <Stack>
+                    {(bill?.originalPrice ?? 0) > 0 && (
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 'normal',
+                          textDecoration: 'line-through',
+                        }}
+                      >
+                        {formatPrice(bill?.originalPrice ?? 0)}
+                      </Typography>
+                    )}
+                    <Typography variant="body1">
+                      {formatPrice(bill?.totalPrice ?? 0)}
+                    </Typography>
+                  </Stack>
                 </Stack>
               </Box>
             </Grid>
@@ -378,7 +424,7 @@ const Order = ({ bills }: { bills: string }) => {
   //#region  UseMemos
 
   const billsData: CustomBill[] = useMemo(() => {
-    const parsedBills = JSON.parse(bills) as CustomBill[] ?? [];
+    const parsedBills = (JSON.parse(bills) as CustomBill[]) ?? [];
 
     return parsedBills;
   }, []);
@@ -429,6 +475,7 @@ const Order = ({ bills }: { bills: string }) => {
 interface CustomBill extends BillObject {
   customerName?: string;
   deliveryPrice?: number;
+  salePercent?: number;
 }
 
 export const getServerSideProps = async () => {
@@ -440,6 +487,7 @@ export const getServerSideProps = async () => {
     finalBills = await Promise.all(
       bills.map(async (bill) => {
         let customerName = '';
+        let salePercent: number = 0;
 
         if (Boolean(bill.user_id && bill.user_id !== '')) {
           const customer = await getDocFromFirestore(
@@ -450,12 +498,21 @@ export const getServerSideProps = async () => {
           customerName = customer.name;
         }
 
+        if (Boolean(bill.sale_id && bill.sale_id !== '')) {
+          const sale = await getDocFromFirestore(
+            'sales',
+            bill.sale_id as string
+          );
+
+          console.log(sale);
+
+          salePercent = sale.percent;
+        }
+
         const deliveries = await getCollectionWithQuery<DeliveryObject>(
           'deliveries',
           where('bill_id', '==', bill.id)
         );
-
-        console.log(deliveries);
 
         const deliveryPrice = deliveries[0].price;
 
@@ -463,9 +520,12 @@ export const getServerSideProps = async () => {
           ...bill,
           customerName: customerName,
           deliveryPrice: deliveryPrice,
+          salePercent: salePercent,
         } as CustomBill;
       })
     );
+
+    console.log(finalBills);
 
     return {
       props: {

@@ -214,7 +214,7 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
 
   const handleDeleteRow = (id: string) => {
     setProductBill((prev: DisplayCartItem[]) =>
-      prev.filter((item) => item.id !== id),
+      prev.filter((item) => item.id !== id)
     );
   };
 
@@ -584,7 +584,7 @@ const GhiChuCuaBan = forwardRef(
             '&:hover': {
               boxShadow: `0px 0px 5px 2px ${alpha(
                 theme.palette.secondary.main,
-                0.3,
+                0.3
               )}`,
             },
           }}
@@ -598,7 +598,7 @@ const GhiChuCuaBan = forwardRef(
         </Box>
       </Box>
     );
-  },
+  }
 );
 
 //#endregion
@@ -636,7 +636,6 @@ const headingTable = [
   'Tổng',
   'Xóa',
 ];
-
 
 const Cart = () => {
   // #region Hooks
@@ -677,7 +676,7 @@ const Cart = () => {
 
       const finalCartItems = syncLocalCartItemToFirestore(
         localCartItems,
-        firestoreCartItems,
+        firestoreCartItems
       );
 
       const displayCartItems = await fetchCartItemData(finalCartItems);
@@ -710,13 +709,13 @@ const Cart = () => {
 
   const syncLocalCartItemToFirestore = (
     localCartItems: any,
-    firestoreCartItems: any,
+    firestoreCartItems: any
   ): CartItem[] => {
     return localCartItems;
   };
 
   const fetchCartItemData = async (
-    cartItems: CartItem[],
+    cartItems: CartItem[]
   ): Promise<DisplayCartItem[]> => {
     if (!cartItems || cartItems.length <= 0) return [];
 
@@ -746,7 +745,7 @@ const Cart = () => {
         };
 
         return displayCartItem;
-      }),
+      })
     );
 
     return displayCartItems;
@@ -756,14 +755,16 @@ const Cart = () => {
     setProductBill(() => cartItems);
   };
 
-
-
-
   // #endregion
 
   // #region Handlers
 
   const handlePayment = async () => {
+    if (isCartEmpty) {
+      handleSnackbarAlert('info', 'Giỏ hàng trống');
+      return;
+    }
+
     handleSaveCart();
 
     dispatch({
@@ -786,13 +787,25 @@ const Cart = () => {
   };
 
   const handleSaveCart = async () => {
+    if (isCartEmpty) {
+      handleSnackbarAlert('info', 'Giỏ hàng trống');
+      return;
+    }
+
     const result = await saveCart(productBill);
 
     handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-
-  }
+  };
 
   // #endregion
+
+  //#region UseMemos
+
+  const isCartEmpty = useMemo(() => {
+    return !Boolean(productBill) || productBill.length <= 0;
+  }, [productBill]);
+
+  //#endregion
 
   return (
     <>
@@ -866,6 +879,18 @@ const Cart = () => {
                     handleSaveCart();
                   }}
                 />
+                {isCartEmpty && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      mt: 2,
+                    }}
+                  >
+                    <Typography variant="h2">Giỏ hàng trống</Typography>
+                  </Box>
+                )}
               </Grid>
 
               <Grid item xs={12} md={6}>
