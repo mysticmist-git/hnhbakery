@@ -91,8 +91,6 @@ const MyModal = ({
   //#region UseEffects
 
   useEffect(() => {
-    console.log('Loading product list...');
-
     const getData = async (bill: CustomBill) => {
       const billDetails = await getCollectionWithQuery<BillDetailObject>(
         'bill_details',
@@ -134,8 +132,6 @@ const MyModal = ({
       handleClose();
       return;
     }
-
-    console.log(bill);
 
     setBillState(() => bill.state ?? 0);
     getData(bill);
@@ -319,7 +315,7 @@ const MyModal = ({
               <Typography variant="body1">Ghi chú</Typography>
               <Divider sx={{ my: 1 }} />
               <Typography sx={{ fontWeight: 'normal' }}>
-                {bill?.note ?? 'Không'}
+                {bill?.note && bill?.note !== '' ? bill?.note : 'Không'}
               </Typography>
             </Grid>
 

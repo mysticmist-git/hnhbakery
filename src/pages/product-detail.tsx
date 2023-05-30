@@ -191,7 +191,7 @@ function ProductCarousel(props: any) {
             pb: 1,
             background: `linear-gradient(to bottom, ${alpha(
               theme.palette.common.white,
-              0,
+              0
             )}, ${alpha(theme.palette.common.white, 0.5)})`,
           }}
         >
@@ -282,12 +282,8 @@ function CheckboxButtonGroup({
   const theme = useTheme();
 
   useEffect(() => {
-    console.log(value);
-
     if (onChange) onChange(value);
   }, [value]);
-
-  console.log(options);
 
   return (
     <Grid
@@ -544,21 +540,15 @@ const ProductDetailInfo = (props: any) => {
   }, [productDetail]);
 
   const materialOptions = useMemo(() => {
-    console.log(form.size);
-
-    console.log(productDetail.batches);
-
     const newMaterials = productDetail.batches
       .filter((batch) => batch.size === form.size)
       .map((batch) => batch.material);
 
     const uniqueMaterials = newMaterials.filter(
-      (material, i, arr) => arr.indexOf(material) === i,
+      (material, i, arr) => arr.indexOf(material) === i
     );
 
     setForm((prev: any) => ({ ...prev, material: uniqueMaterials[0] }));
-
-    console.log(form);
 
     return uniqueMaterials;
   }, [form.size]);
@@ -576,8 +566,7 @@ const ProductDetailInfo = (props: any) => {
         percent: batch.discountPercent,
       }))
       .filter(
-        (batch) =>
-          new Date(batch.discountDate).getTime() < new Date().getTime(),
+        (batch) => new Date(batch.discountDate).getTime() < new Date().getTime()
       )[0];
 
     return {
@@ -617,10 +606,10 @@ const ProductDetailInfo = (props: any) => {
 
   const priceRange = useMemo(() => {
     const minPrice = Math.min(
-      ...productDetail.batches.map((batch) => batch.price),
+      ...productDetail.batches.map((batch) => batch.price)
     );
     const maxPrice = Math.max(
-      ...productDetail.batches.map((batch) => batch.price),
+      ...productDetail.batches.map((batch) => batch.price)
     );
 
     if (minPrice === maxPrice) {
@@ -642,8 +631,6 @@ const ProductDetailInfo = (props: any) => {
 
   const handleAddProductToCart = async () => {
     const data = createDataFromForm();
-
-    console.log(data);
 
     const isValid = validateData(data);
 
@@ -693,7 +680,7 @@ const ProductDetailInfo = (props: any) => {
   };
 
   const addProductToCart = async (
-    data: CartItem,
+    data: CartItem
   ): Promise<CartItemAddingResult> => {
     const localResult = addProductToLocalCart(data);
 
@@ -762,7 +749,6 @@ const ProductDetailInfo = (props: any) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
       if (user) {
         setUserId(user.uid);
       }
@@ -1369,11 +1355,11 @@ const ProductDetail = ({
 };
 
 export const getServerSideProps = async (
-  context: GetServerSidePropsContext,
+  context: GetServerSidePropsContext
 ) => {
   context.res.setHeader(
     'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59',
+    'public, s-maxage=10, stale-while-revalidate=59'
   );
 
   if (!context.query.id) {
@@ -1394,7 +1380,7 @@ export const getServerSideProps = async (
     // Get product type
     const productType = await getDocFromFirestore(
       'productTypes',
-      product.productType_id,
+      product.productType_id
     );
 
     const productTypeName = productType.name ?? 'Unknown';
@@ -1402,7 +1388,7 @@ export const getServerSideProps = async (
     // Get batches
     const batches: BatchObject[] = await getCollectionWithQuery<BatchObject>(
       'batches',
-      where('product_id', '==', productId),
+      where('product_id', '==', productId)
     );
 
     // Filter out batches that is expired
@@ -1410,7 +1396,7 @@ export const getServerSideProps = async (
     const filteredBatches = batches.filter(
       (batch) =>
         batch.soldQuantity < batch.totalQuantity &&
-        new Date(batch.EXP).getTime() > new Date().getTime(),
+        new Date(batch.EXP).getTime() > new Date().getTime()
     );
 
     const stockAvailable = filteredBatches.length > 0;

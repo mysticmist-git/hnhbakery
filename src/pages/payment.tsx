@@ -30,13 +30,24 @@ import {
   addDocToFirestore,
   addDocsToFirestore,
   getCollection,
+  getCollectionWithQuery,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { SaleObject } from '@/lib/models';
-import { Timestamp } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  increment,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 // #endregion
+
+const BILL_KEY = 'BILL_KEY';
 
 const MocGioGiaoHang = [
   {
@@ -91,7 +102,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     if (!salesJSON || salesJSON === '') return null;
 
     const parsedSales = JSON.parse(salesJSON) as SaleObject[];
-    console.log(parsedSales);
     return parsedSales;
   }, [salesJSON]);
 
@@ -229,8 +239,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   };
 
   const handleChooseSale = (newChosenSale: SaleObject) => {
-    console.log(newChosenSale);
-
     if (newChosenSale) {
       if (newChosenSale.id === chosenSale?.id) {
         setChosenSale(() => null);
@@ -295,6 +303,15 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       'bill_details'
     );
 
+    // Update batch soldQuantity
+    billDetails.forEach(async (item) => {
+      const batchRef = doc(collection(db, 'batches'), item.batch_id);
+
+      await updateDoc(batchRef, {
+        soldQuantity: increment(item.amount ?? 0),
+      });
+    });
+
     return {
       billData: { ...billData, id: billRef.id },
       deliveryData: { ...deliveryData, id: deliveryRef.id },
@@ -318,7 +335,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       const data = await response.json();
 
       if (data) {
-        console.log(data);
         return data;
       } else {
         throw new Error('Something went wrong');
@@ -337,17 +353,19 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       console.log('Running...');
 
+      console.log('Adding data to firestore...');
+
       const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
         id,
         chosenSale
       );
 
+      console.log('Clearing cache...');
       clearCacheData();
 
-      console.log({
-        billData,
-        deliveryData,
-      });
+      // Update bill to localStorage (in case use is not logged it)
+      console.log('Saving bills to local storage...');
+      saveBillToLocalStorage(id ?? '');
 
       const reqData = {
         billId: billData.id as string,
@@ -355,9 +373,12 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
         paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
       };
 
-      console.log(reqData);
+      console.log('Sending payment request wih data...');
+      console.log('Payload:', reqData);
 
       const data = await sendPaymentRequestToVNPay(reqData);
+
+      console.log('Data received from VNPay: ', data);
 
       window.location.href = data.url;
 
@@ -373,14 +394,12 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
     handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
   };
-
   // #endregion
 
-  // #region Ons
+  // #region useEffects
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
       if (user) {
         setUserId(user.uid);
       }
@@ -414,6 +433,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     isValid: boolean;
     msg: string;
   }
+
   const validateForm = (): FormValidationResult => {
     const otherInfos = formGiaoHangRef.current?.getOtherInfos();
 
@@ -463,6 +483,34 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       isValid: true,
       msg: '',
     };
+  };
+
+  const saveBillToLocalStorage = (billId: string) => {
+    if (!billId || billId === '') return;
+
+    const currentBills = localStorage.getItem(BILL_KEY);
+
+    const saveUpdatedBillsToLocalStorage = (billIds: string[]) => {
+      if (!billIds) return;
+
+      const json = JSON.stringify(billIds);
+
+      localStorage.setItem(BILL_KEY, JSON.stringify(json));
+    };
+
+    if (currentBills) {
+      const parsedCurrentBills: string[] = JSON.parse(currentBills) as string[];
+
+      const isBillAlreadyExisted = parsedCurrentBills.includes(billId);
+
+      if (isBillAlreadyExisted) return;
+
+      const updatedBills = [...parsedCurrentBills, billId];
+
+      saveUpdatedBillsToLocalStorage(updatedBills);
+    } else {
+      saveUpdatedBillsToLocalStorage([billId]);
+    }
   };
 
   //#endregion
@@ -584,7 +632,10 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 };
 
 export const getServerSideProps = async () => {
-  let sales = await getCollection<SaleObject>('sales');
+  let sales = await getCollectionWithQuery<SaleObject>(
+    'sales',
+    where('end_at', '>', Timestamp.now())
+  );
 
   // Get downloadURL
 
@@ -600,8 +651,6 @@ export const getServerSideProps = async () => {
   );
 
   const salesJSON = JSON.stringify(sales);
-
-  console.log(salesJSON);
 
   return {
     props: {

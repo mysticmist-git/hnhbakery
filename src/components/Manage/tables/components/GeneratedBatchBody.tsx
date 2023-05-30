@@ -22,7 +22,7 @@ const GeneratedBatchTableBody = () => {
             const docRef = doc(
               db,
               CollectionName.Products,
-              document.product_id,
+              document.product_id
             );
             const docSnap = await getDoc(docRef);
             return {
@@ -32,15 +32,17 @@ const GeneratedBatchTableBody = () => {
                   ? docSnap.data().name
                   : null,
             };
-          }),
+          })
         );
 
         // Filter isActive
-        const filterActiveDocs = docs.filter((doc) =>
-          state.isDisplayActiveOnly
-            ? new Date(doc.EXP).getTime() > new Date().getTime()
-            : true,
-        );
+        const filterActiveDocs = !state.isDisplayActiveOnly
+          ? docs
+          : docs
+              .filter(
+                (doc) => new Date(doc.EXP).getTime() > new Date().getTime()
+              )
+              .filter((doc) => doc.soldQuantity < doc.totalQuantity);
 
         setDisplayMainDocs(() => filterActiveDocs);
       } catch (err) {

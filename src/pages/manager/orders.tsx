@@ -220,8 +220,6 @@ export const getServerSideProps = async () => {
             bill.sale_id as string
           );
 
-          console.log(sale);
-
           salePercent = sale.percent;
           // saleId = sale.id;
         }
@@ -246,8 +244,6 @@ export const getServerSideProps = async () => {
         } as CustomBill;
       })
     );
-
-    console.log(finalBills);
 
     return {
       props: {

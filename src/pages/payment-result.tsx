@@ -1,7 +1,8 @@
 import { CaiKhungCoTitle } from '@/components/Layouts/components/CaiKhungCoTitle';
 import ImageBackground from '@/components/imageBackground';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
-import { createContext, memo, useState } from 'react';
+import { useRouter } from 'next/router';
+import { createContext, memo, useEffect, useState } from 'react';
 
 // #region Context
 interface PaymentResultContextType {
@@ -22,6 +23,14 @@ const PaymentResult = () => {
   const theme = useTheme();
 
   const [isSuccess, setIsSuccess] = useState(true);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const queryArgs: any = router.query;
+
+    console.log(queryArgs);
+  });
 
   return (
     <Box sx={{ pb: 16 }}>

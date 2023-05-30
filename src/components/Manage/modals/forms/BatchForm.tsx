@@ -30,7 +30,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
   const [products, setProducts] = useState<ProductObject[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
-    null,
+    null
   );
 
   //#endregion
@@ -49,11 +49,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
     const productMaterials = selectedProduct?.materials ?? [];
 
-    console.log(state.displayingData);
-
     const productSizes = selectedProduct?.sizes ?? [];
-
-    console.log(state.displayingData);
 
     if (state.crudModalMode === 'create') {
       dispatch({
@@ -80,7 +76,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
       if (justGetProducts.length === 0) {
         handleSnackbarAlert(
           'error',
-          'Không có sản phẩm, vui lòng thêm sản phẩm trước',
+          'Không có sản phẩm, vui lòng thêm sản phẩm trước'
         );
 
         dispatch({
@@ -99,7 +95,7 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
         if (!productId) return;
 
         const referencedProduct = justGetProducts.find(
-          (product) => product.id === productId,
+          (product) => product.id === productId
         );
 
         if (referencedProduct)
@@ -131,8 +127,6 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region Console.logs
 
   //#endregion
-
-  console.log(state.displayingData);
 
   return (
     <Grid container columnSpacing={2}>

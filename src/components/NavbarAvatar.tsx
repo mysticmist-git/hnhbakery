@@ -89,7 +89,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
         try {
           const user = (await getDocFromFirestore(
             'users',
-            userId,
+            userId
           )) as UserObject;
 
           setIsCustomer(() => user.role_id === 'customer');
@@ -98,8 +98,6 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
           handleSnackbarAlert('error', `Lỗi: ${error.message}`);
         }
       };
-
-      console.log('navbar onAuthStateChanged');
 
       if (user) doStuffs(user);
 

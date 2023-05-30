@@ -113,8 +113,6 @@ function RenderSaleItem(props: any) {
               color="secondary"
               checked={chosenSale && id === chosenSale.id}
               onChange={() => {
-                console.log(sale);
-                console.log(chosenSale);
                 handleChooseSale(sale);
               }}
             />

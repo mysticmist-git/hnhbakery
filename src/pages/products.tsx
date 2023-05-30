@@ -153,7 +153,7 @@ const CustomAccordion = memo((props: any) => {
 
   const head_Information = useMemo(
     () => props.head_Information,
-    [props.head_Information],
+    [props.head_Information]
   );
 
   return (
@@ -205,7 +205,7 @@ const CustomAccordion = memo((props: any) => {
                     onChange={() =>
                       context.handleCheckBox(
                         head_Information.heading_value,
-                        item.value,
+                        item.value
                       )
                     }
                   />
@@ -229,7 +229,7 @@ const CustomAccordion = memo((props: any) => {
                   </Typography>
                 }
               />
-            ),
+            )
           )}
         </FormGroup>
       </AccordionDetails>
@@ -272,7 +272,7 @@ const TypeView = memo((props: any) => {
         borderRadius: '4px',
       },
     }),
-    [],
+    []
   );
 
   const ListTypeSort = useMemo(() => {
@@ -492,7 +492,7 @@ const CakeCard = memo((props: any) => {
   const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
   const imageHeightList = useMemo(
     () => props.imageHeightList,
-    [props.imageHeightList],
+    [props.imageHeightList]
   );
   const imageStyles = {
     cardNormal: {
@@ -675,12 +675,12 @@ const ProductList = memo((props: any) => {
 
   const imageHeight = useMemo(
     () => props.imageHeight ?? '20vh',
-    [props.imageHeight],
+    [props.imageHeight]
   );
 
   const imageHeightList = useMemo(
     () => props.imageHeightList ?? '30vh',
-    [props.imageHeightList],
+    [props.imageHeightList]
   );
 
   const displayProducts: ProductItem[] = useMemo(() => {
@@ -688,7 +688,7 @@ const ProductList = memo((props: any) => {
     const sortedProductList = sortProductList(filteredProductList);
     const searchResultProductList = searchProductList(
       sortedProductList,
-      context.searchText,
+      context.searchText
     );
 
     return searchResultProductList;
@@ -743,7 +743,7 @@ const ProductList = memo((props: any) => {
       case '7':
         console.log('Option raised');
         return [...productList].sort(
-          (a, b) => b.totalSoldQuantity - a.totalSoldQuantity,
+          (a, b) => b.totalSoldQuantity - a.totalSoldQuantity
         );
       default:
         console.log('Option raised');
@@ -756,22 +756,14 @@ const ProductList = memo((props: any) => {
 
     function filterProductType(productList: ProductItem[]): ProductItem[] {
       const productTypeFilter = context.GroupBoLoc.find(
-        (item) => item.heading_value === 'typeCake',
+        (item) => item.heading_value === 'typeCake'
       );
-
-      console.log(productTypeFilter);
-
-      if (!productTypeFilter) return [...productList];
 
       const productTypeIdChecked = productTypeFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.value);
 
-      console.log(productTypeIdChecked);
-
       if (productTypeIdChecked.length === 0) return [...productList];
-
-      console.log(productList);
 
       const productTypeFilteredResult = [
         ...productList.filter((product) => {
@@ -784,20 +776,16 @@ const ProductList = memo((props: any) => {
 
     function filterColor(productList: ProductItem[]): ProductItem[] {
       const colorFilter = context.GroupBoLoc.find(
-        (item) => item.heading_value === 'color',
+        (item) => item.heading_value === 'color'
       );
 
       if (!colorFilter) return [...productList];
-
-      console.log(colorFilter.children.filter((item) => item.isChecked));
 
       const colorChecks = colorFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.realValue);
 
       if (colorChecks.length === 0) return [...productList];
-
-      console.log(colorChecks);
 
       return [
         ...productList.filter((product) => {
@@ -814,7 +802,7 @@ const ProductList = memo((props: any) => {
     function filterSize(productList: ProductItem[]): ProductItem[] {
       // Get size filter
       const sizeFilter = context.GroupBoLoc.find(
-        (item) => item.heading_value === 'size',
+        (item) => item.heading_value === 'size'
       );
 
       if (!sizeFilter) return [...productList];
@@ -840,7 +828,7 @@ const ProductList = memo((props: any) => {
     function filterPrice(productList: ProductItem[]): ProductItem[] {
       // Get price range
       const priceFilter = context.GroupBoLoc.find(
-        (item) => item.heading_value === 'price',
+        (item) => item.heading_value === 'price'
       );
 
       if (!priceFilter) return [...productList];
@@ -903,7 +891,7 @@ const ProductList = memo((props: any) => {
 
       function filterProductListBaseOnPriceRanges(
         productList: ProductItem[],
-        priceRanges: PriceRange[],
+        priceRanges: PriceRange[]
       ): ProductItem[] {
         return productList.filter((product) => {
           return priceRanges.some((range) => {
@@ -945,7 +933,7 @@ const ProductList = memo((props: any) => {
   function searchProductList(productList: ProductItem[], searchText: string) {
     return productList.filter((product) => {
       return removeAccents(product.name.toLowerCase()).includes(
-        searchText.toLowerCase(),
+        searchText.toLowerCase()
       );
     });
   }
@@ -1014,7 +1002,7 @@ const Products = ({
 
   const generateGroupBoLoc = (stringifiedProductTypesNamesAndIds: string) => {
     const productTypesNamesAndIds: { id: string; name: string }[] = JSON.parse(
-      stringifiedProductTypesNamesAndIds,
+      stringifiedProductTypesNamesAndIds
     );
 
     let children = productTypesNamesAndIds.map((productType) => ({
@@ -1140,7 +1128,7 @@ const Products = ({
   //#region States
 
   const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>(
-    generateGroupBoLoc(stringifiedProductTypesNamesAndIds),
+    generateGroupBoLoc(stringifiedProductTypesNamesAndIds)
   );
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [sortListState, setSortListState] = useState<any>(initSortList);
@@ -1148,20 +1136,11 @@ const Products = ({
 
   //#endregion
 
-  //#region UseEffects
-
-  useEffect(() => {
-    //Van Hen
-    console.log('thaydoi', groupBoLocState, sortListState);
-  }, [groupBoLocState, sortListState]);
-
-  //#endregion
-
   // #region useMemos
 
   const productListState: ProductItem[] = useMemo(
     () => JSON.parse(products),
-    [products],
+    [products]
   );
 
   // #endregion
@@ -1186,7 +1165,7 @@ const Products = ({
           };
         }
         return item;
-      }),
+      })
     );
   }
 
@@ -1313,7 +1292,7 @@ const Products = ({
                             fontFamily: theme.typography.body2.fontFamily,
                             backgroundColor: alpha(
                               theme.palette.primary.main,
-                              0.2,
+                              0.2
                             ),
                             backdropFilter: 'blur(2px)',
                             border: 3,
@@ -1324,7 +1303,7 @@ const Products = ({
                             '&:hover': {
                               backgroundColor: alpha(
                                 theme.palette.common.black,
-                                0.75,
+                                0.75
                               ),
                               color: theme.palette.common.white,
                               backdropFilter: 'blur(3px)',
@@ -1332,7 +1311,7 @@ const Products = ({
                             '&:focus': {
                               backgroundColor: alpha(
                                 theme.palette.common.black,
-                                0.75,
+                                0.75
                               ),
                               color: theme.palette.common.white,
                               backdropFilter: 'blur(3px)',
@@ -1393,9 +1372,13 @@ const Products = ({
 
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
-    const batches = await getCollectionWithQuery<BatchObject>(
+    let batches = await getCollectionWithQuery<BatchObject>(
       'batches',
-      where('EXP', '>=', Timestamp.now()),
+      where('EXP', '>=', Timestamp.now())
+    );
+
+    batches = batches.filter(
+      (batch) => batch.soldQuantity < batch.totalQuantity
     );
 
     return batches;
@@ -1412,7 +1395,7 @@ interface LowestPriceAndItsMFGProductId {
 }
 
 async function fetchLowestPriceAndMFGBatchProductIds(
-  batches: BatchObject[],
+  batches: BatchObject[]
 ): Promise<LowestPriceAndItsMFGProductId[]> {
   try {
     const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
@@ -1424,11 +1407,11 @@ async function fetchLowestPriceAndMFGBatchProductIds(
     }, {});
 
     const lowestPrices: LowestPriceAndItsMFGProductId[] = Object.keys(
-      groupedBatches,
+      groupedBatches
     ).map((product_id) => {
       const pricesAndMFGs = groupedBatches[product_id];
       const priceAndMFGThatHasTheLowestPrice = pricesAndMFGs.find(
-        (priceAndMFG: any) => priceAndMFG.price === pricesAndMFGs[0].price,
+        (priceAndMFG: any) => priceAndMFG.price === pricesAndMFGs[0].price
       );
       // const lowestPrice = Math.min(...pricesAndMFGs.map((priceAndMFG) => priceAndMFG.price));
       return {
@@ -1448,7 +1431,7 @@ async function fetchLowestPriceAndMFGBatchProductIds(
 async function getTotalSoldQuantity(productId: string): Promise<number> {
   const batches = await getCollectionWithQuery<BatchObject>(
     'batches',
-    where('product_id', '==', productId),
+    where('product_id', '==', productId)
   );
 
   const totalSoldQuantity: number = batches.reduce((acc, batch) => {
@@ -1459,7 +1442,7 @@ async function getTotalSoldQuantity(productId: string): Promise<number> {
 }
 
 async function fetchProductTypesWithLowestPrices(
-  lowestPricesAndTheirMFGs: LowestPriceAndItsMFGProductId[],
+  lowestPricesAndTheirMFGs: LowestPriceAndItsMFGProductId[]
 ): Promise<ProductItem[]> {
   try {
     const products = await Promise.all(
@@ -1478,7 +1461,7 @@ async function fetchProductTypesWithLowestPrices(
           colors: productData.colors,
           productType_id: productData.productType_id,
         } as ProductItem;
-      }),
+      })
     );
 
     return products;
@@ -1494,11 +1477,11 @@ export async function getStaticProps() {
   const batches = await fetchAvailableBatches();
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(
-    batches,
+    batches
   );
 
   const fetchedProducts = await fetchProductTypesWithLowestPrices(
-    lowestPricesAndTheirMFGs,
+    lowestPricesAndTheirMFGs
   );
 
   const productTypes = await getCollection<ProductTypeObject>('productTypes');
@@ -1511,7 +1494,7 @@ export async function getStaticProps() {
 
   const products = fetchedProducts.map((product) => {
     const productBatches: BatchObject[] = batches.filter(
-      (batch) => batch.product_id === product.id,
+      (batch) => batch.product_id === product.id
     );
 
     const sizes = productBatches.map((batch) => batch.size);

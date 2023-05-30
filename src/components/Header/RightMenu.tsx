@@ -4,7 +4,7 @@ import { useContext, useMemo, memo, useState, useEffect } from 'react';
 import { CustomIconButton, CustomButton } from '../Inputs/Buttons';
 import NavbarAvatar from '../NavbarAvatar';
 import { NavbarContext } from './Navbar';
-import { ShoppingCart } from '@mui/icons-material';
+import { Receipt, ShoppingCart } from '@mui/icons-material';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const RightMenu = (props: any) => {
@@ -39,8 +39,6 @@ const RightMenu = (props: any) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
-
       if (user) {
         setPhotoURL(user.photoURL ?? '');
       }
@@ -51,8 +49,24 @@ const RightMenu = (props: any) => {
 
   // #endregion
 
+  const handleBill = () => {
+    router.push('/bill');
+  };
+
   return (
     <>
+      <CustomIconButton
+        onClick={handleBill}
+        sx={{
+          mr: props.orientation == 'vertical' ? 0 : 1,
+          mb: props.orientation == 'vertical' ? 1 : 0,
+          color: props.down
+            ? theme.palette.secondary.main
+            : theme.palette.common.white,
+        }}
+      >
+        <Receipt />
+      </CustomIconButton>
       <CustomIconButton
         onClick={handleCart}
         sx={{

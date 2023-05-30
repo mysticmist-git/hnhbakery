@@ -166,8 +166,6 @@ function Navbar() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('navbar onAuthStateChanged');
-
       if (user) {
         setIsSignInState(() => true);
       } else {
@@ -243,7 +241,7 @@ function Navbar() {
               right: 0,
               background: `linear-gradient(to bottom, ${alpha(
                 theme.palette.common.black,
-                0.7,
+                0.7
               )}, ${alpha(theme.palette.common.black, 0)})`,
               backdropFilter: 'blur(1px)',
               boxShadow: 'none',
