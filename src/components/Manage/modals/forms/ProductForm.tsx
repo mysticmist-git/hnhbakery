@@ -365,13 +365,19 @@ const ProductForm = ({
                 />
               }
               label={
-                <Typography
-                  sx={{ color: theme.palette.success.main }}
-                  variant="body1"
-                  fontWeight="bold"
-                >
-                  Còn hoạt động
-                </Typography>
+              <Typography
+                sx={{
+                  color: state.displayingData?.isActive
+                    ? theme.palette.success.main
+                    : theme.palette.error.main,
+                }}
+                variant="body1"
+                fontWeight="bold"
+              >
+                {state.displayingData?.isActive
+                  ? 'Còn hoạt động'
+                  : 'Ngưng hoạt động'}
+              </Typography>
               }
               labelPlacement="start"
               sx={{
