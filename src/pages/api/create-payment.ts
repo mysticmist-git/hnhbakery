@@ -18,6 +18,11 @@ function sortObject(obj: any): any {
   return sorted;
 }
 
+const numberSmallerTen = (theNumber: number) => {
+  if (theNumber < 10) return '0' + theNumber;
+  else return theNumber;
+};
+
 const vnp_TmnCode = 'SLC8HSYX';
 const vnp_HashSecret = 'WEDDYNUFAGHXDZZYACHJPKQVIPNGUKCW';
 const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
@@ -37,15 +42,25 @@ const handler = async (req: any, res: any) => {
     var returnUrl = vnp_ReturnUrl;
 
     var date = new Date();
+    var yyyy = date.getFullYear();
+    var mm = date.getMonth() + 1;
+    var dd = date.getDate();
+    var HHmmss =
+      '' +
+      numberSmallerTen(date.getHours()) +
+      numberSmallerTen(date.getMinutes()) +
+      numberSmallerTen(date.getSeconds());
+    var createDate =
+      '' + yyyy + numberSmallerTen(mm) + numberSmallerTen(dd) + HHmmss;
 
-    var createDate = dateFormat(date, 'yyyymmddHHmmss');
+    console.log(createDate);
+
     var orderId = req.body.billId;
     var amount = req.body.totalPrice;
-    // var bankCode = 'NCB';
     var bankCode = '';
 
     var orderInfo = req.body.paymentDescription;
-    var orderType = 'billpayment';
+    var orderType = 'topup';
     var locale = 'vn';
 
     var currCode = 'VND';

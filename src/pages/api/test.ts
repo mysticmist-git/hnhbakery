@@ -32,6 +32,7 @@
 //             var secretKey = vnp_HashSecret;
 //             var vnpUrl = vnp_Url;
 
+//
 //             var date = new Date();
 //             var yyyy = date.getFullYear();
 //             var mm = date.getMonth() + 1;
