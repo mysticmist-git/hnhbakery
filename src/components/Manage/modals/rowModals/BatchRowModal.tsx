@@ -171,7 +171,7 @@ const BatchRowModal = () => {
 
     // validate data before adding
     const { isValid, errorMessage } = validateData(
-      state.displayingData as BatchObject,
+      state.displayingData as BatchObject
     );
 
     if (!isValid) {
@@ -193,7 +193,7 @@ const BatchRowModal = () => {
       // Add new document to Firestore
       const docRef = await addDocToFirestore(
         dataForFirestoreAdding,
-        collectionName,
+        collectionName
       );
 
       // Add new row to table data
@@ -262,7 +262,7 @@ const BatchRowModal = () => {
 
     // validate data before adding
     const { isValid, errorMessage } = validateData(
-      state.displayingData as BatchObject,
+      state.displayingData as BatchObject
     );
 
     if (!isValid) {
@@ -273,7 +273,7 @@ const BatchRowModal = () => {
     // Check if data changed
     const dataChanged = checkIfDataChanged(
       originalDisplayingData,
-      state.displayingData,
+      state.displayingData
     );
 
     try {
@@ -297,8 +297,6 @@ const BatchRowModal = () => {
         discountDate: Timestamp.fromDate(new Date(displayingData.discountDate)),
       };
 
-      console.log(dataForFirestoreAdding);
-
       // Update document to firestore
       await updateDocToFirestore(dataForFirestoreAdding, collectionName);
 
@@ -317,8 +315,6 @@ const BatchRowModal = () => {
   };
 
   //#endregion
-
-  console.log(state.displayingData);
 
   return (
     <RowModalLayout

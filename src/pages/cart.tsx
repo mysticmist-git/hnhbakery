@@ -39,6 +39,7 @@ import {
   DisplayCartItem,
   FAIL_SAVE_CART_MSG,
   SUCCESS_SAVE_CART_MSG,
+  saveCart,
 } from '@/lib/contexts/cartContext';
 import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import { LOCAL_CART_KEY } from '@/lib';
@@ -213,7 +214,7 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
 
   const handleDeleteRow = (id: string) => {
     setProductBill((prev: DisplayCartItem[]) =>
-      prev.filter((item) => item.id !== id),
+      prev.filter((item) => item.id !== id)
     );
   };
 
@@ -371,8 +372,8 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
           },
         }}
       >
-        {productBill.map((row: any) => (
-          <Grid item xs={12}>
+        {productBill.map((row: any, index: number) => (
+          <Grid item xs={12} key={index}>
             <Box
               sx={{
                 border: 3,
@@ -583,7 +584,7 @@ const GhiChuCuaBan = forwardRef(
             '&:hover': {
               boxShadow: `0px 0px 5px 2px ${alpha(
                 theme.palette.secondary.main,
-                0.3,
+                0.3
               )}`,
             },
           }}
@@ -597,7 +598,7 @@ const GhiChuCuaBan = forwardRef(
         </Box>
       </Box>
     );
-  },
+  }
 );
 
 //#endregion
@@ -635,56 +636,6 @@ const headingTable = [
   'Tổng',
   'Xóa',
 ];
-
-// const initproductBill = [
-//   createDataRow({
-//     id: '1',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-//   createDataRow({
-//     id: '2',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-//   createDataRow({
-//     id: '3',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//     discountPercent: 20,
-//   }),
-//   createDataRow({
-//     id: '4',
-//     href: '/',
-//     image: Banh1.src,
-//     name: 'Hàng than',
-//     size: 'Nhỏ',
-//     material: 'Mứt dâu',
-//     quantity: 5,
-//     maxQuantity: 10,
-//     price: 100000,
-//   }),
-// ];
-
-//#endregion
 
 const Cart = () => {
   // #region Hooks
@@ -725,19 +676,18 @@ const Cart = () => {
 
       const finalCartItems = syncLocalCartItemToFirestore(
         localCartItems,
-        firestoreCartItems,
+        firestoreCartItems
       );
 
       const displayCartItems = await fetchCartItemData(finalCartItems);
 
-      const temps = displayCartItems.filter(item => {
-        return new Date(item.EXP).getTime() > new Date().getTime();
-      })
-
-      console.log(temps);
-
       // TODO: Please actually remove the Ids from localStorage
+      const temps = displayCartItems.filter((item) => {
+        return new Date(item.EXP).getTime() > new Date().getTime();
+      });
+
       displayCartItemsToView(temps);
+      handleSaveCart();
     } catch (error) {
       console.log(error);
     }
@@ -759,17 +709,14 @@ const Cart = () => {
 
   const syncLocalCartItemToFirestore = (
     localCartItems: any,
-    firestoreCartItems: any,
+    firestoreCartItems: any
   ): CartItem[] => {
-    // TODO: Do this
     return localCartItems;
   };
 
   const fetchCartItemData = async (
-    cartItems: CartItem[],
+    cartItems: CartItem[]
   ): Promise<DisplayCartItem[]> => {
-    // TODO: implement
-
     if (!cartItems || cartItems.length <= 0) return [];
 
     const displayCartItems = await Promise.all(
@@ -798,7 +745,7 @@ const Cart = () => {
         };
 
         return displayCartItem;
-      }),
+      })
     );
 
     return displayCartItems;
@@ -808,90 +755,17 @@ const Cart = () => {
     setProductBill(() => cartItems);
   };
 
-  const saveCurrentProductBill = async (): Promise<CartItemAddingResult> => {
-    const data = getCurrentProductBills();
-
-    const localResult = updateCartToLocal(data);
-
-    if (!localResult.isSuccess) {
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-
-    const firestoreResult = await updateCartToFirestore(data);
-
-    if (!firestoreResult.isSuccess) {
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-
-    return {
-      isSuccess: true,
-      msg: SUCCESS_SAVE_CART_MSG,
-    };
-  };
-
-  const getCurrentProductBills = (): CartItem[] => {
-    const updatedCartItems: CartItem[] = productBill.map((item) => {
-      return {
-        id: item.id,
-        userId: item.userId,
-        productId: item.productId,
-        batchId: item.batchId,
-        href: item.href,
-        quantity: item.quantity,
-        price: item.price,
-        discountPrice: item.discountPrice,
-      };
-    });
-
-    return updatedCartItems;
-  };
-
-  const updateCartToLocal = (cartItems: CartItem[]): CartItemAddingResult => {
-    const json = JSON.stringify(cartItems);
-
-    try {
-      localStorage.setItem(LOCAL_CART_KEY, json);
-
-      return {
-        isSuccess: true,
-        msg: SUCCESS_SAVE_CART_MSG,
-      };
-    } catch (error) {
-      console.log(error);
-      return {
-        isSuccess: false,
-        msg: FAIL_SAVE_CART_MSG,
-      };
-    }
-  };
-
-  const updateCartToFirestore = (
-    cartItems: CartItem[],
-  ): CartItemAddingResult => {
-    return {
-      isSuccess: true,
-      msg: SUCCESS_SAVE_CART_MSG,
-    };
-  };
-
-  const saveCart = async () => {
-    const result = await saveCurrentProductBill();
-
-    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  };
-
   // #endregion
 
   // #region Handlers
 
   const handlePayment = async () => {
-    await saveCart();
+    if (isCartEmpty) {
+      handleSnackbarAlert('info', 'Giỏ hàng trống');
+      return;
+    }
+
+    handleSaveCart();
 
     dispatch({
       type: AppDispatchAction.SET_PRODUCT_BILL,
@@ -907,11 +781,31 @@ const Cart = () => {
   };
 
   const handleContinueToSurf = async () => {
-    await saveCart();
+    handleSaveCart();
+
     router.push('/products');
   };
 
+  const handleSaveCart = async () => {
+    if (isCartEmpty) {
+      handleSnackbarAlert('info', 'Giỏ hàng trống');
+      return;
+    }
+
+    const result = await saveCart(productBill);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  };
+
   // #endregion
+
+  //#region UseMemos
+
+  const isCartEmpty = useMemo(() => {
+    return !Boolean(productBill) || productBill.length <= 0;
+  }, [productBill]);
+
+  //#endregion
 
   return (
     <>
@@ -981,8 +875,22 @@ const Cart = () => {
               <Grid item xs={12}>
                 <ProductTable
                   setProductBill={setProductBill}
-                  handleSaveCart={() => saveCart()}
+                  handleSaveCart={() => {
+                    handleSaveCart();
+                  }}
                 />
+                {isCartEmpty && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      mt: 2,
+                    }}
+                  >
+                    <Typography variant="h2">Giỏ hàng trống</Typography>
+                  </Box>
+                )}
               </Grid>
 
               <Grid item xs={12} md={6}>

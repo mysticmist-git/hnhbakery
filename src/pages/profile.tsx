@@ -27,7 +27,6 @@ const Profile = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
       if (user) {
         setUserId(user.uid);
         setAvatarSrc(user.photoURL ?? '');

@@ -1,5 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import dateFormat, { masks } from 'dateformat';
+import dateFormat from 'dateformat';
 import queryString from 'qs';
 import crypto from 'crypto';
 
@@ -48,8 +47,6 @@ const handler = async (req: any, res: any) => {
     var orderInfo = req.body.paymentDescription;
     var orderType = 'billpayment';
     var locale = 'vn';
-
-    console.log('Server running...');
 
     var currCode = 'VND';
     var vnp_Params: any = {};

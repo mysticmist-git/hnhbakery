@@ -6,8 +6,6 @@ export function DanhSachSanPham(props: any) {
   const { Products } = props;
   const theme = useTheme();
 
-  console.log(Products);
-
   return (
     <>
       {Products.map((item: any, i: number) => (

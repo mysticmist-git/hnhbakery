@@ -4,7 +4,7 @@ export interface OtherInfos {
   email: string;
   diaChi: string;
   thoiGianGiao: string;
-  ngayGiao: string;
+  ngayGiao: Date;
   deliveryNote: string;
 }
 

@@ -9,10 +9,14 @@ import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
 import FormGiaoHang from '../components/Payment/FormGiaoHang';
 import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
-import { AppContext, AppContextType } from '@/lib/contexts/appContext';
+import {
+  AppContext,
+  AppContextType,
+  AppDispatchAction,
+} from '@/lib/contexts/appContext';
 import { useRouter } from 'next/router';
 import { useSnackbarService } from '@/lib/contexts';
-import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import { DisplayCartItem, saveCart } from '@/lib/contexts/cartContext';
 import { Ref } from '@/lib/contexts/payment';
 import { DeliveryObject } from '@/lib/models/Delivery';
 import { BillObject } from '@/lib/models/Bill';
@@ -26,12 +30,24 @@ import {
   addDocToFirestore,
   addDocsToFirestore,
   getCollection,
+  getCollectionWithQuery,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { SaleObject } from '@/lib/models';
+import {
+  Timestamp,
+  collection,
+  doc,
+  increment,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 // #endregion
+
+const BILL_KEY = 'BILL_KEY';
 
 const MocGioGiaoHang = [
   {
@@ -86,7 +102,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     if (!salesJSON || salesJSON === '') return null;
 
     const parsedSales = JSON.parse(salesJSON) as SaleObject[];
-    console.log(parsedSales);
     return parsedSales;
   }, [salesJSON]);
 
@@ -129,7 +144,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const mapProductBillToBillDetailObject = (
     productBill: DisplayCartItem[],
-    billId: string,
+    billId: string
   ) => {
     return productBill.map((item) => {
       return createBillDetailData(item, billId);
@@ -138,15 +153,17 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const createBillData = (
     paymentId: string | undefined,
-    chosenSale: SaleObject | null,
+    chosenSale: SaleObject | null
   ): BillObject => {
     let billData: BillObject = {
-      totalPrice: tongBill,
-      noteDelivery: formGiaoHangRef.current?.getOtherInfos().deliveryNote,
-      noteCart: state.cartNote,
+      totalPrice: tamTinh - khuyenMai,
+      originalPrice: tamTinh,
+      saleAmount: khuyenMai,
+      note: state.cartNote,
       state: 0,
       payment_id: paymentId,
       user_id: userId,
+      created_at: new Date(),
     } as BillObject;
 
     if (chosenSale) {
@@ -162,8 +179,8 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const createDeliveryData = (billId: string) => {
     const otherInfos = formGiaoHangRef.current?.getOtherInfos();
 
-    const date = new Date(otherInfos?.ngayGiao as string);
-    const time =  otherInfos?.thoiGianGiao;
+    const date = otherInfos?.ngayGiao;
+    const time = otherInfos?.thoiGianGiao;
 
     const deliveryData: DeliveryObject = {
       name: otherInfos?.name,
@@ -183,7 +200,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const createBillDetailData = (
     productBill: DisplayCartItem,
-    billId: string,
+    billId: string
   ): BillDetailObject => {
     const billDetailData: BillDetailObject = {
       amount: productBill.quantity,
@@ -197,6 +214,22 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     return billDetailData;
   };
 
+  const clearCacheData = async () => {
+    dispatch({
+      type: AppDispatchAction.SET_PRODUCT_BILL,
+      payload: [],
+    });
+
+    dispatch({
+      type: AppDispatchAction.SET_CART_NOTE,
+      payload: '',
+    });
+
+    const result = await saveCart([]);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  };
+
   // #endregion
 
   // #region Handlers
@@ -206,8 +239,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   };
 
   const handleChooseSale = (newChosenSale: SaleObject) => {
-    console.log(newChosenSale);
-
     if (newChosenSale) {
       if (newChosenSale.id === chosenSale?.id) {
         setChosenSale(() => null);
@@ -250,7 +281,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const addAllNecessariesInfoToFirestore = async (
     paymentId: string | undefined,
-    chosenSale: SaleObject | null,
+    chosenSale: SaleObject | null
   ): Promise<{
     billData: BillObject;
     deliveryData: DeliveryObject;
@@ -263,14 +294,23 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
     const billDetails = mapProductBillToBillDetailObject(
       state.productBill,
-      billRef.id,
+      billRef.id
     );
 
     // Make a firestore batch commit
     const billDetailRefs = await addDocsToFirestore(
       billDetails,
-      'bill_details',
+      'bill_details'
     );
+
+    // Update batch soldQuantity
+    billDetails.forEach(async (item) => {
+      const batchRef = doc(collection(db, 'batches'), item.batch_id);
+
+      await updateDoc(batchRef, {
+        soldQuantity: increment(item.amount ?? 0),
+      });
+    });
 
     return {
       billData: { ...billData, id: billRef.id },
@@ -295,7 +335,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       const data = await response.json();
 
       if (data) {
-        console.log(data);
         return data;
       } else {
         throw new Error('Something went wrong');
@@ -307,22 +346,26 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   const handleProceedPayment = async (
     id: string | undefined,
-    type: string | undefined,
+    type: string | undefined
   ) => {
     try {
       if (!checkPaymentValidation(type)) return;
 
       console.log('Running...');
 
+      console.log('Adding data to firestore...');
+
       const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
         id,
-        chosenSale,
+        chosenSale
       );
 
-      console.log({
-        billData,
-        deliveryData,
-      });
+      console.log('Clearing cache...');
+      clearCacheData();
+
+      // Update bill to localStorage (in case use is not logged it)
+      console.log('Saving bills to local storage...');
+      saveBillToLocalStorage(id ?? '');
 
       const reqData = {
         billId: billData.id as string,
@@ -330,9 +373,12 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
         paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
       };
 
-      console.log(reqData);
+      console.log('Sending payment request wih data...');
+      console.log('Payload:', reqData);
 
       const data = await sendPaymentRequestToVNPay(reqData);
+
+      console.log('Data received from VNPay: ', data);
 
       window.location.href = data.url;
 
@@ -343,13 +389,17 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     }
   };
 
+  const handleSaveCart = async () => {
+    const result = await saveCart(state.productBill);
+
+    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  };
   // #endregion
 
-  // #region Ons
+  // #region useEffects
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
       if (user) {
         setUserId(user.uid);
       }
@@ -363,12 +413,108 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
+    const result = validateForm();
+
+    if (!result.isValid) {
+      handleSnackbarAlert('error', result.msg);
+      return;
+    }
+
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  //#region Methods
+
+  interface FormValidationResult {
+    isValid: boolean;
+    msg: string;
+  }
+
+  const validateForm = (): FormValidationResult => {
+    const otherInfos = formGiaoHangRef.current?.getOtherInfos();
+
+    if (otherInfos?.name === '') {
+      return {
+        isValid: false,
+        msg: 'Vui lòng nhập họ tên',
+      };
+    }
+
+    if (otherInfos?.tel === '') {
+      return {
+        msg: 'Vui lòng nhập số điện thoại',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.diaChi === '') {
+      return {
+        msg: 'Vui lòng nhập địa chỉ',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.email === '') {
+      return {
+        msg: 'Vui lòng nhập email',
+        isValid: false,
+      };
+    }
+
+    if (!otherInfos?.ngayGiao) {
+      return {
+        msg: 'Vui lòng chọn ngày giao',
+        isValid: false,
+      };
+    }
+
+    if (otherInfos?.thoiGianGiao === '') {
+      return {
+        msg: 'Vui lòng chọn thời gian giao',
+        isValid: false,
+      };
+    }
+
+    return {
+      isValid: true,
+      msg: '',
+    };
+  };
+
+  const saveBillToLocalStorage = (billId: string) => {
+    if (!billId || billId === '') return;
+
+    const currentBills = localStorage.getItem(BILL_KEY);
+
+    const saveUpdatedBillsToLocalStorage = (billIds: string[]) => {
+      if (!billIds) return;
+
+      const json = JSON.stringify(billIds);
+
+      localStorage.setItem(BILL_KEY, JSON.stringify(json));
+    };
+
+    if (currentBills) {
+      const parsedCurrentBills: string[] = JSON.parse(currentBills) as string[];
+
+      const isBillAlreadyExisted = parsedCurrentBills.includes(billId);
+
+      if (isBillAlreadyExisted) return;
+
+      const updatedBills = [...parsedCurrentBills, billId];
+
+      saveUpdatedBillsToLocalStorage(updatedBills);
+    } else {
+      saveUpdatedBillsToLocalStorage([billId]);
+    }
+  };
+
+  //#endregion
+
   return (
     <>
       <PaymentContext.Provider value={initPaymentContext}>
@@ -486,7 +632,10 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 };
 
 export const getServerSideProps = async () => {
-  let sales = await getCollection<SaleObject>('sales');
+  let sales = await getCollectionWithQuery<SaleObject>(
+    'sales',
+    where('end_at', '>', Timestamp.now())
+  );
 
   // Get downloadURL
 
@@ -498,12 +647,10 @@ export const getServerSideProps = async () => {
         ...sale,
         image: downloadURL,
       };
-    }),
+    })
   );
 
   const salesJSON = JSON.stringify(sales);
-
-  console.log(salesJSON);
 
   return {
     props: {

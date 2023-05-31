@@ -28,7 +28,7 @@ const GeneratedProductTableBody = () => {
             const docRef = doc(
               db,
               CollectionName.ProductTypes,
-              document.productType_id,
+              document.productType_id
             );
             const docSnap = await getDoc(docRef);
             return {
@@ -37,18 +37,26 @@ const GeneratedProductTableBody = () => {
                 docSnap.exists() && docSnap.data() !== null
                   ? docSnap.data().name
                   : null,
-            };
-          }),
+              productTypeIsActive:
+                docSnap.exists() && docSnap.data() !== null
+                  ? docSnap.data().isActive
+                  : false,
+            } as DocumentData;
+          })
         );
 
-        setDisplayMainDocs(docs);
+        const filterActiveDocs = state.isDisplayActiveOnly
+          ? docs.filter((doc) => doc.isActive && doc.productTypeIsActive)
+          : docs;
+
+        setDisplayMainDocs(() => filterActiveDocs);
       } catch (err) {
         console.log('Err', err);
       }
     };
 
     getProductTypeNames();
-  }, [state.mainDocs]);
+  }, [state.mainDocs, state.isDisplayActiveOnly]);
 
   const TableBody = useMemo(() => {
     return (

@@ -3,8 +3,6 @@ import { Box, Button, Link, Typography } from '@mui/material';
 import React, { memo } from 'react';
 
 const ThankYou =    () => {
-   const halo = 'hello'
-   console.log('hello', halo );
   return (
     <Box
       sx={{

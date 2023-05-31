@@ -434,9 +434,6 @@ export default function Manage({
           </TableActionButton>
         </Box>
 
-        {/* Table TODO: Xin hãy truyền các fields vào thay vì sử dụng trực tiếp từ context bởi vì làm như vậy
-            thì component này sẽ không tái sử dụng được.
-            Tất nhiên thì nếu không có ý định tái sử dụng component này thì để nó vậy cũng được. */}
         <CustomDataTable />
 
         {isTableEmpty && (

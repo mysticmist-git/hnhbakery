@@ -78,6 +78,19 @@ export function DonHangCuaBan(props: any) {
               handleChooseSale={handleChooseSale}
             />
 
+            {Sales.length <= 0 && (
+              // TODO: use another prhase
+              <Typography
+                variant="body1"
+                color={theme.palette.text.secondary}
+                sx={{
+                  mt: 1,
+                }}
+              >
+                Không tồn tại khuyến mãi công khai nào
+              </Typography>
+            )}
+
             <Grid item xs={12}>
               <Box
                 sx={{

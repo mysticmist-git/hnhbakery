@@ -4,7 +4,7 @@ import { useContext, useMemo, memo, useState, useEffect } from 'react';
 import { CustomIconButton, CustomButton } from '../Inputs/Buttons';
 import NavbarAvatar from '../NavbarAvatar';
 import { NavbarContext } from './Navbar';
-import { ShoppingCart } from '@mui/icons-material';
+import { Receipt, ShoppingCart } from '@mui/icons-material';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const RightMenu = (props: any) => {
@@ -39,8 +39,6 @@ const RightMenu = (props: any) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('hi');
-
       if (user) {
         setPhotoURL(user.photoURL ?? '');
       }

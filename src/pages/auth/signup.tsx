@@ -62,8 +62,6 @@ const SignUp = () => {
   // #region Handlers
 
   const validateSignupData = (data: SignupData) => {
-    console.log(data);
-
     if (!data.name || data.name === '') {
       handleSnackbarAlert('error', SignupValidationMsg.EMPTY_NAME);
       return false;
@@ -102,7 +100,7 @@ const SignUp = () => {
     if (data.password !== data.confirmPassword) {
       handleSnackbarAlert(
         'error',
-        SignupValidationMsg.CONFIRM_PASSWORD_NOT_MATCH,
+        SignupValidationMsg.CONFIRM_PASSWORD_NOT_MATCH
       );
       return false;
     }
@@ -111,7 +109,7 @@ const SignUp = () => {
   };
 
   const createUserObjectFromUSignupData = (
-    userData: SignupData,
+    userData: SignupData
   ): SignupUser => {
     return {
       mail: userData.mail,
@@ -138,7 +136,7 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         signupData.mail!,
-        signupData.password!,
+        signupData.password!
       );
 
       const user = createUserObjectFromUSignupData(signupData);
@@ -195,7 +193,7 @@ const SignUp = () => {
             alignItems: 'center',
             background: `linear-gradient(to bottom, ${alpha(
               theme.palette.primary.main,
-              0.8,
+              0.8
             )}, ${alpha(theme.palette.primary.main, 0.8)})`,
             backdropFilter: 'blur(1px)',
           }}
