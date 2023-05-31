@@ -49,24 +49,8 @@ const RightMenu = (props: any) => {
 
   // #endregion
 
-  const handleBill = () => {
-    router.push('/bill');
-  };
-
   return (
     <>
-      <CustomIconButton
-        onClick={handleBill}
-        sx={{
-          mr: props.orientation == 'vertical' ? 0 : 1,
-          mb: props.orientation == 'vertical' ? 1 : 0,
-          color: props.down
-            ? theme.palette.secondary.main
-            : theme.palette.common.white,
-        }}
-      >
-        <Receipt />
-      </CustomIconButton>
       <CustomIconButton
         onClick={handleCart}
         sx={{

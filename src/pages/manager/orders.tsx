@@ -1,53 +1,28 @@
-import { TabPanel } from '@/components/Manage/modals/forms/components';
 import MyModal from '@/components/Order/MyModal';
-import { useSnackbarService } from '@/lib/contexts';
 import { CustomBill, billStatusParse } from '@/lib/contexts/orders';
 import {
   getCollection,
   getCollectionWithQuery,
   getDocFromFirestore,
-  updateDocToFirestore,
 } from '@/lib/firestore/firestoreLib';
-import { ProductObject, ProductTypeObject } from '@/lib/models';
-import { BatchObject } from '@/lib/models/Batch';
 import { BillObject } from '@/lib/models/Bill';
-import { BillDetailObject } from '@/lib/models/BillDetail';
 import { DeliveryObject } from '@/lib/models/Delivery';
 import formatPrice from '@/utilities/formatCurrency';
-import { Close } from '@mui/icons-material';
 import {
-  Box,
   Button,
   Card,
-  CardActions,
-  CardContent,
-  Chip,
   Container,
-  Divider,
-  FormControl,
-  Grid,
-  IconButton,
-  InputLabel,
-  List,
-  ListItem,
-  MenuItem,
-  Modal,
   Paper,
-  Select,
-  Skeleton,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
-  TextField,
   Typography,
 } from '@mui/material';
-import { getDocFromCache, where } from 'firebase/firestore';
+import { where } from 'firebase/firestore';
 import React, { useEffect, useMemo, useState } from 'react';
 
 const MyTable = ({
@@ -57,69 +32,78 @@ const MyTable = ({
   billsData: CustomBill[];
   handleViewBill: (value: CustomBill) => void;
 }) => {
+  const isBillEmpty = useMemo(() => {
+    return billsData.length === 0;
+  }, [billsData]);
+
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Mã đơn</TableCell>
-            <TableCell align="right">Khách hàng</TableCell>
-            <TableCell align="center">Ngày đặt</TableCell>
-            <TableCell align="right">Tổng đơn</TableCell>
-            <TableCell align="right">Tình trạng</TableCell>
-            <TableCell align="center">Hành động</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {billsData.map((row) => (
-            <TableRow
-              key={row.name}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {row.id}
-              </TableCell>
-              <TableCell align="right">{row.customerName}</TableCell>
-              <TableCell align="right">
-                {new Date(row.created_at ?? new Date()).toLocaleString(
-                  'vi-VI',
-                  {
-                    day: 'numeric',
-                    month: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                  }
-                )}
-              </TableCell>
-              <TableCell align="right">
-                {formatPrice(row?.totalPrice ?? 0)}
-              </TableCell>
-              <TableCell align="right">
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: row.state === 1 ? 'green' : 'red',
-                  }}
-                >
-                  {billStatusParse(row.state ?? -2)}
-                </Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Stack direction="row" spacing={2} justifyContent={'center'}>
-                  <Button
-                    variant="contained"
-                    onClick={() => handleViewBill(row)}
-                  >
-                    Xem
-                  </Button>
-                </Stack>
-              </TableCell>
+    <>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Mã đơn</TableCell>
+              <TableCell align="right">Khách hàng</TableCell>
+              <TableCell align="center">Ngày đặt</TableCell>
+              <TableCell align="right">Tổng đơn</TableCell>
+              <TableCell align="right">Tình trạng</TableCell>
+              <TableCell align="center">Hành động</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {billsData.map((row) => (
+              <TableRow
+                key={row.name}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {row.id}
+                </TableCell>
+                <TableCell align="right">{row.customerName}</TableCell>
+                <TableCell align="right">
+                  {new Date(row.created_at ?? new Date()).toLocaleString(
+                    'vi-VI',
+                    {
+                      day: 'numeric',
+                      month: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    }
+                  )}
+                </TableCell>
+                <TableCell align="right">
+                  {formatPrice(row?.totalPrice ?? 0)}
+                </TableCell>
+                <TableCell align="right">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: row.state === 1 ? 'green' : 'red',
+                    }}
+                  >
+                    {billStatusParse(row.state ?? -2)}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Stack direction="row" spacing={2} justifyContent={'center'}>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleViewBill(row)}
+                    >
+                      Xem
+                    </Button>
+                  </Stack>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {isBillEmpty && (
+        <Typography variant="body2">Không tồn tại hóa đơn nào.</Typography>
+      )}
+    </>
   );
 };
 

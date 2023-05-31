@@ -48,8 +48,6 @@ const handler = async (req: any, res: any) => {
     var orderType = 'billpayment';
     var locale = 'vn';
 
-    console.log('Server running...');
-
     var currCode = 'VND';
     var vnp_Params: any = {};
     vnp_Params['vnp_Version'] = '2.1.0';

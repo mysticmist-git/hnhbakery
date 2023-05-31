@@ -421,8 +421,8 @@ function Comments(props: any) {
               px: 2,
             }}
           >
-            {comments.items.map((comment: any) => (
-              <Grid item xs={12}>
+            {comments.items.map((comment: any, index: number) => (
+              <Grid item xs={12} key={index}>
                 <Grid
                   container
                   direction={'row'}

@@ -66,7 +66,7 @@ const MyApp = (props: AppProps) => {
               </Layout>
               <Snackbar
                 open={snackbarOpen}
-                autoHideDuration={6000}
+                autoHideDuration={3000}
                 onClose={handleSnackbarClose}
                 TransitionComponent={TransitionUp}
               >

@@ -8,14 +8,18 @@ import {
   Typography,
   Divider,
 } from '@mui/material';
-import { ProductObject } from '@/lib/models';
+import { ProductObject, ProductType, ProductTypeObject } from '@/lib/models';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import { ManageContext, useSnackbarService } from '@/lib/contexts';
 import { MyMultiValuePickerInput } from '@/components/Inputs';
-import { getCollection } from '@/lib/firestore/firestoreLib';
+import {
+  getCollection,
+  getCollectionWithQuery,
+} from '@/lib/firestore/firestoreLib';
+import { where } from 'firebase/firestore';
 
 const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
   //#region Hooks
@@ -71,35 +75,33 @@ const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const justGetProducts = await getCollection<ProductObject>('products');
-
-      if (justGetProducts.length === 0) {
-        handleSnackbarAlert(
-          'error',
-          'Không có sản phẩm, vui lòng thêm sản phẩm trước'
+      const activeProductTypes =
+        await getCollectionWithQuery<ProductTypeObject>(
+          'productTypes',
+          where('isActive', '==', true)
         );
 
-        dispatch({
-          type: ManageActionType.SET_CRUD_MODAL_MODE,
-          payload: false,
-        });
+      const activeProductTypeIds = activeProductTypes.map(
+        (productType) => productType.id
+      );
 
-        return;
-      }
+      const activeProducts = await getCollectionWithQuery<ProductObject>(
+        'products',
+        where('productType_id', 'in', activeProductTypeIds)
+      );
 
-      setProducts(() => [...justGetProducts] ?? []);
+      setProducts(() => activeProducts);
 
       if (['update', 'view'].includes(state.crudModalMode)) {
         const productId = state.displayingData?.product_id;
 
         if (!productId) return;
 
-        const referencedProduct = justGetProducts.find(
+        const referencedProduct = activeProducts.find(
           (product) => product.id === productId
         );
 
-        if (referencedProduct)
-          setSelectedProduct(() => ({ ...referencedProduct }));
+        if (referencedProduct) setSelectedProduct(() => referencedProduct);
       }
     };
 

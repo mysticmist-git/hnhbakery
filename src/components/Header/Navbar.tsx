@@ -197,8 +197,8 @@ function Navbar() {
     const pathname = router.pathname;
     let temp = initTabs.tabItems.findIndex((item) => {
       return item.href === pathname;
-    });
-    return temp;
+    })
+    return temp === -1 ? 0 : temp;
   }
 
   //#endregion

@@ -372,8 +372,8 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
           },
         }}
       >
-        {productBill.map((row: any) => (
-          <Grid item xs={12}>
+        {productBill.map((row: any, index: number) => (
+          <Grid item xs={12} key={index}>
             <Box
               sx={{
                 border: 3,

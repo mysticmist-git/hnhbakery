@@ -31,6 +31,7 @@ import {
 import { ManageContext } from '@/lib/contexts';
 import { getCollectionWithQuery } from '@/lib/firestore/firestoreLib';
 import { ProductTypeObject } from '@/lib/models';
+import { where } from 'firebase/firestore';
 
 //#region Types
 
@@ -78,12 +79,13 @@ const ProductForm = ({
       try {
         const docs = await getCollectionWithQuery<ProductTypeObject>(
           'productTypes',
+          where('isActive', '==', true)
         );
+
         const data = docs.map((doc) => {
-          const docData = doc.data();
           return {
             id: doc.id,
-            name: docData.name,
+            name: doc.name,
           };
         });
 
@@ -110,8 +112,8 @@ const ProductForm = ({
         setSelectedProductType(
           () =>
             productTypes.find(
-              (pt) => pt.id === displayingData.productType_id,
-            ) ?? productTypes[0],
+              (pt) => pt.id === displayingData.productType_id
+            ) ?? productTypes[0]
         );
       }
     }
@@ -156,7 +158,7 @@ const ProductForm = ({
 
   const referenceService: ReferenceServiceInterface = useMemo(
     () => new ReferenceServiceProxy(new ReferencesService()),
-    [],
+    []
   );
 
   // #endregion
