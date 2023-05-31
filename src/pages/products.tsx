@@ -759,15 +759,15 @@ const ProductList = memo((props: any) => {
         (item) => item.heading_value === 'typeCake'
       );
 
-      const productTypeIdChecked = productTypeFilter.children
+      const productTypeIdChecked = productTypeFilter?.children
         .filter((item) => item.isChecked)
         .map((item) => item.value);
 
-      if (productTypeIdChecked.length === 0) return [...productList];
+      if (productTypeIdChecked?.length === 0) return [...productList];
 
       const productTypeFilteredResult = [
         ...productList.filter((product) => {
-          return productTypeIdChecked.includes(product.productType_id);
+          return productTypeIdChecked?.includes(product.productType_id);
         }),
       ];
 
