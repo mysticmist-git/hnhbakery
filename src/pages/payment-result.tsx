@@ -129,7 +129,7 @@ const PaymentResult = () => {
                 alignItems={'start'}
                 spacing={2}
               >
-                <Grid item xs={5}>
+                <Grid item xs={'auto'}>
                   <Typography
                     align="left"
                     variant="h3"
@@ -138,7 +138,7 @@ const PaymentResult = () => {
                     Mã hóa đơn:
                   </Typography>
                 </Grid>
-                <Grid item xs={7}>
+                <Grid item xs={'auto'}>
                   <Typography
                     align="right"
                     variant="body1"
