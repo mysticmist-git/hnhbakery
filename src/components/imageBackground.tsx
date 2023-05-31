@@ -3,54 +3,60 @@ import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/system';
 import banh1 from '../assets/Carousel/3.jpg';
 import { SolidUpWhite } from './Decorate/DecorateDivider';
+import TopSlideInDiv_Loof from './Animation/Loof/TopSlideInDiv';
+import TopSlideInDiv_Appear from './Animation/Appear/TopSlideInDiv';
 
 const ImageBackground = (props: any) => {
   const theme = useTheme();
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '340px',
-        backgroundImage: `url(${banh1.src})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          bgcolor: alpha(theme.palette.common.black, 0.6),
-          position: 'relative',
-          backdropFilter: 'blur(1px)',
-        }}
-      >
-        {props.children}
-
-        <SolidUpWhite
-          sx={{
-            width: '100%',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
+    <TopSlideInDiv_Appear>
+      <TopSlideInDiv_Loof>
         <Box
           sx={{
-            height: '30px',
             width: '100%',
-            overflow: 'visible',
-            position: 'relative',
-            background: `linear-gradient(to bottom, ${alpha(
-              theme.palette.common.white,
-              1,
-            )}, ${alpha(theme.palette.primary.main, 1)})`,
+            height: '340px',
+            backgroundImage: `url(${banh1.src})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
-        ></Box>
-      </Box>
-    </Box>
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              bgcolor: alpha(theme.palette.common.black, 0.6),
+              position: 'relative',
+              backdropFilter: 'blur(1px)',
+            }}
+          >
+            {props.children}
+
+            <SolidUpWhite
+              sx={{
+                width: '100%',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+              }}
+            />
+            <Box
+              sx={{
+                height: '48px',
+                width: '100%',
+                overflow: 'visible',
+                position: 'relative',
+                background: `linear-gradient(to bottom, ${alpha(
+                  theme.palette.common.white,
+                  1,
+                )}, ${alpha(theme.palette.primary.main, 1)})`,
+              }}
+            ></Box>
+          </Box>
+        </Box>
+      </TopSlideInDiv_Loof>
+    </TopSlideInDiv_Appear>
   );
 };
 

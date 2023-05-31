@@ -6,6 +6,7 @@ import {
   CardActionArea,
   CardActions,
   Grid,
+  Skeleton,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -49,6 +50,11 @@ export default function CustomCardWithButton(props: any) {
 
   const [cardHover, setCardHover] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
     <Card
       onMouseOver={() => setCardHover(true)}
@@ -79,6 +85,13 @@ export default function CustomCardWithButton(props: any) {
                 position: 'relative',
               }}
             >
+              {isLoading ? (
+                <Skeleton
+                  variant="rectangular"
+                  width={'100%'}
+                  height={imageHeight}
+                />
+              ) : null}
               <Box
                 component={Image}
                 fill={true}
@@ -88,6 +101,7 @@ export default function CustomCardWithButton(props: any) {
                 alt=""
                 src={cardInfo.image}
                 loading="lazy"
+                onLoad={handleImageLoad}
               />
             </Box>
           </Grid>
