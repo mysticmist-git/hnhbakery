@@ -1,4 +1,4 @@
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -42,6 +42,11 @@ export function DanhSachSanPham_Item(props: any) {
     return appliedPrice * quantity;
   }, [quantity, discountPrice, price]);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
     <>
       <Grid
@@ -64,6 +69,16 @@ export function DanhSachSanPham_Item(props: any) {
               borderRadius: '8px',
             }}
           >
+            {isLoading ? (
+              <Skeleton
+                variant="rectangular"
+                width={'100%'}
+                height={'100%'}
+                sx={{
+                  minHeight: '184px',
+                }}
+              />
+            ) : null}
             <Box
               component={Image}
               src={image}
@@ -71,6 +86,7 @@ export function DanhSachSanPham_Item(props: any) {
               loading="lazy"
               fill={true}
               sx={isHover ? style.hover : style.normal}
+              onLoad={handleImageLoad}
             />
           </Box>
         </Grid>

@@ -31,7 +31,10 @@ function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
   const { name, image } = item;
 
   const [isHover, setIsHover] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
   return (
     <Box
       component={Button}

@@ -1,4 +1,4 @@
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState, useContext, memo } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg2 from '../assets/Decorate/bg2.png';
@@ -33,47 +33,66 @@ import SolidDownWhite, {
   DashUpWhite,
 } from '@/components/Decorate/DecorateDivider';
 import { GetServerSidePropsContext } from 'next';
-
+import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
+import FadeDiv from '@/components/Animation/Loof/FadeDiv';
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 // #region Carousel
 
 const CustomCarousel = memo((props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
-
   return (
-    <Carousel
-      animation="slide"
-      duration={props.duration}
-      indicatorContainerProps={{
-        style: {
-          position: 'absolute',
-          bottom: 0,
-          left: '0',
-          right: '0',
-          paddingTop: 0,
-          zIndex: 1,
-        },
-      }}
-    >
-      {context.carouselImages.map((image, i) => (
-        <Box
-          key={i}
-          sx={{ height: props.height, width: '100%', position: 'relative' }}
-        >
-          <Link href={image.href} style={{ textDecoration: 'none' }}>
-            <Image
-              fill={true}
-              src={image.src}
-              alt={image.alt}
-              loading="lazy"
-              style={{
-                objectFit: 'cover',
-              }}
-            />
-          </Link>
-        </Box>
-      ))}
-    </Carousel>
+    <>
+      <Carousel
+        animation="slide"
+        stopAutoPlayOnHover
+        autoPlay
+        duration={props.duration}
+        indicatorContainerProps={{
+          style: {
+            position: 'absolute',
+            bottom: 0,
+            left: '0',
+            right: '0',
+            paddingTop: 0,
+            zIndex: 1,
+          },
+        }}
+      >
+        {context.carouselImages.map((image, i) => (
+          <CustomCarouselItem key={i} height={props.height} image={image} />
+        ))}
+      </Carousel>
+    </>
+  );
+});
+
+const CustomCarouselItem = memo((props: any) => {
+  const { height, image } = props;
+  const [isLoading, setIsLoading] = useState(true);
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+  return (
+    <>
+      <Box sx={{ height: height, width: '100%', position: 'relative' }}>
+        <Link href={image.href} style={{ textDecoration: 'none' }}>
+          {isLoading ? (
+            <Skeleton variant="rectangular" width={'100%'} height={height} />
+          ) : null}
+          <Image
+            fill={true}
+            src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            onLoad={handleImageLoad}
+            style={{
+              objectFit: 'cover',
+            }}
+          />
+        </Link>
+      </Box>
+    </>
   );
 });
 //#endregion
@@ -299,8 +318,6 @@ const DangKyKhuyenMai = memo((props: any) => {
   );
 });
 
-//#endregion
-
 const Home = ({
   productTypesWithImageFetched: typeCakeState,
   bestSellerProductsWithImageFetched: bestSellerState,
@@ -375,58 +392,69 @@ const Home = ({
               backdropFilter: 'blur(1px)',
             }}
           >
-            <CustomCarousel height="48vh" duration={500} />
+            <TopSlideInDiv>
+              <CustomCarousel height="60vh" duration={500} />
+              <SolidDownWhite />
+            </TopSlideInDiv>
 
-            <SolidDownWhite />
+            <BottomSlideInDiv>
+              <FadeDiv>
+                <Box
+                  sx={{
+                    py: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <CustomCardSlider
+                    duration={1000}
+                    imageHeight="184px"
+                    descriptionHeight="32px"
+                    CustomCard={CustomCardWithButton}
+                    title={'Best Seller'}
+                    productList={bestSellerState}
+                    buttonOnclick={() => {}}
+                  />
+                  {bestSellerState.length <= 0 && (
+                    <Typography variant="h2">Không có dữ liệu</Typography>
+                  )}
+                </Box>
+              </FadeDiv>
 
-            <Box
-              sx={{
-                py: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <CustomCardSlider
-                duration={1000}
-                imageHeight="184px"
-                descriptionHeight="32px"
-                CustomCard={CustomCardWithButton}
-                title={'Best Seller'}
-                productList={bestSellerState}
-                buttonOnclick={() => {}}
-              />
-              {bestSellerState.length <= 0 && (
-                <Typography variant="h2">Không có dữ liệu</Typography>
-              )}
-            </Box>
-            <DashUpWhite />
-            <Box
-              sx={{
-                pb: 8,
-                px: { xs: 2, sm: 2, md: 4, lg: 8 },
-                backgroundColor: alpha(theme.palette.common.white, 0.7),
-                backdropFilter: 'blur(2px)',
-              }}
-            >
-              <TypeCake
-                title="Đa dạng loại bánh"
-                imageHeight="184px"
-                descriptionHeight="32px"
-              />
-            </Box>
-            <DashDownWhite />
-            <Box
-              sx={{
-                background: `linear-gradient(to bottom,${alpha(
-                  theme.palette.primary.main,
-                  0.05,
-                )}, ${alpha(theme.palette.primary.main, 1)})`,
-              }}
-            >
-              <DangKyKhuyenMai />
-            </Box>
+              <FadeDiv>
+                <DashUpWhite />
+                <Box
+                  sx={{
+                    pb: 8,
+                    px: { xs: 2, sm: 2, md: 4, lg: 8 },
+                    backgroundColor: alpha(theme.palette.common.white, 0.7),
+                    backdropFilter: 'blur(2px)',
+                  }}
+                >
+                  <TypeCake
+                    title="Đa dạng loại bánh"
+                    imageHeight="184px"
+                    descriptionHeight="32px"
+                  />
+                </Box>
+                <DashDownWhite />
+              </FadeDiv>
+
+              <FadeDiv>
+                <Box
+                  sx={{
+                    background: `linear-gradient(to bottom,${alpha(
+                      theme.palette.primary.main,
+                      0.05,
+                    )}, ${alpha(theme.palette.primary.main, 1)})`,
+                  }}
+                >
+                  <DangKyKhuyenMai />
+                </Box>
+              </FadeDiv>
+            </BottomSlideInDiv>
           </Box>
         </Box>
       </HomeContext.Provider>

@@ -3,6 +3,7 @@ import {
   Card,
   CardActionArea,
   Grid,
+  Skeleton,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -46,7 +47,10 @@ export default function CustomCard(props: any) {
   );
 
   const [cardHover, setCardHover] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
   return (
     <>
       <Card
@@ -78,6 +82,13 @@ export default function CustomCard(props: any) {
                   position: 'relative',
                 }}
               >
+                {isLoading ? (
+                  <Skeleton
+                    variant="rectangular"
+                    width={'100%'}
+                    height={imageHeight}
+                  />
+                ) : null}
                 <Box
                   component={Image}
                   fill={true}
@@ -87,6 +98,7 @@ export default function CustomCard(props: any) {
                   alt=""
                   src={cardInfo.image}
                   loading="lazy"
+                  onLoad={handleImageLoad}
                 />
               </Box>
             </Grid>

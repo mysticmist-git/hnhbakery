@@ -46,6 +46,8 @@ import ProductsContext, {
 import Image from 'next/image';
 import { ProductTypeObject } from '@/lib/models';
 import { useRouter } from 'next/router';
+import LeftSlideInDiv from '@/components/Animation/Appear/LeftSlideInDiv';
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 
 const DETAIL_PATH = '/product-detail';
 
@@ -1259,130 +1261,132 @@ const Products = ({
             </Grid>
           </ImageBackground>
 
-          <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'start'}
-              spacing={4}
-            >
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        backgroundImage: `url(${bg12.src})`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        width: 'auto',
-                        height: 'auto',
-                      }}
-                    >
-                      <TextField
-                        placeholder="Tìm kiếm loại bánh ngon nhất?"
-                        hiddenLabel
-                        fullWidth
-                        type="text"
-                        autoFocus
-                        variant="filled"
-                        maxRows="1"
-                        value={searchText}
-                        onChange={handleChangeSearch}
-                        onClick={handleClick}
-                        InputProps={{
-                          disableUnderline: true,
-                          style: {
-                            color: theme.palette.common.black,
-                          },
+          <BottomSlideInDiv>
+            <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+                spacing={4}
+              >
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <Grid item xs={12}>
+                      <Box
+                        sx={{
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          backgroundImage: `url(${bg12.src})`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          width: 'auto',
+                          height: 'auto',
                         }}
-                        inputProps={{
-                          sx: {
-                            textAlign: 'center',
-                            fontSize: theme.typography.body1.fontSize,
-                            color: theme.palette.common.black,
-                            fontWeight: theme.typography.body2.fontWeight,
-                            fontFamily: theme.typography.body2.fontFamily,
-                            backgroundColor: alpha(
-                              theme.palette.primary.main,
-                              0.2,
-                            ),
-                            backdropFilter: 'blur(2px)',
-                            border: 3,
-                            borderColor: theme.palette.secondary.main,
-                            py: 1.5,
-                            borderRadius: '8px',
-                            transition: 'all 0.2s ease-in-out',
-                            '&:hover': {
-                              backgroundColor: alpha(
-                                theme.palette.common.black,
-                                0.75,
-                              ),
-                              color: theme.palette.common.white,
-                              backdropFilter: 'blur(3px)',
+                      >
+                        <TextField
+                          placeholder="Tìm kiếm loại bánh ngon nhất?"
+                          hiddenLabel
+                          fullWidth
+                          type="text"
+                          autoFocus
+                          variant="filled"
+                          maxRows="1"
+                          value={searchText}
+                          onChange={handleChangeSearch}
+                          onClick={handleClick}
+                          InputProps={{
+                            disableUnderline: true,
+                            style: {
+                              color: theme.palette.common.black,
                             },
-                            '&:focus': {
+                          }}
+                          inputProps={{
+                            sx: {
+                              textAlign: 'center',
+                              fontSize: theme.typography.body1.fontSize,
+                              color: theme.palette.common.black,
+                              fontWeight: theme.typography.body2.fontWeight,
+                              fontFamily: theme.typography.body2.fontFamily,
                               backgroundColor: alpha(
-                                theme.palette.common.black,
-                                0.75,
+                                theme.palette.primary.main,
+                                0.2,
                               ),
-                              color: theme.palette.common.white,
-                              backdropFilter: 'blur(3px)',
+                              backdropFilter: 'blur(2px)',
+                              border: 3,
+                              borderColor: theme.palette.secondary.main,
+                              py: 1.5,
+                              borderRadius: '8px',
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                backgroundColor: alpha(
+                                  theme.palette.common.black,
+                                  0.75,
+                                ),
+                                color: theme.palette.common.white,
+                                backdropFilter: 'blur(3px)',
+                              },
+                              '&:focus': {
+                                backgroundColor: alpha(
+                                  theme.palette.common.black,
+                                  0.75,
+                                ),
+                                color: theme.palette.common.white,
+                                backdropFilter: 'blur(3px)',
+                              },
                             },
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              <Grid item md={3} xs={12}>
-                <Filter />
-              </Grid>
-
-              <Grid item md={9} xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                  spacing={2}
-                >
-                  <Grid item xs={12}>
-                    <Grid
-                      container
-                      direction={'row'}
-                      justifyContent={'space-between'}
-                      alignItems={'center'}
-                    >
-                      <Grid item width={{ sm: 'auto', xs: '100%' }}>
-                        <TypeView />
-                      </Grid>
-                      <Grid item width={{ sm: 'auto', xs: '100%' }}>
-                        <TypeSort />
-                      </Grid>
+                          }}
+                        />
+                      </Box>
                     </Grid>
                   </Grid>
+                </Grid>
 
-                  <Grid item xs={12}>
-                    <ProductList
-                      imageHeight={'20vh'}
-                      imageHeightList={'30vh'}
-                    />
+                <Grid item md={3} xs={12}>
+                  <Filter />
+                </Grid>
+
+                <Grid item md={9} xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                    spacing={2}
+                  >
+                    <Grid item xs={12}>
+                      <Grid
+                        container
+                        direction={'row'}
+                        justifyContent={'space-between'}
+                        alignItems={'center'}
+                      >
+                        <Grid item width={{ sm: 'auto', xs: '100%' }}>
+                          <TypeView />
+                        </Grid>
+                        <Grid item width={{ sm: 'auto', xs: '100%' }}>
+                          <TypeSort />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <ProductList
+                        imageHeight={'20vh'}
+                        imageHeightList={'30vh'}
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          </Box>
+            </Box>
+          </BottomSlideInDiv>
         </Box>
       </ProductsContext.Provider>
     </>
