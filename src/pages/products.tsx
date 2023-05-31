@@ -1274,7 +1274,6 @@ const Products = ({
                           hiddenLabel
                           fullWidth
                           type="text"
-                          autoFocus
                           variant="filled"
                           maxRows="1"
                           value={searchText}

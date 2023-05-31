@@ -378,7 +378,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       const data = await sendPaymentRequestToVNPay(reqData);
 
-      console.log('Data received from VNPay: ', data);
+      console.log('URL received from VNPay: ', data.url);
 
       window.location.href = data.url;
 

@@ -311,3 +311,17 @@ export const sendContact = async (form: Contact) => {
 };
 
 // #endregion
+
+export const updateBillState  = async (billId: string, state: number): Promise<boolean> => {
+  if (billId === '') return false;
+
+  if (![-1, 0, 1].includes(state)) return false;
+
+  try {
+    await updateDoc(doc(db, 'bills', billId), { state });
+  return true;
+  } catch (error) {
+    console.log(`Error update bill state `, error)
+    return false;
+  }
+}

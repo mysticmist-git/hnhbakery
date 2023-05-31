@@ -23,9 +23,13 @@ const numberSmallerTen = (theNumber: number) => {
   else return theNumber;
 };
 
-const vnp_TmnCode = 'SLC8HSYX';
-const vnp_HashSecret = 'WEDDYNUFAGHXDZZYACHJPKQVIPNGUKCW';
+// const vnp_TmnCode = 'SLC8HSYX';
+// const vnp_HashSecret = 'WEDDYNUFAGHXDZZYACHJPKQVIPNGUKCW';
+
+const vnp_TmnCode = 'O8YBCQTU';
+const vnp_HashSecret = 'EOHDCBBZGZLYFDLTNVCBPHBZUDZWNJBI';
 const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+
 var vnp_ReturnUrl = 'http://localhost:3000/payment-result';
 
 const handler = async (req: any, res: any) => {

@@ -1,8 +1,14 @@
 import { CaiKhungCoTitle } from '@/components/Layouts/components/CaiKhungCoTitle';
+
 import ImageBackground from '@/components/imageBackground';
+import { useSnackbarService } from '@/lib/contexts';
+import { updateBillState } from '@/lib/firestore/firestoreLib';
 import { Box, Button, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import { createContext, memo, useEffect, useState } from 'react';
+
+const MSG_ERROR_UPDATE_BILL =
+  'Đã có lỗi xảy ra trong quá trình cập nhật trạng thái đơn hàng';
 
 // #region Context
 interface PaymentResultContextType {
@@ -54,6 +60,7 @@ const resolveResponseCode = (responseCode: string) => {
 
 const PaymentResult = () => {
   const theme = useTheme();
+  const handlerSnackbarAlert = useSnackbarService();
 
   const [isSuccess, setIsSuccess] = useState<boolean>(true);
   const [responseMessage, setResponseMessage] = useState<string>('');
@@ -62,21 +69,26 @@ const PaymentResult = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const queryArgs: any = router.query;
+    const getPaymentResultAndUpdateBillState = async () => {
+      const queryArgs: any = router.query;
 
-    const { vnp_ResponseCode: responseCode, vnp_TxnRef: billId } = queryArgs;
+      const { vnp_ResponseCode: responseCode, vnp_TxnRef: billId } = queryArgs;
 
-    if (['00', '07'].includes(responseCode)) {
-      setIsSuccess(true);
-    } else {
-      setIsSuccess(false);
-    }
+      if (['00', '07'].includes(responseCode)) {
+        setIsSuccess(true);
+      const updateResult = await updateBillState(billId, 1);
 
-    setBillId(() => billId);
+      if (!updateResult) handlerSnackbarAlert('error', MSG_ERROR_UPDATE_BILL);
+      } else {
+        setIsSuccess(false);
+      }
 
-    const responseMessage = resolveResponseCode(responseCode);
+      setBillId(() => billId);
+      const responseMessage = resolveResponseCode(responseCode);
+      setResponseMessage(() => responseMessage);
+    };
 
-    setResponseMessage(() => responseMessage);
+    getPaymentResultAndUpdateBillState();
   });
 
   return (
