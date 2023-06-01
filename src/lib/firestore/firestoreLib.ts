@@ -28,29 +28,38 @@ import {
 import { memoize } from '../localLib/manage-modal';
 import { ProductObject } from '../models';
 import { filterDuplicates } from '../utilities';
+import { FirebaseError } from 'firebase/app';
 
 //#region Document Related Functions
 
+/**
+ * Gets a document from Firestore.
+ * @param {string} collectionName - The name of the collection to get the document from.
+ * @param {string} documentId - The id of the document to get.
+ * @return {Promise<DocumentData>} - A promise that resolves with the document data.  
+ *    If the document does not exist, the promise resolves with null. 
+ *    If the document does exist, the promise resolves with the document data.
+ */
 export const getDocFromFirestore = async (
   collectionName: string,
-  documentId: string,
+  documentId: string
 ): Promise<DocumentData> => {
   try {
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
     const docData = getDocFromQuerySnapshot(docSnap);
 
-    if (!docData) throw new Error('Doc data is null');
+    if (!docData) throw new FirebaseError('null-doc', 'Document not found');
 
     return docData;
   } catch (error: any) {
-    throw new Error(`Lỗi: ${error.message}`);
+    throw  error;
   }
 };
 
 export const addDocToFirestore = async (
   data: DocumentData,
-  collectionName: string,
+  collectionName: string
 ): Promise<DocumentReference<DocumentData>> => {
   try {
     delete data.id;
@@ -63,7 +72,7 @@ export const addDocToFirestore = async (
 
 export const addDocsToFirestore = async (
   data: DocumentData[],
-  collectionName: string,
+  collectionName: string
 ): Promise<DocumentReference<DocumentData>[]> => {
   try {
     const docRefs = [];
@@ -82,7 +91,7 @@ export const addDocsToFirestore = async (
 
 export async function updateDocToFirestore(
   data: DocumentData,
-  collectionName: string,
+  collectionName: string
 ) {
   // Null check
   if (!data) throw Error('Data is null');
@@ -97,7 +106,7 @@ export async function updateDocToFirestore(
 
 export const deleteDocFromFirestore = async (
   collectionName: string,
-  documentId: string,
+  documentId: string
 ) => {
   try {
     await deleteDoc(doc(db, collectionName, documentId));
@@ -119,7 +128,7 @@ export const deleteDocFromFirestore = async (
  */
 
 export const uploadImageToFirebaseStorage = async (
-  imageFile: any,
+  imageFile: any
 ): Promise<string> => {
   const storageRef = ref(storage, `images/${imageFile.name}`);
   const file = imageFile;
@@ -159,7 +168,7 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
     } catch (error) {
       throw new Error(`Error: ${error}`);
     }
-  },
+  }
 );
 
 export const getDownloadUrlFromFirebaseStorage = memoize(
@@ -174,7 +183,7 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
     } catch (error) {
       throw new Error(`Error: ${error}`);
     }
-  },
+  }
 );
 
 //#endregion
@@ -220,7 +229,7 @@ export const getCollectionWithQuery = async <T>(
  * @return {DocumentData[]} An array of DocumentData obtained from the QuerySnapshot.
  */
 export function getDocsFromQuerySnapshot(
-  querySnapshot: QuerySnapshot<DocumentData>,
+  querySnapshot: QuerySnapshot<DocumentData>
 ): DocumentData[] {
   // Null check
   if (!querySnapshot) return [];
@@ -239,7 +248,7 @@ export function getDocsFromQuerySnapshot(
 }
 
 export function getDocFromQuerySnapshot(
-  docSnapshot: DocumentSnapshot<DocumentData>,
+  docSnapshot: DocumentSnapshot<DocumentData>
 ): DocumentData | null {
   // Null check
   if (!docSnapshot) return null;
@@ -266,22 +275,22 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
     'batches',
     where('soldQuantity', '>=', minSoldQuantity),
     orderBy('soldQuantity', 'desc'),
-    limit(queryLimit),
+    limit(queryLimit)
   );
 
   const filterExpireBatchs = batches.filter(
-    (batch) => new Date(batch.EXP).getTime() > new Date().getTime(),
+    (batch) => new Date(batch.EXP).getTime() > new Date().getTime()
   );
 
   const productIds = filterDuplicates<string>(
-    filterExpireBatchs.map((doc) => doc.product_id),
+    filterExpireBatchs.map((doc) => doc.product_id)
   );
 
   if (productIds.length === 0) return [];
 
   const products = getCollectionWithQuery<ProductObject>(
     'products',
-    where(documentId(), 'in', productIds),
+    where(documentId(), 'in', productIds)
   );
   // Do something with the productTypes
 
@@ -312,16 +321,19 @@ export const sendContact = async (form: Contact) => {
 
 // #endregion
 
-export const updateBillState  = async (billId: string, state: number): Promise<boolean> => {
+export const updateBillState = async (
+  billId: string,
+  state: number
+): Promise<boolean> => {
   if (billId === '') return false;
 
   if (![-1, 0, 1].includes(state)) return false;
 
   try {
     await updateDoc(doc(db, 'bills', billId), { state });
-  return true;
+    return true;
   } catch (error) {
-    console.log(`Error update bill state `, error)
+    console.log(`Error update bill state `, error);
     return false;
   }
-}
+};

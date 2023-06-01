@@ -687,7 +687,7 @@ const Cart = () => {
       });
 
       displayCartItemsToView(temps);
-      handleSaveCart();
+      handleSaveCartSilent();
     } catch (error) {
       console.log(error);
     }
@@ -795,6 +795,15 @@ const Cart = () => {
     const result = await saveCart(productBill);
 
     handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  };
+
+  const handleSaveCartSilent = async () => {
+    if (isCartEmpty) {
+      handleSnackbarAlert('info', 'Giỏ hàng trống');
+      return;
+    }
+
+    await saveCart(productBill);
   };
 
   // #endregion

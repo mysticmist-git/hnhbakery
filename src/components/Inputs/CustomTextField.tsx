@@ -33,14 +33,14 @@ const CustomTextField = (props: any, ref: ForwardedRef<HTMLInputElement>) => {
               backgroundColor: theme.palette.common.white,
               boxShadow: `0px 0px 5px 2px ${alpha(
                 theme.palette.secondary.main,
-                0.3,
+                0.3
               )}`,
             },
             '&:focus': {
               backgroundColor: theme.palette.common.white,
               boxShadow: `0px 0px 5px 2px ${alpha(
                 theme.palette.secondary.main,
-                0.3,
+                0.3
               )}`,
             },
           },

@@ -8,14 +8,7 @@ import {
   AccordionDetails,
   Link,
 } from '@mui/material';
-import React, {
-  useState,
-  createContext,
-  useContext,
-  memo,
-  RefObject,
-  useRef,
-} from 'react';
+import React, { useState, createContext, useContext, memo } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import banh1 from '../assets/Carousel/3.jpg';
 import bfriday from '../assets/blackfriday.jpg';
@@ -25,6 +18,12 @@ import CustomTextField from '@/components/Inputs/CustomTextField';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import { CustomAccordionFrame } from '../components/Layouts/components/CustomAccordionFrame';
 import { CustomAccordionItem } from '../components/Layouts/components/CustomAccordionItem';
+import { useSnackbarService } from '@/lib/contexts';
+import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
+import { FirebaseError } from 'firebase/app';
+
+const MSG_NOTIFY_EMPTY_SEARCH_TEXT =
+  'Vui lòng nhập mã đơn hàng để tiến hành tìm kiếm';
 
 const ListBillItem = memo((props: any) => {
   const theme = useTheme();
@@ -49,7 +48,7 @@ const ListBillItem = memo((props: any) => {
             />
           ) : (
             <></>
-          ),
+          )
         )}
       </Grid>
     </Grid>
@@ -159,7 +158,7 @@ const ThongTinKhuyenMai = memo((props: any) => {
   const context = useContext(SearchContext);
   const heading_value = 'sale';
   const saleInfor = context.billInfor.find(
-    (item: any) => item.heading_value === heading_value,
+    (item: any) => item.heading_value === heading_value
   );
 
   const imageHeight = '240px';
@@ -397,8 +396,9 @@ const ListProductItem = memo((props: any) => {
       width={'100%'}
     >
       <Grid item width={'100%'} sx={{ bgcolor: theme.palette.common.black }}>
-        {context.productInfor.map((item: any, i: number) => (
+        {context.productInfor.map((item: any, index: number) => (
           <Accordion
+            key={index}
             sx={{
               '&.MuiPaper-root': {
                 backgroundColor: 'transparent',
@@ -785,15 +785,28 @@ const initSearchContext: SearchContextType = {
   productInfor: [],
 };
 
+interface SearchPageBill {}
+
 const SearchContext = createContext<SearchContextType>(initSearchContext);
 // #endregion
 
 const Search = () => {
+  //#region Hooks
+
   const theme = useTheme();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  //#region States
 
   const [billInforState, setBillInforState] = useState<any>(initBillInfor);
   const [productInforState, setProductInforState] =
     useState<any>(initProductInfor);
+
+  const [searchText, setSearchText] = useState<string>('');
+
+  //#endregion
 
   // #region scroll
 
@@ -801,6 +814,44 @@ const Search = () => {
     const top: number = 280;
     window.scrollTo({ top, behavior: 'smooth' });
   };
+
+  //#endregion
+
+  //#region Handlers
+
+  //#endregion
+
+  //#region
+
+  const handleProceedSearch: React.MouseEventHandler<
+    HTMLAnchorElement
+  > = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    console.log('Function running...');
+    if (searchText === '') {
+      handleSnackbarAlert('error', MSG_NOTIFY_EMPTY_SEARCH_TEXT);
+      return;
+    }
+
+    const billId = searchText;
+
+    try {
+      const gottenBill = await getDocFromFirestore('bills', billId);
+
+      console.log(gottenBill);
+    } catch (error: any) {
+      let message = '';
+      switch (error.code) {
+        case 'nul-doc':
+          message = 'Không tìm thấy hóa đơn';
+          break;
+        default:
+          message = 'Lỗi không biết';
+          break;
+      }
+      handleSnackbarAlert('error', message);
+    }
+  };
+
   //#endregion
 
   return (
@@ -879,6 +930,10 @@ const Search = () => {
           >
             <Grid item xs={true}>
               <CustomTextField
+                value={searchText}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchText(e.target.value)
+                }
                 onClick={handleClick}
                 fullWidth
                 placeholder="Mã hóa đơn, chính sách đổi trả, chính sách bảo mật, điều khoản dịch vụ,..."
@@ -888,6 +943,7 @@ const Search = () => {
             <Grid item>
               <CustomButton
                 sx={{ height: '100%', borderRadius: '8px', py: 1.5, px: 3 }}
+                onClick={handleProceedSearch}
               >
                 <Typography variant="button">Tìm kiếm</Typography>
               </CustomButton>
