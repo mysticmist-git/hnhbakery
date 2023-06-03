@@ -1,4 +1,4 @@
-import { Grid, Link, Typography } from '@mui/material';
+import { Grid, Link, TextField, Typography, alpha } from '@mui/material';
 import { Box } from '@mui/material';
 import { default as NextLink } from 'next/link';
 import { memo, useRef } from 'react';
@@ -72,6 +72,13 @@ const SignUpForm = ({
           <DatePicker
             inputRef={birthdayRef}
             defaultValue={dayjs(new Date('2000-01-01'))}
+            sx={{
+              bgcolor: theme.palette.common.white,
+              borderRadius: '8px',
+              border: 3,
+              borderColor: theme.palette.secondary.main,
+              overflow: 'hidden',
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>

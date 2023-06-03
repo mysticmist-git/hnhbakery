@@ -17,369 +17,54 @@ import ImageBackground from '@/components/imageBackground';
 import CustomTextField from '@/components/Inputs/CustomTextField';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import { CustomAccordionFrame } from '../components/Layouts/components/CustomAccordionFrame';
-import { CustomAccordionItem } from '../components/Layouts/components/CustomAccordionItem';
 import { useSnackbarService } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
 import { FirebaseError } from 'firebase/app';
+import { ListBillItem } from '../components/Search/ListBillItem';
+import { ChiTietHoaDon } from '../components/Search/ChiTietHoaDon';
+import { ThongTinGiaoHang } from '../components/Search/ThongTinGiaoHang';
+import { ThongTinKhuyenMai } from '../components/Search/ThongTinKhuyenMai';
 
 const MSG_NOTIFY_EMPTY_SEARCH_TEXT =
   'Vui lòng nhập mã đơn hàng để tiến hành tìm kiếm';
 
-const ListBillItem = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(SearchContext);
-
-  return (
-    <Grid
-      container
-      direction={'row'}
-      justifyContent={'center'}
-      alignItems={'center'}
-      width={'100%'}
-    >
-      <Grid item width={'100%'} sx={{ bgcolor: theme.palette.common.black }}>
-        {context.billInfor.map((item: any, i: number) =>
-          item.valid ? (
-            <CustomAccordionItem
-              key={i}
-              heading={item.heading}
-              children={item.content}
-              defaultExpanded={item.isOpen ? true : false}
-            />
-          ) : (
-            <></>
-          )
-        )}
-      </Grid>
-    </Grid>
-  );
-});
-
-const ChiTietHoaDon = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(SearchContext);
-  const heading_value = 'billDetail';
-  return (
-    <Grid container direction={'row'} justifyContent={'center'} spacing={1}>
-      {context.billInfor
-        .find((item: any) => item.heading_value === heading_value)
-        .items.map((item: any, i: number) => (
-          <Grid key={i} item xs={12}>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'space-between'}
-              alignItems={'center'}
-              sx={{
-                borderBottom: item.isDivider ? '1.5px solid' : 0,
-                borderColor: item.isDivider
-                  ? theme.palette.text.secondary
-                  : 'transparent',
-                my: item.isDivider ? 1.5 : 0,
-              }}
-            >
-              <Grid item>
-                <Typography variant="body2" color={theme.palette.common.black}>
-                  {item.heading}
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography
-                  variant="button"
-                  color={
-                    item.color == 'success'
-                      ? theme.palette.success.main
-                      : theme.palette.common.black
-                  }
-                >
-                  {typeof item.content === 'number'
-                    ? formatPrice(item.content)
-                    : item.content}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-        ))}
-    </Grid>
-  );
-});
-
-const ThongTinGiaoHang = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(SearchContext);
-  const heading_value = 'delivery';
-  return (
-    <Grid container direction={'row'} justifyContent={'center'} spacing={1}>
-      {context.billInfor
-        .find((item: any) => item.heading_value === heading_value)
-        .items.map((item: any, i: number) => (
-          <Grid key={i} item xs={12}>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'space-between'}
-              alignItems={'center'}
-              sx={{
-                borderBottom: item.isDivider ? '1.5px solid' : 0,
-                borderColor: item.isDivider
-                  ? theme.palette.text.secondary
-                  : 'transparent',
-                my: item.isDivider ? 1.5 : 0,
-              }}
-            >
-              <Grid item>
-                <Typography variant="body2" color={theme.palette.common.black}>
-                  {item.heading}
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography
-                  variant="button"
-                  color={
-                    item.color == 'success'
-                      ? theme.palette.success.main
-                      : theme.palette.common.black
-                  }
-                >
-                  {typeof item.content === 'number'
-                    ? formatPrice(item.content)
-                    : item.content}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-        ))}
-    </Grid>
-  );
-});
-
-const ThongTinKhuyenMai = memo((props: any) => {
-  const theme = useTheme();
-  const context = useContext(SearchContext);
-  const heading_value = 'sale';
-  const saleInfor = context.billInfor.find(
-    (item: any) => item.heading_value === heading_value
-  );
-
-  const imageHeight = '240px';
-
-  return (
-    <Grid container direction={'row'} justifyContent={'center'} spacing={1}>
-      <Grid item xs={12} height={imageHeight}>
-        <Box
-          height={'100%'}
-          width={'100%'}
-          component={'img'}
-          loading="lazy"
-          alt=""
-          src={saleInfor.image}
-          sx={{
-            objectFit: 'cover',
-          }}
-        />
-      </Grid>
-
-      <Grid
-        item
-        xs={12}
-        sx={{
-          borderBottom: '1.5px solid',
-          borderColor: theme.palette.text.secondary,
-          my: 1.5,
-        }}
-      ></Grid>
-
-      <Grid item xs={12}>
-        <Typography
-          align="center"
-          variant="body1"
-          color={theme.palette.secondary.main}
-        >
-          {saleInfor.name}
-        </Typography>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Typography
-          align="center"
-          variant="button"
-          color={theme.palette.secondary.main}
-        >
-          {saleInfor.description}
-        </Typography>
-      </Grid>
-
-      {saleInfor.items.map((item: any, i: number) => (
-        <Grid key={i} item xs={12}>
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'space-between'}
-            alignItems={'center'}
-            sx={{
-              borderBottom: item.isDivider ? '1.5px solid' : 0,
-              borderColor: item.isDivider
-                ? theme.palette.text.secondary
-                : 'transparent',
-              my: item.isDivider ? 1.5 : 0,
-            }}
-          >
-            <Grid item>
-              <Typography variant="body2" color={theme.palette.common.black}>
-                {item.heading}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography
-                variant="button"
-                color={
-                  item.color == 'success'
-                    ? theme.palette.success.main
-                    : theme.palette.common.black
-                }
-              >
-                {typeof item.content === 'number'
-                  ? formatPrice(item.content)
-                  : item.content}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-      ))}
-    </Grid>
-  );
-});
-
-const initBillInfor = [
-  {
-    heading: 'Chi tiết hóa đơn',
-    heading_value: 'billDetail',
-    content: ChiTietHoaDon,
-    valid: true,
-    isOpen: true,
-    items: [
-      {
-        heading: 'Mã hóa đơn:',
-        content: 'GUEST-123',
-      },
-      {
-        heading: 'Trạng thái:',
-        content: 'Thanh toán thành công',
-        color: 'success',
-      },
-      {
-        isDivider: true,
-      },
-      {
-        heading: 'Hình thức thanh toán:',
-        content: 'MoMo',
-      },
-      {
-        heading: 'Thời gian thanh toán:',
-        content: '07:30 07/01/2023',
-      },
-      {
-        heading: 'Ghi chú:',
-        content: 'Giảm 50% đường các loại bánh.',
-      },
-      {
-        isDivider: true,
-      },
-      {
-        heading: 'Tổng tiền:',
-        content: 1000000,
-      },
-      {
-        heading: 'Khuyến mãi:',
-        content: -500000,
-      },
-      {
-        isDivider: true,
-      },
-      {
-        heading: 'Thành tiền:',
-        content: 500000,
-      },
-    ],
+const initBillInfor = {
+  billDetail: {
+    bill_Id: 'GUEST-123',
+    bill_State: 'Thanh toán thành công',
+    bill_HinhThucThanhToan: 'MoMo',
+    bill_PaymentTime: '07:30 07/01/2023',
+    bill_Note: 'Giảm 50% đường các loại bánh.',
+    bill_TongTien: 1000000,
+    bill_KhuyenMai: 500000,
+    bill_ThanhTien: 500000,
   },
-  {
-    heading: 'Thông tin giao hàng',
-    heading_value: 'delivery',
-    content: ThongTinGiaoHang,
-    valid: true,
-    items: [
-      {
-        heading: 'Người giao hàng:',
-        content: 'Terisa',
-      },
-      {
-        heading: 'Số điện thoại:',
-        content: '0343214971',
-      },
-      {
-        heading: 'Bắt đầu:',
-        content: '07:30 07/01/2023',
-      },
-      {
-        heading: 'Kết thúc:',
-        content: '07:55 07/01/2023',
-      },
-      {
-        heading: 'Trạng thái:',
-        content: 'Giao hàng thành công',
-        color: 'success',
-      },
-      {
-        isDivider: true,
-      },
-      {
-        heading: 'Người nhận:',
-        content: 'Trường Huy',
-      },
-      {
-        heading: 'Số điện thoại:',
-        content: '0343214971',
-      },
-      {
-        heading: 'Thời gian đặt giao:',
-        content: '08:00 07/01/2023',
-      },
-      {
-        heading: 'Địa chỉ:',
-        content:
-          '157 Đ. Nguyễn Chí Thanh, Phường 12, Quận 5, Thành phố Hồ Chí Minh, Việt Nam',
-      },
-      {
-        heading: 'Ghi chú:',
-        content: 'Tới nơi nhấn chuông hoặc liên lạc qua SDT',
-      },
-    ],
+  deliveryDetail: {
+    deli_StaffName: 'Terisa',
+    deli_StaffPhone: '0343214971',
+    deli_StartAt: '07:30 07/01/2023',
+    deli_EndAt: '07:55 07/01/2023',
+    deli_State: 'Giao hàng thành công',
+    deli_CustomerName: 'Trường Huy',
+    deli_CustomerPhone: '0343214971',
+    deli_CustomerTime: '08:00 07/01/2023',
+    deli_CustomerAddress:
+      '157 Đ. Nguyễn Chí Thanh, Phường 12, Quận 5, Thành phố Hồ Chí Minh, Việt Nam',
+    deli_CustomerNote: 'Tới nơi nhấn chuông hoặc liên lạc qua SDT',
   },
-  {
-    heading: 'Thông tin khuyến mãi',
-    heading_value: 'sale',
-    content: ThongTinKhuyenMai,
-    valid: true,
-    image: bfriday.src,
-    name: 'SALE BLACK FRIDAY',
-    description: 'Giảm 50%, tối đa 500,000 đ',
-    items: [
-      {
-        heading: 'Mã code:',
-        content: 'BFD',
-      },
-      {
-        heading: 'Thời gian áp dụng:',
-        content: '06/01/2023 - 07/01/2023',
-      },
-      {
-        heading: 'Mô tả:',
-        content:
-          'Thứ Sáu Đen là tên gọi không chính thức cho ngày thứ sáu sau Lễ Tạ Ơn và được coi là ngày mở hàng cho mùa mua sắm Giáng sinh của Mỹ.',
-      },
-    ],
+  saleDetail: {
+    sale_Id: '123',
+    sale_Name: 'SALE BLACK FRIDAY',
+    sale_Code: 'BFD',
+    sale_Percent: 0.5,
+    sale_MaxSalePrice: 500000,
+    sale_Description:
+      'Thứ Sáu Đen là tên gọi không chính thức cho ngày thứ sáu sau Lễ Tạ Ơn và được coi là ngày mở hàng cho mùa mua sắm Giáng sinh của Mỹ.',
+    sale_StartAt: '06/01/2023',
+    sale_EndAt: '07/01/2023',
+    sale_Image: bfriday.src,
   },
-];
+};
 //#endregion
 
 //#region Danh sách sản phẩm
@@ -781,13 +466,14 @@ interface SearchContextType {
 }
 
 const initSearchContext: SearchContextType = {
-  billInfor: [],
+  billInfor: {},
   productInfor: [],
 };
 
 interface SearchPageBill {}
 
-const SearchContext = createContext<SearchContextType>(initSearchContext);
+export const SearchContext =
+  createContext<SearchContextType>(initSearchContext);
 // #endregion
 
 const Search = () => {
@@ -915,8 +601,7 @@ const Search = () => {
             variant="body2"
             color={theme.palette.common.black}
           >
-            Tìm kiếm hóa đơn, theo dõi đơn hàng, các chính sách, điều khoản dịch
-            vụ, …
+            Tìm kiếm hóa đơn, theo dõi đơn hàng, …
           </Typography>
           <Grid
             sx={{

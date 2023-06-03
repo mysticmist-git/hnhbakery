@@ -565,7 +565,7 @@ const CakeCard = memo((props: any) => {
           }}
           spacing={1}
         >
-          <Grid item>
+          <Grid item xs={isList ? 'auto' : 9}>
             <Grid
               container
               direction={'column'}
@@ -574,10 +574,21 @@ const CakeCard = memo((props: any) => {
               spacing={1}
               sx={{
                 height: '100%',
+                width: '100%',
               }}
             >
-              <Grid item>
-                <Typography variant="body1" color={theme.palette.common.black}>
+              <Grid item sx={{ width: '100%' }}>
+                <Typography
+                  variant="body1"
+                  color={theme.palette.common.black}
+                  sx={{
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {props.name ? props.name : productDefault.name}
                 </Typography>
                 <Typography
@@ -628,7 +639,7 @@ const CakeCard = memo((props: any) => {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item>
+          <Grid item xs={isList ? 'auto' : 'auto'}>
             <Box
               sx={{
                 bgcolor: theme.palette.secondary.main,
