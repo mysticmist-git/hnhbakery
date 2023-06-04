@@ -311,10 +311,10 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
                             fill={true}
                             sx={{
                               objectFit: 'cover',
-                              transition: 'all 0.2s ease-in-out',
-                              '&:hover': {
-                                cursor: 'pointer',
-                                transform: 'scale(1.2) rotate(5deg)',
+                              cursor: 'pointer',
+                              transition: 'transform 0.3s ease-in-out',
+                              ':hover': {
+                                transform: 'scale(1.3) rotate(5deg)',
                               },
                             }}
                           />
@@ -406,10 +406,10 @@ function ProductTable({ setProductBill, handleSaveCart }: any) {
                         fill={true}
                         sx={{
                           objectFit: 'cover',
-                          transition: 'all 0.2s ease-in-out',
-                          '&:hover': {
-                            cursor: 'pointer',
-                            transform: 'scale(1.2) rotate(5deg)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.3s ease-in-out',
+                          ':hover': {
+                            transform: 'scale(1.3) rotate(5deg)',
                           },
                         }}
                       />

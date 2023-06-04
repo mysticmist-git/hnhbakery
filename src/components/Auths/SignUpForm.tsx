@@ -1,15 +1,14 @@
-import { Grid, Link, Typography } from '@mui/material';
-import { Box } from '@mui/material';
-import { default as NextLink } from 'next/link';
-import { memo, useRef } from 'react';
-import theme from '@/styles/themes/lightTheme';
-import { CustomTextField, CustomTextFieldPassWord } from '../Inputs';
-import CustomButton from '../Inputs/Buttons/customButton';
+import { SignupData, SignupUser } from '@/lib/auth/auth';
 import { UserObject } from '@/lib/models/User';
+import theme from '@/styles/themes/lightTheme';
+import { Box, Grid, Link, TextField, Typography, alpha } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { Timestamp } from 'firebase/firestore';
-import { SignupData, SignupUser } from '@/lib/auth/auth';
+import { default as NextLink } from 'next/link';
+import { memo, useRef } from 'react';
+import { CustomTextField, CustomTextFieldPassWord } from '../Inputs';
+import CustomButton from '../Inputs/Buttons/customButton';
 
 const USER_ROLE_ID = 'user';
 

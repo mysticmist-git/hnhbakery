@@ -52,12 +52,10 @@ const LeftProfileBasicInformation = ({
           sx={{
             position: 'absolute',
             right: 0,
-            '&:hover': {
-              // Scale it bigger with animation
-              transform: 'scale(1.1)',
+            transition: 'transform 0.3s ease-in-out',
+            ':hover': {
+              transform: 'scale(1.3) rotate(5deg)',
             },
-            // Smooth animation
-            transition: '0.3s',
           }}
           onClick={handleEdit}
         >
