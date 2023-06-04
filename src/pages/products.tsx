@@ -1476,7 +1476,7 @@ async function fetchProductTypesWithLowestPrices(
 
 //#endregion
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
 
   const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(

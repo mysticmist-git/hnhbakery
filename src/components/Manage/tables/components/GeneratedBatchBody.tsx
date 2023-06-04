@@ -1,14 +1,12 @@
 import { ManageContext } from '@/lib/contexts';
-import theme from '@/styles/themes/lightTheme';
-import { TableRow, TableCell, Typography } from '@mui/material';
-import { memo, useContext, useEffect, useMemo, useState } from 'react';
-import { db } from '@/firebase/config';
-import { CollectionName } from '@/lib/models/utilities';
-import { DocumentData, doc, getDoc } from 'firebase/firestore';
-import RowActionButtons from './RowActionButtons';
-import { ManageContextType } from '@/lib/localLib/manage';
-import formatCurrency from '@/utilities/formatCurrency';
 import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
+import { ManageContextType } from '@/lib/localLib/manage';
+import theme from '@/styles/themes/lightTheme';
+import formatCurrency from '@/utilities/formatCurrency';
+import { TableCell, TableRow, Typography } from '@mui/material';
+import { DocumentData } from 'firebase/firestore';
+import { memo, useContext, useEffect, useState } from 'react';
+import RowActionButtons from './RowActionButtons';
 
 const GeneratedBatchTableBody = () => {
   const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
@@ -17,13 +15,14 @@ const GeneratedBatchTableBody = () => {
   useEffect(() => {
     // Load product names with productIds
     const getProductNames = async () => {
-      try {
-        const docs: DocumentData[] = await Promise.all(
-          state.mainDocs.map(async (document) => {
+      const docs: DocumentData[] = await Promise.all(
+        state.mainDocs.map(async (document) => {
+          try {
             const product = await getDocFromFirestore(
               'products',
               document.product_id
             );
+
             const productType = await getDocFromFirestore(
               'productTypes',
               product.productType_id
@@ -37,15 +36,22 @@ const GeneratedBatchTableBody = () => {
             } as DocumentData;
 
             console.log(updatedBatch);
-
             return updatedBatch;
-          })
-        );
+          } catch (error) {
+            console.log(error);
+            return { id: document.id };
+          }
+        })
+      );
 
-        // Filter isActive
-        const filterActiveDocs = !state.isDisplayActiveOnly
-          ? docs
-          : docs.filter(
+      console.log(docs);
+
+      // Filter isActive
+      const filterActiveDocs = !state.isDisplayActiveOnly
+        ? docs
+        : docs
+            .filter((doc) => Boolean(doc))
+            .filter(
               (doc) =>
                 new Date(doc.EXP).getTime() > new Date().getTime() &&
                 doc.soldQuantity < doc.totalQuantity &&
@@ -53,10 +59,9 @@ const GeneratedBatchTableBody = () => {
                 doc.productTypeIsActive
             );
 
-        setDisplayMainDocs(() => filterActiveDocs);
-      } catch (err) {
-        console.log('Err', err);
-      }
+      console.log(filterActiveDocs);
+
+      setDisplayMainDocs(() => filterActiveDocs);
     };
 
     getProductNames();

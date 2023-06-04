@@ -70,8 +70,16 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <DatePicker
+            format="DD/MM/YYYY"
             inputRef={birthdayRef}
             defaultValue={dayjs(new Date('2000-01-01'))}
+            sx={{
+              overflow: 'hidden',
+              bgcolor: theme.palette.common.white,
+              borderRadius: '8px',
+              border: 3,
+              borderColor: theme.palette.secondary.main,
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>

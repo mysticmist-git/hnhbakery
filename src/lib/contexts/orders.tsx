@@ -1,8 +1,8 @@
-import { Card, Typography, Chip } from '@mui/material';
+import formatPrice from '@/utilities/formatCurrency';
+import { Card, Chip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { BillObject } from '../models/Bill';
 import { BillDetailObject } from '../models/BillDetail';
-import formatPrice from '@/utilities/formatCurrency';
 
 export const billStatusParse = (state: number | undefined) => {
   switch (state) {

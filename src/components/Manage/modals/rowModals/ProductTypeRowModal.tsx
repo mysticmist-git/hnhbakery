@@ -1,20 +1,19 @@
-import { DocumentData, collection, doc, updateDoc } from 'firebase/firestore';
-import React, { memo, useContext, useEffect, useState } from 'react';
-import { deleteObject, ref } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
+import { DocumentData, doc, updateDoc } from 'firebase/firestore';
+import { deleteObject, ref } from 'firebase/storage';
+import React, { memo, useContext, useEffect, useState } from 'react';
 
-import RowModalLayout from './RowModalLayout';
-import { useSnackbarService } from '@/lib/contexts';
-import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/lib/contexts';
-import ProductTypeForm from '../forms/ProductTypeForm';
+import { ManageContext, useSnackbarService } from '@/lib/contexts';
 import {
-  getDownloadUrlsFromFirebaseStorage,
-  uploadImageToFirebaseStorage,
   addDocToFirestore,
+  getDownloadUrlsFromFirebaseStorage,
   updateDocToFirestore,
+  uploadImageToFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
+import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import ProductTypeForm from '../forms/ProductTypeForm';
+import RowModalLayout from './RowModalLayout';
 
 const ProductTypeRowModal = () => {
   //#region States
@@ -64,7 +63,7 @@ const ProductTypeRowModal = () => {
 
     async function ExecuteGetDownloadURLAndLoadImageToView() {
       downloadURL = await GetDownloadURLAndLoadImageToView(
-        state.displayingData!.image,
+        state.displayingData!.image
       );
 
       if (downloadURL) setOriginalFeaturedImageURL(() => downloadURL);
@@ -90,7 +89,7 @@ const ProductTypeRowModal = () => {
   }
 
   async function GetDownloadURLAndLoadImageToView(
-    image: string,
+    image: string
   ): Promise<string | null> {
     // Null check
     if (!image || image.length === 0) return null;
@@ -134,14 +133,14 @@ const ProductTypeRowModal = () => {
     if (featuredImageFile) {
       try {
         const downloadURL = await uploadImageToFirebaseStorage(
-          featuredImageFile,
+          featuredImageFile
         );
 
         // Update document image
         const docRef = doc(
           db,
           state.selectedTarget?.collectionName!,
-          state.displayingData.id,
+          state.displayingData.id
         );
 
         await updateDoc(docRef, {
@@ -316,7 +315,7 @@ const ProductTypeRowModal = () => {
     // Check if data changed
     const dataChanged = checkIfDataChanged(
       originalDisplayingData,
-      state.displayingData,
+      state.displayingData
     );
 
     if (!imageChanged && !dataChanged) {
