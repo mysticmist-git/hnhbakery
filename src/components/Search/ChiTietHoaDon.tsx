@@ -53,8 +53,21 @@ export const ChiTietHoaDon = memo((props: any) => {
             </Typography>
           </Grid>
           <Grid item>
-            <Typography variant="button" color={theme.palette.success.main}>
-              {bill_State}
+            <Typography
+              variant="button"
+              color={
+                bill_State == 1
+                  ? theme.palette.success.main
+                  : bill_State == 0
+                  ? theme.palette.error.main
+                  : theme.palette.common.black
+              }
+            >
+              {bill_State == 1
+                ? 'Thanh toán thành công'
+                : bill_State == 0
+                ? 'Chờ thanh toán'
+                : 'Hủy đơn hàng'}
             </Typography>
           </Grid>
         </Grid>

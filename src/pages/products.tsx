@@ -500,15 +500,17 @@ const CakeCard = memo((props: any) => {
     cardNormal: {
       width: '100%',
       height: '100%',
-      transition: 'transform 0.25s ease-in-out',
+      transition: 'transform 0.3s ease-in-out',
       objectFit: 'cover',
+      cursor: 'pointer',
     },
     cardHovered: {
       width: '100%',
       height: '100%',
-      transition: 'transform 0.4s ease-in-out',
-      transform: 'scale(1.3)',
+      transition: 'transform 0.3s ease-in-out',
+      transform: 'scale(1.3) rotate(5deg)',
       objectFit: 'cover',
+      cursor: 'pointer',
     },
   };
 

@@ -27,12 +27,12 @@ export const ListBillItem = memo((props: any) => {
         <CustomAccordionItem
           heading={'Thông tin giao hàng'}
           children={ThongTinGiaoHang}
-          defaultExpanded={false}
+          defaultExpanded={true}
         />
         <CustomAccordionItem
           heading={'Thông tin khuyến mãi'}
           children={ThongTinKhuyenMai}
-          defaultExpanded={false}
+          defaultExpanded={true}
         />
       </Grid>
     </Grid>

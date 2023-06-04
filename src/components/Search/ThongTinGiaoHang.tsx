@@ -115,8 +115,21 @@ export const ThongTinGiaoHang = memo((props: any) => {
             </Typography>
           </Grid>
           <Grid item>
-            <Typography variant="button" color={theme.palette.success.main}>
-              {deli_State}
+            <Typography
+              variant="button"
+              color={
+                deli_State == 1
+                  ? theme.palette.success.main
+                  : deli_State == 0
+                  ? theme.palette.error.main
+                  : theme.palette.common.black
+              }
+            >
+              {deli_State == 1
+                ? 'Giao hàng thành công'
+                : deli_State == 0
+                ? 'Đang giao hàng'
+                : 'Giao hàng thất bại'}
             </Typography>
           </Grid>
         </Grid>

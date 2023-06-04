@@ -32,18 +32,18 @@ export default function CustomCard(props: any) {
       cardNormal: {
         width: '100%',
         height: imageHeight,
-        transition: 'transform 0.25s ease-in-out',
+        transition: 'transform 0.3s ease-in-out',
         objectFit: 'cover',
       },
       cardHovered: {
         width: '100%',
         height: imageHeight,
-        transition: 'transform 0.25s ease-in-out',
-        transform: 'scale(1.5)',
+        transition: 'transform 0.3s ease-in-out',
+        transform: 'scale(1.5) rotate(5deg)',
         objectFit: 'cover',
       },
     }),
-    [imageHeight],
+    [imageHeight]
   );
 
   const [cardHover, setCardHover] = useState(false);
