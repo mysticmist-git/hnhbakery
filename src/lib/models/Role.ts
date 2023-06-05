@@ -1,8 +1,8 @@
-import { DocumentData } from 'firebase/firestore';
+import BaseObject from './BaseObject';
 
-export interface Role extends DocumentData {
-    id: string;
-    name: string;
-    isActive: true;
-    right_Ids: string[];
+export interface Role extends BaseObject {
+  id: string;
+  name: string;
+  isActive: true;
+  right_Ids: string[];
 }

@@ -1,20 +1,16 @@
-import theme from '@/styles/themes/lightTheme';
-import { Wysiwyg, Delete } from '@mui/icons-material';
-import { Box } from '@mui/system';
-import { DocumentData, doc } from 'firebase/firestore';
-import { TableActionButton } from '../TableActionButton';
 import { ManageContext } from '@/lib/contexts';
-import { memo, useContext } from 'react';
 import { ManageContextType } from '@/lib/localLib/manage';
+import BaseObject from '@/lib/models/BaseObject';
+import theme from '@/styles/themes/lightTheme';
+import { Delete, Wysiwyg } from '@mui/icons-material';
 import { Typography } from '@mui/material';
+import { Box } from '@mui/system';
+import { memo, useContext } from 'react';
+import { TableActionButton } from '../TableActionButton';
 
-const RowActionButtons = ({ doc }: { doc: DocumentData }) => {
-  const {
-    state,
-    dispatch,
-    handleViewRow,
-    handleDeleteRowOnFirestore: handleDeleteRow,
-  } = useContext<ManageContextType>(ManageContext);
+const RowActionButtons = ({ doc }: { doc: BaseObject }) => {
+  const { handleViewRow, handleDeleteRowOnFirestore: handleDeleteRow } =
+    useContext<ManageContextType>(ManageContext);
 
   return (
     <Box

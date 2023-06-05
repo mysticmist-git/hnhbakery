@@ -1,5 +1,5 @@
 import { db, storage } from '@/firebase/config';
-import { DocumentData, doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
 import React, { memo, useContext, useEffect, useState } from 'react';
 
@@ -12,6 +12,8 @@ import {
 } from '@/lib/firestore/firestoreLib';
 import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
 import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { ProductTypeObject } from '@/lib/models';
+import BaseObject from '@/lib/models/BaseObject';
 import ProductTypeForm from '../forms/ProductTypeForm';
 import RowModalLayout from './RowModalLayout';
 
@@ -26,7 +28,7 @@ const ProductTypeRowModal = () => {
    * If this changed to local URL, that's mean we need to update the image
    */
   const [originalDisplayingData, setOriginalDisplayingData] =
-    useState<DocumentData | null>(null);
+    useState<BaseObject | null>(null);
   const [originalFeaturedImageURL, setOriginalFeaturedImageURL] = useState<
     string | null
   >(null);
@@ -59,11 +61,14 @@ const ProductTypeRowModal = () => {
 
     setOriginalDisplayingData(() => state.displayingData);
 
+    const displayingProductType: ProductTypeObject =
+      state.displayingData as ProductTypeObject;
+
     let downloadURL: string | null = null;
 
     async function ExecuteGetDownloadURLAndLoadImageToView() {
       downloadURL = await GetDownloadURLAndLoadImageToView(
-        state.displayingData!.image
+        displayingProductType!.image
       );
 
       if (downloadURL) setOriginalFeaturedImageURL(() => downloadURL);
@@ -114,12 +119,17 @@ const ProductTypeRowModal = () => {
   }
 
   async function updateImageToFirebaseStorage() {
+    if (!state.displayingData) throw new Error('Null displaying data');
+
     if (!checkIfImageChanged()) return;
 
+    const displayingProductType: ProductTypeObject =
+      state.displayingData as ProductTypeObject;
+
     // Remove old image from storage
-    if (state.displayingData?.image) {
+    if (displayingProductType.image) {
       try {
-        const imageRef = ref(storage, state.displayingData.image);
+        const imageRef = ref(storage, displayingProductType.image);
         await deleteObject(imageRef);
       } catch (error) {
         console.log('Error: ', error);
@@ -140,7 +150,7 @@ const ProductTypeRowModal = () => {
         const docRef = doc(
           db,
           state.selectedTarget?.collectionName!,
-          state.displayingData.id
+          displayingProductType.id
         );
 
         await updateDoc(docRef, {
@@ -210,8 +220,11 @@ const ProductTypeRowModal = () => {
       return;
     }
 
+    const displayingProductType: ProductTypeObject =
+      state.displayingData as ProductTypeObject;
+
     // Check product type name if it is empty or not
-    if (!state.displayingData.name || state.displayingData.name === '') {
+    if (!displayingProductType.name || displayingProductType.name === '') {
       handleSnackbarAlert('error', 'Vui lòng nhập tên loại sản phẩm');
       return;
     }
@@ -243,6 +256,8 @@ const ProductTypeRowModal = () => {
 
       // Add new document to Firestore
       const docRef = await addDocToFirestore(data, collectionName);
+
+      if (!state.mainDocs) throw new Error('Null main docs');
 
       // Add new row to table data
       dispatch({
@@ -303,8 +318,11 @@ const ProductTypeRowModal = () => {
       return;
     }
 
+    const productTypeObject: ProductTypeObject =
+      state.displayingData as ProductTypeObject;
+
     // Check product type name if it is empty or not
-    if (!state.displayingData.name || state.displayingData.name === '') {
+    if (!productTypeObject.name || productTypeObject.name === '') {
       handleSnackbarAlert('error', 'Vui lòng nhập tên loại sản phẩm');
       return;
     }

@@ -1,4 +1,22 @@
+import { MyMultiValuePickerInput } from '@/components/Inputs';
+import RowModal from '@/components/Manage/modals/rowModals/RowModal';
+import { CustomDataTable } from '@/components/Manage/tables';
+import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
 import { db } from '@/firebase/config';
+import { useSnackbarService } from '@/lib/contexts';
+import { ManageContext } from '@/lib/contexts/manageContext';
+import { getCollection } from '@/lib/firestore/firestoreLib';
+import {
+  ManageAction,
+  ManageActionType,
+  ManageState,
+  crudTargets,
+  generateDefaultRow,
+  manageReducer,
+} from '@/lib/localLib/manage';
+import BaseObject from '@/lib/models/BaseObject';
+import { CollectionName, Nameable } from '@/lib/models/utilities';
+import { Add } from '@mui/icons-material';
 import {
   Autocomplete,
   Box,
@@ -17,27 +35,10 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { DocumentData, doc, deleteDoc } from 'firebase/firestore';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { deleteDoc, doc } from 'firebase/firestore';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
-import { Add } from '@mui/icons-material';
-import { CollectionName } from '@/lib/models/utilities';
-import { getCollection } from '@/lib/firestore/firestoreLib';
-import RowModal from '@/components/Manage/modals/rowModals/RowModal';
-import { CustomDataTable } from '@/components/Manage/tables';
-import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
-import {
-  manageReducer,
-  ManageActionType,
-  crudTargets,
-  ManageState,
-  generateDefaultRow,
-} from '@/lib/localLib/manage';
-import { MyMultiValuePickerInput } from '@/components/Inputs';
-import { useSnackbarService } from '@/lib/contexts';
-import { ManageContext } from '@/lib/contexts/manageContext';
+import React, { useEffect, useMemo, useReducer, useState } from 'react';
 
 //#region Constants
 
@@ -45,10 +46,10 @@ const LOADING_TEXT = 'Loading...';
 const PATH = '/manager/manage';
 
 const initManageState: ManageState = {
-  mainDocs: [],
+  mainDocs: null,
   searchText: '',
   mainCollectionName: CollectionName.None,
-  selectedTarget: crudTargets[0],
+  selectedTarget: null,
   displayingData: null,
   loading: false,
   dialogOpen: false,
@@ -69,7 +70,9 @@ export default function Manage({
 }) {
   //#region States
 
-  const [state, dispatch] = useReducer(manageReducer, {
+  const [state, dispatch] = useReducer<
+    React.Reducer<ManageState, ManageAction>
+  >(manageReducer, {
     ...initManageState,
     selectedTarget:
       crudTargets.find((t) => t.collectionName === paramCollectionName) ??
@@ -97,7 +100,9 @@ export default function Manage({
   }, [state.selectedTarget]);
 
   useEffect(() => {
-    const mainDocs = JSON.parse(paramMainDocs) as DocumentData[];
+    const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
+
+    if (!mainDocs) return;
 
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
@@ -106,8 +111,10 @@ export default function Manage({
   }, [paramMainDocs]);
 
   useEffect(() => {
+    if (!state.selectedTarget) return;
+
     router.push(
-      `${PATH}?collectionName=${state.selectedTarget.collectionName}`,
+      `${PATH}?collectionName=${state.selectedTarget.collectionName}`
     );
   }, [state.selectedTarget]);
 
@@ -119,7 +126,7 @@ export default function Manage({
     dispatch({
       type: ManageActionType.SET_SELECTED_TARGET,
       payload: crudTargets.find(
-        (t) => t.collectionName === paramCollectionName,
+        (t) => t.collectionName === paramCollectionName
       ),
     });
 
@@ -131,6 +138,8 @@ export default function Manage({
   //#region Functions
 
   const resetDisplayingData = () => {
+    if (!state.selectedTarget) return;
+
     const collectionName = state.selectedTarget.collectionName;
     if (collectionName === CollectionName.None) return;
 
@@ -158,11 +167,13 @@ export default function Manage({
   }, [state.selectedTarget]);
 
   const isTableEmpty = useMemo(() => {
-    return state.mainDocs.length === 0;
+    return state.mainDocs?.length === 0;
   }, [state.mainDocs]);
 
   const namesForSearchBar = useMemo(() => {
-    return state.mainDocs.map((d: DocumentData) => d.name);
+    return state.mainDocs?.map((d) => {
+      return (d as Nameable).name;
+    });
   }, [state.mainDocs]);
 
   // #endregion
@@ -220,7 +231,7 @@ export default function Manage({
     });
   };
 
-  const handleViewRow = (doc: DocumentData) => {
+  const handleViewRow = (doc: BaseObject) => {
     dispatch({
       type: ManageActionType.SET_CRUD_MODAL_MODE,
       payload: 'view',
@@ -256,6 +267,9 @@ export default function Manage({
     const id = state.deletingId;
 
     try {
+      if (!id) return;
+      if (!state.selectedTarget) return;
+
       await deleteDoc(doc(db, state.selectedTarget.collectionName, id));
       console.log('Document deleted successfully!');
       handleSnackbarAlert('success', 'Xóa thành công');
@@ -268,10 +282,12 @@ export default function Manage({
       payload: false,
     });
 
+    if (!state.mainDocs) return;
+
     // Remove row from table
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
-      payload: state.mainDocs.filter((doc: DocumentData) => doc.id !== id),
+      payload: state.mainDocs.filter((doc: BaseObject) => doc.id !== id),
     });
     dispatch({
       type: ManageActionType.SET_DELETING_ID,
@@ -290,7 +306,11 @@ export default function Manage({
     });
   };
 
-  const handleSearchFilter = (docs: DocumentData[]) => {
+  const handleSearchFilter = <T extends BaseObject & Nameable>(
+    docs: T[] | null
+  ): T[] | null => {
+    if (!docs) return null;
+
     if (
       !state.searchText ||
       state.searchText.length === 0 ||
@@ -347,7 +367,7 @@ export default function Manage({
         <MyMultiValuePickerInput
           label="Kho"
           options={crudTargets.map((target) => target.label)}
-          value={state.selectedTarget.label}
+          value={state.selectedTarget?.label}
           onChange={(value) =>
             dispatch({
               type: ManageActionType.SET_SELECTED_TARGET,
@@ -367,14 +387,14 @@ export default function Manage({
           sx={{
             display: 'flex',
             justifyContent:
-              state.selectedTarget.collectionName !== 'batches'
+              state.selectedTarget?.collectionName !== 'batches'
                 ? 'space-between'
                 : 'end',
             alignItems: 'center',
             my: '1rem',
           }}
         >
-          {state.selectedTarget.collectionName !== 'batches' && (
+          {state.selectedTarget?.collectionName !== 'batches' && (
             <Autocomplete
               freeSolo
               sx={{
@@ -382,7 +402,7 @@ export default function Manage({
               }}
               id="search-bar"
               disableClearable
-              options={namesForSearchBar}
+              options={namesForSearchBar ?? []}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -504,7 +524,7 @@ export default function Manage({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   context.res.setHeader(
     'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59',
+    'public, s-maxage=10, stale-while-revalidate=59'
   );
 
   // Extract the collection name from the query parameter of the URL.
@@ -524,7 +544,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   // Get the documents from the specified collection.
-  const rawMainDocs = await getCollection<DocumentData>(collectionName);
+  const rawMainDocs = await getCollection<BaseObject>(collectionName);
   const mainDocs = JSON.stringify(rawMainDocs);
 
   console.group(rawMainDocs);

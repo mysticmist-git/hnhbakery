@@ -1,41 +1,42 @@
 import { Box, Grid, Skeleton, Typography, useTheme } from '@mui/material';
-import React, { useEffect, useState, useContext, memo } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
-import bg2 from '../assets/Decorate/bg2.png';
 import bg10 from '../assets/Decorate/bg10.png';
+import bg2 from '../assets/Decorate/bg2.png';
 
-import { alpha } from '@mui/system';
-import CustomTextField from '@/components/Inputs/CustomTextField';
-import Carousel from 'react-material-ui-carousel';
-import { ProductObject, ProductTypeObject } from '@/lib/models';
-import {
-  getBestSellterProducts,
-  getCollection,
-  getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
-import Link from 'next/link';
-import Image from 'next/image';
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
+import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
+import FadeDiv from '@/components/Animation/Loof/FadeDiv';
+import SolidDownWhite, {
+  DashDownWhite,
+  DashUpWhite,
+} from '@/components/Decorate/DecorateDivider';
 import { CustomButton } from '@/components/Inputs/Buttons';
+import CustomTextField from '@/components/Inputs/CustomTextField';
 import {
   CustomCard,
   CustomCardSlider,
   CustomCardWithButton,
 } from '@/components/Layouts/components';
 import {
-  HomeContext,
   BestSellerItem,
-  TypeCakeItem,
-  HomeContextType,
   CarouselImageItem,
+  HomeContext,
+  HomeContextType,
+  TypeCakeItem,
 } from '@/lib/contexts/homeContext';
-import SolidDownWhite, {
-  DashDownWhite,
-  DashUpWhite,
-} from '@/components/Decorate/DecorateDivider';
+import {
+  getBestSellterProducts,
+  getCollection,
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
+import { alpha } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
-import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
-import FadeDiv from '@/components/Animation/Loof/FadeDiv';
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
+import Image from 'next/image';
+import Link from 'next/link';
+import Carousel from 'react-material-ui-carousel';
+
 // #region Carousel
 
 const CustomCarousel = memo((props: any) => {
@@ -318,13 +319,33 @@ const DangKyKhuyenMai = memo((props: any) => {
   );
 });
 
-const Home = ({
-  productTypesWithImageFetched: typeCakeState,
-  bestSellerProductsWithImageFetched: bestSellerState,
-}: {
+const TEXT_SERVER_ERROR = 'Đã có lỗi phía Server';
+
+interface HomeProps {
+  isSuccess: boolean;
   productTypesWithImageFetched: TypeCakeItem[];
   bestSellerProductsWithImageFetched: BestSellerItem[];
-}) => {
+}
+
+const Home = ({
+  isSuccess,
+  productTypesWithImageFetched: typeCakeState,
+  bestSellerProductsWithImageFetched: bestSellerState,
+}: HomeProps) => {
+  if (!isSuccess)
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 600,
+        }}
+      >
+        {TEXT_SERVER_ERROR}
+      </Box>
+    );
+
   //#region States
 
   const [carouselImagesState, setCarouselImagesState] = useState<
@@ -346,7 +367,7 @@ const Home = ({
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
       const images = await Promise.all(
-        imagePaths.map((path) => import(`../assets/Carousel/${path}`)),
+        imagePaths.map((path) => import(`../assets/Carousel/${path}`))
       );
 
       setCarouselImagesState(() =>
@@ -356,7 +377,7 @@ const Home = ({
             alt: '',
             href: '#',
           };
-        }),
+        })
       );
     };
 
@@ -447,7 +468,7 @@ const Home = ({
                   sx={{
                     background: `linear-gradient(to bottom,${alpha(
                       theme.palette.primary.main,
-                      0.05,
+                      0.05
                     )}, ${alpha(theme.palette.primary.main, 1)})`,
                   }}
                 >
@@ -465,7 +486,7 @@ const Home = ({
 //#region Local Functions
 
 async function fetchTypeCakesAndGetTheirImagesToo(
-  productTypes: ProductTypeObject[],
+  productTypes: ProductTypeObject[]
 ): Promise<TypeCakeItem[]> {
   // Get image
   const promises = productTypes.map(async (type) => ({
@@ -482,12 +503,12 @@ async function fetchTypeCakesAndGetTheirImagesToo(
         name: type.name,
         description: type.description,
         href: `/products?product_type=${type.id}`,
-      } as TypeCakeItem),
+      } as TypeCakeItem)
   );
 }
 
 async function fetchBestSellerProductsAndTheirImagesToo(
-  bestSellerProducts: ProductObject[],
+  bestSellerProducts: ProductObject[]
 ): Promise<BestSellerItem[]> {
   // Get images
   const promises = bestSellerProducts.map(async (product) => ({
@@ -504,7 +525,7 @@ async function fetchBestSellerProductsAndTheirImagesToo(
         name: product.name,
         description: product.description,
         href: `/product-detail?id=${product.id}`,
-      } as BestSellerItem),
+      } as BestSellerItem)
   );
 }
 
@@ -513,21 +534,34 @@ async function fetchBestSellerProductsAndTheirImagesToo(
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   context.res.setHeader(
     'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59',
+    'public, s-maxage=10, stale-while-revalidate=59'
   );
+  let productTypesWithImageFetched;
+  let bestSellerProductsWithImageFetched;
 
-  const productTypes = await getCollection<ProductTypeObject>('productTypes');
-  const bestSellerProducts = await getBestSellterProducts();
+  try {
+    const productTypes = await getCollection<ProductTypeObject>('productTypes');
+    const bestSellerProducts = await getBestSellterProducts();
 
-  const productTypesWithImageFetched = await fetchTypeCakesAndGetTheirImagesToo(
-    productTypes,
-  );
+    productTypesWithImageFetched = await fetchTypeCakesAndGetTheirImagesToo(
+      productTypes
+    );
 
-  const bestSellerProductsWithImageFetched =
-    await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
+    bestSellerProductsWithImageFetched =
+      await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
+  } catch (error: any) {
+    console.log(error);
+    return {
+      props: {
+        isSuccess: false,
+        message: error.message,
+      },
+    };
+  }
 
   return {
     props: {
+      isSuccess: true,
       productTypesWithImageFetched,
       bestSellerProductsWithImageFetched,
     },

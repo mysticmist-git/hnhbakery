@@ -1,18 +1,3 @@
-import { DocumentData } from 'firebase/firestore';
-import Product from './Product';
-import ProductType from './ProductType';
-
-// export type UnionType = Product | ProductType | Batch | null;
-
-/**
- * Define a general interface for all collection object
- * Such as ProductTypeObjet
- */
-export interface CollectionObj {
-  collectionName: string;
-  docs: DocumentData[];
-}
-
 export enum CollectionName {
   ProductTypes = 'productTypes',
   Brands = 'brands',
@@ -34,4 +19,12 @@ export enum CollectionName {
   Right_Roles = 'right_Roles',
   Rights = 'rights',
   None = 'None',
+}
+
+export interface Nameable {
+  name: string;
+}
+
+export interface IsActivable {
+  isActive: boolean;
 }

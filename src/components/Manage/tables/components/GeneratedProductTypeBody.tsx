@@ -1,10 +1,10 @@
+import { ManageContext } from '@/lib/contexts';
+import { ManageContextType } from '@/lib/localLib/manage';
+import { ProductTypeObject } from '@/lib/models';
 import theme from '@/styles/themes/lightTheme';
 import { TableCell, TableRow, Typography } from '@mui/material';
-import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import RowActionButtons from './RowActionButtons';
-import { ManageContextType } from '@/lib/localLib/manage';
-import { ManageContext } from '@/lib/contexts';
-import { DocumentData } from 'firebase/firestore';
 
 const GeneratedProductTypeTableBody = () => {
   const {
@@ -13,13 +13,18 @@ const GeneratedProductTypeTableBody = () => {
     handleSearchFilter,
   } = useContext<ManageContextType>(ManageContext);
 
-  const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
+  const [displayMainDocs, setDisplayMainDocs] = useState<
+    ProductTypeObject[] | null
+  >([]);
 
   useEffect(() => {
-    // Filter isActive
+    if (!state.mainDocs) return;
+
+    const mainDocs: ProductTypeObject[] = state.mainDocs as ProductTypeObject[];
+
     const filterActiveDocs = state.isDisplayActiveOnly
-      ? state.mainDocs.filter((doc) => doc.isActive)
-      : state.mainDocs;
+      ? mainDocs.filter((doc) => doc.isActive)
+      : mainDocs;
 
     setDisplayMainDocs(() => filterActiveDocs);
   }, [state.mainDocs, state.isDisplayActiveOnly]);

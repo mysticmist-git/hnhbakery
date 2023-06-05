@@ -1,4 +1,5 @@
-import { storage, db } from '@/firebase/config';
+import { db, storage } from '@/firebase/config';
+import { FirebaseError } from 'firebase/app';
 import {
   DocumentData,
   DocumentReference,
@@ -20,15 +21,16 @@ import {
   where,
 } from 'firebase/firestore';
 import {
+  deleteObject,
   getDownloadURL,
   ref,
   uploadBytes,
-  deleteObject,
 } from 'firebase/storage';
 import { memoize } from '../localLib/manage-modal';
 import { ProductObject } from '../models';
+import BaseObject from '../models/BaseObject';
+import { BatchObject } from '../models/Batch';
 import { filterDuplicates } from '../utilities';
-import { FirebaseError } from 'firebase/app';
 
 //#region Document Related Functions
 
@@ -36,29 +38,29 @@ import { FirebaseError } from 'firebase/app';
  * Gets a document from Firestore.
  * @param {string} collectionName - The name of the collection to get the document from.
  * @param {string} documentId - The id of the document to get.
- * @return {Promise<DocumentData>} - A promise that resolves with the document data.  
- *    If the document does not exist, the promise resolves with null. 
+ * @return {Promise<BaseObject>} - A promise that resolves with the document data.
+ *    If the document does not exist, the promise resolves with null.
  *    If the document does exist, the promise resolves with the document data.
  */
-export const getDocFromFirestore = async (
+export const getDocFromFirestore = async <T extends BaseObject>(
   collectionName: string,
   documentId: string
-): Promise<DocumentData> => {
+): Promise<T> => {
   try {
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
-    const docData = getDocFromQuerySnapshot(docSnap);
+    const docData = getDocFromQuerySnapshot<T>(docSnap);
 
     if (!docData) throw new FirebaseError('null-doc', 'Document not found');
 
     return docData;
   } catch (error: any) {
-    throw  error;
+    throw error;
   }
 };
 
 export const addDocToFirestore = async (
-  data: DocumentData,
+  data: BaseObject,
   collectionName: string
 ): Promise<DocumentReference<DocumentData>> => {
   try {
@@ -71,7 +73,7 @@ export const addDocToFirestore = async (
 };
 
 export const addDocsToFirestore = async (
-  data: DocumentData[],
+  data: BaseObject[],
   collectionName: string
 ): Promise<DocumentReference<DocumentData>[]> => {
   try {
@@ -90,18 +92,19 @@ export const addDocsToFirestore = async (
 };
 
 export async function updateDocToFirestore(
-  data: DocumentData,
+  data: BaseObject,
   collectionName: string
 ) {
   // Null check
   if (!data) throw Error('Data is null');
+
   const id = data.id;
 
-  try {
-    await updateDoc(doc(db, collectionName, id), data);
-  } catch (error) {
-    throw new Error(`Error: ${error}`);
-  }
+  if (!id) throw new Error('ID is null');
+
+  const convertedData = data as DocumentData;
+
+  await updateDoc(doc(db, collectionName, id), convertedData);
 }
 
 export const deleteDocFromFirestore = async (
@@ -190,21 +193,23 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
 
 //#region Get Collection Functions
 
-export async function getCollection<T>(collectionName: string): Promise<T[]> {
+export async function getCollection<T extends BaseObject>(
+  collectionName: string
+): Promise<T[]> {
   if (!collectionName) return [];
 
   const collectionRef = collection(db, collectionName);
 
   const querySnapshot = await getDocs(collectionRef);
 
-  const docs = getDocsFromQuerySnapshot(querySnapshot) as T[];
+  const docs = getDocsFromQuerySnapshot<T>(querySnapshot);
 
   if (!docs) throw new Error('Docs are null');
 
   return docs;
 }
 
-export const getCollectionWithQuery = async <T>(
+export const getCollectionWithQuery = async <T extends BaseObject>(
   collectionName: string,
   ...queryConstraints: QueryConstraint[]
 ): Promise<T[]> => {
@@ -214,9 +219,9 @@ export const getCollectionWithQuery = async <T>(
 
   try {
     const querySnapshot = await getDocs(collectionQuery);
-    const docs = getDocsFromQuerySnapshot(querySnapshot);
+    const docs = getDocsFromQuerySnapshot<T>(querySnapshot);
 
-    return docs as T[];
+    return docs;
   } catch (error) {
     throw new Error(`Error: ${error}`);
   }
@@ -228,11 +233,11 @@ export const getCollectionWithQuery = async <T>(
  * @param {QuerySnapshot<DocumentData>} querySnapshot - The QuerySnapshot to obtain DocumentData from.
  * @return {DocumentData[]} An array of DocumentData obtained from the QuerySnapshot.
  */
-export function getDocsFromQuerySnapshot(
+export function getDocsFromQuerySnapshot<T extends BaseObject>(
   querySnapshot: QuerySnapshot<DocumentData>
-): DocumentData[] {
+): T[] {
   // Null check
-  if (!querySnapshot) return [];
+  if (!querySnapshot) throw new Error('QuerySnapshot is null');
 
   // Get docs
   return querySnapshot.docs.map((doc) => {
@@ -243,20 +248,20 @@ export function getDocsFromQuerySnapshot(
         data[key] = data[key].toDate();
       }
     });
-    return { ...data, id: doc.id };
+    return { ...data, id: doc.id } as T;
   });
 }
 
-export function getDocFromQuerySnapshot(
+export function getDocFromQuerySnapshot<T extends BaseObject>(
   docSnapshot: DocumentSnapshot<DocumentData>
-): DocumentData | null {
+): T {
   // Null check
-  if (!docSnapshot) return null;
+  if (!docSnapshot) throw new Error('DocSnapshot is null');
 
   // Get doc
   const data = docSnapshot.data();
 
-  if (!data) return null;
+  if (!data) throw new Error('Data is null');
 
   Object.keys(data).forEach((key) => {
     if (data[key] instanceof Timestamp) {
@@ -264,14 +269,15 @@ export function getDocFromQuerySnapshot(
     }
   });
 
-  return { ...data, id: docSnapshot.id };
+  return { ...data, id: docSnapshot.id } as T;
 }
+
 export async function getBestSellterProducts(): Promise<ProductObject[]> {
   // Constants
   const minSoldQuantity = 5;
   const queryLimit = 7;
 
-  const batches = await getCollectionWithQuery<ProductObject>(
+  const batches = await getCollectionWithQuery<BatchObject>(
     'batches',
     where('soldQuantity', '>=', minSoldQuantity),
     orderBy('soldQuantity', 'desc'),
@@ -292,9 +298,10 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
     'products',
     where(documentId(), 'in', productIds)
   );
-  // Do something with the productTypes
 
-  return products ?? [];
+  if (!products) return [];
+
+  return products;
 }
 
 //#endregion
@@ -308,6 +315,7 @@ export interface Contact {
   title: string;
   content: string;
 }
+
 export const sendContact = async (form: Contact) => {
   if (!form) return;
 

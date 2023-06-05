@@ -1,6 +1,6 @@
-import { DocumentData } from 'firebase/firestore';
+import BaseObject from './BaseObject';
 
-export interface BatchObject extends DocumentData {
+export interface BatchObject extends BaseObject {
   id: string;
   totalQuantity: number;
   soldQuantity: number;

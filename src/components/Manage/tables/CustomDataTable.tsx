@@ -1,3 +1,4 @@
+import BaseObject from '@/lib/models/BaseObject';
 import {
   Paper,
   Table,
@@ -6,14 +7,12 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { DocumentData } from 'firebase/firestore';
 import { createContext, memo } from 'react';
-import GeneratedTableHead from './components/GeneratedTableHead';
 import GeneratedTableBody from './components/GeneratedTableBody';
-import theme from '@/styles/themes/lightTheme';
+import GeneratedTableHead from './components/GeneratedTableHead';
 
 export const CustomDataTableContext = createContext<{
-  displayMainDocs: DocumentData[];
+  displayMainDocs: BaseObject[];
 }>({ displayMainDocs: [] });
 
 const CustomDataTable = () => {

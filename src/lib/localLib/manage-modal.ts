@@ -1,4 +1,4 @@
-import { DocumentData } from 'firebase/firestore';
+import BaseObject from '../models/BaseObject';
 
 // Get image if there's any
 export const memoize = (fn: any) => {
@@ -15,19 +15,19 @@ export const memoize = (fn: any) => {
   };
 };
 
-export const isDataChanged = (
-  newData: Record<string, unknown>,
-  displayingData: Record<string, unknown>,
+export const isDataChanged = <T extends BaseObject>(
+  newData: T,
+  displayingData: T
 ): boolean => {
   const changed = Object.keys(newData).some(
-    (key) => newData[key] !== displayingData[key],
+    (key) => newData[key as keyof T] !== displayingData[key as keyof T]
   );
   return changed;
 };
 
 export function checkIfDataChanged(
-  originalDisplayingData: DocumentData | null,
-  displayingData: DocumentData | null,
+  originalDisplayingData: BaseObject | null,
+  displayingData: BaseObject | null
 ): boolean {
   if (!originalDisplayingData) {
     alert('No original data found');

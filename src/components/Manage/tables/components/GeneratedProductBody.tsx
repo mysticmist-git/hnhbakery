@@ -1,27 +1,31 @@
-import { TableRow, TableCell, Typography } from '@mui/material';
-import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-import { ManageContext } from '@/lib/contexts';
 import { db } from '@/firebase/config';
-import { CollectionName } from '@/lib/models/utilities';
-import { DocumentData, doc, getDoc } from 'firebase/firestore';
-import RowActionButtons from './RowActionButtons';
+import { ManageContext } from '@/lib/contexts';
 import { ManageContextType } from '@/lib/localLib/manage';
+import { ProductObject } from '@/lib/models';
+import { CollectionName } from '@/lib/models/utilities';
 import theme from '@/styles/themes/lightTheme';
-import { table } from 'console';
+import { TableCell, TableRow, Typography } from '@mui/material';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import RowActionButtons from './RowActionButtons';
+
+interface AssemblyProductObject extends ProductObject {
+  productTypeName: string;
+  productTypeIsActive: boolean;
+}
 
 const GeneratedProductTableBody = () => {
-  const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
+  const [displayMainDocs, setDisplayMainDocs] = useState<
+    AssemblyProductObject[] | null
+  >([]);
   const {
     state,
-    dispatch,
-    handleViewRow,
-    handleDeleteRowOnFirestore: handleDeleteRow,
     handleSearchFilter,
   } = useContext<ManageContextType>(ManageContext);
 
   useEffect(() => {
     // Load product type names with productTypesIds
-    const getProductTypeNames = async () => {
+    const assemblyProducts = async () => {
       try {
         const docs = await Promise.all(
           state.mainDocs.map(async (document) => {
@@ -41,7 +45,7 @@ const GeneratedProductTableBody = () => {
                 docSnap.exists() && docSnap.data() !== null
                   ? docSnap.data().isActive
                   : false,
-            } as DocumentData;
+            } as AssemblyProductObject;
           })
         );
 
@@ -55,13 +59,13 @@ const GeneratedProductTableBody = () => {
       }
     };
 
-    getProductTypeNames();
+    assemblyProducts();
   }, [state.mainDocs, state.isDisplayActiveOnly]);
 
   const TableBody = useMemo(() => {
     return (
       <>
-        {handleSearchFilter(displayMainDocs)?.map((doc, index) => (
+        {handleSearchFilter<AssemblyProductObject>(displayMainDocs)?.map((doc, index) => (
           <TableRow
             key={doc.id}
             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

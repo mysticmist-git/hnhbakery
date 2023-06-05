@@ -1,6 +1,6 @@
-import { CollectionName } from '@/lib/models/utilities';
-import { DocumentData, Timestamp, collection } from 'firebase/firestore';
+import { CollectionName, Nameable } from '@/lib/models/utilities';
 import { Dispatch } from 'react';
+import BaseObject from '../models/BaseObject';
 
 export const crudTargets: CrudTarget[] = [
   {
@@ -34,11 +34,11 @@ export enum ManageActionType {
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
 
 export interface ManageState {
-  mainDocs: DocumentData[];
+  mainDocs: BaseObject[] | null;
   searchText: string;
   mainCollectionName: CollectionName;
   selectedTarget: CrudTarget | null;
-  displayingData: DocumentData | null;
+  displayingData: BaseObject | null;
   loading: boolean;
   dialogOpen: boolean;
   crudModalOpen: boolean;
@@ -53,10 +53,20 @@ export interface ManageContextType {
   handleViewRow: any;
   handleDeleteRowOnFirestore: any;
   resetDisplayingData: any;
-  handleSearchFilter: (docs: DocumentData[]) => DocumentData[];
+  handleSearchFilter: <T extends BaseObject & Nameable>(
+    docs: T[] | null
+  ) => T[] | null;
 }
 
-export const manageReducer = (state: ManageState, action: any) => {
+export interface ManageAction {
+  type: ManageActionType;
+  payload: any;
+}
+
+export const manageReducer = (
+  state: ManageState,
+  action: ManageAction
+): ManageState => {
   switch (action.type) {
     case ManageActionType.SET_MAIN_DOCS:
       return {
@@ -70,6 +80,8 @@ export const manageReducer = (state: ManageState, action: any) => {
       };
 
     case ManageActionType.UPDATE_SPECIFIC_DOC:
+      if (!state.mainDocs) return { ...state, mainDocs: null };
+
       const { id, data } = action.payload;
 
       if (!id || !data) return state;

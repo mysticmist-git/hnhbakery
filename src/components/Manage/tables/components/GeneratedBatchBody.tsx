@@ -1,50 +1,71 @@
 import { ManageContext } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
 import { ManageContextType } from '@/lib/localLib/manage';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
+import BaseObject from '@/lib/models/BaseObject';
+import { BatchObject } from '@/lib/models/Batch';
 import theme from '@/styles/themes/lightTheme';
 import formatCurrency from '@/utilities/formatCurrency';
 import { TableCell, TableRow, Typography } from '@mui/material';
-import { DocumentData } from 'firebase/firestore';
 import { memo, useContext, useEffect, useState } from 'react';
 import RowActionButtons from './RowActionButtons';
 
+interface AssemblyBatchObject extends BatchObject {
+  productName: string;
+  productIsActive: boolean;
+  productTypeIsActive: boolean;
+}
+
 const GeneratedBatchTableBody = () => {
-  const [displayMainDocs, setDisplayMainDocs] = useState<DocumentData[]>([]);
+  const [displayMainDocs, setDisplayMainDocs] = useState<
+    AssemblyBatchObject[] | null
+  >([]);
+
+  //#region Hooks
+
   const { state } = useContext<ManageContextType>(ManageContext);
+
+  //#endregion
+
+  //#region useEffects
 
   useEffect(() => {
     // Load product names with productIds
-    const getProductNames = async () => {
-      const docs: DocumentData[] = await Promise.all(
-        state.mainDocs.map(async (document) => {
-          try {
-            const product = await getDocFromFirestore(
-              'products',
-              document.product_id
-            );
+    const assemblyBatches = async () => {
+      if (!state.mainDocs) return;
 
-            const productType = await getDocFromFirestore(
-              'productTypes',
-              product.productType_id
-            );
+      const batches = state.mainDocs as BatchObject[];
 
-            const updatedBatch = {
-              ...document,
-              productName: product.name,
-              productIsActive: product.isActive,
-              productTypeIsActive: productType.isActive,
-            } as DocumentData;
+      const docs: AssemblyBatchObject[] = (
+        await Promise.all(
+          batches.map(async (document) => {
+            try {
+              const product = await getDocFromFirestore<ProductObject>(
+                'products',
+                document.product_id
+              );
 
-            console.log(updatedBatch);
-            return updatedBatch;
-          } catch (error) {
-            console.log(error);
-            return { id: document.id };
-          }
-        })
-      );
+              const productType = await getDocFromFirestore<ProductTypeObject>(
+                'productTypes',
+                product.productType_id
+              );
 
-      console.log(docs);
+              const updatedBatch = {
+                ...document,
+                productName: product.name,
+                productIsActive: product.isActive,
+                productTypeIsActive: productType.isActive,
+              } as AssemblyBatchObject;
+
+              console.log(updatedBatch);
+              return updatedBatch;
+            } catch (error) {
+              console.log(error);
+              return null;
+            }
+          })
+        )
+      ).filter((doc) => doc !== null) as AssemblyBatchObject[];
 
       // Filter isActive
       const filterActiveDocs = !state.isDisplayActiveOnly
@@ -64,8 +85,10 @@ const GeneratedBatchTableBody = () => {
       setDisplayMainDocs(() => filterActiveDocs);
     };
 
-    getProductNames();
+    assemblyBatches();
   }, [state.mainDocs, state.isDisplayActiveOnly]);
+
+  //#endregion
 
   return (
     <>

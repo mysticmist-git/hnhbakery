@@ -1,6 +1,6 @@
-import { DocumentData } from 'firebase/firestore';
+import BaseObject from './BaseObject';
 
-export interface SaleObject extends DocumentData {
+export interface SaleObject extends BaseObject {
   id: string;
   name: string;
   code: string;

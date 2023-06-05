@@ -1,23 +1,21 @@
-import { DocumentData, collection, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
 import React, { memo, useContext, useEffect, useState } from 'react';
-import { deleteObject, ref } from 'firebase/storage';
-import { db, storage } from '@/firebase/config';
 
-import RowModalLayout from './RowModalLayout';
-import { useSnackbarService } from '@/lib/contexts';
-import { ProductObject } from '@/lib/models';
-import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/lib/contexts';
-import ProductForm from '../forms/ProductForm';
+import { ManageContext, useSnackbarService } from '@/lib/contexts';
 import {
-  getDownloadUrlFromFirebaseStorage,
-  uploadImageToFirebaseStorage,
   addDocToFirestore,
   deleteImageFromFirebaseStorage,
+  getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
+  uploadImageToFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import { NewValueChip } from '../forms/components';
+import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { ProductObject } from '@/lib/models';
+import BaseObject from '@/lib/models/BaseObject';
+import ProductForm from '../forms/ProductForm';
+import RowModalLayout from './RowModalLayout';
 
 interface FirebaseImage {
   path: string;
@@ -33,12 +31,12 @@ const ProductRowModal = () => {
   //#region States
 
   const [originalDisplayingData, setOriginalDisplayingData] =
-    useState<DocumentData | null>(null);
+    useState<BaseObject | null>(null);
 
   // Gallery
   // Contains files uploaded
   const [galleryImages, setGalleryImages] = useState<UploadedImage[] | null>(
-    null,
+    null
   );
 
   // Contains urls from firebase storage
@@ -87,7 +85,7 @@ const ProductRowModal = () => {
           ({
             path: image,
             url: null,
-          } as FirebaseImage),
+          } as FirebaseImage)
       );
 
     async function GetDownloadURLs() {
@@ -97,7 +95,7 @@ const ProductRowModal = () => {
             ...image,
             url: await getDownloadUrlFromFirebaseStorage(image.path),
           };
-        }),
+        })
       );
 
       setFirebaseStorageImages(() => _firebaseStorageImages);
@@ -162,7 +160,7 @@ const ProductRowModal = () => {
 
     // validate data before adding
     const { isValid, errorMessage } = validateData(
-      state.displayingData as ProductObject,
+      state.displayingData as ProductObject
     );
 
     if (!isValid) {
@@ -184,8 +182,8 @@ const ProductRowModal = () => {
       // Upload image
       const imageURLs = await Promise.all(
         galleryImages.map(
-          async (image) => await uploadImageToFirebaseStorage(image.file),
-        ),
+          async (image) => await uploadImageToFirebaseStorage(image.file)
+        )
       );
 
       // Image upload fail
@@ -201,6 +199,8 @@ const ProductRowModal = () => {
 
       // Add new document to Firestore
       const docRef = await addDocToFirestore(data, collectionName);
+
+      if (!state.mainDocs) throw new Error('Null main docs');
 
       // Add new row to table data
       dispatch({
@@ -263,7 +263,7 @@ const ProductRowModal = () => {
 
     // Validation
     const { isValid, errorMessage } = validateData(
-      state.displayingData as ProductObject,
+      state.displayingData as ProductObject
     );
 
     if (!isValid) {
@@ -277,7 +277,7 @@ const ProductRowModal = () => {
     // Check if data changed
     const dataChanged = checkIfDataChanged(
       originalDisplayingData,
-      state.displayingData,
+      state.displayingData
     );
 
     if (!imageChanged && !dataChanged) {
@@ -455,8 +455,8 @@ const ProductRowModal = () => {
       try {
         const imageURLs = await Promise.all(
           galleryImages.map(
-            async (image) => await uploadImageToFirebaseStorage(image.file),
-          ),
+            async (image) => await uploadImageToFirebaseStorage(image.file)
+          )
         );
 
         return imageURLs;
@@ -511,7 +511,7 @@ const ProductRowModal = () => {
     if (!collectionName) {
       handleSnackbarAlert(
         'error',
-        'Lỗi state.selectedTarget.collectionName null',
+        'Lỗi state.selectedTarget.collectionName null'
       );
       return;
     }

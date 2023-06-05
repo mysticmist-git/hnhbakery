@@ -1,17 +1,16 @@
 import React, { memo, useContext, useMemo } from 'react';
 
-import BatchForm from '../forms/BatchForm';
-import RowModalLayout from './RowModalLayout';
-import { useSnackbarService } from '@/lib/contexts';
-import { Timestamp } from 'firebase/firestore';
-import { BatchObject } from '@/lib/models/Batch';
-import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
-import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
-import { ManageContext } from '@/lib/contexts';
+import { ManageContext, useSnackbarService } from '@/lib/contexts';
 import {
   addDocToFirestore,
   updateDocToFirestore,
 } from '@/lib/firestore/firestoreLib';
+import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
+import { checkIfDataChanged } from '@/lib/localLib/manage-modal';
+import { BatchObject } from '@/lib/models/Batch';
+import { DocumentData, Timestamp } from 'firebase/firestore';
+import BatchForm from '../forms/BatchForm';
+import RowModalLayout from './RowModalLayout';
 
 const BatchRowModal = () => {
   //#region States
@@ -162,17 +161,17 @@ const BatchRowModal = () => {
       return;
     }
 
+    const newBatch: BatchObject = state.displayingData as BatchObject;
+
     // Check if displaying data is null
-    if (!state.displayingData) {
+    if (!newBatch) {
       const errorMsg = 'Null data error';
       handleSnackbarAlert('error', `Lỗi: ${errorMsg}`);
       return;
     }
 
     // validate data before adding
-    const { isValid, errorMessage } = validateData(
-      state.displayingData as BatchObject
-    );
+    const { isValid, errorMessage } = validateData(newBatch);
 
     if (!isValid) {
       handleSnackbarAlert('error', errorMessage);
@@ -185,10 +184,10 @@ const BatchRowModal = () => {
 
     try {
       const dataForFirestoreAdding = {
-        ...state.displayingData,
-        MFG: Timestamp.fromDate(state.displayingData.MFG),
-        EXP: Timestamp.fromDate(state.displayingData.EXP),
-      };
+        ...newBatch,
+        MFG: Timestamp.fromDate(newBatch.MFG),
+        EXP: Timestamp.fromDate(newBatch.EXP),
+      } as DocumentData;
 
       // Add new document to Firestore
       const docRef = await addDocToFirestore(
@@ -196,13 +195,12 @@ const BatchRowModal = () => {
         collectionName
       );
 
+      if (!state.mainDocs) throw new Error('Null main docs');
+
       // Add new row to table data
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
-        payload: [
-          ...state.mainDocs,
-          { ...state.displayingData, id: docRef.id },
-        ],
+        payload: [...state.mainDocs, { ...newBatch, id: docRef.id }],
       });
     } catch (error) {
       console.log('Error adding new document: ', error);
@@ -253,17 +251,17 @@ const BatchRowModal = () => {
       return;
     }
 
+    const batchToUpdate: BatchObject = state.displayingData as BatchObject;
+
     // Check if displaying data is null
-    if (!state.displayingData) {
+    if (!batchToUpdate) {
       const errorMsg = 'Null data error';
       handleSnackbarAlert('error', `Lỗi: ${errorMsg}`);
       return;
     }
 
     // validate data before adding
-    const { isValid, errorMessage } = validateData(
-      state.displayingData as BatchObject
-    );
+    const { isValid, errorMessage } = validateData(batchToUpdate);
 
     if (!isValid) {
       handleSnackbarAlert('error', errorMessage);
@@ -273,7 +271,7 @@ const BatchRowModal = () => {
     // Check if data changed
     const dataChanged = checkIfDataChanged(
       originalDisplayingData,
-      state.displayingData
+      batchToUpdate
     );
 
     try {
@@ -283,19 +281,18 @@ const BatchRowModal = () => {
       }
 
       const collectionName = state.selectedTarget?.collectionName;
-      const displayingData = state.displayingData;
 
-      if (!collectionName || !displayingData) {
+      if (!collectionName || !batchToUpdate) {
         handleUpdateFail();
         return;
       }
 
       const dataForFirestoreAdding = {
-        ...displayingData,
-        MFG: Timestamp.fromDate(new Date(displayingData.MFG)),
-        EXP: Timestamp.fromDate(new Date(displayingData.EXP)),
-        discountDate: Timestamp.fromDate(new Date(displayingData.discountDate)),
-      };
+        ...batchToUpdate,
+        MFG: Timestamp.fromDate(new Date(batchToUpdate.MFG)),
+        EXP: Timestamp.fromDate(new Date(batchToUpdate.EXP)),
+        discountDate: Timestamp.fromDate(new Date(batchToUpdate.discountDate)),
+      } as DocumentData;
 
       // Update document to firestore
       await updateDocToFirestore(dataForFirestoreAdding, collectionName);
@@ -303,7 +300,7 @@ const BatchRowModal = () => {
       // Update state
       dispatch({
         type: ManageActionType.UPDATE_SPECIFIC_DOC,
-        payload: { id: displayingData.id, data: displayingData },
+        payload: batchToUpdate,
       });
 
       // Close modal
