@@ -10,9 +10,12 @@ import {
   ManageAction,
   ManageActionType,
   ManageState,
+  PATH,
   crudTargets,
   generateDefaultRow,
+  initManageState,
   manageReducer,
+  validateCollectionNameParams,
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import { CollectionName, Nameable } from '@/lib/models/utilities';
@@ -36,30 +39,9 @@ import {
   useTheme,
 } from '@mui/material';
 import { deleteDoc, doc } from 'firebase/firestore';
-import { GetServerSideProps } from 'next';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
-
-//#region Constants
-
-const LOADING_TEXT = 'Loading...';
-const PATH = '/manager/manage';
-
-const initManageState: ManageState = {
-  mainDocs: null,
-  searchText: '',
-  mainCollectionName: CollectionName.None,
-  selectedTarget: null,
-  displayingData: null,
-  loading: false,
-  dialogOpen: false,
-  crudModalOpen: false,
-  crudModalMode: 'none',
-  deletingId: '',
-  isDisplayActiveOnly: true,
-};
-
-//#endregion
 
 export default function Manage({
   mainDocs: paramMainDocs,
@@ -72,12 +54,7 @@ export default function Manage({
 
   const [state, dispatch] = useReducer<
     React.Reducer<ManageState, ManageAction>
-  >(manageReducer, {
-    ...initManageState,
-    selectedTarget:
-      crudTargets.find((t) => t.collectionName === paramCollectionName) ??
-      crudTargets[0],
-  });
+  >(manageReducer, initManageState);
 
   const [justLoaded, setJustLoaded] = useState(true);
 
@@ -93,11 +70,11 @@ export default function Manage({
 
   //#region useEffects
 
-  useEffect(() => {
-    if (!state.crudModalOpen) return;
+  // useEffect(() => {
+  //   if (!state.crudModalOpen) return;
 
-    resetDisplayingData();
-  }, [state.selectedTarget]);
+  //   resetDisplayingData();
+  // }, [state.selectedTarget]);
 
   useEffect(() => {
     const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
@@ -113,9 +90,13 @@ export default function Manage({
   useEffect(() => {
     if (!state.selectedTarget) return;
 
-    router.push(
-      `${PATH}?collectionName=${state.selectedTarget.collectionName}`
-    );
+    dispatch({
+      type: ManageActionType.SET_MAIN_DOCS,
+      payload: null,
+    });
+
+    const collectionName = state.selectedTarget.collectionName;
+    router.push(`${PATH}?collectionName=${collectionName}`);
   }, [state.selectedTarget]);
 
   useEffect(() => {
@@ -352,17 +333,6 @@ export default function Manage({
             mt: 2,
           }}
         />
-        {/* CRUD target */}
-        {/* <Autocomplete
-          disablePortal
-          id="crudtarget-select"
-          inputValue={state.selectedTarget?.label || LOADING_TEXT}
-          value={state.selectedTarget}
-          onChange={handleCrudTargetChanged}
-          options={crudTargets}
-          sx={{ mt: 4, width: 300 }}
-          renderInput={(params) => <TextField {...params} label="Kho" />}
-        /> */}
 
         <MyMultiValuePickerInput
           label="Kho"
@@ -435,6 +405,7 @@ export default function Manage({
               <Typography variant="body2">Chỉ hiện còn cung cấp</Typography>
             }
           />
+
           <Divider
             orientation="vertical"
             sx={{
@@ -515,44 +486,49 @@ export default function Manage({
   );
 }
 
+const defaultPageRedirect = {
+  redirect: {
+    destination: `${PATH}?collectionName=productTypes`,
+    permanent: false,
+  },
+};
+
 /**
  * Returns server-side props for the page.
  *
  * @param {Object} context - The context object received from Next.js.
  * @returns {Object} The server-side props object.
  */
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
   context.res.setHeader(
     'Cache-Control',
     'public, s-maxage=10, stale-while-revalidate=59'
   );
 
   // Extract the collection name from the query parameter of the URL.
-  const collectionName: string | null = context.query.collectionName as
+  const collectionName: string | undefined = context.query.collectionName as
     | string
-    | null;
+    | undefined;
 
-  // If the collection name is not present in the URL, redirect to the first collection.
-  if (!collectionName || collectionName === 'undefined') {
-    const firstCollection = crudTargets[0].collectionName;
-    return {
-      redirect: {
-        destination: `${PATH}?collectionName=${firstCollection}`,
-        permanent: false,
-      },
-    };
-  }
+  if (!collectionName) return defaultPageRedirect;
+
+  const isCollectionNameValid: boolean =
+    validateCollectionNameParams(collectionName);
+
+  if (!isCollectionNameValid) return defaultPageRedirect;
 
   // Get the documents from the specified collection.
-  const rawMainDocs = await getCollection<BaseObject>(collectionName);
-  const mainDocs = JSON.stringify(rawMainDocs);
+  const mainDocs = await getCollection<BaseObject>(collectionName);
+  const stringifyMainDocs = JSON.stringify(mainDocs);
 
-  console.group(rawMainDocs);
+  console.group(mainDocs);
 
   // Return the main documents as props.
   return {
     props: {
-      mainDocs,
+      mainDocs: stringifyMainDocs,
       collectionName,
     },
   };

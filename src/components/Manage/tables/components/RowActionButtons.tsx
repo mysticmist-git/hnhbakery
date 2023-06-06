@@ -3,7 +3,7 @@ import { ManageContextType } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import theme from '@/styles/themes/lightTheme';
 import { Delete, Wysiwyg } from '@mui/icons-material';
-import { Typography } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { memo, useContext } from 'react';
 import { TableActionButton } from '../TableActionButton';
@@ -20,28 +20,32 @@ const RowActionButtons = ({ doc }: { doc: BaseObject }) => {
         gap: '0.5rem',
       }}
     >
-      <TableActionButton
-        variant="contained"
-        startIcon={<Wysiwyg />}
-        onClick={() => {
-          handleViewRow(doc);
-        }}
-      >
-        <Typography variant="body2">Xem</Typography>
-      </TableActionButton>
-      <TableActionButton
-        variant="contained"
-        startIcon={<Delete />}
-        sx={{
-          backgroundColor: theme.palette.secondary.main,
-          '&:hover': {
-            backgroundColor: theme.palette.secondary.dark,
-          },
-        }}
-        onClick={() => handleDeleteRow(doc.id)}
-      >
-        <Typography variant="body2">Xóa</Typography>
-      </TableActionButton>
+      <Tooltip title="Xem chi tiết">
+        <TableActionButton
+          variant="contained"
+          startIcon={<Wysiwyg />}
+          onClick={() => {
+            handleViewRow(doc);
+          }}
+        >
+          <Typography variant="body2">Xem</Typography>
+        </TableActionButton>
+      </Tooltip>
+      <Tooltip title="Xóa">
+        <TableActionButton
+          variant="contained"
+          startIcon={<Delete />}
+          sx={{
+            backgroundColor: theme.palette.secondary.main,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+            },
+          }}
+          onClick={() => handleDeleteRow(doc.id)}
+        >
+          <Typography variant="body2">Xóa</Typography>
+        </TableActionButton>
+      </Tooltip>
     </Box>
   );
 };

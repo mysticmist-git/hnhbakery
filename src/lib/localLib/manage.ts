@@ -2,6 +2,8 @@ import { CollectionName, Nameable } from '@/lib/models/utilities';
 import { Dispatch } from 'react';
 import BaseObject from '../models/BaseObject';
 
+export const PATH = '/manager/manage';
+
 export const crudTargets: CrudTarget[] = [
   {
     collectionName: CollectionName.ProductTypes,
@@ -43,7 +45,7 @@ export interface ManageState {
   dialogOpen: boolean;
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
-  deletingId: string;
+  deletingId: string | null;
   isDisplayActiveOnly: boolean;
 }
 
@@ -209,4 +211,26 @@ export const generateDefaultRow = (collectionName: CollectionName) => {
     default:
       return {};
   }
+};
+
+export const initManageState: ManageState = {
+  mainDocs: null,
+  searchText: '',
+  mainCollectionName: CollectionName.None,
+  selectedTarget: null,
+  displayingData: null,
+  loading: false,
+  dialogOpen: false,
+  crudModalOpen: false,
+  crudModalMode: 'none',
+  deletingId: null,
+  isDisplayActiveOnly: true,
+};
+
+const manageCollections: string[] = ['productTypes', 'products', 'batches'];
+
+export const validateCollectionNameParams = (
+  collectionName: string
+): boolean => {
+  return manageCollections.includes(collectionName);
 };
