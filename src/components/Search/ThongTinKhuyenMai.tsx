@@ -1,6 +1,6 @@
-import { Box, Typography, Grid, useTheme } from '@mui/material';
-import React, { useContext, memo } from 'react';
-import formatPrice from '@/utilities/formatCurrency';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
+import React, { memo, useContext } from 'react';
 import { SearchContext } from '../../pages/search';
 
 export const ThongTinKhuyenMai = memo((props: any) => {

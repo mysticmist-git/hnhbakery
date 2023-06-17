@@ -1,8 +1,8 @@
-import { Box, Typography, Grid, useTheme, Link } from '@mui/material';
-import React, { memo } from 'react';
-import formatPrice from '@/utilities/formatCurrency';
 import { CustomButton } from '@/components/Inputs/Buttons';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import Image from 'next/image';
+import React, { memo } from 'react';
 
 export const Product = memo((props: any) => {
   const theme = useTheme();

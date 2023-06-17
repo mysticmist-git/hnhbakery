@@ -1,135 +1,23 @@
-import { useState, memo, useEffect, useContext, useRef, useMemo } from 'react';
+import { MyMultiValuePickerInput } from '@/components/Inputs';
+import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
+import { ModalBatchObject, ModalFormProps } from '@/lib/localLib/manage';
 import {
-  Grid,
-  TextField,
   Autocomplete,
-  Stack,
-  useTheme,
-  Typography,
   Divider,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { ProductObject, ProductType, ProductTypeObject } from '@/lib/models';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
-import { ManageContext, useSnackbarService } from '@/lib/contexts';
-import { MyMultiValuePickerInput } from '@/components/Inputs';
-import {
-  getCollection,
-  getCollectionWithQuery,
-} from '@/lib/firestore/firestoreLib';
-import { where } from 'firebase/firestore';
+import { memo } from 'react';
 
-const BatchForm = ({ readOnly = false }: { readOnly: boolean }) => {
-  //#region Hooks
+interface BatchFormProps extends ModalFormProps {
+  data: ModalBatchObject | null;
+}
 
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
-  const handleSnackbarAlert = useSnackbarService();
-  const theme = useTheme();
-
-  //#endregion
-
-  //#region States
-
-  const [products, setProducts] = useState<ProductObject[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
-    null
-  );
-
-  //#endregion
-
-  // #region Refs
-
-  const materialRef = useRef<string>('');
-  const sizeRef = useRef<string>('');
-
-  // #endregion
-
-  // #region useMemos
-
-  const { productMaterials: materials, productSizes: sizes } = useMemo(() => {
-    if (!selectedProduct) return { productMaterials: [], productSizes: [] };
-
-    const productMaterials = selectedProduct?.materials ?? [];
-
-    const productSizes = selectedProduct?.sizes ?? [];
-
-    if (state.crudModalMode === 'create') {
-      dispatch({
-        type: ManageActionType.SET_DISPLAYING_DATA,
-        payload: {
-          ...state.displayingData,
-          size: (productSizes[0] as string) ?? '',
-          material: (productMaterials[0] as string) ?? '',
-        },
-      });
-    }
-
-    return { productMaterials, productSizes };
-  }, [selectedProduct]);
-
-  // #endregion
-
-  //#region useEffects
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const activeProductTypes =
-        await getCollectionWithQuery<ProductTypeObject>(
-          'productTypes',
-          where('isActive', '==', true)
-        );
-
-      const activeProductTypeIds = activeProductTypes.map(
-        (productType) => productType.id
-      );
-
-      const activeProducts = await getCollectionWithQuery<ProductObject>(
-        'products',
-        where('productType_id', 'in', activeProductTypeIds)
-      );
-
-      setProducts(() => activeProducts);
-
-      if (['update', 'view'].includes(state.crudModalMode)) {
-        const productId = state.displayingData?.product_id;
-
-        if (!productId) return;
-
-        const referencedProduct = activeProducts.find(
-          (product) => product.id === productId
-        );
-
-        if (referencedProduct) setSelectedProduct(() => referencedProduct);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (
-      !state.displayingData?.product_id ||
-      state.displayingData.product_id === ''
-    )
-      setSelectedProduct(() => null);
-  }, [state.displayingData?.product_id]);
-
-  //#endregion
-
-  //#region Functions
-
-  //#endregion
-
-  //#region Methods
-
-  //#endregion
-
-  //#region Console.logs
-
-  //#endregion
-
+const BatchForm = ({ data }: BatchFormProps) => {
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={6}>

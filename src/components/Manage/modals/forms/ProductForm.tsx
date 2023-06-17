@@ -1,168 +1,39 @@
-import { useState, useEffect, useContext, memo, useMemo } from 'react';
+import placeholderImage from '@/assets/placeholder-image.png';
 import {
-  Grid,
+  MyMultiValueCheckerInput,
+  MyMultiValueInput,
+} from '@/components/Inputs';
+import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
+import { ModalFormProps, ModalProductObject } from '@/lib/localLib/manage';
+import theme from '@/styles/themes/lightTheme';
+import {
+  Autocomplete,
   Box,
-  Typography,
-  TextField,
+  Divider,
   FormControlLabel,
+  Grid,
+  Stack,
   Switch,
   Tab,
   Tabs,
-  Autocomplete,
-  Stack,
-  Divider,
+  TextField,
+  Typography,
 } from '@mui/material';
-import placeholderImage from '@/assets/placeholder-image.png';
+import { memo } from 'react';
+import MyGallery from './components/MyGallery';
 import TabPanel from './components/TabPanel';
 import { a11yProps } from './lib';
-import MyGallery from './components/MyGallery';
-import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
-import theme from '@/styles/themes/lightTheme';
-import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
-import {
-  MyMultiValueInput,
-  MyMultiValueCheckerInput,
-} from '@/components/Inputs';
-import {
-  ReferenceServiceInterface,
-  ReferenceServiceProxy,
-  ReferencesService,
-} from '@/lib/services/ReferenceService';
-import { ManageContext } from '@/lib/contexts';
-import { getCollectionWithQuery } from '@/lib/firestore/firestoreLib';
-import { ProductTypeObject } from '@/lib/models';
-import { where } from 'firebase/firestore';
-
-//#region Types
 
 interface ProductTypeStateProps {
   id: string;
   name: string;
 }
 
-//#endregion
+interface ProductFormProps extends ModalFormProps {
+  data: ModalProductObject | null;
+}
 
-const ProductForm = ({
-  imageURLs,
-  handleUploadGalleryToBrowser,
-  readOnly = false,
-  handleDeleteImage,
-}: {
-  imageURLs: (string | null)[] | null;
-  handleUploadGalleryToBrowser: any;
-  readOnly: boolean;
-  handleDeleteImage: any;
-}) => {
-  //#region States
-
-  // Context state
-
-  const [tabValue, setTabValue] = useState(0);
-  const [productTypes, setProductTypes] = useState<ProductTypeStateProps[]>([]);
-  const [selectedProductType, setSelectedProductType] =
-    useState<ProductTypeStateProps | null>(null);
-  const [colors, setColors] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
-
-  //#endregion
-
-  //#region Hooks
-
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
-
-  //#endregion
-
-  //#region useEffects
-
-  useEffect(() => {
-    async function getProductTypes() {
-      try {
-        const docs = await getCollectionWithQuery<ProductTypeObject>(
-          'productTypes',
-          where('isActive', '==', true)
-        );
-
-        const data = docs.map((doc) => {
-          return {
-            id: doc.id,
-            name: doc.name,
-          };
-        });
-
-        return data;
-      } catch (error) {
-        console.log('Error fetching product types: ', error);
-        return [];
-      }
-    }
-
-    async function fetchData() {
-      const productTypes: ProductTypeStateProps[] = await getProductTypes();
-      setProductTypes(() => productTypes);
-
-      if (state.crudModalMode === 'create') return;
-
-      // Set current data selected product type
-
-      const displayingData = state.displayingData;
-      if (!displayingData) return;
-
-      // set selected product type
-      if (displayingData) {
-        setSelectedProductType(
-          () =>
-            productTypes.find(
-              (pt) => pt.id === displayingData.productType_id
-            ) ?? productTypes[0]
-        );
-      }
-    }
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchColors = async () => {
-      try {
-        const colors = await referenceService.getColors();
-        setColors(() => colors);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const fetchSizes = async () => {
-      try {
-        const sizes = await referenceService.getSizes();
-        setSizes(() => sizes);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchColors();
-    fetchSizes();
-  }, []);
-
-  //#endregion
-
-  //#region Handlers
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(() => newValue);
-  };
-
-  //#endregion
-
-  // #region useMemos
-
-  const referenceService: ReferenceServiceInterface = useMemo(
-    () => new ReferenceServiceProxy(new ReferencesService()),
-    []
-  );
-
-  // #endregion
-
+const ProductForm = ({ data }: ProductFormProps) => {
   return (
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -365,19 +236,19 @@ const ProductForm = ({
                 />
               }
               label={
-              <Typography
-                sx={{
-                  color: state.displayingData?.isActive
-                    ? theme.palette.success.main
-                    : theme.palette.error.main,
-                }}
-                variant="body1"
-                fontWeight="bold"
-              >
-                {state.displayingData?.isActive
-                  ? 'Còn hoạt động'
-                  : 'Ngưng hoạt động'}
-              </Typography>
+                <Typography
+                  sx={{
+                    color: state.displayingData?.isActive
+                      ? theme.palette.success.main
+                      : theme.palette.error.main,
+                  }}
+                  variant="body1"
+                  fontWeight="bold"
+                >
+                  {state.displayingData?.isActive
+                    ? 'Còn hoạt động'
+                    : 'Ngưng hoạt động'}
+                </Typography>
               }
               labelPlacement="start"
               sx={{

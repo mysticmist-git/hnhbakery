@@ -1,17 +1,17 @@
-import {
-  Typography,
-  Grid,
-  useTheme,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from '@mui/material';
-import React, { useContext, memo } from 'react';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import formatPrice from '@/utilities/formatCurrency';
-import { SearchContext } from '../../pages/search';
 import { Product } from '@/components/Search/Product';
 import { ProductContent } from '@/components/Search/ProductContent';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Grid,
+  Typography,
+  useTheme,
+} from '@mui/material';
+import React, { memo, useContext } from 'react';
+import { SearchContext } from '../../pages/search';
 
 //#endregion
 //#region Danh sách sản phẩm

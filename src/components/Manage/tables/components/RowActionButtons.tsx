@@ -1,5 +1,4 @@
-import { ManageContext } from '@/lib/contexts';
-import { ManageContextType } from '@/lib/localLib/manage';
+import { DeleteRowHandler, ViewRowHandler } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import theme from '@/styles/themes/lightTheme';
 import { Delete, Wysiwyg } from '@mui/icons-material';
@@ -8,10 +7,17 @@ import { Box } from '@mui/system';
 import { memo, useContext } from 'react';
 import { TableActionButton } from '../TableActionButton';
 
-const RowActionButtons = ({ doc }: { doc: BaseObject }) => {
-  const { handleViewRow, handleDeleteRowOnFirestore: handleDeleteRow } =
-    useContext<ManageContextType>(ManageContext);
+interface RowActionButtonsProps {
+  doc: BaseObject;
+  handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
+}
 
+const RowActionButtons = ({
+  doc,
+  handleViewRow,
+  handleDeleteRow,
+}: RowActionButtonsProps) => {
   return (
     <Box
       sx={{
@@ -25,7 +31,7 @@ const RowActionButtons = ({ doc }: { doc: BaseObject }) => {
           variant="contained"
           startIcon={<Wysiwyg />}
           onClick={() => {
-            handleViewRow(doc);
+            handleViewRow(doc.id ?? '');
           }}
         >
           <Typography variant="body2">Xem</Typography>
@@ -41,7 +47,7 @@ const RowActionButtons = ({ doc }: { doc: BaseObject }) => {
               backgroundColor: theme.palette.secondary.dark,
             },
           }}
-          onClick={() => handleDeleteRow(doc.id)}
+          onClick={() => handleDeleteRow(doc.id ?? '')}
         >
           <Typography variant="body2">Xóa</Typography>
         </TableActionButton>

@@ -1,25 +1,31 @@
+import { COLLECTION_NAME } from '@/lib/constants';
+import {
+  AddRowHandler,
+  CommonRowModalProps,
+  DeleteRowHandler,
+  ModalDeleteHandler,
+  ModalModeToggleHandler,
+  UpdateRowHandler,
+} from '@/lib/localLib/manage';
 import theme from '@/styles/themes/lightTheme';
 import {
-  Delete,
-  RestartAlt,
-  Close,
   Add,
+  Cancel,
+  Close,
+  Delete,
   Edit,
-  Check,
+  RestartAlt,
 } from '@mui/icons-material';
 import {
-  Modal,
-  Grid,
-  Typography,
-  IconButton,
   Button,
   Divider,
+  Grid,
+  IconButton,
+  Modal,
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { memo, useContext } from 'react';
-import { CollectionName } from '@/lib/models/utilities';
-import { ManageActionType, ManageContextType } from '@/lib/localLib/manage';
-import { ManageContext } from '@/lib/contexts';
+import React, { memo } from 'react';
 
 const formStyle = {
   // These 4 below are positionings I used for larger
@@ -46,48 +52,44 @@ const formStyle = {
   },
 };
 
-const RowModalLayout = ({
-  children,
-  handleAddNewRow,
-  handleUpdateRow,
-  resetForm,
-}: {
+interface RowModalLayoutProps extends CommonRowModalProps {
+  open: boolean;
   children: React.ReactNode;
-  handleAddNewRow: any;
-  handleUpdateRow: any;
-  resetForm: any;
-}) => {
-  //#region States
+  handleAddRow: AddRowHandler;
+  handleUpdateRow: UpdateRowHandler;
+  handleDeleteRow: ModalDeleteHandler;
+  handleToggleModalEditMode: ModalModeToggleHandler;
+}
 
-  const {
-    state,
-    dispatch,
-    handleDeleteRowOnFirestore: handleDeleteRow,
-    resetDisplayingData,
-  } = useContext<ManageContextType>(ManageContext);
+const RowModalLayout = ({
+  open,
+  children,
+  mode,
+  collectionName,
+  handleAddRow,
+  handleUpdateRow,
+  handleDeleteRow,
+  handleResetForm,
+  handleModalClose,
+  handleToggleModalEditMode,
+  handleCancelUpdateData,
+}: RowModalLayoutProps) => {
+  //#region States
 
   //#endregion
 
   //#region Functions
 
   const getTitle = () => {
-    const collectionName = state.selectedTarget?.collectionName;
-
     if (!collectionName) return 'Error loading title';
 
     switch (collectionName) {
-      case CollectionName.ProductTypes:
-        return state.crudModalMode === 'create'
-          ? 'Thêm loại sản phẩm mới'
-          : 'Loại sản phẩm';
-      case CollectionName.Products:
-        return state.crudModalMode === 'create'
-          ? 'Thêm sản phẩm mới'
-          : 'Sản phẩm';
-      case CollectionName.Batches:
-        return state.crudModalMode === 'create'
-          ? 'Thêm lô hàng mới'
-          : 'Lô hàng';
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        return mode === 'create' ? 'Thêm loại sản phẩm mới' : 'Loại sản phẩm';
+      case COLLECTION_NAME.PRODUCTS:
+        return mode === 'create' ? 'Thêm sản phẩm mới' : 'Sản phẩm';
+      case COLLECTION_NAME.BATCHES:
+        return mode === 'create' ? 'Thêm lô hàng mới' : 'Lô hàng';
       default:
         return 'Error loading title';
     }
@@ -97,33 +99,16 @@ const RowModalLayout = ({
 
   //#region Handlers
 
-  const handleModalClose = () => {
-    // Clear images data
-    // setFeaturedImageFile(null);
-    // setFeaturedImageURL('');
-
-    // Close
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: false,
-    });
+  const handleClose = () => {
+    handleModalClose();
   };
-
-  function handleToggleEditMode() {
-    if (state.crudModalMode !== 'view') return;
-
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_MODE,
-      payload: 'update',
-    });
-  }
 
   //#endregion
 
   return (
     <Modal
-      open={state.crudModalOpen}
-      onClose={handleModalClose}
+      open={open}
+      onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
       sx={{
@@ -155,27 +140,38 @@ const RowModalLayout = ({
                 gap: '1rem',
               }}
             >
-              {['update'].includes(state.crudModalMode) && (
+              {['update'].includes(mode) && (
                 <Button
-                  color="secondary"
-                  variant="outlined"
-                  startIcon={<Check />}
-                  onClick={handleUpdateRow}
+                  variant="contained"
+                  component="label"
+                  startIcon={<Cancel />}
+                  sx={{
+                    mt: 1,
+                    backgroundColor: (theme) => theme.palette.secondary.main,
+                    '&:hover': {
+                      backgroundColor: (theme) => theme.palette.secondary.dark,
+                    },
+                    textTransform: 'none',
+                  }}
+                  onClick={() => handleCancelUpdateData()}
                 >
-                  Cập nhật
+                  Hủy
                 </Button>
               )}
-              {['view'].includes(state.crudModalMode) && (
-                <IconButton onClick={handleToggleEditMode} color="secondary">
+              {['view'].includes(mode) && (
+                <IconButton
+                  onClick={() => handleToggleModalEditMode()}
+                  color="secondary"
+                >
                   <Edit />
                 </IconButton>
               )}
-              {['view', 'update'].includes(state.crudModalMode) && (
-                <IconButton onClick={handleDeleteRow} color="secondary">
+              {['view', 'update'].includes(mode) && (
+                <IconButton onClick={() => handleDeleteRow()} color="secondary">
                   <Delete />
                 </IconButton>
               )}
-              {['create'].includes(state.crudModalMode) && (
+              {['create'].includes(mode) && (
                 <Button
                   variant="contained"
                   size="small"
@@ -187,13 +183,13 @@ const RowModalLayout = ({
                     paddingX: '1rem',
                     borderRadius: '1rem',
                   }}
-                  onClick={() => resetForm()}
+                  onClick={() => handleResetForm()}
                   startIcon={<RestartAlt />}
                 >
                   Đặt lại
                 </Button>
               )}
-              <IconButton onClick={handleModalClose}>
+              <IconButton onClick={() => handleClose()}>
                 <Close />
               </IconButton>
             </Box>
@@ -222,19 +218,21 @@ const RowModalLayout = ({
                 gap: '0.7rem',
               }}
             >
-              {/* {state.crudModalMode === 'update' && (
+              {['update'].includes(mode) && (
                 <Button
-                  variant="outlined"
-                  color="secondary"
+                  variant="contained"
                   sx={{
-                    borderRadius: '1rem',
-                    textTransform: 'none',
+                    backgroundColor: theme.palette.common.gray,
+                    '&:hover': {
+                      backgroundColor: theme.palette.common.light,
+                    },
+                    paddingX: '1.5rem',
                   }}
-                  onClick={handleUpdateRow}
+                  onClick={() => handleUpdateRow()}
                 >
                   Cập nhật
                 </Button>
-              )} */}
+              )}
               <Button
                 variant="contained"
                 sx={{
@@ -244,11 +242,11 @@ const RowModalLayout = ({
                   },
                   paddingX: '1.5rem',
                 }}
-                onClick={handleModalClose}
+                onClick={() => handleClose()}
               >
                 Thoát
               </Button>
-              {state.crudModalMode === 'create' && (
+              {mode === 'create' && (
                 <Button
                   variant="contained"
                   sx={{
@@ -259,7 +257,7 @@ const RowModalLayout = ({
                     paddingX: '1.5rem',
                     borderRadius: '1rem',
                   }}
-                  onClick={handleAddNewRow}
+                  onClick={() => handleAddRow}
                   startIcon={<Add />}
                 >
                   Thêm

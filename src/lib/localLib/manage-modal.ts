@@ -16,28 +16,11 @@ export const memoize = (fn: any) => {
 };
 
 export const isDataChanged = <T extends BaseObject>(
-  newData: T,
-  displayingData: T
+  first: T,
+  second: T
 ): boolean => {
-  const changed = Object.keys(newData).some(
-    (key) => newData[key as keyof T] !== displayingData[key as keyof T]
+  const changed = Object.keys(first).some(
+    (key) => first[key as keyof T] !== second[key as keyof T]
   );
   return changed;
 };
-
-export function checkIfDataChanged(
-  originalDisplayingData: BaseObject | null,
-  displayingData: BaseObject | null
-): boolean {
-  if (!originalDisplayingData) {
-    alert('No original data found');
-    return false;
-  }
-
-  if (!displayingData) {
-    alert('No displaying data found');
-    return false;
-  }
-
-  return isDataChanged(originalDisplayingData, displayingData);
-}

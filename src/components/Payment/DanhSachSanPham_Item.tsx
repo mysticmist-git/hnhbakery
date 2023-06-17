@@ -1,9 +1,9 @@
+import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import formatPrice from '@/utilities/formatCurrency';
-import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import { useMemo, useState } from 'react';
 
 export function DanhSachSanPham_Item(props: any) {
   const { item }: { item: DisplayCartItem } = props;

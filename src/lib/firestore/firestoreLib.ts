@@ -1,4 +1,5 @@
 import { db, storage } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { FirebaseError } from 'firebase/app';
 import {
   DocumentData,
@@ -12,6 +13,7 @@ import {
   deleteDoc,
   doc,
   documentId,
+  getCountFromServer,
   getDoc,
   getDocs,
   limit,
@@ -27,10 +29,10 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { memoize } from '../localLib/manage-modal';
-import { ProductObject } from '../models';
+import { ProductObject, ProductTypeObject } from '../models';
 import BaseObject from '../models/BaseObject';
 import { BatchObject } from '../models/Batch';
-import { filterDuplicates } from '../utilities';
+import { filterDuplicates } from '../utilities/utilities';
 
 //#region Document Related Functions
 
@@ -102,7 +104,8 @@ export async function updateDocToFirestore(
 
   if (!id) throw new Error('ID is null');
 
-  const convertedData = data as DocumentData;
+  const convertedData = { ...data } as DocumentData;
+  delete convertedData.id;
 
   await updateDoc(doc(db, collectionName, id), convertedData);
 }
@@ -136,22 +139,14 @@ export const uploadImageToFirebaseStorage = async (
   const storageRef = ref(storage, `images/${imageFile.name}`);
   const file = imageFile;
 
-  try {
-    const uploadImage = await uploadBytes(storageRef, file);
-    return uploadImage.metadata.fullPath;
-  } catch (error) {
-    throw new Error(`Error: ${error}`);
-  }
+  const uploadImage = await uploadBytes(storageRef, file);
+  return uploadImage.metadata.fullPath;
 };
 
 export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
-  const storageRef = ref(storage, `images/${imagePath}`);
+  const storageRef = ref(storage, imagePath);
 
-  try {
-    await deleteObject(storageRef);
-  } catch (error) {
-    throw new Error(`Error: ${error}`);
-  }
+  await deleteObject(storageRef);
 };
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
@@ -180,12 +175,8 @@ export const getDownloadUrlFromFirebaseStorage = memoize(
       throw new Error('Path is null');
     }
 
-    try {
-      const url = await getDownloadURL(ref(storage, path));
-      return url;
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
+    const url = await getDownloadURL(ref(storage, path));
+    return url;
   }
 );
 
@@ -345,3 +336,146 @@ export const updateBillState = async (
     return false;
   }
 };
+
+//#region Count
+
+export const countDocs = async (
+  collectionName: string,
+  ...queryConstraints: QueryConstraint[]
+): Promise<number> => {
+  if (!collectionName) throw new Error('Collection name is null');
+
+  const snapshot = await getCountFromServer(
+    query(collection(db, collectionName), ...queryConstraints)
+  );
+
+  const count = snapshot.data().count;
+
+  return count;
+};
+
+//#endregion
+
+//#region Storage Page
+export interface StorageProductTypeObject extends ProductTypeObject {
+  productCount: number;
+  imageURL: string;
+}
+
+export const fetchProductTypesForStoragePage = async (): Promise<
+  StorageProductTypeObject[]
+> => {
+  const productTypes = await getCollection<ProductTypeObject>('productTypes');
+
+  const storageProductTypes = await Promise.all(
+    productTypes.map(async (type) => {
+      let productCount = 0;
+      let imageURL = '';
+
+      try {
+        productCount = await countDocs(
+          'products',
+          where('productType_id', '==', type.id)
+        );
+
+        imageURL = await getDownloadUrlFromFirebaseStorage(type.image);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        return {
+          ...type,
+          productCount,
+          imageURL,
+        } as StorageProductTypeObject;
+      }
+    })
+  );
+
+  return storageProductTypes;
+};
+
+export interface StorageProductObject extends ProductObject {
+  productTypeName: string;
+}
+
+export const fetchProductsForStoragePage = async (): Promise<
+  StorageProductObject[]
+> => {
+  const products = await getCollection<ProductObject>('products');
+
+  const storageProducts = await Promise.all(
+    products.map(async (product) => {
+      let productType: ProductTypeObject | null = null;
+      try {
+        productType = await getDocFromFirestore<ProductTypeObject>(
+          COLLECTION_NAME.PRODUCT_TYPES,
+          product.productType_id
+        );
+      } catch (error) {
+        console.log(error);
+      }
+
+      return {
+        ...product,
+        productTypeName: productType?.name ?? '',
+      } as StorageProductObject;
+    })
+  );
+
+  return storageProducts;
+};
+
+export interface StorageBatchObject extends BatchObject {
+  productName: string;
+  productIsActive: boolean;
+  productTypeName: string;
+  productTypeIsActive: boolean;
+}
+
+export const fetchBatchesForStoragePage = async (): Promise<
+  StorageBatchObject[]
+> => {
+  const batches = await getCollection<BatchObject>('batches');
+
+  const storageBatches = await Promise.all(
+    batches.map(async (batch) => {
+      let product: ProductObject | null = null;
+
+      try {
+        product = await getDocFromFirestore<ProductObject>(
+          COLLECTION_NAME.PRODUCTS,
+          batch.product_id
+        );
+      } catch (error) {
+        console.log(error);
+        product = null;
+      }
+
+      let productType: ProductTypeObject | null = null;
+
+      if (product) {
+        try {
+          productType = await getDocFromFirestore<ProductTypeObject>(
+            COLLECTION_NAME.PRODUCT_TYPES,
+            product.productType_id
+          );
+        } catch (error) {
+          console.log(error);
+          productType = null;
+        }
+      }
+
+      return {
+        ...batch,
+        productName: product?.name ?? '',
+        productIsActive: product?.isActive ?? false,
+        productTypeName: productType?.name ?? '',
+        productTypeIsActive: productType?.isActive ?? false,
+      } as StorageBatchObject;
+    })
+  );
+
+  return storageBatches;
+};
+
+//#endregion

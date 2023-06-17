@@ -1,8 +1,8 @@
+import { SaleObject } from '@/lib/models';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import { Box, Checkbox, Grid, Typography, useTheme } from '@mui/material';
 import Image from 'next/image';
 import { useState } from 'react';
-import formatPrice from '@/utilities/formatCurrency';
-import { SaleObject } from '@/lib/models';
 
 function RenderSaleItem(props: any) {
   const theme = useTheme();

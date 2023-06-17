@@ -1,20 +1,28 @@
-import { CollectionName, Nameable } from '@/lib/models/utilities';
-import { Dispatch } from 'react';
+import { COLLECTION_NAME } from '@/lib/constants';
+import {
+  StorageBatchObject,
+  StorageProductObject,
+  StorageProductTypeObject,
+} from '../firestore/firestoreLib';
 import BaseObject from '../models/BaseObject';
+
+export const statusTextResolver = (isActive: boolean) => {
+  return isActive ? 'Còn cung cấp' : 'Ngưng cung cấp';
+};
 
 export const PATH = '/manager/manage';
 
 export const crudTargets: CrudTarget[] = [
   {
-    collectionName: CollectionName.ProductTypes,
+    collectionName: COLLECTION_NAME.PRODUCT_TYPES,
     label: 'Loại sản phẩm',
   },
   {
-    collectionName: CollectionName.Products,
+    collectionName: COLLECTION_NAME.PRODUCTS,
     label: 'Sản phẩm',
   },
   {
-    collectionName: CollectionName.Batches,
+    collectionName: COLLECTION_NAME.BATCHES,
     label: 'Lô hàng',
   },
 ];
@@ -22,42 +30,30 @@ export const crudTargets: CrudTarget[] = [
 export enum ManageActionType {
   SET_MAIN_DOCS = 'SET_MAIN_DOCS',
   SET_SELECTED_TARGET = 'SET_SELECTED_TARGET',
-  SET_DISPLAYING_DATA = 'SET_DISPLAYING_DATA',
-  SET_LOADING = 'SET_LOADING',
   SET_DIALOG_OPEN = 'SET_DIALOG_OPEN',
   SET_CRUD_MODAL_OPEN = 'SET_CRUD_MODAL_OPEN',
   SET_CRUD_MODAL_MODE = 'SET_CRUD_MODAL_MODE',
-  SET_DELETING_ID = 'SET_DELETING_ID',
   UPDATE_SPECIFIC_DOC = 'UPDATE_SPECIFIC_DOC',
   SET_SEARCH_TEXT = 'SET_SEARCH_TEXT',
   SET_DISPLAY_ACTIVE_ONLY = 'SET_DISPLAY_ACTIVE_ONLY',
+  NEW_ROW = 'NEW_ROW',
+  VIEW_ROW = 'VIEW_ROW',
+  SET_MODAL_DATA = 'SET_MODAL_DATA',
+  SET_ORIGINAL_MODAL_DATA = 'SET_ORIGINAL_MODAL_DATA',
 }
 
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
 
 export interface ManageState {
+  modalData: BaseObject | null;
+  originalModalData: BaseObject | null;
   mainDocs: BaseObject[] | null;
   searchText: string;
-  mainCollectionName: CollectionName;
   selectedTarget: CrudTarget | null;
-  displayingData: BaseObject | null;
-  loading: boolean;
   dialogOpen: boolean;
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
-  deletingId: string | null;
   isDisplayActiveOnly: boolean;
-}
-
-export interface ManageContextType {
-  state: ManageState;
-  dispatch: Dispatch<any>;
-  handleViewRow: any;
-  handleDeleteRowOnFirestore: any;
-  resetDisplayingData: any;
-  handleSearchFilter: <T extends BaseObject & Nameable>(
-    docs: T[] | null
-  ) => T[] | null;
 }
 
 export interface ManageAction {
@@ -70,6 +66,16 @@ export const manageReducer = (
   action: ManageAction
 ): ManageState => {
   switch (action.type) {
+    case ManageActionType.SET_MODAL_DATA:
+      return {
+        ...state,
+        modalData: action.payload,
+      };
+    case ManageActionType.SET_ORIGINAL_MODAL_DATA:
+      return {
+        ...state,
+        originalModalData: action.payload,
+      };
     case ManageActionType.SET_MAIN_DOCS:
       return {
         ...state,
@@ -107,18 +113,6 @@ export const manageReducer = (
         selectedTarget: action.payload,
       };
 
-    case ManageActionType.SET_DISPLAYING_DATA:
-      return {
-        ...state,
-        displayingData: action.payload,
-      };
-
-    case ManageActionType.SET_LOADING:
-      return {
-        ...state,
-        loading: action.payload,
-      };
-
     case ManageActionType.SET_DIALOG_OPEN:
       return {
         ...state,
@@ -129,12 +123,6 @@ export const manageReducer = (
       return {
         ...state,
         crudModalOpen: action.payload,
-      };
-
-    case ManageActionType.SET_DELETING_ID:
-      return {
-        ...state,
-        deletingId: action.payload,
       };
 
     case ManageActionType.SET_CRUD_MODAL_MODE:
@@ -149,19 +137,35 @@ export const manageReducer = (
         isDisplayActiveOnly: action.payload,
       };
 
+    case ManageActionType.NEW_ROW:
+      return {
+        ...state,
+        crudModalMode: 'create',
+        crudModalOpen: true,
+      };
+
+    case ManageActionType.VIEW_ROW:
+      return {
+        ...state,
+        modalData: action.payload,
+        originalModalData: action.payload,
+        crudModalMode: 'view',
+        crudModalOpen: true,
+      };
+
     default:
       return { ...state };
   }
 };
 
 export interface CrudTarget {
-  collectionName: CollectionName;
   label: string;
+  collectionName: string;
 }
 
-export const generateDefaultRow = (collectionName: CollectionName) => {
+export const generateDefaultRow = (collectionName: string) => {
   switch (collectionName) {
-    case CollectionName.ProductTypes:
+    case COLLECTION_NAME.PRODUCT_TYPES:
       return {
         id: '',
         name: '',
@@ -169,7 +173,7 @@ export const generateDefaultRow = (collectionName: CollectionName) => {
         image: '',
         isActive: true,
       };
-    case CollectionName.Products:
+    case COLLECTION_NAME.PRODUCTS:
       return {
         id: '',
         productType_id: '',
@@ -184,7 +188,7 @@ export const generateDefaultRow = (collectionName: CollectionName) => {
         images: [],
         isActive: true,
       };
-    case CollectionName.Batches:
+    case COLLECTION_NAME.BATCHES:
       const MFG = new Date();
 
       const EXP = new Date();
@@ -214,23 +218,74 @@ export const generateDefaultRow = (collectionName: CollectionName) => {
 };
 
 export const initManageState: ManageState = {
+  modalData: null,
+  originalModalData: null,
   mainDocs: null,
   searchText: '',
-  mainCollectionName: CollectionName.None,
   selectedTarget: null,
-  displayingData: null,
-  loading: false,
   dialogOpen: false,
   crudModalOpen: false,
   crudModalMode: 'none',
-  deletingId: null,
   isDisplayActiveOnly: true,
 };
 
-const manageCollections: string[] = ['productTypes', 'products', 'batches'];
+const manageCollections: string[] = [
+  COLLECTION_NAME.PRODUCT_TYPES,
+  COLLECTION_NAME.PRODUCTS,
+  COLLECTION_NAME.BATCHES,
+];
 
 export const validateCollectionNameParams = (
   collectionName: string
 ): boolean => {
   return manageCollections.includes(collectionName);
 };
+
+export type VoidHandler = () => void;
+
+export type ViewRowHandler = (rowId: string) => void;
+export type DeleteRowHandler = (rowId: string) => void;
+export type ModalDeleteHandler = VoidHandler;
+
+export interface GeneratedTableBodyProps {
+  handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
+}
+
+export type AddRowHandler = () => void;
+export type UpdateRowHandler = () => void;
+export type ResetFormHandler = () => void;
+export type ModalCloseHandler = () => void;
+export type CancelUpdateDataHandler = () => void;
+
+export interface CommonRowModalProps {
+  open: boolean;
+  handleResetForm: ResetFormHandler;
+  handleModalClose: ModalCloseHandler;
+  handleToggleModalEditMode: ModalModeToggleHandler;
+  handleCancelUpdateData: CancelUpdateDataHandler;
+  mode: ModalMode;
+  collectionName: string;
+}
+
+export interface ModalProductTypeObject extends StorageProductTypeObject {}
+export interface ModalProductObject extends StorageProductObject {}
+export interface ModalBatchObject extends StorageBatchObject {}
+
+export type ModalFormDataChangeHandler = (newData: BaseObject) => void;
+
+export interface ModalFormProps {
+  mode: ModalMode;
+  readOnly: boolean;
+  onDataChange: ModalFormDataChangeHandler;
+}
+
+export type ModalModeToggleHandler = VoidHandler;
+
+export interface FormRef {
+  getProductTypeFormRef(): ProductTypeFormRef | null;
+}
+
+export interface ProductTypeFormRef {
+  getImageFile(): File | null;
+}

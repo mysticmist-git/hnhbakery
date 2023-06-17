@@ -1,26 +1,8 @@
-import ImageBackground from '@/components/imageBackground';
-import {
-  Grid,
-  Typography,
-  useTheme,
-  alpha,
-  Rating,
-  Button,
-  Pagination,
-  useMediaQuery,
-  Box,
-} from '@mui/material';
-import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-import formatPrice from '@/utilities/formatCurrency';
-import Carousel from 'react-material-ui-carousel';
-import Link from 'next/link';
-import Image from 'next/image';
 import { CustomButton } from '@/components/Inputs/Buttons';
 import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
-import banh1 from '../assets/Carousel/1.jpg';
-import banh2 from '../assets/Carousel/2.jpg';
-import banh3 from '../assets/Carousel/3.jpg';
-import { GetServerSidePropsContext } from 'next';
+import ImageBackground from '@/components/imageBackground';
+import { LOCAL_CART_KEY } from '@/lib';
+import { useSnackbarService } from '@/lib/contexts';
 import {
   CartItem,
   CartItemAddingResult,
@@ -31,20 +13,38 @@ import {
   ProductDetailContextType,
   SUCCESS_ADD_CART_MSG,
 } from '@/lib/contexts/productDetail';
-import { BatchObject } from '@/lib/models/Batch';
-import { where } from 'firebase/firestore';
-import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
-import { useSnackbarService } from '@/lib/contexts';
-import { nanoid } from 'nanoid';
-import { useRouter } from 'next/router';
-import { LOCAL_CART_KEY } from '@/lib';
 import {
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
+import { BatchObject } from '@/lib/models/Batch';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import {
+  Box,
+  Button,
+  Grid,
+  Pagination,
+  Rating,
+  Typography,
+  alpha,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { GridRenderedRowsIntervalChangeParams } from '@mui/x-data-grid';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { where } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
+import { GetServerSidePropsContext } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import Carousel from 'react-material-ui-carousel';
+import banh1 from '../assets/Carousel/1.jpg';
+import banh2 from '../assets/Carousel/2.jpg';
+import banh3 from '../assets/Carousel/3.jpg';
+import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 
 // Mock Data
 

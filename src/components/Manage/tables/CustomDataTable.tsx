@@ -1,5 +1,4 @@
-import { ManageContext } from '@/lib/contexts';
-import { ManageContextType } from '@/lib/localLib';
+import { ViewRowHandler } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import {
   Paper,
@@ -10,34 +9,38 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { createContext, memo, useContext } from 'react';
+import { memo, useContext } from 'react';
 import GeneratedTableBody from './components/GeneratedTableBody';
 import GeneratedTableHead from './components/GeneratedTableHead';
 
-export const CustomDataTableContext = createContext<{
-  displayMainDocs: BaseObject[];
-}>({ displayMainDocs: [] });
+interface CustomDataTableProps {
+  mainDocs: BaseObject[] | null;
+  collectionName: string;
+  handleViewRow: ViewRowHandler;
+}
 
-const CustomDataTable = () => {
-  const { state } = useContext<ManageContextType>(ManageContext);
-
+const CustomDataTable = (props: CustomDataTableProps) => {
   return (
     <>
-      {state.mainDocs && (
+      {props.mainDocs && (
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <GeneratedTableHead />
+                <GeneratedTableHead collectionName={props.collectionName} />
               </TableRow>
             </TableHead>
             <TableBody>
-              <GeneratedTableBody />
+              <GeneratedTableBody
+                mainDocs={props.mainDocs}
+                collectionName={props.collectionName}
+                handleViewRow={props.handleViewRow}
+              />
             </TableBody>
           </Table>
         </TableContainer>
       )}
-      {!state.mainDocs && (
+      {!props.mainDocs && (
         <Skeleton
           variant="rectangular"
           width={'100%'}

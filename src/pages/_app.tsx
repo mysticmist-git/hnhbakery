@@ -1,8 +1,7 @@
-import React, { useReducer } from 'react';
-// import { CacheProvider, EmotionCache } from '@emotion/react';
-import { ThemeProvider, CssBaseline, Alert, Snackbar } from '@mui/material';
 import '@/styles/nprogress.scss';
+import { Alert, CssBaseline, Snackbar, ThemeProvider } from '@mui/material';
 import NProgress from 'nprogress';
+import React, { useReducer } from 'react';
 
 Router.events.on('routeChangeStart', () => NProgress.start());
 Router.events.on('routeChangeComplete', () => NProgress.done());
@@ -12,21 +11,21 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 // const clientSideEmotionCache = createEmotionCache();
 
-import { AppProps } from 'next/app';
-import { Router } from 'next/router';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import useSnackbar from '@/lib/hooks/useSnackbar';
-import theme from '@/styles/themes/lightTheme';
-import { SnackbarService } from '@/lib/contexts';
+import Layout from '@/components/Layouts/Layout';
 import { TransitionUp } from '@/components/Transitions';
+import { SnackbarService } from '@/lib/contexts';
 import {
   AppContext,
   appReducer,
   initialState,
 } from '@/lib/contexts/appContext';
-import Layout from '@/components/Layouts/Layout';
+import useSnackbar from '@/lib/hooks/useSnackbar';
+import theme from '@/styles/themes/lightTheme';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AppProps } from 'next/app';
 import Head from 'next/head';
+import { Router } from 'next/router';
 
 const MyApp = (props: AppProps) => {
   // #region States

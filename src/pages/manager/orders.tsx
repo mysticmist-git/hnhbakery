@@ -7,7 +7,7 @@ import {
 } from '@/lib/firestore/firestoreLib';
 import { BillObject } from '@/lib/models/Bill';
 import { DeliveryObject } from '@/lib/models/Delivery';
-import formatPrice from '@/utilities/formatCurrency';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import {
   Button,
   Card,

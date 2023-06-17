@@ -23,7 +23,7 @@ import {
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import formatPrice from '@/utilities/formatCurrency';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,

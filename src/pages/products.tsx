@@ -1,3 +1,25 @@
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
+import LeftSlideInDiv from '@/components/Animation/Appear/LeftSlideInDiv';
+import { CustomIconButton } from '@/components/Inputs/Buttons';
+import ImageBackground from '@/components/imageBackground';
+import ProductsContext, {
+  BoLocItem,
+  ProductItem,
+  ProductsContextType,
+} from '@/lib/contexts/productsContext';
+import {
+  getCollection,
+  getCollectionWithQuery,
+  getDocFromFirestore,
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
+import { ProductTypeObject } from '@/lib/models';
+import { BatchObject } from '@/lib/models/Batch';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import GridView from '@mui/icons-material/GridView';
+import ListAlt from '@mui/icons-material/ListAlt';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import {
   Accordion,
   AccordionDetails,
@@ -11,43 +33,21 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
-  Link as MuiLink,
   MenuItem,
+  Link as MuiLink,
   Select,
   TextField,
   Typography,
   alpha,
   useTheme,
 } from '@mui/material';
-import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { Timestamp, where } from 'firebase/firestore';
+import Image from 'next/image';
 import Link from 'next/link';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useRouter } from 'next/router';
+import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import banh1 from '../assets/Carousel/3.jpg';
 import bg12 from '../assets/Decorate/bg12.png';
-import GridView from '@mui/icons-material/GridView';
-import ListAlt from '@mui/icons-material/ListAlt';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import formatPrice from '@/utilities/formatCurrency';
-import ImageBackground from '@/components/imageBackground';
-import {
-  getCollection,
-  getCollectionWithQuery,
-  getDocFromFirestore,
-  getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
-import { Timestamp, where } from 'firebase/firestore';
-import { BatchObject } from '@/lib/models/Batch';
-import { CustomIconButton } from '@/components/Inputs/Buttons';
-import ProductsContext, {
-  BoLocItem,
-  ProductItem,
-  ProductsContextType,
-} from '@/lib/contexts/productsContext';
-import Image from 'next/image';
-import { ProductTypeObject } from '@/lib/models';
-import { useRouter } from 'next/router';
-import LeftSlideInDiv from '@/components/Animation/Appear/LeftSlideInDiv';
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 
 const DETAIL_PATH = '/product-detail';
 

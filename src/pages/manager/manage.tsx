@@ -1,30 +1,55 @@
 import { MyMultiValuePickerInput } from '@/components/Inputs';
-import RowModal from '@/components/Manage/modals/rowModals/RowModal';
+import { RowModal } from '@/components/Manage/modals/rowModals';
 import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
-import { db } from '@/firebase/config';
-import { useSnackbarService } from '@/lib/contexts';
-import { ManageContext } from '@/lib/contexts/manageContext';
-import { getCollection } from '@/lib/firestore/firestoreLib';
 import {
+  ProductSearchBarNamesFactory,
+  ProductTypeSearchBarNamesFactory,
+  SearchBarNamesFactory,
+} from '@/components/pageSpecifics/storage/SearchBarNamesFactory';
+import {
+  BatchStorageDocsFetcher,
+  ProductStorageDocsFetcher,
+  ProductTypeStorageDocsFetcher,
+  StorageDocsFetcher,
+} from '@/components/pageSpecifics/storage/StorageDocsFactory';
+import { storage } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
+import {
+  deleteImageFromFirebaseStorage,
+  getDownloadUrlFromFirebaseStorage,
+  updateDocToFirestore,
+  uploadImageToFirebaseStorage,
+} from '@/lib/firestore/firestoreLib';
+import { isDataChanged } from '@/lib/localLib';
+import {
+  FormRef,
   ManageAction,
   ManageActionType,
   ManageState,
+  ModalProductTypeObject,
   PATH,
+  ProductTypeFormRef,
   crudTargets,
-  generateDefaultRow,
   initManageState,
   manageReducer,
   validateCollectionNameParams,
 } from '@/lib/localLib/manage';
+import { ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
-import { CollectionName, Nameable } from '@/lib/models/utilities';
+import { createProductTypeObject } from '@/lib/models/ProductType';
+import {
+  DataManagerStrategy,
+  ProductTypeDataManagerStrategy,
+  ProductTypeUpdateData,
+  UpdateData,
+} from '@/lib/strategies/DataManagerStrategy';
 import { Add } from '@mui/icons-material';
 import {
   Autocomplete,
   Box,
   Button,
-  Card,
   Container,
   Dialog,
   DialogActions,
@@ -38,18 +63,22 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteObject, ref } from 'firebase/storage';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 export default function Manage({
+  success,
   mainDocs: paramMainDocs,
   collectionName: paramCollectionName,
 }: {
+  success: boolean;
   mainDocs: string;
   collectionName: string;
 }) {
+  if (!success) return <Typography variant="h4">Lỗi khi load data</Typography>;
+
   //#region States
 
   const [state, dispatch] = useReducer<
@@ -57,6 +86,10 @@ export default function Manage({
   >(manageReducer, initManageState);
 
   const [justLoaded, setJustLoaded] = useState(true);
+
+  const [dataManager, setDataManager] = useState<DataManagerStrategy | null>(
+    null
+  );
 
   //#endregion
 
@@ -68,13 +101,44 @@ export default function Manage({
 
   //#endregion
 
-  //#region useEffects
+  //#region Methods
 
-  // useEffect(() => {
-  //   if (!state.crudModalOpen) return;
+  function updateSelectedCRUDTargetToMatch() {
+    if (!justLoaded) return;
 
-  //   resetDisplayingData();
-  // }, [state.selectedTarget]);
+    if (!paramCollectionName) return;
+
+    dispatch({
+      type: ManageActionType.SET_SELECTED_TARGET,
+      payload: crudTargets.find(
+        (t) => t.collectionName === paramCollectionName
+      ),
+    });
+
+    setJustLoaded(false);
+  }
+
+  function updateDataManagerStrategy() {
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
+        break;
+      case COLLECTION_NAME.PRODUCTS:
+      case COLLECTION_NAME.BATCHES:
+      default:
+        setDataManager(() => null);
+    }
+  }
+
+  //#endregion
+
+  //#region Refs
+
+  const rowModalRef = useRef<FormRef>(null);
+
+  //#endregion
+
+  //#region UseEffects
 
   useEffect(() => {
     const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
@@ -100,47 +164,21 @@ export default function Manage({
   }, [state.selectedTarget]);
 
   useEffect(() => {
-    if (!justLoaded) return;
-
-    if (!paramCollectionName) return;
-
-    dispatch({
-      type: ManageActionType.SET_SELECTED_TARGET,
-      payload: crudTargets.find(
-        (t) => t.collectionName === paramCollectionName
-      ),
-    });
-
-    setJustLoaded(false);
+    updateSelectedCRUDTargetToMatch();
+    updateDataManagerStrategy();
   }, [paramCollectionName]);
 
   //#endregion
 
-  //#region Functions
-
-  const resetDisplayingData = () => {
-    if (!state.selectedTarget) return;
-
-    const collectionName = state.selectedTarget.collectionName;
-    if (collectionName === CollectionName.None) return;
-
-    dispatch({
-      type: ManageActionType.SET_DISPLAYING_DATA,
-      payload: generateDefaultRow(collectionName),
-    });
-  };
-
-  //#endregion
-
-  // #region useMemos
+  //#region useMemos
 
   const rowText = useMemo(() => {
     switch (state.selectedTarget?.collectionName) {
-      case CollectionName.ProductTypes:
+      case COLLECTION_NAME.PRODUCT_TYPES:
         return 'Thêm loại sản phẩm';
-      case CollectionName.Products:
+      case COLLECTION_NAME.PRODUCTS:
         return 'Thêm sản phẩm';
-      case CollectionName.Batches:
+      case COLLECTION_NAME.BATCHES:
         return 'Thêm lô hàng';
       default:
         return 'Lỗi khi load text';
@@ -152,9 +190,27 @@ export default function Manage({
   }, [state.mainDocs]);
 
   const namesForSearchBar = useMemo(() => {
-    return state.mainDocs?.map((d) => {
-      return (d as Nameable).name;
-    });
+    if (!state.mainDocs) return [];
+
+    let namesFactory: SearchBarNamesFactory | null = null;
+
+    switch (paramCollectionName) {
+      case 'productTypes':
+        namesFactory = new ProductTypeSearchBarNamesFactory();
+        break;
+      case 'products':
+        namesFactory = new ProductSearchBarNamesFactory();
+        break;
+      case 'batches':
+      default:
+        break;
+    }
+
+    if (!namesFactory) return [];
+
+    const names = namesFactory.generate(state.mainDocs);
+
+    return names;
   }, [state.mainDocs]);
 
   // #endregion
@@ -168,191 +224,176 @@ export default function Manage({
    * @param {any} newValue - The new value selected in the target selection component.
    * @return {void} - This function does not return anything.
    */
-  const handleCrudTargetChanged = (e: any, newValue: any) => {
-    if (!newValue) return;
+  function handleCrudTargetChanged(newValue: string) {
+    const nextCrudTarget = crudTargets.find(
+      (target) => target.label === newValue
+    );
 
-    dispatch({
-      type: ManageActionType.SET_SELECTED_TARGET,
-      payload: newValue,
-    });
-  };
-
-  const handleClickOpen = () => {
-    dispatch({
-      type: ManageActionType.SET_DIALOG_OPEN,
-      payload: true,
-    });
-  };
-
-  const handleClose = () => {
-    dispatch({
-      type: ManageActionType.SET_DIALOG_OPEN,
-      payload: false,
-    });
-  };
-
-  const handleNewRow = () => {
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_MODE,
-      payload: 'create',
-    });
-
-    resetDisplayingData();
-
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: true,
-    });
-  };
-
-  const handleCloseModal = () => {
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: false,
-    });
-  };
-
-  const handleViewRow = (doc: BaseObject) => {
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_MODE,
-      payload: 'view',
-    });
-    dispatch({
-      type: ManageActionType.SET_DISPLAYING_DATA,
-      payload: doc,
-    });
-    dispatch({
-      type: ManageActionType.SET_CRUD_MODAL_OPEN,
-      payload: true,
-    });
-  };
-
-  const handleDeleteRowOnFirestore = (id: string) => {
-    // Display modal
-    dispatch({
-      type: ManageActionType.SET_DELETING_ID,
-      payload: id,
-    });
-    dispatch({
-      type: ManageActionType.SET_DIALOG_OPEN,
-      payload: true,
-    });
-  };
-
-  const handleDeleteDocumentOnFirestore = async () => {
-    dispatch({
-      type: ManageActionType.SET_LOADING,
-      payload: true,
-    });
-
-    const id = state.deletingId;
-
-    try {
-      if (!id) return;
-      if (!state.selectedTarget) return;
-
-      await deleteDoc(doc(db, state.selectedTarget.collectionName, id));
-      console.log('Document deleted successfully!');
-      handleSnackbarAlert('success', 'Xóa thành công');
-    } catch (error) {
-      console.log('Error deleting document:', error);
+    if (!nextCrudTarget) {
+      console.log('Null Crud target');
+      return;
     }
 
     dispatch({
-      type: ManageActionType.SET_LOADING,
+      type: ManageActionType.SET_SELECTED_TARGET,
+      payload: nextCrudTarget,
+    });
+  }
+
+  // TODO: Implement
+  function handleSearch() {
+    alert('Not implemented yet');
+  }
+
+  // TODO: Implement
+  function handleNewRow() {
+    alert('Not implemented yet');
+  }
+
+  function handleViewRow(rowId: string) {
+    const rowData = state.mainDocs?.find((row) => row.id === rowId);
+
+    if (rowData) {
+      dispatch({
+        type: ManageActionType.VIEW_ROW,
+        payload: rowData,
+      });
+    }
+  }
+
+  function handleAddRow() {}
+
+  async function handleUpdateRow() {
+    if (!state.modalData || !state.originalModalData) return;
+
+    const changed = isDataChanged(state.modalData, state.originalModalData);
+
+    if (changed) {
+      const updateData: ProductTypeUpdateData = {
+        newData: state.modalData,
+        originalData: state.originalModalData,
+        imageFile: rowModalRef.current
+          ?.getProductTypeFormRef()
+          ?.getImageFile() as File,
+      };
+
+      try {
+        const data = await dataManager?.updateDoc(updateData as UpdateData);
+
+        if (!data) {
+          console.error('Null data');
+          return;
+        }
+
+        if (!state.mainDocs) {
+          console.error('Null main docs');
+          return;
+        }
+
+        const index = state.mainDocs.findIndex((doc) => doc.id === data.id);
+
+        const updatedMainDocs = [...state.mainDocs];
+
+        updatedMainDocs[index] = {
+          ...state.modalData,
+          ...data,
+        };
+
+        dispatch({
+          type: ManageActionType.SET_MAIN_DOCS,
+          payload: updatedMainDocs,
+        });
+      } catch (error: any) {
+        console.log(error);
+      }
+    }
+
+    handleToggleModalEditMode();
+  }
+
+  function handleResetForm() {}
+
+  const handleModalClose = () => {
+    dispatch({
+      type: ManageActionType.SET_CRUD_MODAL_OPEN,
       payload: false,
     });
+  };
 
-    if (!state.mainDocs) return;
+  function handleToggleModalEditMode() {
+    if (state.crudModalMode === 'update') {
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_MODE,
+        payload: 'view',
+      });
+    } else if (state.crudModalMode === 'view') {
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_MODE,
+        payload: 'update',
+      });
+    } else {
+      dispatch({
+        type: ManageActionType.SET_CRUD_MODAL_MODE,
+        payload: 'view',
+      });
+    }
+  }
 
-    // Remove row from table
+  function handleCancelUpdateData() {
     dispatch({
-      type: ManageActionType.SET_MAIN_DOCS,
-      payload: state.mainDocs.filter((doc: BaseObject) => doc.id !== id),
+      type: ManageActionType.SET_MODAL_DATA,
+      payload: state.originalModalData,
     });
+    handleToggleModalEditMode();
+  }
+
+  function handleOnDataChange(newData: BaseObject) {
     dispatch({
-      type: ManageActionType.SET_DELETING_ID,
-      payload: '',
+      type: ManageActionType.SET_MODAL_DATA,
+      payload: newData,
     });
+  }
+
+  function handleClose() {
     dispatch({
       type: ManageActionType.SET_DIALOG_OPEN,
       payload: false,
     });
-  };
-
-  const handleSearch = (e: any, searchText: string) => {
-    dispatch({
-      type: ManageActionType.SET_SEARCH_TEXT,
-      payload: searchText,
-    });
-  };
-
-  const handleSearchFilter = <T extends BaseObject & Nameable>(
-    docs: T[] | null
-  ): T[] | null => {
-    if (!docs) return null;
-
-    if (
-      !state.searchText ||
-      state.searchText.length === 0 ||
-      state.searchText === ''
-    )
-      return docs;
-
-    return docs.filter((doc) => doc.name === state.searchText);
-  };
+  }
 
   //#endregion
 
-  // #region Logs
-
-  // #endregion
-
   return (
-    <ManageContext.Provider
-      value={{
-        state,
-        dispatch,
-        handleDeleteRowOnFirestore,
-        handleViewRow,
-        resetDisplayingData,
-        handleSearchFilter,
+    <Container
+      sx={{
+        my: 2,
       }}
     >
-      <Container
+      {/* Title */}
+      <Typography sx={{ color: theme.palette.common.black }} variant="h4">
+        Quản lý kho
+      </Typography>
+      <Divider
         sx={{
-          my: 2,
+          mt: 2,
         }}
-      >
-        {/* Title */}
-        <Typography sx={{ color: theme.palette.common.black }} variant="h4">
-          Quản lý kho
-        </Typography>
-        <Divider
-          sx={{
-            mt: 2,
-          }}
-        />
+      />
 
-        <MyMultiValuePickerInput
-          label="Kho"
-          options={crudTargets.map((target) => target.label)}
-          value={state.selectedTarget?.label}
-          onChange={(value) =>
-            dispatch({
-              type: ManageActionType.SET_SELECTED_TARGET,
-              payload: crudTargets.find((target) => target.label === value),
-            })
-          }
-        />
+      <MyMultiValuePickerInput
+        label="Kho"
+        options={crudTargets.map((target) => target.label)}
+        value={state.selectedTarget?.label}
+        onChange={handleCrudTargetChanged}
+      />
 
-        <Divider
-          sx={{
-            marginY: '1rem',
-          }}
-        />
+      <Divider
+        sx={{
+          marginY: '1rem',
+        }}
+      />
 
-        {/* Manage Buttons */}
+      {/* Manage Buttons */}
+      {
         <Box
           sx={{
             display: 'flex',
@@ -424,65 +465,66 @@ export default function Manage({
             <Typography variant="body2">{rowText}</Typography>
           </TableActionButton>
         </Box>
+      }
 
-        <CustomDataTable />
+      <CustomDataTable
+        mainDocs={state.mainDocs}
+        collectionName={paramCollectionName}
+        handleViewRow={handleViewRow}
+      />
 
-        {isTableEmpty && (
-          <Card
-            sx={{
-              width: '100%',
-              padding: '1rem',
-            }}
+      <Divider
+        sx={{
+          mt: 4,
+        }}
+      />
+      {/* Dialogs */}
+      <Dialog
+        open={state.dialogOpen}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        color="secondary"
+      >
+        <DialogTitle id="alert-dialog-title">{'Xóa đối tượng'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Bạn có chắc muốn xóa?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="secondary">
+            Thoát
+          </Button>
+          <Button
+            // onClick={handleDeleteDocumentOnFirestore}
+            autoFocus
+            color="secondary"
           >
-            <Typography
-              variant="body1"
-              sx={{
-                textAlign: 'center',
-                color: (theme) => theme.palette.secondary.main,
-              }}
-            >
-              Không dữ liệu
-            </Typography>
-          </Card>
-        )}
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        <Divider
-          sx={{
-            mt: 4,
-          }}
+      {/* Modals */}
+      {state.crudModalOpen && (
+        <RowModal
+          open={state.crudModalOpen}
+          mode={state.crudModalMode}
+          handleDeleteRow={() => {}}
+          handleModalClose={handleModalClose}
+          handleToggleModalEditMode={handleToggleModalEditMode}
+          handleCancelUpdateData={handleCancelUpdateData}
+          onDataChange={handleOnDataChange}
+          data={state.modalData}
+          collectionName={paramCollectionName}
+          handleAddRow={handleAddRow}
+          handleUpdateRow={handleUpdateRow}
+          handleResetForm={handleResetForm}
+          ref={rowModalRef}
         />
-        {/* Dialogs */}
-        <Dialog
-          open={state.dialogOpen}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          color="secondary"
-        >
-          <DialogTitle id="alert-dialog-title">{'Xóa đối tượng'}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Bạn có chắc muốn xóa?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="secondary">
-              Thoát
-            </Button>
-            <Button
-              onClick={handleDeleteDocumentOnFirestore}
-              autoFocus
-              color="secondary"
-            >
-              Xóa
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Modals */}
-        {state.crudModalOpen && <RowModal />}
-      </Container>
-    </ManageContext.Provider>
+      )}
+    </Container>
   );
 }
 
@@ -490,6 +532,12 @@ const defaultPageRedirect = {
   redirect: {
     destination: `${PATH}?collectionName=productTypes`,
     permanent: false,
+  },
+};
+
+const errorProps = {
+  props: {
+    success: false,
   },
 };
 
@@ -520,14 +568,39 @@ export const getServerSideProps: GetServerSideProps = async (
   if (!isCollectionNameValid) return defaultPageRedirect;
 
   // Get the documents from the specified collection.
-  const mainDocs = await getCollection<BaseObject>(collectionName);
-  const stringifyMainDocs = JSON.stringify(mainDocs);
+  // const mainDocs = await getCollection<BaseObject>(collectionName);
+  let fetcher: StorageDocsFetcher | null = null;
 
-  console.group(mainDocs);
+  switch (collectionName) {
+    case 'productTypes':
+      fetcher = new ProductTypeStorageDocsFetcher();
+      break;
+    case 'products':
+      fetcher = new ProductStorageDocsFetcher();
+      break;
+    case 'batches':
+      fetcher = new BatchStorageDocsFetcher();
+      break;
+    default:
+      break;
+  }
+
+  if (!fetcher) return errorProps;
+
+  let mainDocs: BaseObject[] = [];
+
+  try {
+    mainDocs = await fetcher.fetch();
+  } catch (error) {
+    console.error('Lỗi fetch main docs: ', error);
+  }
+
+  const stringifyMainDocs = JSON.stringify(mainDocs);
 
   // Return the main documents as props.
   return {
     props: {
+      success: true,
       mainDocs: stringifyMainDocs,
       collectionName,
     },

@@ -1,4 +1,4 @@
-import formatPrice from '@/utilities/formatCurrency';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import { Card, Chip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { BillObject } from '../models/Bill';

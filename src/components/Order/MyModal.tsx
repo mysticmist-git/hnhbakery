@@ -13,29 +13,29 @@ import {
 import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
 import { BillDetailObject } from '@/lib/models/BillDetail';
-import formatPrice from '@/utilities/formatCurrency';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import { Close } from '@mui/icons-material';
 import {
-  Modal,
+  Button,
   Card,
-  Typography,
-  IconButton,
-  Divider,
+  CardActions,
   CardContent,
-  Grid,
+  Divider,
   FormControl,
+  Grid,
+  IconButton,
   InputLabel,
-  Select,
-  MenuItem,
-  Skeleton,
   List,
   ListItem,
-  CardActions,
-  Button,
+  MenuItem,
+  Modal,
+  Select,
+  Skeleton,
+  Typography,
 } from '@mui/material';
-import { Stack, Box } from '@mui/system';
+import { Box, Stack } from '@mui/system';
 import { where } from 'firebase/firestore';
-import { useState, useEffect, memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 const modalStyle = {
   // These 4 below are positionings I used for larger

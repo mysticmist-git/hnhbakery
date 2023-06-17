@@ -1,8 +1,8 @@
+import Head from 'next/head';
 import { Router, useRouter } from 'next/router';
 import React, { useMemo } from 'react';
-import ManageLayout from './ManageLayout';
 import DefaultLayout from './DefaultLayout';
-import Head from 'next/head';
+import ManageLayout from './ManageLayout';
 import NoLayout from './components/NoLayout';
 
 const pathnameResolver = (pathname: string, desiredPaths: string[]) => {

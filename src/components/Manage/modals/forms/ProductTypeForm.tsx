@@ -1,202 +1,265 @@
-import { memo, useContext } from 'react';
+import placeholderImage from '@/assets/placeholder-image.png';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore/firestoreLib';
 import {
-  Grid,
+  ManageActionType,
+  ModalFormProps,
+  ModalMode,
+  ModalProductTypeObject,
+  ProductTypeFormRef,
+} from '@/lib/localLib/manage';
+import BaseObject from '@/lib/models/BaseObject';
+import {
   Box,
-  Typography,
   Button,
-  TextField,
   FormControlLabel,
+  Grid,
   Switch,
-  useTheme,
+  TextField,
+  Typography,
 } from '@mui/material';
 import Image from 'next/image';
-import placeholderImage from '@/assets/placeholder-image.png';
-import { ManageContext } from '@/lib/contexts';
-import { ManageContextType, ManageActionType } from '@/lib/localLib/manage';
+import { argv0 } from 'process';
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  ForwardedRef,
+  forwardRef,
+  memo,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 
-const ProductTypeForm = ({
-  featuredImageURL,
-  handleUploadImageToBrowser,
-  readOnly = false,
-}: {
-  featuredImageURL: string | null;
-  handleUploadImageToBrowser: any;
-  readOnly: boolean;
-}) => {
-  //#region States
+interface ProductTypeFormProps extends ModalFormProps {
+  data: ModalProductTypeObject | null;
+}
 
-  //#endregion
+export default memo(
+  forwardRef(function ProductTypeForm(
+    {
+      data,
+      mode = 'none',
+      readOnly = false,
+      onDataChange,
+    }: ProductTypeFormProps,
+    ref: ForwardedRef<ProductTypeFormRef>
+  ) {
+    if (!data) return <div>Loading...</div>;
+    if (mode === 'none') return <div>No mode specified</div>;
 
-  //#region Hooks
+    //#region States
 
-  const { state, dispatch } = useContext<ManageContextType>(ManageContext);
-  const theme = useTheme();
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
-  //#endregion
+    //#endregion
 
-  return (
-    <Grid container>
-      <Grid
-        item
-        xs={6}
-        sx={{
-          display: 'flex',
-          justifyContent: 'start',
-          alignItems: 'center',
-          flexDirection: 'column',
-        }}
-      >
-        <Image
-          src={
-            featuredImageURL && featuredImageURL.length > 0
-              ? featuredImageURL
-              : placeholderImage
-          }
-          alt="Featuring Image"
-          width={240}
-          height={240}
-          priority
-          style={{
-            borderRadius: '0.4rem',
-            objectFit: 'contain',
-          }}
-        />
+    //#region Handlers
 
-        {['update', 'create'].includes(state.crudModalMode) && (
-          <Button
-            variant="contained"
-            component="label"
-            sx={{
-              mt: 1,
-              backgroundColor: theme.palette.secondary.main,
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.dark,
-              },
-              textTransform: 'none',
-            }}
-          >
-            Tải ảnh lên
-            <input
-              hidden
-              accept="image/*"
-              multiple
-              type="file"
-              onChange={handleUploadImageToBrowser}
-            />
-          </Button>
-        )}
-      </Grid>
-      <Grid item xs={6}>
-        <Box
+    const handleNameChange: ChangeEventHandler<HTMLInputElement> = (
+      event: ChangeEvent<HTMLInputElement>
+    ) => {
+      const newData: ModalProductTypeObject = {
+        ...data,
+        name: event.target.value,
+      };
+      onDataChange(newData as BaseObject);
+    };
+
+    const handleDescriptionChange: ChangeEventHandler<HTMLInputElement> = (
+      event: ChangeEvent<HTMLInputElement>
+    ) => {
+      const newData: ModalProductTypeObject = {
+        ...data,
+        description: event.target.value,
+      };
+      onDataChange(newData as BaseObject);
+    };
+
+    const handleIsActiveChange: ChangeEventHandler<HTMLInputElement> = (
+      event: ChangeEvent<HTMLInputElement>
+    ) => {
+      const newData: ModalProductTypeObject = {
+        ...data,
+        isActive: event.target.checked,
+      };
+      onDataChange(newData as BaseObject);
+    };
+
+    const handleUploadImage: ChangeEventHandler<HTMLInputElement> = (
+      event: ChangeEvent<HTMLInputElement>
+    ) => {
+      const file = event.target.files?.[0];
+
+      // Check
+      if (!file) return;
+
+      setImageFile(() => file);
+
+      const newData: ModalProductTypeObject = {
+        ...data,
+        imageURL: URL.createObjectURL(file),
+      };
+      onDataChange(newData as BaseObject);
+    };
+
+    //#endregion
+
+    //#region Refs
+
+    useImperativeHandle(
+      ref,
+      () => {
+        return {
+          getImageFile() {
+            return imageFile;
+          },
+        };
+      },
+      [imageFile]
+    );
+
+    //#endregion
+
+    return (
+      <Grid container>
+        <Grid
+          item
+          xs={6}
           sx={{
             display: 'flex',
-            gap: '1rem',
+            justifyContent: 'start',
+            alignItems: 'center',
             flexDirection: 'column',
           }}
         >
-          <TextField
-            label="Tên loại sản phẩm"
-            error={state.displayingData?.name === ''}
-            placeholder="Tên loại sản phẩm"
-            variant="standard"
-            color="secondary"
-            fullWidth
-            value={state.displayingData?.name}
-            InputProps={{
-              readOnly: readOnly,
-              sx: { color: theme.palette.common.black },
-            }}
-            sx={{
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: theme.palette.secondary.main,
-                color: theme.palette.common.black,
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                color: theme.palette.common.black,
-                border: 2,
-                borderRadius: '8px',
-              },
-            }}
-            onChange={(e) =>
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: { ...state.displayingData, name: e.target.value },
-              })
+          <Image
+            src={
+              data.imageURL && data.imageURL.length > 0
+                ? data.imageURL
+                : placeholderImage
             }
-          />
-          <TextField
-            label="Miêu tả"
-            placeholder="Miêu tả sản phẩm"
-            color="secondary"
-            multiline
-            fullWidth
-            InputProps={{
-              readOnly: readOnly,
-              sx: { color: theme.palette.common.black },
-            }}
-            sx={{
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: theme.palette.secondary.main,
-                color: theme.palette.common.black,
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                border: 2,
-                borderRadius: '8px',
-              },
-            }}
-            value={state.displayingData?.description}
-            rows={5}
-            onChange={(e) =>
-              dispatch({
-                type: ManageActionType.SET_DISPLAYING_DATA,
-                payload: {
-                  ...state.displayingData,
-                  description: e.target.value,
-                },
-              })
-            }
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                disabled={readOnly}
-                color="secondary"
-                checked={state.displayingData?.isActive}
-                onChange={(e) =>
-                  dispatch({
-                    type: ManageActionType.SET_DISPLAYING_DATA,
-                    payload: {
-                      ...state.displayingData,
-                      isActive: e.target.checked,
-                    },
-                  })
-                }
-              />
-            }
-            label={
-              <Typography
-                sx={{
-                  color: state.displayingData?.isActive
-                    ? theme.palette.success.main
-                    : theme.palette.error.main,
-                }}
-                variant="body1"
-                fontWeight="bold"
-              >
-                {state.displayingData?.isActive
-                  ? 'Còn hoạt động'
-                  : 'Ngưng hoạt động'}
-              </Typography>
-            }
-            labelPlacement="start"
-            sx={{
-              alignSelf: 'end',
+            alt="Featuring Image"
+            width={240}
+            height={240}
+            priority
+            style={{
+              borderRadius: '0.4rem',
+              objectFit: 'contain',
             }}
           />
-        </Box>
-      </Grid>
-    </Grid>
-  );
-};
 
-export default memo(ProductTypeForm);
+          {['update', 'create'].includes(mode) && (
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                mt: 1,
+                backgroundColor: (theme) => theme.palette.secondary.main,
+                '&:hover': {
+                  backgroundColor: (theme) => theme.palette.secondary.dark,
+                },
+                textTransform: 'none',
+              }}
+            >
+              Tải ảnh lên
+              <input
+                hidden
+                accept="image/*"
+                multiple
+                type="file"
+                onChange={handleUploadImage}
+              />
+            </Button>
+          )}
+        </Grid>
+        <Grid item xs={6}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '1rem',
+              flexDirection: 'column',
+            }}
+          >
+            <TextField
+              label="Tên loại sản phẩm"
+              error={data.name === ''}
+              placeholder="Tên loại sản phẩm"
+              variant="standard"
+              color="secondary"
+              fullWidth
+              value={data.name}
+              InputProps={{
+                readOnly: readOnly,
+                sx: { color: (theme) => theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: (theme) => theme.palette.secondary.main,
+                  color: (theme) => theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  color: (theme) => theme.palette.common.black,
+                  border: 2,
+                  borderRadius: '8px',
+                },
+              }}
+              onChange={handleNameChange}
+            />
+            <TextField
+              label="Miêu tả"
+              placeholder="Miêu tả sản phẩm"
+              color="secondary"
+              multiline
+              fullWidth
+              InputProps={{
+                readOnly: readOnly,
+                sx: { color: (theme) => theme.palette.common.black },
+              }}
+              sx={{
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: (theme) => theme.palette.secondary.main,
+                  color: (theme) => theme.palette.common.black,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 2,
+                  borderRadius: '8px',
+                },
+              }}
+              value={data.description}
+              rows={5}
+              onChange={handleDescriptionChange}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  disabled={readOnly}
+                  color="secondary"
+                  checked={data.isActive}
+                  onChange={handleIsActiveChange}
+                />
+              }
+              label={
+                <Typography
+                  sx={{
+                    color: (theme) =>
+                      data.isActive
+                        ? theme.palette.success.main
+                        : theme.palette.error.main,
+                  }}
+                  variant="body1"
+                  fontWeight="bold"
+                >
+                  {data.isActive ? 'Còn hoạt động' : 'Ngưng hoạt động'}
+                </Typography>
+              }
+              labelPlacement="start"
+              sx={{
+                alignSelf: 'end',
+              }}
+            />
+          </Box>
+        </Grid>
+      </Grid>
+    );
+  })
+);

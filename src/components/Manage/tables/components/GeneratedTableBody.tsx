@@ -1,29 +1,63 @@
-import { CollectionName } from '@/lib/models/utilities';
+import { COLLECTION_NAME } from '@/lib/constants';
+import {
+  StorageBatchObject,
+  StorageProductObject,
+  StorageProductTypeObject,
+} from '@/lib/firestore/firestoreLib';
+import { DeleteRowHandler, ViewRowHandler } from '@/lib/localLib/manage';
+import BaseObject from '@/lib/models/BaseObject';
 import { TableRow } from '@mui/material';
-import React, { memo, useContext, useMemo } from 'react';
-import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
-import GeneratedProductTableBody from './GeneratedProductBody';
+import React, { memo } from 'react';
 import GeneratedBatchTableBody from './GeneratedBatchBody';
-import { ManageContext } from '@/lib/contexts';
-import { ManageContextType } from '@/lib/localLib/manage';
+import GeneratedProductTableBody from './GeneratedProductBody';
+import GeneratedProductTypeTableBody from './GeneratedProductTypeBody';
 
-const GeneratedTableBody = () => {
-  const { state } = useContext<ManageContextType>(ManageContext);
+interface GeneratedTableBodyProps {
+  mainDocs: BaseObject[] | null;
+  collectionName: string;
+  handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
+}
 
-  const TableBody = useMemo(() => {
-    switch (state.selectedTarget?.collectionName) {
-      case CollectionName.ProductTypes:
-        return <GeneratedProductTypeTableBody />;
-      case CollectionName.Products:
-        return <GeneratedProductTableBody />;
-      case CollectionName.Batches:
-        return <GeneratedBatchTableBody />;
-      default:
-        return <TableRow>Error generating body</TableRow>;
-    }
-  }, [state.selectedTarget?.collectionName]);
+interface Handlers {
+  handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
+}
 
-  return TableBody;
+const GeneratedTableBody = ({
+  mainDocs,
+  collectionName,
+  handleViewRow,
+  handleDeleteRow,
+}: GeneratedTableBodyProps) => {
+  const handlers: Handlers = {
+    handleViewRow: handleViewRow,
+    handleDeleteRow: handleDeleteRow,
+  };
+
+  switch (collectionName) {
+    case COLLECTION_NAME.PRODUCT_TYPES:
+      return (
+        <GeneratedProductTypeTableBody
+          mainDocs={mainDocs as StorageProductTypeObject[]}
+          {...handlers}
+        />
+      );
+    case COLLECTION_NAME.PRODUCTS:
+      return (
+        <GeneratedProductTableBody
+          mainDocs={mainDocs as StorageProductObject[]}
+          {...handlers}
+        />
+      );
+    case COLLECTION_NAME.BATCHES:
+      <GeneratedBatchTableBody
+        mainDocs={mainDocs as StorageBatchObject[]}
+        {...handlers}
+      />;
+    default:
+      return <TableRow>Error generating body</TableRow>;
+  }
 };
 
 export default memo(GeneratedTableBody);
