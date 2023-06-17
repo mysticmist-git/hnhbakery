@@ -106,6 +106,7 @@ export default memo(
     //#endregion
 
     //#region Handlers
+
     const handleModalDeleteRow = () => {
       if (!data || !data.id) {
         console.log('Delete fail by NULL DATA OR NULL ID');

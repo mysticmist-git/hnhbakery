@@ -4,7 +4,7 @@ import theme from '@/styles/themes/lightTheme';
 import { Delete, Wysiwyg } from '@mui/icons-material';
 import { Tooltip, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { memo, useContext } from 'react';
+import { memo } from 'react';
 import { TableActionButton } from '../TableActionButton';
 
 interface RowActionButtonsProps {
@@ -13,11 +13,11 @@ interface RowActionButtonsProps {
   handleDeleteRow: DeleteRowHandler;
 }
 
-const RowActionButtons = ({
+export default memo(function RowActionButtons({
   doc,
   handleViewRow,
   handleDeleteRow,
-}: RowActionButtonsProps) => {
+}: RowActionButtonsProps) {
   return (
     <Box
       sx={{
@@ -54,6 +54,4 @@ const RowActionButtons = ({
       </Tooltip>
     </Box>
   );
-};
-
-export default memo(RowActionButtons);
+});

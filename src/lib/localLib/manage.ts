@@ -6,12 +6,9 @@ import {
 } from '../firestore/firestoreLib';
 import BaseObject from '../models/BaseObject';
 
-export const statusTextResolver = (isActive: boolean) => {
-  return isActive ? 'Còn cung cấp' : 'Ngưng cung cấp';
-};
+//#region Constants
 
 export const PATH = '/manager/manage';
-
 export const crudTargets: CrudTarget[] = [
   {
     collectionName: COLLECTION_NAME.PRODUCT_TYPES,
@@ -27,10 +24,35 @@ export const crudTargets: CrudTarget[] = [
   },
 ];
 
+export const initManageState: ManageState = {
+  modalData: null,
+  originalModalData: null,
+  mainDocs: null,
+  searchText: '',
+  selectedTarget: null,
+  crudModalOpen: false,
+  crudModalMode: 'none',
+  isDisplayActiveOnly: true,
+};
+
+const manageCollections: string[] = [
+  COLLECTION_NAME.PRODUCT_TYPES,
+  COLLECTION_NAME.PRODUCTS,
+  COLLECTION_NAME.BATCHES,
+];
+
+//#endregion
+
+//#region Types
+
+export interface CrudTarget {
+  label: string;
+  collectionName: string;
+}
+
 export enum ManageActionType {
   SET_MAIN_DOCS = 'SET_MAIN_DOCS',
   SET_SELECTED_TARGET = 'SET_SELECTED_TARGET',
-  SET_DIALOG_OPEN = 'SET_DIALOG_OPEN',
   SET_CRUD_MODAL_OPEN = 'SET_CRUD_MODAL_OPEN',
   SET_CRUD_MODAL_MODE = 'SET_CRUD_MODAL_MODE',
   UPDATE_SPECIFIC_DOC = 'UPDATE_SPECIFIC_DOC',
@@ -50,7 +72,6 @@ export interface ManageState {
   mainDocs: BaseObject[] | null;
   searchText: string;
   selectedTarget: CrudTarget | null;
-  dialogOpen: boolean;
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
   isDisplayActiveOnly: boolean;
@@ -61,10 +82,67 @@ export interface ManageAction {
   payload: any;
 }
 
-export const manageReducer = (
+export type VoidHandler = () => void;
+
+export type ViewRowHandler = (rowId: string) => void;
+export type DeleteRowHandler = (rowId: string) => void;
+export type ModalDeleteHandler = VoidHandler;
+
+export interface GeneratedTableBodyProps {
+  handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
+}
+
+export type AddRowHandler = () => void;
+export type UpdateRowHandler = () => void;
+export type ResetFormHandler = () => void;
+export type ModalCloseHandler = () => void;
+export type CancelUpdateDataHandler = () => void;
+
+export interface CommonRowModalProps {
+  open: boolean;
+  handleResetForm: ResetFormHandler;
+  handleModalClose: ModalCloseHandler;
+  handleToggleModalEditMode: ModalModeToggleHandler;
+  handleCancelUpdateData: CancelUpdateDataHandler;
+  mode: ModalMode;
+  collectionName: string;
+}
+
+export interface ModalProductTypeObject extends StorageProductTypeObject {}
+export interface ModalProductObject extends StorageProductObject {}
+export interface ModalBatchObject extends StorageBatchObject {}
+
+export type ModalFormDataChangeHandler = (newData: BaseObject) => void;
+
+export interface ModalFormProps {
+  mode: ModalMode;
+  readOnly: boolean;
+  onDataChange: ModalFormDataChangeHandler;
+}
+
+export type ModalModeToggleHandler = VoidHandler;
+
+export interface FormRef {
+  getProductTypeFormRef(): ProductTypeFormRef | null;
+}
+
+export interface ProductTypeFormRef {
+  getImageFile(): File | null;
+}
+
+//#endregion
+
+//#region Functions
+
+export function statusTextResolver(isActive: boolean) {
+  return isActive ? 'Còn cung cấp' : 'Ngưng cung cấp';
+}
+
+export function manageReducer(
   state: ManageState,
   action: ManageAction
-): ManageState => {
+): ManageState {
   switch (action.type) {
     case ManageActionType.SET_MODAL_DATA:
       return {
@@ -113,12 +191,6 @@ export const manageReducer = (
         selectedTarget: action.payload,
       };
 
-    case ManageActionType.SET_DIALOG_OPEN:
-      return {
-        ...state,
-        dialogOpen: action.payload,
-      };
-
     case ManageActionType.SET_CRUD_MODAL_OPEN:
       return {
         ...state,
@@ -156,14 +228,9 @@ export const manageReducer = (
     default:
       return { ...state };
   }
-};
-
-export interface CrudTarget {
-  label: string;
-  collectionName: string;
 }
 
-export const generateDefaultRow = (collectionName: string) => {
+export function generateDefaultRow(collectionName: string) {
   switch (collectionName) {
     case COLLECTION_NAME.PRODUCT_TYPES:
       return {
@@ -215,25 +282,7 @@ export const generateDefaultRow = (collectionName: string) => {
     default:
       return {};
   }
-};
-
-export const initManageState: ManageState = {
-  modalData: null,
-  originalModalData: null,
-  mainDocs: null,
-  searchText: '',
-  selectedTarget: null,
-  dialogOpen: false,
-  crudModalOpen: false,
-  crudModalMode: 'none',
-  isDisplayActiveOnly: true,
-};
-
-const manageCollections: string[] = [
-  COLLECTION_NAME.PRODUCT_TYPES,
-  COLLECTION_NAME.PRODUCTS,
-  COLLECTION_NAME.BATCHES,
-];
+}
 
 export const validateCollectionNameParams = (
   collectionName: string
@@ -241,51 +290,4 @@ export const validateCollectionNameParams = (
   return manageCollections.includes(collectionName);
 };
 
-export type VoidHandler = () => void;
-
-export type ViewRowHandler = (rowId: string) => void;
-export type DeleteRowHandler = (rowId: string) => void;
-export type ModalDeleteHandler = VoidHandler;
-
-export interface GeneratedTableBodyProps {
-  handleViewRow: ViewRowHandler;
-  handleDeleteRow: DeleteRowHandler;
-}
-
-export type AddRowHandler = () => void;
-export type UpdateRowHandler = () => void;
-export type ResetFormHandler = () => void;
-export type ModalCloseHandler = () => void;
-export type CancelUpdateDataHandler = () => void;
-
-export interface CommonRowModalProps {
-  open: boolean;
-  handleResetForm: ResetFormHandler;
-  handleModalClose: ModalCloseHandler;
-  handleToggleModalEditMode: ModalModeToggleHandler;
-  handleCancelUpdateData: CancelUpdateDataHandler;
-  mode: ModalMode;
-  collectionName: string;
-}
-
-export interface ModalProductTypeObject extends StorageProductTypeObject {}
-export interface ModalProductObject extends StorageProductObject {}
-export interface ModalBatchObject extends StorageBatchObject {}
-
-export type ModalFormDataChangeHandler = (newData: BaseObject) => void;
-
-export interface ModalFormProps {
-  mode: ModalMode;
-  readOnly: boolean;
-  onDataChange: ModalFormDataChangeHandler;
-}
-
-export type ModalModeToggleHandler = VoidHandler;
-
-export interface FormRef {
-  getProductTypeFormRef(): ProductTypeFormRef | null;
-}
-
-export interface ProductTypeFormRef {
-  getImageFile(): File | null;
-}
+//#endregion

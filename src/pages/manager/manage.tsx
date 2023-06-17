@@ -13,32 +13,21 @@ import {
   ProductTypeStorageDocsFetcher,
   StorageDocsFetcher,
 } from '@/components/pageSpecifics/storage/StorageDocsFactory';
-import { storage } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import {
-  deleteImageFromFirebaseStorage,
-  getDownloadUrlFromFirebaseStorage,
-  updateDocToFirestore,
-  uploadImageToFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
 import { isDataChanged } from '@/lib/localLib';
 import {
   FormRef,
   ManageAction,
   ManageActionType,
   ManageState,
-  ModalProductTypeObject,
   PATH,
-  ProductTypeFormRef,
   crudTargets,
   initManageState,
   manageReducer,
   validateCollectionNameParams,
 } from '@/lib/localLib/manage';
-import { ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
-import { createProductTypeObject } from '@/lib/models/ProductType';
 import {
   DataManagerStrategy,
   ProductTypeDataManagerStrategy,
@@ -63,10 +52,19 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { deleteObject, ref } from 'firebase/storage';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+
+function useDialog(): [open: boolean, handleClose: () => void] {
+  const [open, setOpen] = useState<boolean>(false);
+
+  function close() {
+    setOpen(() => false);
+  }
+
+  return [open, close];
+}
 
 export default function Manage({
   success,
@@ -77,7 +75,7 @@ export default function Manage({
   mainDocs: string;
   collectionName: string;
 }) {
-  if (!success) return <Typography variant="h4">Lỗi khi load data</Typography>;
+  if (!success) return <Typography variant="h4">Lỗi khi trang</Typography>;
 
   //#region States
 
@@ -90,6 +88,8 @@ export default function Manage({
   const [dataManager, setDataManager] = useState<DataManagerStrategy | null>(
     null
   );
+
+  const [dialogOpen, closeDialog] = useDialog();
 
   //#endregion
 
@@ -354,11 +354,9 @@ export default function Manage({
     });
   }
 
-  function handleClose() {
-    dispatch({
-      type: ManageActionType.SET_DIALOG_OPEN,
-      payload: false,
-    });
+  // TODO: Finish this
+  function handleDeleteRow(rowId: string) {
+    return;
   }
 
   //#endregion
@@ -471,6 +469,7 @@ export default function Manage({
         mainDocs={state.mainDocs}
         collectionName={paramCollectionName}
         handleViewRow={handleViewRow}
+        handleDeleteRow={handleDeleteRow}
       />
 
       <Divider
@@ -480,8 +479,8 @@ export default function Manage({
       />
       {/* Dialogs */}
       <Dialog
-        open={state.dialogOpen}
-        onClose={handleClose}
+        open={dialogOpen}
+        onClose={() => closeDialog()}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         color="secondary"
@@ -493,7 +492,7 @@ export default function Manage({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">
+          <Button onClick={() => closeDialog()} color="secondary">
             Thoát
           </Button>
           <Button
@@ -511,7 +510,7 @@ export default function Manage({
         <RowModal
           open={state.crudModalOpen}
           mode={state.crudModalMode}
-          handleDeleteRow={() => {}}
+          handleDeleteRow={handleDeleteRow}
           handleModalClose={handleModalClose}
           handleToggleModalEditMode={handleToggleModalEditMode}
           handleCancelUpdateData={handleCancelUpdateData}
@@ -528,16 +527,16 @@ export default function Manage({
   );
 }
 
+const errorProps = {
+  props: {
+    success: false,
+  },
+};
+
 const defaultPageRedirect = {
   redirect: {
     destination: `${PATH}?collectionName=productTypes`,
     permanent: false,
-  },
-};
-
-const errorProps = {
-  props: {
-    success: false,
   },
 };
 

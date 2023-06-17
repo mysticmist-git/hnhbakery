@@ -1,7 +1,9 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { Dispatch } from 'react';
 import {
+  deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
+  getDocFromFirestore,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
 } from '../firestore/firestoreLib';
@@ -11,7 +13,10 @@ import {
   ModalProductTypeObject,
 } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
-import { createProductTypeObject } from '../models/ProductType';
+import {
+  ProductTypeObject,
+  createProductTypeObject,
+} from '../models/ProductType';
 
 export interface UpdateData {
   newData: BaseObject;
@@ -71,6 +76,11 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
   }
 
   deleteDoc(id: string): void {
-    throw new Error('Method not implemented.');
+    if (!id) {
+      console.log('Null id');
+      return;
+    }
+
+    deleteDocFromFirestore(COLLECTION_NAME.PRODUCT_TYPES, id);
   }
 }

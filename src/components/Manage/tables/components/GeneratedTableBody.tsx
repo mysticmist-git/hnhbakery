@@ -24,15 +24,15 @@ interface Handlers {
   handleDeleteRow: DeleteRowHandler;
 }
 
-const GeneratedTableBody = ({
+export default memo(function GeneratedTableBody({
   mainDocs,
   collectionName,
   handleViewRow,
   handleDeleteRow,
-}: GeneratedTableBodyProps) => {
+}: GeneratedTableBodyProps) {
   const handlers: Handlers = {
-    handleViewRow: handleViewRow,
-    handleDeleteRow: handleDeleteRow,
+    handleViewRow,
+    handleDeleteRow,
   };
 
   switch (collectionName) {
@@ -51,13 +51,13 @@ const GeneratedTableBody = ({
         />
       );
     case COLLECTION_NAME.BATCHES:
-      <GeneratedBatchTableBody
-        mainDocs={mainDocs as StorageBatchObject[]}
-        {...handlers}
-      />;
+      return (
+        <GeneratedBatchTableBody
+          mainDocs={mainDocs as StorageBatchObject[]}
+          {...handlers}
+        />
+      );
     default:
       return <TableRow>Error generating body</TableRow>;
   }
-};
-
-export default memo(GeneratedTableBody);
+});

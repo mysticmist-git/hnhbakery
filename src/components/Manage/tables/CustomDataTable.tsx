@@ -1,4 +1,4 @@
-import { ViewRowHandler } from '@/lib/localLib/manage';
+import { DeleteRowHandler, ViewRowHandler } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import {
   Paper,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { memo, useContext } from 'react';
+import { memo } from 'react';
 import GeneratedTableBody from './components/GeneratedTableBody';
 import GeneratedTableHead from './components/GeneratedTableHead';
 
@@ -17,9 +17,10 @@ interface CustomDataTableProps {
   mainDocs: BaseObject[] | null;
   collectionName: string;
   handleViewRow: ViewRowHandler;
+  handleDeleteRow: DeleteRowHandler;
 }
 
-const CustomDataTable = (props: CustomDataTableProps) => {
+export default memo(function CustomDataTable(props: CustomDataTableProps) {
   return (
     <>
       {props.mainDocs && (
@@ -35,6 +36,7 @@ const CustomDataTable = (props: CustomDataTableProps) => {
                 mainDocs={props.mainDocs}
                 collectionName={props.collectionName}
                 handleViewRow={props.handleViewRow}
+                handleDeleteRow={props.handleDeleteRow}
               />
             </TableBody>
           </Table>
@@ -50,6 +52,4 @@ const CustomDataTable = (props: CustomDataTableProps) => {
       )}
     </>
   );
-};
-
-export default memo(CustomDataTable);
+});

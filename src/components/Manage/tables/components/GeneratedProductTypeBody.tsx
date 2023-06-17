@@ -14,11 +14,9 @@ interface GeneratedProductTypeTableBodyProps extends GeneratedTableBodyProps {
   mainDocs: StorageProductTypeObject[] | null;
 }
 
-const GeneratedProductTypeTableBody = ({
-  mainDocs,
-  handleViewRow,
-  handleDeleteRow,
-}: GeneratedProductTypeTableBodyProps) => {
+export default(function GeneratedProductTypeTableBody({
+  mainDocs, handleViewRow, handleDeleteRow,
+}: GeneratedProductTypeTableBodyProps) {
   return (
     <>
       {mainDocs &&
@@ -96,13 +94,10 @@ const GeneratedProductTypeTableBody = ({
               <RowActionButtons
                 doc={doc}
                 handleViewRow={handleViewRow}
-                handleDeleteRow={handleDeleteRow}
-              />
+                handleDeleteRow={handleDeleteRow} />
             </TableCell>
           </TableRow>
         ))}
     </>
   );
-};
-
-export default memo(GeneratedProductTypeTableBody);
+});
