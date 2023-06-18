@@ -120,7 +120,8 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
 
         data.image = newImagePath;
 
-        deleteImageFromFirebaseStorage(originalData.image);
+        if (originalData.image)
+          deleteImageFromFirebaseStorage(originalData.image);
       }
 
       updateDocToFirestore(data, COLLECTION_NAME.PRODUCT_TYPES);
