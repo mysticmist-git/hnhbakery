@@ -1,20 +1,21 @@
+import SimpleDialog from '@/components/Dialogs/SimpleDialog';
 import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { RowModal } from '@/components/Manage/modals/rowModals';
 import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
 import {
   ProductSearchBarNamesFactory,
   ProductTypeSearchBarNamesFactory,
   SearchBarNamesFactory,
-} from '@/components/pageSpecifics/storage/SearchBarNamesFactory';
+} from '@/lib/factories/SearchBarNamesFactory';
 import {
   BatchStorageDocsFetcher,
   ProductStorageDocsFetcher,
   ProductTypeStorageDocsFetcher,
   StorageDocsFetcher,
-} from '@/components/pageSpecifics/storage/StorageDocsFactory';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { useSnackbarService } from '@/lib/contexts';
+} from '@/lib/factories/StorageDocsFactory';
 import { isDataChanged } from '@/lib/localLib';
 import {
   FormRef,
@@ -30,6 +31,7 @@ import {
 import BaseObject from '@/lib/models/BaseObject';
 import {
   DataManagerStrategy,
+  ProductTypeAddData,
   ProductTypeDataManagerStrategy,
   ProductTypeUpdateData,
   UpdateData,
@@ -40,31 +42,24 @@ import {
   Box,
   Button,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Divider,
   FormControlLabel,
   Switch,
   TextField,
   Typography,
+  styled,
   useTheme,
 } from '@mui/material';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
-function useDialog(): [open: boolean, handleClose: () => void] {
-  const [open, setOpen] = useState<boolean>(false);
-
-  function close() {
-    setOpen(() => false);
-  }
-
-  return [open, close];
-}
+const DialogButton = styled(Button)(({ theme }) => ({
+  backgroundColor: theme.palette.secondary.main,
+  '&:hover': {
+    backgroundColor: theme.palette.secondary.dark,
+  },
+}));
 
 export default function Manage({
   success,
@@ -89,7 +84,7 @@ export default function Manage({
     null
   );
 
-  const [dialogOpen, closeDialog] = useDialog();
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   //#endregion
 
@@ -172,7 +167,7 @@ export default function Manage({
 
   //#region useMemos
 
-  const rowText = useMemo(() => {
+  const addRowText = useMemo(() => {
     switch (state.selectedTarget?.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         return 'Thêm loại sản phẩm';
@@ -247,7 +242,10 @@ export default function Manage({
 
   // TODO: Implement
   function handleNewRow() {
-    alert('Not implemented yet');
+    dispatch({
+      type: ManageActionType.NEW_ROW,
+      payload: COLLECTION_NAME.PRODUCT_TYPES,
+    });
   }
 
   function handleViewRow(rowId: string) {
@@ -261,7 +259,54 @@ export default function Manage({
     }
   }
 
-  function handleAddRow() {}
+  async function handleAddRow() {
+    if (!state.modalData) return;
+
+    const imageFile = rowModalRef.current
+      ?.getProductTypeFormRef()
+      ?.getImageFile();
+
+    if (!imageFile) {
+      console.log('Null image file');
+      return;
+    }
+
+    const addData: ProductTypeAddData = {
+      data: state.modalData,
+      imageFile: imageFile,
+    };
+
+    try {
+      const addedData = await dataManager?.addDoc(addData);
+
+      if (!addedData) {
+        console.log('Null added data');
+        return;
+      }
+
+      if (!state.mainDocs) {
+        console.log('Null main docs');
+        return;
+      }
+
+      const updatedDocs = [...state.mainDocs];
+      updatedDocs.splice(0, 0, addedData);
+
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: updatedDocs,
+      });
+
+      dispatch({
+        type: ManageActionType.SET_MODAL_DATA,
+        payload: addedData,
+      });
+
+      handleSnackbarAlert('success', 'Thêm thành công');
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   async function handleUpdateRow() {
     if (!state.modalData || !state.originalModalData) return;
@@ -278,7 +323,7 @@ export default function Manage({
       };
 
       try {
-        const data = await dataManager?.updateDoc(updateData as UpdateData);
+        const data = await dataManager?.updateDoc(updateData);
 
         if (!data) {
           console.error('Null data');
@@ -356,7 +401,12 @@ export default function Manage({
 
   // TODO: Finish this
   function handleDeleteRow(rowId: string) {
-    return;
+    setDialogOpen(() => true);
+  }
+
+  // TODO: Finish this
+  function handleDialogClose() {
+    setDialogOpen(() => false);
   }
 
   //#endregion
@@ -455,12 +505,9 @@ export default function Manage({
           <TableActionButton
             startIcon={<Add />}
             variant="contained"
-            sx={{
-              backgroundColor: theme.palette.common.darkGray,
-            }}
             onClick={handleNewRow}
           >
-            <Typography variant="body2">{rowText}</Typography>
+            <Typography variant="body2">{addRowText}</Typography>
           </TableActionButton>
         </Box>
       }
@@ -477,33 +524,30 @@ export default function Manage({
           mt: 4,
         }}
       />
+
       {/* Dialogs */}
-      <Dialog
+      <SimpleDialog
         open={dialogOpen}
-        onClose={() => closeDialog()}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        color="secondary"
-      >
-        <DialogTitle id="alert-dialog-title">{'Xóa đối tượng'}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Bạn có chắc muốn xóa?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => closeDialog()} color="secondary">
-            Thoát
-          </Button>
-          <Button
-            // onClick={handleDeleteDocumentOnFirestore}
-            autoFocus
-            color="secondary"
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onClose={handleDialogClose}
+        title={'Xóa?'}
+        content={'Bạn có chắc muốn xóa hàng này?'}
+        actions={
+          <>
+            <DialogButton
+              sx={{
+                backgroundColor: (theme) => theme.palette.common.gray,
+                '&:hover': {
+                  backgroundColor: (theme) => theme.palette.common.darkGray,
+                },
+              }}
+              onClick={() => setDialogOpen(() => false)}
+            >
+              Đóng
+            </DialogButton>
+            <DialogButton>Xóa</DialogButton>
+          </>
+        }
+      />
 
       {/* Modals */}
       {state.crudModalOpen && (

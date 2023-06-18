@@ -2,12 +2,10 @@ import { COLLECTION_NAME } from '@/lib/constants';
 import {
   AddRowHandler,
   CommonRowModalProps,
-  DeleteRowHandler,
   ModalDeleteHandler,
   ModalModeToggleHandler,
   UpdateRowHandler,
 } from '@/lib/localLib/manage';
-import theme from '@/styles/themes/lightTheme';
 import {
   Add,
   Cancel,
@@ -23,6 +21,7 @@ import {
   IconButton,
   Modal,
   Typography,
+  styled,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { memo } from 'react';
@@ -51,6 +50,11 @@ const formStyle = {
     transform: 'translate(-50%, 0%)',
   },
 };
+
+const LayoutButton = styled(Button)(({ theme }) => ({
+  paddingX: '1.5rem',
+  borderRadius: '1rem',
+}));
 
 interface RowModalLayoutProps extends CommonRowModalProps {
   open: boolean;
@@ -126,7 +130,7 @@ const RowModalLayout = ({
             }}
           >
             <Typography
-              sx={{ color: theme.palette.common.black }}
+              sx={{ color: (theme) => theme.palette.common.black }}
               variant="h5"
               fontWeight={'bold'}
             >
@@ -222,9 +226,9 @@ const RowModalLayout = ({
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: theme.palette.common.gray,
+                    backgroundColor: (theme) => theme.palette.common.gray,
                     '&:hover': {
-                      backgroundColor: theme.palette.common.light,
+                      backgroundColor: (theme) => theme.palette.common.darkGray,
                     },
                     paddingX: '1.5rem',
                   }}
@@ -233,35 +237,26 @@ const RowModalLayout = ({
                   Cập nhật
                 </Button>
               )}
-              <Button
+              <LayoutButton
                 variant="contained"
                 sx={{
-                  backgroundColor: theme.palette.common.gray,
+                  backgroundColor: (theme) => theme.palette.common.gray,
                   '&:hover': {
-                    backgroundColor: theme.palette.common.light,
+                    backgroundColor: (theme) => theme.palette.common.darkGray,
                   },
-                  paddingX: '1.5rem',
                 }}
                 onClick={() => handleClose()}
               >
                 Thoát
-              </Button>
+              </LayoutButton>
               {mode === 'create' && (
-                <Button
+                <LayoutButton
                   variant="contained"
-                  sx={{
-                    backgroundColor: theme.palette.secondary.main,
-                    '&:hover': {
-                      backgroundColor: theme.palette.secondary.dark,
-                    },
-                    paddingX: '1.5rem',
-                    borderRadius: '1rem',
-                  }}
-                  onClick={() => handleAddRow}
+                  onClick={() => handleAddRow()}
                   startIcon={<Add />}
                 >
                   Thêm
-                </Button>
+                </LayoutButton>
               )}
             </Box>
           </Grid>

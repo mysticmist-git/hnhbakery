@@ -51,7 +51,7 @@ export const getDocFromFirestore = async <T extends BaseObject>(
   try {
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
-    const docData = getDocFromQuerySnapshot<T>(docSnap);
+    const docData = getDocFromDocumentSnapshot<T>(docSnap);
 
     if (!docData) throw new FirebaseError('null-doc', 'Document not found');
 
@@ -243,7 +243,21 @@ export function getDocsFromQuerySnapshot<T extends BaseObject>(
   });
 }
 
-export function getDocFromQuerySnapshot<T extends BaseObject>(
+export async function getDocFromDocRef<T extends BaseObject>(
+  docRef: DocumentReference<DocumentData>
+): Promise<T> {
+  // Null check
+  if (!docRef) throw new Error('Doc Ref is null');
+
+  // Get doc
+  const documentSnapshot = await getDoc(docRef);
+
+  const data = getDocFromDocumentSnapshot<T>(documentSnapshot);
+
+  return data;
+}
+
+export function getDocFromDocumentSnapshot<T extends BaseObject>(
   docSnapshot: DocumentSnapshot<DocumentData>
 ): T {
   // Null check

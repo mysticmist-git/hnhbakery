@@ -1,22 +1,34 @@
 import { COLLECTION_NAME } from '@/lib/constants';
-import { Dispatch } from 'react';
 import {
+  addDocToFirestore,
   deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
-  getDocFromFirestore,
+  getDocFromDocRef,
+  getDocFromDocumentSnapshot,
+  getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
 } from '../firestore/firestoreLib';
-import {
-  ManageAction,
-  ManageActionType,
-  ModalProductTypeObject,
-} from '../localLib/manage';
+import { ManageAction, ModalProductTypeObject } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
 import {
   ProductTypeObject,
   createProductTypeObject,
 } from '../models/ProductType';
+
+//#region Add
+
+export interface AddData {
+  data: BaseObject;
+}
+
+export interface ProductTypeAddData extends AddData {
+  imageFile: File;
+}
+
+//#endregion
+
+//#region Update
 
 export interface UpdateData {
   newData: BaseObject;
@@ -27,9 +39,11 @@ export interface ProductTypeUpdateData extends UpdateData {
   imageFile: File;
 }
 
+//#endregion
+
 export interface DataManagerStrategy {
   dispatch: React.Dispatch<ManageAction>;
-  addDoc(doc: BaseObject): void;
+  addDoc(addData: AddData): Promise<BaseObject>;
   updateDoc(updateData: UpdateData): Promise<BaseObject>;
   deleteDoc(id: string): void;
 }
@@ -41,8 +55,37 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     this.dispatch = dispatch;
   }
 
-  addDoc(doc: BaseObject): void {
-    throw new Error('Method not implemented.');
+  async addDoc(addData: AddData): Promise<BaseObject> {
+    if (!addData) throw new Error('addData is null');
+
+    const productTypeAddData = addData as ProductTypeAddData;
+
+    if (!productTypeAddData.data || !productTypeAddData.imageFile)
+      throw new Error('productTypeAddData is null');
+
+    const data = createProductTypeObject(productTypeAddData.data);
+    const image = await uploadImageToFirebaseStorage(
+      productTypeAddData.imageFile
+    );
+
+    data.image = image;
+
+    const newProductTypeRef = await addDocToFirestore(
+      data,
+      COLLECTION_NAME.PRODUCT_TYPES
+    );
+
+    const refetchData = await getDocFromDocRef<ProductTypeObject>(
+      newProductTypeRef
+    );
+
+    const refinedData: ModalProductTypeObject = {
+      ...refetchData,
+      productCount: 0,
+      imageURL: await getDownloadUrlFromFirebaseStorage(refetchData.image),
+    };
+
+    return refinedData;
   }
 
   async updateDoc(updateData: UpdateData): Promise<BaseObject> {

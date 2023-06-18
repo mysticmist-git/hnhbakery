@@ -212,6 +212,7 @@ export function manageReducer(
     case ManageActionType.NEW_ROW:
       return {
         ...state,
+        modalData: generateDefaultRow(action.payload),
         crudModalMode: 'create',
         crudModalOpen: true,
       };

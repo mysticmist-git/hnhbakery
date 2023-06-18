@@ -1,5 +1,5 @@
-import { createTheme } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
+import { createTheme } from '@mui/material/styles';
 
 // Create a theme instance.
 const theme = createTheme({
@@ -23,6 +23,9 @@ const theme = createTheme({
         root: {
           color: '#FFFFFF',
           backgroundColor: '#810000',
+          '&:hover': {
+            backgroundColor: '#470000',
+          },
         },
       },
     },
@@ -53,10 +56,8 @@ const theme = createTheme({
     common: {
       black: '#000000',
       white: '#FFFFFF',
-      // light: '#333',
-      // veryLight: '#555',
-      // gray: '#808080',
-      // darkGray: '#555',
+      gray: '#757575',
+      darkGray: '#454545',
     },
   },
   typography: {
@@ -90,7 +91,7 @@ const theme = createTheme({
       fontSize: '16px',
       fontWeight: '700',
       textTransform: 'none',
-      display: 'block',
+      // display: 'inline-block',
     },
   },
 });
