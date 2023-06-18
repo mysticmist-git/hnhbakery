@@ -47,7 +47,7 @@ export default memo(function RowActionButtons({
               backgroundColor: theme.palette.secondary.dark,
             },
           }}
-          onClick={() => handleDeleteRow(doc.id ?? '')}
+          onClick={() => handleDeleteRow(doc)}
         >
           <Typography variant="body2">Xóa</Typography>
         </TableActionButton>

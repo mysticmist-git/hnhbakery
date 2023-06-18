@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import {
   Button,
+  CircularProgress,
   Divider,
   Grid,
   IconButton,
@@ -24,7 +25,7 @@ import {
   styled,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { memo } from 'react';
+import React from 'react';
 
 const formStyle = {
   // These 4 below are positionings I used for larger
@@ -65,7 +66,7 @@ interface RowModalLayoutProps extends CommonRowModalProps {
   handleToggleModalEditMode: ModalModeToggleHandler;
 }
 
-const RowModalLayout = ({
+export default function RowModalLayout({
   open,
   children,
   mode,
@@ -77,13 +78,12 @@ const RowModalLayout = ({
   handleModalClose,
   handleToggleModalEditMode,
   handleCancelUpdateData,
-}: RowModalLayoutProps) => {
+  disabled = false,
+  loading = false,
+}: RowModalLayoutProps) {
   //#region States
-
   //#endregion
-
   //#region Functions
-
   const getTitle = () => {
     if (!collectionName) return 'Error loading title';
 
@@ -100,9 +100,7 @@ const RowModalLayout = ({
   };
 
   //#endregion
-
   //#region Handlers
-
   const handleClose = () => {
     handleModalClose();
   };
@@ -144,8 +142,23 @@ const RowModalLayout = ({
                 gap: '1rem',
               }}
             >
+              { loading && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: (theme) => theme.palette.secondary.main,
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginTop: '-12px',
+                    marginLeft: '-12px',
+                  }}
+                />)
+              }
+
               {['update'].includes(mode) && (
                 <Button
+                  disabled={disabled}
                   variant="contained"
                   component="label"
                   startIcon={<Cancel />}
@@ -164,6 +177,7 @@ const RowModalLayout = ({
               )}
               {['view'].includes(mode) && (
                 <IconButton
+                  disabled={disabled}
                   onClick={() => handleToggleModalEditMode()}
                   color="secondary"
                 >
@@ -171,12 +185,17 @@ const RowModalLayout = ({
                 </IconButton>
               )}
               {['view', 'update'].includes(mode) && (
-                <IconButton onClick={() => handleDeleteRow()} color="secondary">
+                <IconButton
+                  onClick={() => handleDeleteRow()}
+                  color="secondary"
+                  disabled={disabled}
+                >
                   <Delete />
                 </IconButton>
               )}
               {['create'].includes(mode) && (
                 <Button
+                  disabled={disabled}
                   variant="contained"
                   size="small"
                   sx={{
@@ -193,7 +212,7 @@ const RowModalLayout = ({
                   Đặt lại
                 </Button>
               )}
-              <IconButton onClick={() => handleClose()}>
+              <IconButton onClick={() => handleClose()} disabled={disabled}>
                 <Close />
               </IconButton>
             </Box>
@@ -224,6 +243,7 @@ const RowModalLayout = ({
             >
               {['update'].includes(mode) && (
                 <Button
+                  disabled={disabled}
                   variant="contained"
                   sx={{
                     backgroundColor: (theme) => theme.palette.common.gray,
@@ -238,6 +258,7 @@ const RowModalLayout = ({
                 </Button>
               )}
               <LayoutButton
+                disabled={disabled}
                 variant="contained"
                 sx={{
                   backgroundColor: (theme) => theme.palette.common.gray,
@@ -251,6 +272,7 @@ const RowModalLayout = ({
               </LayoutButton>
               {mode === 'create' && (
                 <LayoutButton
+                  disabled={disabled}
                   variant="contained"
                   onClick={() => handleAddRow()}
                   startIcon={<Add />}
@@ -264,6 +286,4 @@ const RowModalLayout = ({
       </Box>
     </Modal>
   );
-};
-
-export default memo(RowModalLayout);
+}

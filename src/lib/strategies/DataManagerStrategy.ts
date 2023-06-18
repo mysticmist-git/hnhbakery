@@ -1,10 +1,10 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
+  StorageProductTypeObject,
   addDocToFirestore,
   deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
   getDocFromDocRef,
-  getDocFromDocumentSnapshot,
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
@@ -16,6 +16,12 @@ import {
   createProductTypeObject,
 } from '../models/ProductType';
 
+export enum DataManagerErrorCode {
+  NULL_FIELD = 'null-field',
+  NULL_ADD_DATA = 'null-data-data',
+  NULL_DATA = 'null-data',
+}
+
 //#region Add
 
 export interface AddData {
@@ -23,7 +29,7 @@ export interface AddData {
 }
 
 export interface ProductTypeAddData extends AddData {
-  imageFile: File;
+  imageFile?: File;
 }
 
 //#endregion
@@ -45,7 +51,7 @@ export interface DataManagerStrategy {
   dispatch: React.Dispatch<ManageAction>;
   addDoc(addData: AddData): Promise<BaseObject>;
   updateDoc(updateData: UpdateData): Promise<BaseObject>;
-  deleteDoc(id: string): void;
+  deleteDoc(doc: BaseObject): void;
 }
 
 export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
@@ -56,17 +62,20 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
   }
 
   async addDoc(addData: AddData): Promise<BaseObject> {
-    if (!addData) throw new Error('addData is null');
+    if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
 
     const productTypeAddData = addData as ProductTypeAddData;
 
-    if (!productTypeAddData.data || !productTypeAddData.imageFile)
-      throw new Error('productTypeAddData is null');
+    if (!productTypeAddData.data)
+      throw new Error(DataManagerErrorCode.NULL_DATA);
 
     const data = createProductTypeObject(productTypeAddData.data);
-    const image = await uploadImageToFirebaseStorage(
-      productTypeAddData.imageFile
-    );
+
+    if (!data.name) throw new Error(DataManagerErrorCode.NULL_FIELD);
+
+    let image: string = '';
+    if (productTypeAddData.imageFile)
+      image = await uploadImageToFirebaseStorage(productTypeAddData.imageFile);
 
     data.image = image;
 
@@ -79,10 +88,14 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
       newProductTypeRef
     );
 
+    let imageURL = '';
+    if (refetchData.image)
+      imageURL = await getDownloadUrlFromFirebaseStorage(refetchData.image);
+
     const refinedData: ModalProductTypeObject = {
       ...refetchData,
       productCount: 0,
-      imageURL: await getDownloadUrlFromFirebaseStorage(refetchData.image),
+      imageURL: imageURL,
     };
 
     return refinedData;
@@ -118,12 +131,21 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     }
   }
 
-  deleteDoc(id: string): void {
-    if (!id) {
-      console.log('Null id');
-      return;
+  deleteDoc(doc: BaseObject): void {
+    if (!doc) {
+      console.log('Null doc');
+      throw new Error('Null doc');
     }
 
-    deleteDocFromFirestore(COLLECTION_NAME.PRODUCT_TYPES, id);
+    if (!doc.id) {
+      console.log('Null id');
+      throw new Error('Null id');
+    }
+
+    const castedDoc = doc as StorageProductTypeObject;
+
+    if (castedDoc.image) deleteImageFromFirebaseStorage(castedDoc.image);
+
+    deleteDocFromFirestore(COLLECTION_NAME.PRODUCT_TYPES, doc.id);
   }
 }

@@ -1,15 +1,15 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import MuiDrawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import Sidebar from './components/Sidebar';
-import Link from 'next/link';
 import { Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import MuiDrawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import { styled } from '@mui/material/styles';
+import Link from 'next/link';
+import * as React from 'react';
 import { memo } from 'react';
+import Sidebar from './components/Sidebar';
 
 const drawerWidth: number = 240;
 
@@ -39,7 +39,7 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-const Layout = ({ children }: { children: any }) => {
+function Layout({ children }: { children: any }) {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -91,6 +91,6 @@ const Layout = ({ children }: { children: any }) => {
       </Box>
     </>
   );
-};
+}
 
 export default memo(Layout);

@@ -18,6 +18,7 @@ import {
 } from '@/lib/factories/StorageDocsFactory';
 import { isDataChanged } from '@/lib/localLib';
 import {
+  DialogResult,
   FormRef,
   ManageAction,
   ManageActionType,
@@ -30,6 +31,7 @@ import {
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import {
+  DataManagerErrorCode,
   DataManagerStrategy,
   ProductTypeAddData,
   ProductTypeDataManagerStrategy,
@@ -41,6 +43,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
   Container,
   Divider,
   FormControlLabel,
@@ -54,12 +57,16 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
+//#region Styled Components
+
 const DialogButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
   '&:hover': {
     backgroundColor: theme.palette.secondary.dark,
   },
 }));
+
+//#endregion
 
 export default function Manage({
   success,
@@ -98,6 +105,17 @@ export default function Manage({
 
   //#region Methods
 
+  /**
+   * Sets the loading state of the component.
+   *
+   * @param {boolean} value - The value to set the loading state to. Defaults to false.
+   */
+  function setLoading(value: boolean = false) {
+    dispatch({
+      type: ManageActionType.SET_LOADING,
+      payload: value,
+    });
+  }
   function updateSelectedCRUDTargetToMatch() {
     if (!justLoaded) return;
 
@@ -262,18 +280,15 @@ export default function Manage({
   async function handleAddRow() {
     if (!state.modalData) return;
 
+    setLoading(true);
+
     const imageFile = rowModalRef.current
       ?.getProductTypeFormRef()
       ?.getImageFile();
 
-    if (!imageFile) {
-      console.log('Null image file');
-      return;
-    }
-
     const addData: ProductTypeAddData = {
       data: state.modalData,
-      imageFile: imageFile,
+      imageFile: imageFile ?? undefined,
     };
 
     try {
@@ -281,11 +296,13 @@ export default function Manage({
 
       if (!addedData) {
         console.log('Null added data');
+        handleSnackbarAlert('error', 'Thêm thất bại');
         return;
       }
 
       if (!state.mainDocs) {
         console.log('Null main docs');
+        handleSnackbarAlert('error', 'Thêm thất bại');
         return;
       }
 
@@ -302,14 +319,33 @@ export default function Manage({
         payload: addedData,
       });
 
+      dispatch({
+        type: ManageActionType.VIEW_ROW,
+        payload: addedData,
+      });
+
       handleSnackbarAlert('success', 'Thêm thành công');
     } catch (error: any) {
-      console.log(error);
+      switch (error.message) {
+        case DataManagerErrorCode.NULL_FIELD:
+          handleSnackbarAlert('error', 'Vui lòng điền đầy đủ các trường');
+          break;
+        default:
+          console.log(error);
+          break;
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleUpdateRow() {
-    if (!state.modalData || !state.originalModalData) return;
+    setLoading(true);
+
+    if (!state.modalData || !state.originalModalData) {
+      setLoading(false);
+      return;
+    }
 
     const changed = isDataChanged(state.modalData, state.originalModalData);
 
@@ -327,11 +363,13 @@ export default function Manage({
 
         if (!data) {
           console.error('Null data');
+          setLoading(false);
           return;
         }
 
         if (!state.mainDocs) {
           console.error('Null main docs');
+          setLoading(false);
           return;
         }
 
@@ -350,6 +388,8 @@ export default function Manage({
         });
       } catch (error: any) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -399,14 +439,61 @@ export default function Manage({
     });
   }
 
-  // TODO: Finish this
-  function handleDeleteRow(rowId: string) {
+  function handleDeleteRow(doc: BaseObject) {
+    if (!doc) {
+      handleSnackbarAlert('error', 'Đã có lỗi khi xóa: Null doc');
+      return;
+    }
+
+    dispatch({
+      type: ManageActionType.SET_DELETE_DOC,
+      payload: doc,
+    });
+
     setDialogOpen(() => true);
   }
 
-  // TODO: Finish this
-  function handleDialogClose() {
-    setDialogOpen(() => false);
+  function handleDialogClose(result: DialogResult) {
+    setLoading(true);
+
+    try {
+      if (result === 'confirm') {
+        if (!state.deleteDoc) {
+          handleSnackbarAlert('error', 'Đã có lỗi khi xóa: Null doc');
+          return;
+        }
+
+        dataManager?.deleteDoc(state.deleteDoc);
+
+        if (!state.mainDocs) {
+          console.log('Null main docs');
+          handleSnackbarAlert('error', 'Đã có lỗi khi xóa: Null main docs');
+          return;
+        }
+
+        const updatedMainDocs = [...state.mainDocs];
+        const deletedIndex = updatedMainDocs.indexOf(state.deleteDoc);
+        console.log(deletedIndex);
+        updatedMainDocs.splice(deletedIndex, 1);
+
+        dispatch({
+          type: ManageActionType.SET_MAIN_DOCS,
+          payload: updatedMainDocs,
+        });
+
+        handleSnackbarAlert('success', 'Xóa thành công');
+      }
+    } catch (error: any) {
+      console.log(error.message);
+      handleSnackbarAlert('error', `Đã có lỗi khi xóa: ${error.message}`);
+    } finally {
+      dispatch({
+        type: ManageActionType.SET_DELETE_DOC,
+        payload: '',
+      });
+      setDialogOpen(() => false);
+      setLoading(false);
+    }
   }
 
   //#endregion
@@ -417,6 +504,20 @@ export default function Manage({
         my: 2,
       }}
     >
+      {state.loading && (
+        <CircularProgress
+          size={24}
+          sx={{
+            color: (theme) => theme.palette.secondary.main,
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            marginTop: '-12px',
+            marginLeft: '-12px',
+          }}
+        />
+      )}
+
       {/* Title */}
       <Typography sx={{ color: theme.palette.common.black }} variant="h4">
         Quản lý kho
@@ -540,11 +641,13 @@ export default function Manage({
                   backgroundColor: (theme) => theme.palette.common.darkGray,
                 },
               }}
-              onClick={() => setDialogOpen(() => false)}
+              onClick={() => handleDialogClose('close')}
             >
               Đóng
             </DialogButton>
-            <DialogButton>Xóa</DialogButton>
+            <DialogButton onClick={() => handleDialogClose('confirm')}>
+              Xóa
+            </DialogButton>
           </>
         }
       />
@@ -565,6 +668,8 @@ export default function Manage({
           handleUpdateRow={handleUpdateRow}
           handleResetForm={handleResetForm}
           ref={rowModalRef}
+          disabled={state.loading}
+          loading={state.loading}
         />
       )}
     </Container>

@@ -8,10 +8,16 @@ import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 import { ProductTypeForm } from '../forms';
 import { FormProps } from '../rowModals/RowModal';
 
-const DEFAULT_REF = {};
-
 export default forwardRef(function Form(
-  { data, collectionName, onDataChange, mode, readOnly }: FormProps,
+  {
+    data,
+    collectionName,
+    onDataChange,
+    mode,
+    readOnly,
+    disabled = false,
+    loading = false,
+  }: FormProps,
   ref: ForwardedRef<FormRef>
 ) {
   //#region Refs
@@ -41,6 +47,7 @@ export default forwardRef(function Form(
           mode={mode}
           onDataChange={onDataChange}
           ref={productTypeFormRef}
+          disabled={disabled}
         />
       );
     case COLLECTION_NAME.PRODUCTS:

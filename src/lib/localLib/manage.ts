@@ -33,6 +33,8 @@ export const initManageState: ManageState = {
   crudModalOpen: false,
   crudModalMode: 'none',
   isDisplayActiveOnly: true,
+  deleteDoc: null,
+  loading: false,
 };
 
 const manageCollections: string[] = [
@@ -62,6 +64,8 @@ export enum ManageActionType {
   VIEW_ROW = 'VIEW_ROW',
   SET_MODAL_DATA = 'SET_MODAL_DATA',
   SET_ORIGINAL_MODAL_DATA = 'SET_ORIGINAL_MODAL_DATA',
+  SET_DELETE_DOC = 'SET_DELETE_DOC',
+  SET_LOADING = 'SET_LOADING',
 }
 
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
@@ -75,6 +79,8 @@ export interface ManageState {
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
   isDisplayActiveOnly: boolean;
+  deleteDoc: BaseObject | null;
+  loading: boolean;
 }
 
 export interface ManageAction {
@@ -85,7 +91,7 @@ export interface ManageAction {
 export type VoidHandler = () => void;
 
 export type ViewRowHandler = (rowId: string) => void;
-export type DeleteRowHandler = (rowId: string) => void;
+export type DeleteRowHandler = (doc: BaseObject) => void;
 export type ModalDeleteHandler = VoidHandler;
 
 export interface GeneratedTableBodyProps {
@@ -107,6 +113,8 @@ export interface CommonRowModalProps {
   handleCancelUpdateData: CancelUpdateDataHandler;
   mode: ModalMode;
   collectionName: string;
+  disabled: boolean;
+  loading: boolean;
 }
 
 export interface ModalProductTypeObject extends StorageProductTypeObject {}
@@ -119,6 +127,7 @@ export interface ModalFormProps {
   mode: ModalMode;
   readOnly: boolean;
   onDataChange: ModalFormDataChangeHandler;
+  disabled: boolean;
 }
 
 export type ModalModeToggleHandler = VoidHandler;
@@ -130,6 +139,8 @@ export interface FormRef {
 export interface ProductTypeFormRef {
   getImageFile(): File | null;
 }
+
+export type DialogResult = 'close' | 'confirm';
 
 //#endregion
 
@@ -164,7 +175,6 @@ export function manageReducer(
         ...state,
         searchText: action.payload,
       };
-
     case ManageActionType.UPDATE_SPECIFIC_DOC:
       if (!state.mainDocs) return { ...state, mainDocs: null };
 
@@ -184,31 +194,26 @@ export function manageReducer(
         ...state,
         mainDocs: copyMainDocs,
       };
-
     case ManageActionType.SET_SELECTED_TARGET:
       return {
         ...state,
         selectedTarget: action.payload,
       };
-
     case ManageActionType.SET_CRUD_MODAL_OPEN:
       return {
         ...state,
         crudModalOpen: action.payload,
       };
-
     case ManageActionType.SET_CRUD_MODAL_MODE:
       return {
         ...state,
         crudModalMode: action.payload,
       };
-
     case ManageActionType.SET_DISPLAY_ACTIVE_ONLY:
       return {
         ...state,
         isDisplayActiveOnly: action.payload,
       };
-
     case ManageActionType.NEW_ROW:
       return {
         ...state,
@@ -216,7 +221,6 @@ export function manageReducer(
         crudModalMode: 'create',
         crudModalOpen: true,
       };
-
     case ManageActionType.VIEW_ROW:
       return {
         ...state,
@@ -225,7 +229,16 @@ export function manageReducer(
         crudModalMode: 'view',
         crudModalOpen: true,
       };
-
+    case ManageActionType.SET_DELETE_DOC:
+      return {
+        ...state,
+        deleteDoc: action.payload,
+      };
+    case ManageActionType.SET_LOADING:
+      return {
+        ...state,
+        loading: action.payload,
+      };
     default:
       return { ...state };
   }

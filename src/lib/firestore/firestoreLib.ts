@@ -117,7 +117,7 @@ export const deleteDocFromFirestore = async (
   try {
     await deleteDoc(doc(db, collectionName, documentId));
   } catch (error) {
-    throw new Error(`Error: ${error}`);
+    throw error;
   }
 };
 
@@ -392,7 +392,8 @@ export const fetchProductTypesForStoragePage = async (): Promise<
           where('productType_id', '==', type.id)
         );
 
-        imageURL = await getDownloadUrlFromFirebaseStorage(type.image);
+        if (type.image)
+          imageURL = await getDownloadUrlFromFirebaseStorage(type.image);
       } catch (error) {
         console.log(error);
       } finally {

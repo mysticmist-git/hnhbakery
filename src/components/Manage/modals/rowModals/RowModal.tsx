@@ -15,12 +15,7 @@ import RowModalAssemblyDataStrategy, {
   ProductRowModalAssemblyDataStrategy,
   ProductTypeRowModalAssemblyDataStrategy,
 } from '@/lib/strategies/rowModalAssemblyDataStrategy';
-import React, {
-  forwardRef,
-  memo,
-  useEffect,
-  useState,
-} from 'react';
+import React, { forwardRef, memo, useEffect, useState } from 'react';
 import Form from '../forms/Form';
 import RowModalLayout from './RowModalLayout';
 
@@ -38,6 +33,8 @@ export interface FormProps {
   onDataChange: ModalFormDataChangeHandler;
   readOnly: boolean;
   mode: ModalMode;
+  disabled: boolean;
+  loading: boolean;
 }
 
 export default memo(
@@ -55,6 +52,8 @@ export default memo(
       handleModalClose,
       handleToggleModalEditMode,
       handleCancelUpdateData,
+      disabled = false,
+      loading = false,
     }: RowModalProps,
     ref: React.ForwardedRef<FormRef>
   ) {
@@ -111,7 +110,7 @@ export default memo(
         return;
       }
 
-      handleDeleteRow(data.id);
+      handleDeleteRow(data);
     };
 
     //#endregion
@@ -128,6 +127,8 @@ export default memo(
         handleModalClose={handleModalClose}
         handleToggleModalEditMode={handleToggleModalEditMode}
         handleCancelUpdateData={handleCancelUpdateData}
+        disabled={disabled}
+        loading={loading}
       >
         <Form
           data={data}
@@ -136,6 +137,8 @@ export default memo(
           onDataChange={onDataChange}
           readOnly={readOnly}
           ref={ref}
+          disabled={disabled}
+          loading={loading}
         />
       </RowModalLayout>
     );

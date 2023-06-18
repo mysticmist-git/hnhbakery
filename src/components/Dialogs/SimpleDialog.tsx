@@ -1,6 +1,6 @@
+import { DialogResult } from '@/lib/localLib/manage';
 import { Close } from '@mui/icons-material';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,7 +15,7 @@ import React from 'react';
 
 interface SimpleDialogProps {
   open: boolean;
-  onClose?: () => void;
+  onClose?: (result: DialogResult) => void;
   title?: string;
   content?: string;
   actions?: React.ReactNode;
@@ -23,7 +23,7 @@ interface SimpleDialogProps {
 
 export default function SimpleDialog(props: SimpleDialogProps) {
   function handleClose() {
-    if (props.onClose) props.onClose();
+    if (props.onClose) props.onClose('close');
   }
 
   return (

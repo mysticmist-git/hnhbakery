@@ -1,9 +1,6 @@
 import placeholderImage from '@/assets/placeholder-image.png';
-import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore/firestoreLib';
 import {
-  ManageActionType,
   ModalFormProps,
-  ModalMode,
   ModalProductTypeObject,
   ProductTypeFormRef,
 } from '@/lib/localLib/manage';
@@ -18,14 +15,12 @@ import {
   Typography,
 } from '@mui/material';
 import Image from 'next/image';
-import { argv0 } from 'process';
 import {
   ChangeEvent,
   ChangeEventHandler,
   ForwardedRef,
   forwardRef,
   memo,
-  useEffect,
   useImperativeHandle,
   useState,
 } from 'react';
@@ -41,6 +36,7 @@ export default memo(
       mode = 'none',
       readOnly = false,
       onDataChange,
+      disabled = false,
     }: ProductTypeFormProps,
     ref: ForwardedRef<ProductTypeFormRef>
   ) {
@@ -150,6 +146,7 @@ export default memo(
 
           {['update', 'create'].includes(mode) && (
             <Button
+              disabled={disabled}
               variant="contained"
               component="label"
               sx={{
@@ -181,6 +178,7 @@ export default memo(
             }}
           >
             <TextField
+              disabled={disabled}
               label="Tên loại sản phẩm"
               error={data.name === ''}
               placeholder="Tên loại sản phẩm"
@@ -206,6 +204,7 @@ export default memo(
               onChange={handleNameChange}
             />
             <TextField
+              disabled={disabled}
               label="Miêu tả"
               placeholder="Miêu tả sản phẩm"
               color="secondary"
@@ -232,7 +231,7 @@ export default memo(
             <FormControlLabel
               control={
                 <Switch
-                  disabled={readOnly}
+                  disabled={readOnly || disabled}
                   color="secondary"
                   checked={data.isActive}
                   onChange={handleIsActiveChange}
