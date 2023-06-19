@@ -327,11 +327,11 @@ interface HomeProps {
   bestSellerProductsWithImageFetched: BestSellerItem[];
 }
 
-const Home = ({
+function Home({
   isSuccess,
   productTypesWithImageFetched: typeCakeState,
   bestSellerProductsWithImageFetched: bestSellerState,
-}: HomeProps) => {
+}: HomeProps) {
   if (!isSuccess)
     return (
       <Box
@@ -347,21 +347,16 @@ const Home = ({
     );
 
   //#region States
-
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
 
   //#endregion
-
   //#region Hooks
-
   const theme = useTheme();
 
   //#endregion
-
   //#region UseEffects
-
   useEffect(() => {
     const importImages = async () => {
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
@@ -385,11 +380,8 @@ const Home = ({
   }, []);
 
   //#endregion
-
   //#region Logs
-
   //#endregion
-
   return (
     <>
       <HomeContext.Provider
@@ -481,7 +473,7 @@ const Home = ({
       </HomeContext.Provider>
     </>
   );
-};
+}
 
 //#region Local Functions
 
@@ -489,10 +481,20 @@ async function fetchTypeCakesAndGetTheirImagesToo(
   productTypes: ProductTypeObject[]
 ): Promise<TypeCakeItem[]> {
   // Get image
-  const promises = productTypes.map(async (type) => ({
-    ...type,
-    url: (await getDownloadUrlFromFirebaseStorage(type.image)) as string,
-  }));
+  const promises = productTypes.map(async (type) => {
+    let image = '';
+
+    try {
+      image = await getDownloadUrlFromFirebaseStorage(type.image);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return {
+      ...type,
+      url: image,
+    };
+  });
 
   const imageFetchedProductTypes = await Promise.all(promises);
 

@@ -147,7 +147,7 @@ export type DialogResult = 'close' | 'confirm';
 //#region Functions
 
 export function statusTextResolver(isActive: boolean) {
-  return isActive ? 'Còn cung cấp' : 'Ngưng cung cấp';
+  return isActive ? 'Hoạt động' : 'Đã ngưng';
 }
 
 export function manageReducer(

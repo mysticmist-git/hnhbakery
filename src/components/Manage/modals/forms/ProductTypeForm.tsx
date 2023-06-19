@@ -8,8 +8,10 @@ import BaseObject from '@/lib/models/BaseObject';
 import {
   Box,
   Button,
+  Divider,
   FormControlLabel,
   Grid,
+  Stack,
   Switch,
   TextField,
   Typography,
@@ -24,6 +26,7 @@ import {
   useImperativeHandle,
   useState,
 } from 'react';
+import RowModalLayoutButton from '../rowModals/RowModalLayoutButton';
 
 interface ProductTypeFormProps extends ModalFormProps {
   data: ModalProductTypeObject | null;
@@ -117,59 +120,8 @@ export default memo(
     //#endregion
 
     return (
-      <Grid container>
-        <Grid
-          item
-          xs={6}
-          sx={{
-            display: 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-            flexDirection: 'column',
-          }}
-        >
-          <Image
-            src={
-              data.imageURL && data.imageURL.length > 0
-                ? data.imageURL
-                : placeholderImage
-            }
-            alt="Featuring Image"
-            width={240}
-            height={240}
-            priority
-            style={{
-              borderRadius: '0.4rem',
-              objectFit: 'contain',
-            }}
-          />
-
-          {['update', 'create'].includes(mode) && (
-            <Button
-              disabled={disabled}
-              variant="contained"
-              component="label"
-              sx={{
-                mt: 1,
-                backgroundColor: (theme) => theme.palette.secondary.main,
-                '&:hover': {
-                  backgroundColor: (theme) => theme.palette.secondary.dark,
-                },
-                textTransform: 'none',
-              }}
-            >
-              Tải ảnh lên
-              <input
-                hidden
-                accept="image/*"
-                multiple
-                type="file"
-                onChange={handleUploadImage}
-              />
-            </Button>
-          )}
-        </Grid>
-        <Grid item xs={6}>
+      <Grid container columnSpacing={2}>
+        <Grid item xs={5.5}>
           <Box
             sx={{
               display: 'flex',
@@ -188,7 +140,9 @@ export default memo(
               value={data.name}
               InputProps={{
                 readOnly: readOnly,
-                sx: { color: (theme) => theme.palette.common.black },
+                sx: {
+                  color: (theme) => theme.palette.common.black,
+                },
               }}
               sx={{
                 '&:hover .MuiOutlinedInput-notchedOutline': {
@@ -251,12 +205,60 @@ export default memo(
                   {data.isActive ? 'Còn hoạt động' : 'Ngưng hoạt động'}
                 </Typography>
               }
-              labelPlacement="start"
+              labelPlacement="end"
               sx={{
-                alignSelf: 'end',
+                alignSelf: 'start',
               }}
             />
           </Box>
+        </Grid>
+        <Grid item xs={1}>
+          <Divider orientation="vertical" />
+        </Grid>
+        <Grid item xs={5.5}>
+          <Stack spacing={1}>
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: 240,
+                border: (theme) => `2px solid ${theme.palette.common.gray}`,
+                borderRadius: '1rem',
+                overflow: 'hidden',
+              }}
+            >
+              <Image
+                src={
+                  data.imageURL && data.imageURL.length > 0
+                    ? data.imageURL
+                    : placeholderImage
+                }
+                alt="Featuring Image"
+                priority
+                fill
+                style={{
+                  objectFit: 'cover',
+                }}
+              />
+            </Box>
+
+            {['update', 'create'].includes(mode) && (
+              <RowModalLayoutButton
+                disabled={disabled}
+                variant="contained"
+                color="secondary"
+              >
+                Tải ảnh lên
+                <input
+                  hidden
+                  accept="image/*"
+                  multiple
+                  type="file"
+                  onChange={handleUploadImage}
+                />
+              </RowModalLayoutButton>
+            )}
+          </Stack>
         </Grid>
       </Grid>
     );

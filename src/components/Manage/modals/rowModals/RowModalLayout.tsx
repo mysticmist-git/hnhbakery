@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
+import RowModalLayoutButton from './RowModalLayoutButton';
 
 const formStyle = {
   // These 4 below are positionings I used for larger
@@ -51,11 +52,6 @@ const formStyle = {
     transform: 'translate(-50%, 0%)',
   },
 };
-
-const LayoutButton = styled(Button)(({ theme }) => ({
-  paddingX: '1.5rem',
-  borderRadius: '1rem',
-}));
 
 interface RowModalLayoutProps extends CommonRowModalProps {
   open: boolean;
@@ -142,7 +138,7 @@ export default function RowModalLayout({
                 gap: '1rem',
               }}
             >
-              { loading && (
+              {loading && (
                 <CircularProgress
                   size={24}
                   sx={{
@@ -153,27 +149,19 @@ export default function RowModalLayout({
                     marginTop: '-12px',
                     marginLeft: '-12px',
                   }}
-                />)
-              }
+                />
+              )}
 
               {['update'].includes(mode) && (
-                <Button
+                <RowModalLayoutButton
                   disabled={disabled}
-                  variant="contained"
-                  component="label"
+                  variant="outlined"
+                  color="secondary"
                   startIcon={<Cancel />}
-                  sx={{
-                    mt: 1,
-                    backgroundColor: (theme) => theme.palette.secondary.main,
-                    '&:hover': {
-                      backgroundColor: (theme) => theme.palette.secondary.dark,
-                    },
-                    textTransform: 'none',
-                  }}
                   onClick={() => handleCancelUpdateData()}
                 >
                   Hủy
-                </Button>
+                </RowModalLayoutButton>
               )}
               {['view'].includes(mode) && (
                 <IconButton
@@ -196,14 +184,10 @@ export default function RowModalLayout({
               {['create'].includes(mode) && (
                 <Button
                   disabled={disabled}
-                  variant="contained"
+                  variant="outlined"
+                  color="secondary"
                   size="small"
                   sx={{
-                    backgroundColor: 'common.gray',
-                    '&:hover': {
-                      backgroundColor: 'common.darkGray',
-                    },
-                    paddingX: '1rem',
                     borderRadius: '1rem',
                   }}
                   onClick={() => handleResetForm()}
@@ -241,26 +225,11 @@ export default function RowModalLayout({
                 gap: '0.7rem',
               }}
             >
-              {['update'].includes(mode) && (
-                <Button
-                  disabled={disabled}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: (theme) => theme.palette.common.gray,
-                    '&:hover': {
-                      backgroundColor: (theme) => theme.palette.common.darkGray,
-                    },
-                    paddingX: '1.5rem',
-                  }}
-                  onClick={() => handleUpdateRow()}
-                >
-                  Cập nhật
-                </Button>
-              )}
-              <LayoutButton
+              <RowModalLayoutButton
                 disabled={disabled}
                 variant="contained"
                 sx={{
+                  color: (theme) => theme.palette.common.white,
                   backgroundColor: (theme) => theme.palette.common.gray,
                   '&:hover': {
                     backgroundColor: (theme) => theme.palette.common.darkGray,
@@ -269,16 +238,27 @@ export default function RowModalLayout({
                 onClick={() => handleClose()}
               >
                 Thoát
-              </LayoutButton>
-              {mode === 'create' && (
-                <LayoutButton
+              </RowModalLayoutButton>
+              {['update'].includes(mode) && (
+                <RowModalLayoutButton
                   disabled={disabled}
                   variant="contained"
+                  color="secondary"
+                  onClick={() => handleUpdateRow()}
+                >
+                  Cập nhật
+                </RowModalLayoutButton>
+              )}
+              {mode === 'create' && (
+                <RowModalLayoutButton
+                  disabled={disabled}
+                  variant="contained"
+                  color="secondary"
                   onClick={() => handleAddRow()}
                   startIcon={<Add />}
                 >
                   Thêm
-                </LayoutButton>
+                </RowModalLayoutButton>
               )}
             </Box>
           </Grid>

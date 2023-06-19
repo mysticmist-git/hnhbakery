@@ -388,12 +388,12 @@ export default function Manage({
         });
       } catch (error: any) {
         console.log(error);
-      } finally {
-        setLoading(false);
       }
     }
 
     handleToggleModalEditMode();
+
+    setLoading(false);
   }
 
   function handleResetForm() {}

@@ -18,17 +18,6 @@ const theme = createTheme({
         },
       },
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          color: '#FFFFFF',
-          backgroundColor: '#810000',
-          '&:hover': {
-            backgroundColor: '#470000',
-          },
-        },
-      },
-    },
   },
   palette: {
     mode: 'light',
