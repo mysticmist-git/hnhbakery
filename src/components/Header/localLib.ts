@@ -10,4 +10,5 @@ export interface NavbarContextType {
   handleSetDrawerOpenState: any;
   isSignIn: boolean;
   isScrolled: boolean;
+  cartCount: number;
 }

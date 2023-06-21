@@ -26,6 +26,7 @@ import CustomDrawer from './CustomDrawer';
 import RightMenu from './RightMenu';
 import Link from 'next/link';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Image from 'next/image';
 
 //#region Tab
 
@@ -47,6 +48,7 @@ function CustomToolBarContent(props: any) {
   const theme = useTheme();
   const context = useContext(NavbarContext);
   const { isScrolled, handleSetDrawerOpenState } = context;
+
   return (
     <>
       <Grid
@@ -65,7 +67,16 @@ function CustomToolBarContent(props: any) {
               height: 166,
             }}
           >
-            <Skeleton_img src={logo.src} />
+            <Box
+              fill={true}
+              sx={{
+                objectFit: 'cover',
+              }}
+              component={Image}
+              loading="lazy"
+              alt=""
+              src={logo.src}
+            />
           </Box>
         </Grid>
 
@@ -135,6 +146,7 @@ const initNavbarContext: NavbarContextType = {
   handleSetTabState: () => {},
   handleSetDrawerOpenState: () => {},
   isScrolled: false,
+  cartCount: 0,
 };
 
 export const NavbarContext =
@@ -197,7 +209,7 @@ function Navbar() {
     const pathname = router.pathname;
     let temp = initTabs.tabItems.findIndex((item) => {
       return item.href === pathname;
-    })
+    });
     return temp === -1 ? 0 : temp;
   }
 
@@ -221,6 +233,10 @@ function Navbar() {
   }, []);
   //#endregion
 
+  //#region CartCount Hên ở đây nè Hên!
+  const [cartCount, setCartCount] = useState(10);
+  //#endregion
+
   return (
     <>
       <NavbarContext.Provider
@@ -231,6 +247,7 @@ function Navbar() {
           handleSetDrawerOpenState: handleSetDrawerOpenState,
           isSignIn: isSignInState,
           isScrolled,
+          cartCount,
         }}
       >
         <Slide appear={false} direction="down" in={!isScrolled}>
