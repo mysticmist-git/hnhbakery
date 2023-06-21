@@ -134,10 +134,15 @@ export type ModalModeToggleHandler = VoidHandler;
 
 export interface FormRef {
   getProductTypeFormRef(): ProductTypeFormRef | null;
+  getProductFormRef(): ProductFormRef | null;
 }
 
 export interface ProductTypeFormRef {
   getImageFile(): File | null;
+}
+
+export interface ProductFormRef {
+  getImageFiles(): File[] | null;
 }
 
 export type DialogResult = 'close' | 'confirm';

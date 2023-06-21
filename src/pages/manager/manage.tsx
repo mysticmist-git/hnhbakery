@@ -33,9 +33,11 @@ import BaseObject from '@/lib/models/BaseObject';
 import {
   DataManagerErrorCode,
   DataManagerStrategy,
+  ProductDataManagerStrategy,
   ProductTypeAddData,
   ProductTypeDataManagerStrategy,
   ProductTypeUpdateData,
+  ProductUpdateData,
   UpdateData,
 } from '@/lib/strategies/DataManagerStrategy';
 import { Add } from '@mui/icons-material';
@@ -137,10 +139,43 @@ export default function Manage({
         setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
         break;
       case COLLECTION_NAME.PRODUCTS:
+        setDataManager(() => new ProductDataManagerStrategy(dispatch));
+        break;
       case COLLECTION_NAME.BATCHES:
       default:
         setDataManager(() => null);
     }
+  }
+
+  function createUpdateData(): UpdateData | null {
+    let updateData: UpdateData | null = null;
+
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        updateData = {
+          newData: state.modalData,
+          originalData: state.originalModalData,
+          imageFile: rowModalRef.current
+            ?.getProductTypeFormRef()
+            ?.getImageFile() as File,
+        } as ProductTypeUpdateData;
+        break;
+      case COLLECTION_NAME.PRODUCTS:
+        updateData = {
+          newData: state.modalData,
+          originalData: state.originalModalData,
+          imageFiles: rowModalRef.current
+            ?.getProductFormRef()
+            ?.getImageFiles() as File[],
+        } as ProductUpdateData;
+        break;
+      case COLLECTION_NAME.BATCHES:
+        break;
+      default:
+        break;
+    }
+
+    return updateData;
   }
 
   //#endregion
@@ -157,6 +192,8 @@ export default function Manage({
     const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
 
     if (!mainDocs) return;
+
+    console.log(mainDocs);
 
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
@@ -350,15 +387,14 @@ export default function Manage({
     const changed = isDataChanged(state.modalData, state.originalModalData);
 
     if (changed) {
-      const updateData: ProductTypeUpdateData = {
-        newData: state.modalData,
-        originalData: state.originalModalData,
-        imageFile: rowModalRef.current
-          ?.getProductTypeFormRef()
-          ?.getImageFile() as File,
-      };
-
       try {
+        const updateData = createUpdateData();
+
+        if (!updateData) {
+          console.log('Null update data');
+          return;
+        }
+
         const data = await dataManager?.updateDoc(updateData);
 
         if (!data) {
