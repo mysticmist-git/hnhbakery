@@ -7,6 +7,9 @@ import TopSlideInDiv_Loof from './Animation/Loof/TopSlideInDiv';
 import TopSlideInDiv_Appear from './Animation/Appear/TopSlideInDiv';
 
 const ImageBackground = (props: any) => {
+  const height = props.height ?? '340px';
+  const minHeight = props.minHeight ?? '0px';
+  const image = props.image ?? banh1.src;
   const theme = useTheme();
   return (
     <TopSlideInDiv_Appear>
@@ -14,8 +17,9 @@ const ImageBackground = (props: any) => {
         <Box
           sx={{
             width: '100%',
-            height: '340px',
-            backgroundImage: `url(${banh1.src})`,
+            minHeight: minHeight,
+            height: height,
+            backgroundImage: `url(${image})`,
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -49,7 +53,7 @@ const ImageBackground = (props: any) => {
                 position: 'relative',
                 background: `linear-gradient(to bottom, ${alpha(
                   theme.palette.common.white,
-                  1,
+                  1
                 )}, ${alpha(theme.palette.primary.main, 1)})`,
               }}
             ></Box>

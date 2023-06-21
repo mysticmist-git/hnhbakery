@@ -36,7 +36,7 @@ const initTabs = {
     { label: 'Trang chủ', href: '/' },
     { label: 'Sản phẩm', href: '/products' },
     { label: 'Tìm kiếm', href: '/search' },
-    { label: 'Giới thiệu', href: '/introduce' },
+    { label: 'Về H&H', href: '/about' },
     { label: 'Liên hệ', href: '/contact' },
   ],
 };

@@ -30,7 +30,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <Head>
         <title>H&H Bakery</title>
       </Head>
-      <CurrentLayout>{children}</CurrentLayout>;
+      <CurrentLayout>{children}</CurrentLayout>
     </>
   );
 };

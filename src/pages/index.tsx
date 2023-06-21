@@ -442,8 +442,7 @@ function Home({
                   sx={{
                     pb: 8,
                     px: { xs: 2, sm: 2, md: 4, lg: 8 },
-                    backgroundColor: alpha(theme.palette.common.white, 0.7),
-                    backdropFilter: 'blur(2px)',
+                    bgcolor: theme.palette.common.white,
                   }}
                 >
                   <TypeCake

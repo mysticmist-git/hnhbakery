@@ -4,32 +4,20 @@ import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
 import React, { memo, useMemo } from 'react';
 import bg2 from '../assets/Decorate/bg2.png';
 import ImageBackground from '@/components/imageBackground';
+import contactImage from '@/assets/contact-img.jpg';
 
 const Contact = () => {
   const wrapperTitle = useMemo(
     () =>
       'Cảm ơn bạn đã ghé thăm trang web của tiệm bánh và sử dụng form đóng góp. Chúng mình rất trân trọng ý kiến đóng góp của bạn! Sớm thôi chúng mình sẽ liên hệ với bạn ngay. Xin cảm ơn!',
-    [],
+    []
   );
 
   const theme = useTheme();
 
   return (
-    <Box
-      sx={{
-        backgroundImage: `url(${bg2.src})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
-        backgroundAttachment: 'fixed',
-        backgroundPosition: 'center',
-      }}
-    >
-      <Box
-        sx={{
-          backgroundColor: alpha(theme.palette.primary.main, 0.85),
-          backdropFilter: 'blur(1px)',
-        }}
-      >
+    <Box>
+      <Box>
         <ImageBackground>
           <Grid
             sx={{ px: 6 }}
@@ -73,7 +61,7 @@ const Contact = () => {
             justifyContent={'center'}
             alignItems={'center'}
           >
-            <Grid item xs={12} md={7} lg={6}>
+            <Grid item xs={12}>
               <ContactWrapper>
                 <ContactForm />
               </ContactWrapper>
