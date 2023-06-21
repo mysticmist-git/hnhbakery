@@ -17,13 +17,13 @@ const cofounder = [
   {
     image: HenImage.src,
     name: 'Nguyễn Văn Hên',
-    description: 'Co-Founder | Tài năng | Logic ',
+    description: 'Co-Founder | Thông minh | Tài năng ',
     href: '#',
   },
   {
     image: HuyImage.src,
     name: 'Phan Trường Huy',
-    description: 'Co-Founder | Chăm chỉ | Quậy ',
+    description: 'Co-Founder | Quậy | Phá ',
     href: '#',
   },
 ];

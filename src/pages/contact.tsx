@@ -43,7 +43,7 @@ const Contact = () => {
                   Liên hệ
                 </Typography>
                 <Typography
-                  align="left"
+                  align="center"
                   variant="body2"
                   color={theme.palette.common.white}
                 >
