@@ -16,6 +16,7 @@ import {
   statusTextResolver,
 } from '@/lib/localLib/manage';
 import { ProductTypeObject } from '@/lib/models';
+import { ProductVariant } from '@/lib/models/Product';
 import { ReferenceObject } from '@/lib/models/Reference';
 import theme from '@/styles/themes/lightTheme';
 import {
@@ -44,6 +45,7 @@ import {
 } from 'react';
 import MyGallery from './components/MyGallery';
 import TabPanel from './components/TabPanel';
+import VariantManager from './components/VariantManager';
 import { a11yProps } from './lib';
 
 interface ProductTypeStateProps {
@@ -123,6 +125,10 @@ export default memo(
       setImageFiles((imageFiles) =>
         imageFiles.filter((i) => URL.createObjectURL(i) !== url)
       );
+    }
+
+    function handleVariantsChange(variants: ProductVariant[]) {
+      handleFieldChange('variants', [...variants]);
     }
 
     //#endregion
@@ -407,6 +413,11 @@ export default memo(
               sx={{
                 my: 1,
               }}
+            />
+
+            <VariantManager
+              variants={data.variants}
+              onChange={handleVariantsChange}
             />
           </Stack>
         </TabPanel>
