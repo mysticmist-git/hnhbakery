@@ -1,7 +1,11 @@
+import { COLLECTION_NAME } from '@/lib/constants';
+import { getCollectionWithQuery } from '@/lib/firestore/firestoreLib';
 import { ProductVariant } from '@/lib/models/Product';
+import { ReferenceObject } from '@/lib/models/Reference';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import { Button, List, ListItem, ListItemText, styled } from '@mui/material';
-import React, { useState } from 'react';
+import { where } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import VariantItem from './VariantItem';
 
 type VariantManagerProps = {
@@ -16,6 +20,41 @@ type VariantManagerProps = {
  * @returns
  */
 function VariantManager(props: VariantManagerProps) {
+  //#region States
+
+  const [sizes, setSizes] = useState<string[]>([]);
+
+  //#endregion
+
+  //#region UseEffects
+
+  useEffect(() => {
+    async function fetchSizes() {
+      let sizes: string[] = [];
+
+      try {
+        const sizesRef: ReferenceObject[] = await getCollectionWithQuery(
+          COLLECTION_NAME.REFERENCES,
+          where('name', '==', 'sizes')
+        );
+
+        if (!sizesRef || !sizesRef.length) throw new Error('Sizes not found');
+
+        sizes = sizesRef[0].values;
+
+        setSizes(() => sizes);
+      } catch (error: any) {
+        console.log(error);
+
+        setSizes(() => []);
+      }
+    }
+
+    fetchSizes();
+  }, []);
+
+  //#endregion
+
   //#region handlers
 
   function handleAdd() {
@@ -46,13 +85,16 @@ function VariantManager(props: VariantManagerProps) {
         <VariantItem
           variant={variant}
           key={variant.id}
+          references={{
+            sizes: sizes,
+          }}
           onRemove={handleRemove}
           onUpdate={handleUpdate}
         />
       ))}
       <ListItem>
         <Button variant="contained" onClick={handleAdd}>
-          Add
+          Thêm
         </Button>
       </ListItem>
     </List>

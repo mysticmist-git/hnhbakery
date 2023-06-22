@@ -1,13 +1,26 @@
+import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { ProductVariant } from '@/lib/models/Product';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import { Delete, Edit, Remove } from '@mui/icons-material';
-import { Button, ListItem, ListItemText, styled } from '@mui/material';
+import {
+  Button,
+  ListItem,
+  ListItemText,
+  Stack,
+  TextField,
+  styled,
+} from '@mui/material';
 import { useState } from 'react';
+
+type VariantItemReferences = {
+  sizes: string[];
+};
 
 type VariantItemProps = {
   variant: ProductVariant;
   onRemove: (variant: ProductVariant) => void;
   onUpdate: (variant: ProductVariant) => void;
+  references: VariantItemReferences;
 };
 
 const RemoveButton = styled(Button)(({ theme }) => ({
@@ -18,30 +31,39 @@ const RemoveButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const EditableTextField = styled(TextField)({
+  width: '100%',
+  marginTop: '8px',
+});
+
 function VariantItem(props: VariantItemProps) {
   const { variant, onRemove, onUpdate } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [editedVariant, setEditedVariant] = useState(variant);
 
-  const handleEdit = () => {
+  function handleEdit() {
     setIsEditing(true);
     setEditedVariant(variant);
-  };
+  }
 
-  const handleSave = () => {
+  function handleSave() {
     setIsEditing(false);
     onUpdate(editedVariant);
-  };
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     setIsEditing(false);
     setEditedVariant(variant);
-  };
+  }
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
     setEditedVariant((prevVariant) => ({ ...prevVariant, [name]: value }));
-  };
+  }
+
+  function handleSizeChange(size: string) {
+    setEditedVariant((prevVariant) => ({ ...prevVariant, size: size }));
+  }
 
   return (
     <ListItem
@@ -62,48 +84,45 @@ function VariantItem(props: VariantItemProps) {
           <ListItemText
             primary={
               <>
-                <input
-                  type="text"
+                <EditableTextField
+                  label="Vật liệu"
                   name="material"
+                  size="small"
                   value={editedVariant.material}
                   onChange={handleInputChange}
-                  style={{
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold',
-                    width: '100%',
-                  }}
+                  sx={{ fontWeight: 'bold' }}
                 />
-                <input
-                  type="text"
-                  name="size"
+                <MyMultiValuePickerInput
+                  label="Kích cỡ"
+                  options={props.references.sizes}
                   value={editedVariant.size}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '1rem', width: '100%' }}
+                  onChange={handleSizeChange}
                 />
               </>
             }
             secondary={
-              <input
-                type="number"
+              <EditableTextField
+                label="Giá"
+                size="small"
                 name="price"
+                type="number"
                 value={editedVariant.price}
                 onChange={handleInputChange}
-                style={{ fontSize: '1rem', width: '100%' }}
               />
             }
           />
-          <div>
+          <Stack direction="row" spacing={1} marginLeft={2}>
             <Button
               variant="contained"
               onClick={handleSave}
               style={{ marginRight: '8px' }}
             >
-              Save
+              Lưu
             </Button>
             <Button variant="contained" onClick={handleCancel}>
-              Cancel
+              Hủy
             </Button>
-          </div>
+          </Stack>
         </>
       ) : (
         <>
