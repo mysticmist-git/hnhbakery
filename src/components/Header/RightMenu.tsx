@@ -1,4 +1,5 @@
-import { Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
+import AspectRatio from '@mui/joy/AspectRatio';
 import { useRouter } from 'next/router';
 import { useContext, useMemo, memo, useState, useEffect } from 'react';
 import { CustomIconButton, CustomButton } from '../Inputs/Buttons';
@@ -12,6 +13,7 @@ const RightMenu = (props: any) => {
 
   const theme = useTheme();
   const context = useContext(NavbarContext);
+  const { cartCount } = context;
   const router = useRouter();
   const auth = getAuth();
 
@@ -62,6 +64,40 @@ const RightMenu = (props: any) => {
         }}
       >
         <ShoppingCart />
+        {cartCount > 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              right: '60%',
+              top: 0,
+              width: 'auto',
+              minWidth: '50%',
+              minHeight: '50%',
+              height: 'auto',
+              bgcolor: !props.down
+                ? theme.palette.secondary.main
+                : theme.palette.common.white,
+              border: '1.5px solid',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              px: 0.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '10px',
+                color: props.down
+                  ? theme.palette.secondary.main
+                  : theme.palette.common.white,
+              }}
+            >
+              {cartCount}
+            </Typography>
+          </Box>
+        )}
       </CustomIconButton>
       {context.isSignIn ? (
         <NavbarAvatar photoURL={photoURL ?? ''} />

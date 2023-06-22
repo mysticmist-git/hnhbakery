@@ -96,7 +96,7 @@ const ContactForm = () => {
           <material.Grid item xs={12}>
             <material.Typography
               variant="button"
-              color={theme.palette.common.white}
+              color={theme.palette.common.black}
             >
               Thông tin liên hệ
             </material.Typography>
@@ -149,9 +149,9 @@ const ContactForm = () => {
           <material.Grid item xs={12}>
             <material.Typography
               variant="button"
-              color={theme.palette.common.white}
+              color={theme.palette.common.black}
             >
-              Nội dung iên hệ
+              Nội dung liên hệ
             </material.Typography>
           </material.Grid>
           <material.Grid item xs={12}>

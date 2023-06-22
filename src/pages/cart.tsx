@@ -55,6 +55,7 @@ import React, {
   useState,
 } from 'react';
 import { CustomTextarea } from '../components/Inputs/CustomTextarea';
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {
@@ -823,137 +824,175 @@ const Cart = () => {
           productBill,
         }}
       >
-        <Box sx={{ pb: 8 }}>
-          <ImageBackground
-            children={() => (
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'center'}
-                height={'100%'}
-                sx={{ px: 6 }}
-              >
-                <Grid item xs={12}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    spacing={2}
-                  >
-                    <Grid item xs={12}>
-                      <Link href="/products" style={{ textDecoration: 'none' }}>
-                        <Typography
-                          align="center"
-                          variant="h3"
-                          color={theme.palette.primary.main}
-                          sx={{
-                            '&:hover': {
-                              textDecoration: 'underline',
-                            },
-                          }}
-                        >
-                          Sản phẩm
-                        </Typography>
-                      </Link>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography
-                        align="center"
-                        variant="h2"
-                        color={theme.palette.primary.main}
-                      >
-                        Giỏ hàng
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            )}
-          />
-
-          <Box sx={{ pt: 12, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box>
+          <ImageBackground>
             <Grid
               container
               direction={'row'}
               justifyContent={'center'}
-              alignItems={'start'}
-              spacing={4}
+              alignItems={'center'}
+              height={'100%'}
+              sx={{ px: 6 }}
             >
               <Grid item xs={12}>
-                <ProductTable
-                  setProductBill={setProductBill}
-                  handleSaveCart={() => {
-                    handleSaveCart();
-                  }}
-                />
-                {isCartEmpty && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      mt: 2,
-                    }}
-                  >
-                    <Typography variant="h2">Giỏ hàng trống</Typography>
-                  </Box>
-                )}
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <GhiChuCuaBan ref={noteRef} />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
                 <Grid
                   container
                   direction={'row'}
-                  spacing={4}
-                  alignItems={'start'}
                   justifyContent={'center'}
+                  alignItems={'center'}
+                  spacing={2}
                 >
                   <Grid item xs={12}>
-                    <TongTienHoaDon />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <CustomButton
-                      onClick={handleContinueToSurf}
-                      sx={{
-                        py: 1.5,
-                        width: '100%',
-                        bgColor: theme.palette.secondary.dark,
-                      }}
-                    >
+                    <Link href="/products" style={{ textDecoration: 'none' }}>
                       <Typography
-                        variant="button"
-                        color={theme.palette.common.white}
+                        align="center"
+                        variant="h3"
+                        color={theme.palette.primary.main}
+                        sx={{
+                          '&:hover': {
+                            textDecoration: 'underline',
+                          },
+                        }}
                       >
-                        Tiếp tục mua hàng
+                        Sản phẩm
                       </Typography>
-                    </CustomButton>
+                    </Link>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <CustomButton
-                      onClick={handlePayment}
-                      sx={{
-                        py: 1.5,
-                        width: '100%',
-                      }}
+                  <Grid item xs={12}>
+                    <Typography
+                      align="center"
+                      variant="h2"
+                      color={theme.palette.primary.main}
                     >
-                      <Typography
-                        variant="button"
-                        color={theme.palette.common.white}
-                      >
-                        Thanh toán
-                      </Typography>
-                    </CustomButton>
+                      Giỏ hàng
+                    </Typography>
                   </Grid>
                 </Grid>
               </Grid>
             </Grid>
-          </Box>
+          </ImageBackground>
+
+          <BottomSlideInDiv>
+            <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+                spacing={4}
+              >
+                {isCartEmpty && (
+                  <>
+                    <Grid item xs={12}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          mt: 2,
+                        }}
+                      >
+                        <Typography variant="h2">Giỏ hàng trống</Typography>
+                      </Box>
+                    </Grid>
+
+                    <Grid item>
+                      <CustomButton
+                        onClick={handleContinueToSurf}
+                        sx={{
+                          py: 1.5,
+                          px: 5,
+                          width: 'auto',
+                          bgColor: theme.palette.secondary.dark,
+                        }}
+                      >
+                        <Typography
+                          variant="button"
+                          color={theme.palette.common.white}
+                        >
+                          Mua hàng ngay!
+                        </Typography>
+                      </CustomButton>
+                    </Grid>
+                  </>
+                )}
+
+                {!isCartEmpty && (
+                  <>
+                    <Grid item xs={12}>
+                      <ProductTable
+                        setProductBill={setProductBill}
+                        handleSaveCart={() => {
+                          handleSaveCart();
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box
+                        sx={{
+                          bgcolor: theme.palette.secondary.main,
+                          borderRadius: '8px',
+                          p: 0.2,
+                        }}
+                      ></Box>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <GhiChuCuaBan ref={noteRef} />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Grid
+                        container
+                        direction={'row'}
+                        spacing={4}
+                        alignItems={'start'}
+                        justifyContent={'center'}
+                      >
+                        <Grid item xs={12}>
+                          <TongTienHoaDon />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <CustomButton
+                            onClick={handleContinueToSurf}
+                            sx={{
+                              py: 1.5,
+                              width: '100%',
+                              bgColor: theme.palette.secondary.dark,
+                            }}
+                          >
+                            <Typography
+                              variant="button"
+                              color={theme.palette.common.white}
+                            >
+                              Tiếp tục mua hàng
+                            </Typography>
+                          </CustomButton>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <CustomButton
+                            onClick={handlePayment}
+                            sx={{
+                              py: 1.5,
+                              width: '100%',
+                            }}
+                          >
+                            <Typography
+                              variant="button"
+                              color={theme.palette.common.white}
+                            >
+                              Thanh toán
+                            </Typography>
+                          </CustomButton>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </>
+                )}
+              </Grid>
+            </Box>
+          </BottomSlideInDiv>
         </Box>
       </CartContext.Provider>
     </>
