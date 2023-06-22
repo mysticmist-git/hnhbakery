@@ -400,7 +400,7 @@ export default memo(
               label={'Màu sắc'}
               values={data.colors}
               options={colors}
-              onChange={(values) => handleFieldChange('ingredients', values)}
+              onChange={(values) => handleFieldChange('colors', values)}
             />
 
             <Divider
