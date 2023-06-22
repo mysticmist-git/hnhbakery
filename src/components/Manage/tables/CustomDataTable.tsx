@@ -58,7 +58,7 @@ function ActionsCell(
     <GridActionsCellItem
       icon={<Delete />}
       label="Xóa"
-      onClick={() => handleDeleteRow(params)}
+      onClick={() => handleDeleteRow(params.row)}
     />,
   ];
 }

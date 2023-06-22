@@ -489,7 +489,7 @@ export default function Manage({
     setDialogOpen(() => true);
   }
 
-  function handleDialogClose(result: DialogResult) {
+  function handleDialogCloseWithConfirm(result: DialogResult) {
     setLoading(true);
 
     try {
@@ -507,14 +507,19 @@ export default function Manage({
           return;
         }
 
-        const updatedMainDocs = [...state.mainDocs];
-        const deletedIndex = updatedMainDocs.indexOf(state.deleteDoc);
+        const deletedIndex = state.mainDocs.indexOf(state.deleteDoc);
+        const updatedMainDocs = state.mainDocs.toSpliced(deletedIndex, 1);
+
         console.log(deletedIndex);
-        updatedMainDocs.splice(deletedIndex, 1);
 
         dispatch({
           type: ManageActionType.SET_MAIN_DOCS,
           payload: updatedMainDocs,
+        });
+
+        dispatch({
+          type: ManageActionType.SET_CRUD_MODAL_OPEN,
+          payload: false,
         });
 
         handleSnackbarAlert('success', 'Xóa thành công');
@@ -665,7 +670,7 @@ export default function Manage({
       {/* Dialogs */}
       <SimpleDialog
         open={dialogOpen}
-        onClose={handleDialogClose}
+        onClose={handleDialogCloseWithConfirm}
         title={'Xóa?'}
         content={'Bạn có chắc muốn xóa hàng này?'}
         actions={
@@ -677,11 +682,13 @@ export default function Manage({
                   backgroundColor: (theme) => theme.palette.common.darkGray,
                 },
               }}
-              onClick={() => handleDialogClose('close')}
+              onClick={() => handleDialogCloseWithConfirm('close')}
             >
               Đóng
             </DialogButton>
-            <DialogButton onClick={() => handleDialogClose('confirm')}>
+            <DialogButton
+              onClick={() => handleDialogCloseWithConfirm('confirm')}
+            >
               Xóa
             </DialogButton>
           </>
