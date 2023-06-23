@@ -5,6 +5,7 @@ import {
   statusTextResolver,
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
+import formatPrice from '@/lib/utilities/formatCurrency';
 import { Delete, PanoramaFishEye, Visibility } from '@mui/icons-material';
 import {
   Checkbox,
@@ -193,7 +194,60 @@ function generateDatagridColumn(
         },
       ];
     case COLLECTION_NAME.BATCHES:
-      return [];
+      return [
+        {
+          field: 'index',
+          headerName: 'STT',
+          valueGetter: (params: GridValueGetterParams) => {
+            return params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
+          },
+          align: 'center',
+          headerAlign: 'center',
+          sortable: false,
+          disableColumnMenu: true,
+        },
+        {
+          field: 'productName',
+          headerName: 'Sản phẩm',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'productTypeName',
+          headerName: 'Loại',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'material',
+          headerName: 'Vật liệu',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'size',
+          headerName: 'Kích cỡ',
+          headerAlign: 'left',
+          align: 'left',
+        },
+        {
+          field: 'price',
+          headerName: 'Kích cỡ',
+          headerAlign: 'left',
+          align: 'left',
+          type: 'number',
+          valueFormatter: (params) => formatPrice(params.value),
+        },
+        {
+          field: 'actions',
+          type: 'actions',
+          headerName: 'Hành động',
+          headerAlign: 'right',
+          align: 'right',
+          getActions: (params) =>
+            ActionsCell(params, handleViewRow, handleDeleteRow),
+        },
+      ];
     default:
       return [];
   }
