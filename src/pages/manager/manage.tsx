@@ -33,8 +33,10 @@ import {
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import {
+  AddData,
   DataManagerErrorCode,
   DataManagerStrategy,
+  ProductAddData,
   ProductDataManagerStrategy,
   ProductTypeAddData,
   ProductTypeDataManagerStrategy,
@@ -150,6 +152,44 @@ export default function Manage({
     }
   }
 
+  function createAddData(): AddData | null {
+    let addData: AddData | null = null;
+
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        const imageFile = rowModalRef.current
+          ?.getProductTypeFormRef()
+          ?.getImageFile();
+
+        if (!state.modalData) return null;
+
+        addData = {
+          data: state.modalData!,
+          imageFile: imageFile ?? undefined,
+        } as ProductTypeAddData;
+
+      case COLLECTION_NAME.PRODUCTS:
+        const imageFiles = rowModalRef.current
+          ?.getProductFormRef()
+          ?.getImageFiles();
+
+        const productTypeName =
+          rowModalRef.current?.getProductFormRef()?.getProductTypeName() ??
+          'Lỗi';
+
+        addData = {
+          data: state.modalData!,
+          productTypeName: productTypeName,
+          imageFiles: imageFiles?.map((f) => f.file) ?? [],
+        } as ProductAddData;
+        break;
+      case COLLECTION_NAME.BATCHES:
+        break;
+    }
+
+    return addData;
+  }
+
   function createUpdateData(): UpdateData | null {
     let updateData: UpdateData | null = null;
 
@@ -167,9 +207,8 @@ export default function Manage({
         updateData = {
           newData: state.modalData,
           originalData: state.originalModalData,
-          imageFiles: rowModalRef.current
-            ?.getProductFormRef()
-            ?.getImageFiles() ?? [],
+          imageFiles:
+            rowModalRef.current?.getProductFormRef()?.getImageFiles() ?? [],
         } as ProductUpdateData;
         break;
       case COLLECTION_NAME.BATCHES:
@@ -302,7 +341,7 @@ export default function Manage({
   function handleNewRow() {
     dispatch({
       type: ManageActionType.NEW_ROW,
-      payload: COLLECTION_NAME.PRODUCT_TYPES,
+      payload: paramCollectionName,
     });
   }
 
@@ -318,18 +357,25 @@ export default function Manage({
   }
 
   async function handleAddRow() {
-    if (!state.modalData) return;
+    console.log(state.modalData);
+
+    if (!state.modalData) {
+      handleSnackbarAlert('error', 'Lỗi khi thêm');
+
+      return;
+    }
 
     setLoading(true);
 
-    const imageFile = rowModalRef.current
-      ?.getProductTypeFormRef()
-      ?.getImageFile();
+    const addData = createAddData();
 
-    const addData: ProductTypeAddData = {
-      data: state.modalData,
-      imageFile: imageFile ?? undefined,
-    };
+    if (!addData) {
+      setLoading(false);
+
+      handleSnackbarAlert('error', 'Lỗi khi thêm');
+
+      return;
+    }
 
     try {
       const addedData = await dataManager?.addDoc(addData);

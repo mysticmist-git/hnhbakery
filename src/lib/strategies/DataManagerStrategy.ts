@@ -20,11 +20,15 @@ import {
   ModalProductTypeObject,
 } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
-import { createProductObject } from '../models/Product';
+import { ProductObject, createProductObject } from '../models/Product';
 import {
   ProductTypeObject,
   createProductTypeObject,
 } from '../models/ProductType';
+import {
+  getDownloadUrlsFromFirebaseStorage,
+  uploadImagesToFirebaseStorage,
+} from './../firestore/firestoreLib';
 
 export enum DataManagerErrorCode {
   NULL_FIELD = 'null-field',
@@ -34,13 +38,18 @@ export enum DataManagerErrorCode {
 
 //#region Add
 
-export interface AddData {
+export type AddData = {
   data: BaseObject;
-}
+};
 
-export interface ProductTypeAddData extends AddData {
+export type ProductTypeAddData = AddData & {
   imageFile?: File;
-}
+};
+
+export type ProductAddData = AddData & {
+  productTypeName: string;
+  imageFiles: File[];
+};
 
 //#endregion
 
@@ -175,38 +184,50 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
   async addDoc(addData: AddData): Promise<BaseObject> {
     if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
 
-    const productTypeAddData = addData as ProductTypeAddData;
+    const productAddData = addData as ProductAddData;
 
-    if (!productTypeAddData.data)
-      throw new Error(DataManagerErrorCode.NULL_DATA);
+    if (!productAddData.data) throw new Error(DataManagerErrorCode.NULL_DATA);
 
-    const data = createProductTypeObject(productTypeAddData.data);
+    const data = createProductObject(productAddData.data);
 
-    if (!data.name) throw new Error(DataManagerErrorCode.NULL_FIELD);
+    let images: string[] = [];
 
-    let image: string = '';
-    if (productTypeAddData.imageFile)
-      image = await uploadImageToFirebaseStorage(productTypeAddData.imageFile);
+    if (productAddData.imageFiles)
+      images = await uploadImagesToFirebaseStorage(productAddData.imageFiles);
 
-    data.image = image;
+    data.images = images;
 
-    const newProductTypeRef = await addDocToFirestore(
+    const newProductRef = await addDocToFirestore(
       data,
-      COLLECTION_NAME.PRODUCT_TYPES
+      COLLECTION_NAME.PRODUCTS
     );
 
-    const refetchData = await getDocFromDocRef<ProductTypeObject>(
-      newProductTypeRef
-    );
+    const refetchData = await getDocFromDocRef<ProductObject>(newProductRef);
 
-    let imageURL = '';
-    if (refetchData.image)
-      imageURL = await getDownloadUrlFromFirebaseStorage(refetchData.image);
+    let imageUrls: PathWithUrl[] = [];
 
-    const refinedData: ModalProductTypeObject = {
+    if (refetchData.images)
+      imageUrls = await Promise.all(
+        images.map(async (image) => {
+          let url = '';
+
+          try {
+            url = await getDownloadUrlFromFirebaseStorage(image);
+          } catch (error: any) {
+            console.log(error);
+          }
+
+          return {
+            url,
+            path: image,
+          } as PathWithUrl;
+        })
+      );
+
+    const refinedData: ModalProductObject = {
       ...refetchData,
-      productCount: 0,
-      imageURL: imageURL,
+      productTypeName: productAddData.productTypeName,
+      imageUrls: imageUrls,
     };
 
     return refinedData;

@@ -194,6 +194,9 @@ export default memo(
       ref,
       () => {
         return {
+          getProductTypeName() {
+            return productTypes.find((i) => i.id === data.productType_id)?.name;
+          },
           getImageFiles() {
             return imageFiles;
           },
@@ -259,15 +262,16 @@ export default memo(
 
               <Autocomplete
                 disablePortal
-                value={data.productType_id}
+                value={
+                  data.productType_id !== '' ? data.productType_id : undefined
+                }
                 readOnly={readOnly}
                 onChange={(e, value) =>
                   handleProductTypeIdChange(value as string)
                 }
                 options={productTypes.map((p) => p.id)}
                 getOptionLabel={(option) =>
-                  productTypes.find((p) => p.id === option)?.name ??
-                  'Không tìm thấy'
+                  productTypes.find((p) => p.id === option)?.name ?? 'Lỗi'
                 }
                 renderInput={(params) => (
                   <CustomTextFieldWithLabel {...params} label="Loại sản phẩm" />

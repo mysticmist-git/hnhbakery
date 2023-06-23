@@ -1,13 +1,15 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
   FormRef,
+  ModalBatchObject,
   ModalProductObject,
   ModalProductTypeObject,
   ProductFormRef,
   ProductTypeFormRef,
 } from '@/lib/localLib/manage';
+import BaseObject from '@/lib/models/BaseObject';
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
-import { ProductForm, ProductTypeForm } from '../forms';
+import { BatchForm, ProductForm, ProductTypeForm } from '../forms';
 import { FormProps } from '../rowModals/RowModal';
 
 export default forwardRef(function Form(
@@ -44,33 +46,32 @@ export default forwardRef(function Form(
 
   //#endregion
 
+  const props = {
+    mode,
+    readOnly,
+    disabled,
+    onDataChange,
+  };
+
   switch (collectionName) {
     case COLLECTION_NAME.PRODUCT_TYPES:
       return (
         <ProductTypeForm
+          {...props}
           data={data as ModalProductTypeObject}
-          readOnly={readOnly}
-          mode={mode}
-          onDataChange={onDataChange}
           ref={productTypeFormRef}
-          disabled={disabled}
         />
       );
     case COLLECTION_NAME.PRODUCTS:
       return (
         <ProductForm
+          {...props}
           ref={productFormRef}
           data={data as ModalProductObject}
-          disabled={disabled}
-          readOnly={readOnly}
-          mode={mode}
-          onDataChange={onDataChange}
         />
       );
-    // return <ProductForm data={data as ModalProductObject} />;
     case COLLECTION_NAME.BATCHES:
-      return <div>Not implemented yet</div>;
-    // return <BatchForm data={data as ModalBatchObject} />;
+      return <BatchForm {...props} data={data as ModalBatchObject} />;
     default:
       return <div>Error</div>;
   }

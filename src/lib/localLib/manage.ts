@@ -4,6 +4,7 @@ import {
   StorageProductObject,
   StorageProductTypeObject,
 } from '../firestore/firestoreLib';
+import { ProductObject } from '../models';
 import BaseObject from '../models/BaseObject';
 
 //#region Constants
@@ -142,6 +143,7 @@ export interface ProductTypeFormRef {
 }
 
 export interface ProductFormRef {
+  getProductTypeName(): string;
   getImageFiles(): FileWithUrl[] | null;
 }
 
@@ -271,9 +273,8 @@ export function generateDefaultRow(collectionName: string) {
         name: '',
         description: '',
         ingredients: [],
-        materials: [],
         colors: [],
-        sizes: [],
+        variants: [],
         howToUse: '',
         preservation: '',
         images: [],
