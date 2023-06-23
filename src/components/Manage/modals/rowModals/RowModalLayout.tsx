@@ -16,13 +16,11 @@ import {
 } from '@mui/icons-material';
 import {
   Button,
-  CircularProgress,
   Divider,
   Grid,
   IconButton,
   Modal,
   Typography,
-  styled,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
@@ -36,7 +34,7 @@ const formStyle = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   // other styles...
-  width: 800,
+  width: 840,
   bgcolor: 'background.paper',
   borderRadius: '1rem',
   boxShadow: 24,
@@ -138,20 +136,6 @@ export default function RowModalLayout({
                 gap: '1rem',
               }}
             >
-              {loading && (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: (theme) => theme.palette.secondary.main,
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    marginTop: '-12px',
-                    marginLeft: '-12px',
-                  }}
-                />
-              )}
-
               {['update'].includes(mode) && (
                 <RowModalLayoutButton
                   disabled={disabled}

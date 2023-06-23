@@ -142,10 +142,15 @@ export interface ProductTypeFormRef {
 }
 
 export interface ProductFormRef {
-  getImageFiles(): File[] | null;
+  getImageFiles(): FileWithUrl[] | null;
 }
 
 export type DialogResult = 'close' | 'confirm';
+
+export type FileWithUrl = {
+  file: File;
+  url: string;
+};
 
 //#endregion
 

@@ -14,6 +14,7 @@ import {
   uploadImageToFirebaseStorage,
 } from '../firestore/firestoreLib';
 import {
+  FileWithUrl,
   ManageAction,
   ModalProductObject,
   ModalProductTypeObject,
@@ -55,7 +56,7 @@ export interface ProductTypeUpdateData extends UpdateData {
 }
 
 export interface ProductUpdateData extends UpdateData {
-  imageFiles: File[];
+  imageFiles: FileWithUrl[];
 }
 
 //#endregion
@@ -289,7 +290,7 @@ function deleteOldImages(
 
 async function uploadNewImages(
   newImageUrls: PathWithUrl[],
-  imageFiles: File[]
+  imageFiles: FileWithUrl[]
 ): Promise<string[]> {
   console.log(newImageUrls);
 
@@ -298,7 +299,9 @@ async function uploadNewImages(
     .map((url) => url.path ?? '');
 
   const uploadPaths = await Promise.all(
-    imageFiles.map(async (file) => await uploadImageToFirebaseStorage(file))
+    imageFiles.map(
+      async (file) => await uploadImageToFirebaseStorage(file.file)
+    )
   );
 
   return [...paths, ...uploadPaths];
@@ -307,7 +310,7 @@ async function uploadNewImages(
 async function deleteOldImagesAndAddNewImagesToFirebaseStorage(
   originalImageUrls: PathWithUrl[],
   newImageUrls: PathWithUrl[],
-  imageFiles: File[]
+  imageFiles: FileWithUrl[]
 ): Promise<string[]> {
   const deletedPaths: string[] = deleteOldImages(
     originalImageUrls,

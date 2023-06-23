@@ -10,6 +10,7 @@ import {
   getCollectionWithQuery,
 } from '@/lib/firestore/firestoreLib';
 import {
+  FileWithUrl,
   ModalFormProps,
   ModalProductObject,
   ProductFormRef,
@@ -30,6 +31,8 @@ import {
   Tab,
   Tabs,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   colors,
   imageListItemBarClasses,
@@ -67,7 +70,7 @@ export default memo(
     const [tabValue, setTabValue] = useState<number>(0);
     const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
     const [colors, setColors] = useState<string[]>([]);
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imageFiles, setImageFiles] = useState<FileWithUrl[]>([]);
 
     //#endregion
 
@@ -110,7 +113,7 @@ export default memo(
       const url = URL.createObjectURL(file);
 
       handleFieldChange('imageUrls', [...(data.imageUrls ?? []), { url }]);
-      setImageFiles((imageFiles) => [...imageFiles, file]);
+      setImageFiles((imageFiles) => [...imageFiles, { file, url }]);
     }
 
     function handleDeleteImage(url: string) {
@@ -122,9 +125,16 @@ export default memo(
       );
 
       handleFieldChange('imageUrls', updatedImageUrls);
-      setImageFiles((imageFiles) =>
-        imageFiles.filter((i) => URL.createObjectURL(i) !== url)
-      );
+      setImageFiles((imageFiles) => imageFiles.filter((i) => i.url !== url));
+    }
+
+    function handleColorsChange(
+      event: React.MouseEvent<HTMLElement>,
+      newColors: string[]
+    ) {
+      if (newColors.length) {
+        handleFieldChange('colors', newColors);
+      }
     }
 
     function handleVariantsChange(variants: ProductVariant[]) {
@@ -401,13 +411,34 @@ export default memo(
               onChange={(values) => handleFieldChange('ingredients', values)}
             />
 
-            <MyMultiValueCheckerInput
+            <FormControlLabel
+              label="Màu sắc"
+              labelPlacement="top"
+              control={
+                <ToggleButtonGroup
+                  value={data.colors}
+                  onChange={handleColorsChange}
+                >
+                  {colors.map((color) => (
+                    <ToggleButton key={color} value={color}>
+                      {color}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              }
+              sx={{
+                alignSelf: 'start',
+                alignItems: 'start',
+                margin: 0,
+              }}
+            />
+            {/* <MyMultiValueCheckerInput
               readOnly={readOnly}
               label={'Màu sắc'}
               values={data.colors}
               options={colors}
               onChange={(values) => handleFieldChange('colors', values)}
-            />
+            /> */}
 
             <Divider
               sx={{
@@ -418,6 +449,8 @@ export default memo(
             <VariantManager
               variants={data.variants}
               onChange={handleVariantsChange}
+              readOnly={readOnly}
+              disabled={disabled}
             />
           </Stack>
         </TabPanel>

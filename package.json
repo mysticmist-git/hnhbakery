@@ -35,6 +35,7 @@
     "firebase": "^9.19.1",
     "framer-motion": "^10.12.16",
     "fs": "^0.0.1-security",
+    "id-16": "^1.0.5",
     "nanoid": "^4.0.2",
     "next": "13.3.0",
     "nodemailer": "^6.9.3",

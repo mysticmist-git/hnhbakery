@@ -5,12 +5,15 @@ import { ReferenceObject } from '@/lib/models/Reference';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import { Button, List, ListItem, ListItemText, styled } from '@mui/material';
 import { where } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 import React, { useEffect, useState } from 'react';
 import VariantItem from './VariantItem';
 
 type VariantManagerProps = {
   variants: ProductVariant[];
   onChange: (variants: ProductVariant[]) => void;
+  readOnly?: boolean;
+  disabled?: boolean;
 };
 
 /**
@@ -57,8 +60,8 @@ function VariantManager(props: VariantManagerProps) {
 
   //#region handlers
 
-  function handleAdd() {
-    props.onChange([...props.variants, { id: '' } as ProductVariant]);
+  function handleAdd(variant: ProductVariant) {
+    props.onChange([...props.variants, variant]);
   }
 
   function handleRemove(variant: ProductVariant) {
@@ -90,13 +93,28 @@ function VariantManager(props: VariantManagerProps) {
           }}
           onRemove={handleRemove}
           onUpdate={handleUpdate}
+          readOnly={props.readOnly}
+          disabled={props.disabled}
         />
       ))}
-      <ListItem>
-        <Button variant="contained" onClick={handleAdd}>
-          Thêm
-        </Button>
-      </ListItem>
+      {!props.readOnly && (
+        <ListItem>
+          <Button
+            variant="contained"
+            onClick={() =>
+              handleAdd({
+                id: nanoid(2),
+                material: 'Mặc định',
+                size: sizes[0],
+                price: 0,
+                isActive: true,
+              } as ProductVariant)
+            }
+          >
+            Thêm
+          </Button>
+        </ListItem>
+      )}
     </List>
   );
 }

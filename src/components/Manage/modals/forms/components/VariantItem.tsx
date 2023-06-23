@@ -8,6 +8,8 @@ import {
   ListItemText,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   styled,
 } from '@mui/material';
 import { useState } from 'react';
@@ -21,6 +23,8 @@ type VariantItemProps = {
   onRemove: (variant: ProductVariant) => void;
   onUpdate: (variant: ProductVariant) => void;
   references: VariantItemReferences;
+  readOnly?: boolean;
+  disabled?: boolean;
 };
 
 const RemoveButton = styled(Button)(({ theme }) => ({
@@ -62,7 +66,8 @@ function VariantItem(props: VariantItemProps) {
   }
 
   function handleSizeChange(size: string) {
-    setEditedVariant((prevVariant) => ({ ...prevVariant, size: size }));
+    if (size)
+      setEditedVariant((prevVariant) => ({ ...prevVariant, size: size }));
   }
 
   return (
@@ -81,36 +86,36 @@ function VariantItem(props: VariantItemProps) {
     >
       {isEditing ? (
         <>
-          <ListItemText
-            primary={
-              <>
-                <EditableTextField
-                  label="Vật liệu"
-                  name="material"
-                  size="small"
-                  value={editedVariant.material}
-                  onChange={handleInputChange}
-                  sx={{ fontWeight: 'bold' }}
-                />
-                <MyMultiValuePickerInput
-                  label="Kích cỡ"
-                  options={props.references.sizes}
-                  value={editedVariant.size}
-                  onChange={handleSizeChange}
-                />
-              </>
-            }
-            secondary={
-              <EditableTextField
-                label="Giá"
-                size="small"
-                name="price"
-                type="number"
-                value={editedVariant.price}
-                onChange={handleInputChange}
-              />
-            }
-          />
+          <Stack spacing={1}>
+            <EditableTextField
+              label="Vật liệu"
+              name="material"
+              size="small"
+              value={editedVariant.material}
+              onChange={handleInputChange}
+              sx={{ fontWeight: 'bold' }}
+            />
+            <ToggleButtonGroup
+              onChange={(e, newSize) => handleSizeChange(newSize)}
+              exclusive
+              value={editedVariant.size}
+              aria-label="product-variant-sizes"
+            >
+              {props.references.sizes.map((size) => (
+                <ToggleButton key={size} value={size}>
+                  {size}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+            <EditableTextField
+              label="Giá"
+              size="small"
+              name="price"
+              type="number"
+              value={editedVariant.price}
+              onChange={handleInputChange}
+            />
+          </Stack>
           <Stack direction="row" spacing={1} marginLeft={2}>
             <Button
               variant="contained"
@@ -136,23 +141,25 @@ function VariantItem(props: VariantItemProps) {
               marginRight: 'auto',
             }}
           />
-          <div>
-            <Button
-              variant="contained"
-              onClick={handleEdit}
-              style={{ marginRight: '8px' }}
-              startIcon={<Edit />}
-            >
-              Sửa
-            </Button>
-            <RemoveButton
-              variant="contained"
-              onClick={() => onRemove(variant)}
-              startIcon={<Delete />}
-            >
-              Xóa
-            </RemoveButton>
-          </div>
+          {!props.readOnly && (
+            <div>
+              <Button
+                variant="contained"
+                onClick={handleEdit}
+                style={{ marginRight: '8px' }}
+                startIcon={<Edit />}
+              >
+                Sửa
+              </Button>
+              <RemoveButton
+                variant="contained"
+                onClick={() => onRemove(variant)}
+                startIcon={<Delete />}
+              >
+                Xóa
+              </RemoveButton>
+            </div>
+          )}
         </>
       )}
     </ListItem>

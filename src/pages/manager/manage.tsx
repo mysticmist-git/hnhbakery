@@ -19,12 +19,14 @@ import {
 import { isDataChanged } from '@/lib/localLib';
 import {
   DialogResult,
+  FileWithUrl,
   FormRef,
   ManageAction,
   ManageActionType,
   ManageState,
   PATH,
   crudTargets,
+  generateDefaultRow,
   initManageState,
   manageReducer,
   validateCollectionNameParams,
@@ -43,6 +45,7 @@ import {
 import { Add } from '@mui/icons-material';
 import {
   Autocomplete,
+  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -166,7 +169,7 @@ export default function Manage({
           originalData: state.originalModalData,
           imageFiles: rowModalRef.current
             ?.getProductFormRef()
-            ?.getImageFiles() as File[],
+            ?.getImageFiles() ?? [],
         } as ProductUpdateData;
         break;
       case COLLECTION_NAME.BATCHES:
@@ -432,7 +435,12 @@ export default function Manage({
     setLoading(false);
   }
 
-  function handleResetForm() {}
+  function handleResetForm() {
+    dispatch({
+      type: ManageActionType.SET_MODAL_DATA,
+      payload: generateDefaultRow(paramCollectionName),
+    });
+  }
 
   const handleModalClose = () => {
     dispatch({
@@ -545,19 +553,20 @@ export default function Manage({
         my: 2,
       }}
     >
-      {state.loading && (
+      <Backdrop
+        sx={{
+          color: (theme) => theme.palette.secondary.main,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={state.loading}
+      >
         <CircularProgress
           size={24}
           sx={{
-            color: (theme) => theme.palette.secondary.main,
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            marginTop: '-12px',
-            marginLeft: '-12px',
+            color: 'inherit',
           }}
         />
-      )}
+      </Backdrop>
 
       {/* Title */}
       <Typography sx={{ color: theme.palette.common.black }} variant="h4">
