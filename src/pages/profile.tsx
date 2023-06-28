@@ -1,11 +1,20 @@
 import { LeftProfileColumn, RightProfileColumn } from '@/components/Profile';
-import { Card, Container, Grid, useTheme } from '@mui/material';
+import {
+  Box,
+  Card,
+  Container,
+  Grid,
+  Link,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import avatar from '../assets/Logo.png';
 import { Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { UserObject } from '@/lib/models/User';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import ImageBackground from '@/components/imageBackground';
 
 const Profile = () => {
   // #region states
@@ -60,35 +69,86 @@ const Profile = () => {
   // #endregion
 
   return (
-    <Container
-      sx={{
-        mt: 10,
-      }}
-    >
-      <Grid container columnSpacing={1}>
+    <>
+      <ImageBackground>
         <Grid
-          item
-          xs={4}
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-          }}
+          sx={{ px: 6 }}
+          height={'100%'}
+          container
+          direction={'column'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          spacing={2}
         >
-          <LeftProfileColumn
-            LeftProfileBasicInfo={{
-              avatarSrc: avatarSrc,
-              address: userData.address ?? 'Không',
-              email: userData.email ?? 'Không',
-              name: userData.name ?? 'Không',
-              phone: userData.phone ?? 'Không',
-            }}
-          />
+          <Grid item>
+            <Link href="#" style={{ textDecoration: 'none' }}>
+              <Typography
+                align="center"
+                variant="h1"
+                color={theme.palette.primary.main}
+                sx={{
+                  '&:hover': {
+                    color: theme.palette.common.white,
+                  },
+                }}
+              >
+                Tài khoản
+              </Typography>
+            </Link>
+          </Grid>
         </Grid>
-        <Grid item xs={8}>
-          <RightProfileColumn />
+      </ImageBackground>
+      <Box
+        sx={{
+          pt: 6,
+          pb: 12,
+          px: { xs: 2, sm: 2, md: 4, lg: 8 },
+          overflow: 'visible',
+        }}
+      >
+        <Grid
+          container
+          spacing={2}
+          justifyContent={'center'}
+          alignItems={'flex-start'}
+        >
+          <Grid item xs={12} sm={6} md={4}>
+            <Box
+              sx={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: 3,
+                p: 2,
+              }}
+            >
+              <LeftProfileColumn
+                LeftProfileBasicInfo={{
+                  avatarSrc: avatarSrc,
+                  address: userData.address ?? 'Không',
+                  email: userData.email ?? 'Không',
+                  name: userData.name ?? 'Không',
+                  phone: userData.phone ?? 'Không',
+                }}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6} md={8}>
+            <Box
+              sx={{
+                backgroundColor: theme.palette.common.white,
+                borderRadius: '8px',
+                overflow: 'hidden',
+                boxShadow: 3,
+                p: 2,
+              }}
+            >
+              <RightProfileColumn />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Box>
+    </>
   );
 };
 

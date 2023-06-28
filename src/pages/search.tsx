@@ -220,7 +220,7 @@ const Search = () => {
 
         <Box
           sx={{
-            pt: 4,
+            pt: 6,
             pb: 12,
             px: { xs: 2, sm: 2, md: 4, lg: 8 },
             overflow: 'visible',
