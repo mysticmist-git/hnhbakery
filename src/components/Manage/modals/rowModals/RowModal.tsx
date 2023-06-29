@@ -15,6 +15,7 @@ import RowModalAssemblyDataStrategy, {
   ProductRowModalAssemblyDataStrategy,
   ProductTypeRowModalAssemblyDataStrategy,
 } from '@/lib/strategies/rowModalAssemblyDataStrategy';
+import { Backdrop, CircularProgress } from '@mui/material';
 import React, { forwardRef, memo, useEffect, useState } from 'react';
 import Form from '../forms/Form';
 import RowModalLayout from './RowModalLayout';
@@ -64,6 +65,7 @@ export default memo(
     //#endregion
 
     //#region States
+
     const [readOnly, setReadOnly] = useState<boolean>(true);
     const [assemblyDataStrategy, setAssemblyDataStrategy] =
       useState<RowModalAssemblyDataStrategy | null>(null);
@@ -140,6 +142,12 @@ export default memo(
           disabled={disabled}
           loading={loading}
         />
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={loading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </RowModalLayout>
     );
   })

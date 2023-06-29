@@ -611,20 +611,6 @@ export default function Manage({
         my: 2,
       }}
     >
-      <Backdrop
-        sx={{
-          color: (theme) => theme.palette.secondary.main,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-        }}
-        open={state.loading}
-      >
-        <CircularProgress
-          size={24}
-          sx={{
-            color: 'inherit',
-          }}
-        />
-      </Backdrop>
 
       {/* Title */}
       <Typography sx={{ color: theme.palette.common.black }} variant="h4">

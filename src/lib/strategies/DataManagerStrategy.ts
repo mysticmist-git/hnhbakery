@@ -90,9 +90,6 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
 
     const productTypeAddData = addData as ProductTypeAddData;
 
-    console.log(addData);
-    console.log(productTypeAddData);
-
     if (!productTypeAddData.data)
       throw new Error(DataManagerErrorCode.NULL_DATA);
 
@@ -103,9 +100,6 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
       image = await uploadImageToFirebaseStorage(productTypeAddData.imageFile);
 
     data.image = image;
-
-    console.log(image);
-    console.log(data);
 
     const newProductTypeRef = await addDocToFirestore(
       data,
