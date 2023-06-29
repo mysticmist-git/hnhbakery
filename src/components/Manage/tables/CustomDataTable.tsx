@@ -6,34 +6,19 @@ import {
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import formatPrice from '@/lib/utilities/formatCurrency';
-import { Delete, PanoramaFishEye, Visibility } from '@mui/icons-material';
-import {
-  Checkbox,
-  LinearProgress,
-  Paper,
-  Skeleton,
-  Table,
-  TableBody,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  styled,
-} from '@mui/material';
+import { Delete, Visibility } from '@mui/icons-material';
+import { Checkbox, LinearProgress, Typography, styled } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridLoadingOverlay,
   GridRenderCellParams,
   GridRowModel,
   GridToolbar,
   GridValueGetterParams,
 } from '@mui/x-data-grid';
 import { memo, useMemo } from 'react';
-import { RowActionButtons } from './components';
-import GeneratedTableBody from './components/GeneratedTableBody';
-import GeneratedTableHead from './components/GeneratedTableHead';
+import CustomerGridToolBar from './components/CustomerGridToolBar';
 
 function StatusCell(params: GridRenderCellParams) {
   const isActive = params.value as boolean;
@@ -278,6 +263,13 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
         loadingOverlay: CustomLinearProgres,
         baseCheckbox: (props) => {
           return <Checkbox color="secondary" {...props} />;
+        },
+        toolbar: CustomerGridToolBar,
+      }}
+      slotProps={{
+        toolbar: {
+          showQuickFilter: true,
+          quickFilterProps: { debounceMs: 500 },
         },
       }}
     />

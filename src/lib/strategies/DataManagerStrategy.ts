@@ -1,4 +1,5 @@
 import { COLLECTION_NAME } from '@/lib/constants';
+import { gridColumnsTotalWidthSelector } from '@mui/x-data-grid';
 import { data } from 'autoprefixer';
 import { url } from 'inspector';
 import { updateCartToLocal } from '../contexts/cartContext';
@@ -89,18 +90,22 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
 
     const productTypeAddData = addData as ProductTypeAddData;
 
+    console.log(addData);
+    console.log(productTypeAddData);
+
     if (!productTypeAddData.data)
       throw new Error(DataManagerErrorCode.NULL_DATA);
 
     const data = createProductTypeObject(productTypeAddData.data);
-
-    if (!data.name) throw new Error(DataManagerErrorCode.NULL_FIELD);
 
     let image: string = '';
     if (productTypeAddData.imageFile)
       image = await uploadImageToFirebaseStorage(productTypeAddData.imageFile);
 
     data.image = image;
+
+    console.log(image);
+    console.log(data);
 
     const newProductTypeRef = await addDocToFirestore(
       data,
@@ -112,6 +117,7 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     );
 
     let imageURL = '';
+
     if (refetchData.image)
       imageURL = await getDownloadUrlFromFirebaseStorage(refetchData.image);
 
@@ -120,6 +126,8 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
       productCount: 0,
       imageURL: imageURL,
     };
+
+    console.log(refinedData);
 
     return refinedData;
   }

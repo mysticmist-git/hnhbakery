@@ -24,6 +24,7 @@ import {
   ManageAction,
   ManageActionType,
   ManageState,
+  ModalProductTypeObject,
   PATH,
   crudTargets,
   generateDefaultRow,
@@ -31,6 +32,7 @@ import {
   manageReducer,
   validateCollectionNameParams,
 } from '@/lib/localLib/manage';
+import { ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
 import {
   AddData,
@@ -161,12 +163,21 @@ export default function Manage({
           ?.getProductTypeFormRef()
           ?.getImageFile();
 
-        if (!state.modalData) return null;
+        const productTypeData = state.modalData as ModalProductTypeObject;
+
+        if (!productTypeData) return null;
+
+        if (!productTypeData.name) {
+          handleSnackbarAlert('error', 'Vui lòng nhập tên sản phẩm');
+          return null;
+        }
 
         addData = {
-          data: state.modalData!,
+          data: productTypeData,
           imageFile: imageFile ?? undefined,
         } as ProductTypeAddData;
+
+        break;
 
       case COLLECTION_NAME.PRODUCTS:
         const imageFiles = rowModalRef.current
@@ -562,7 +573,8 @@ export default function Manage({
         }
 
         const deletedIndex = state.mainDocs.indexOf(state.deleteDoc);
-        const updatedMainDocs = state.mainDocs.toSpliced(deletedIndex, 1);
+        const updatedMainDocs = [...state.mainDocs];
+        updatedMainDocs.splice(deletedIndex, 1);
 
         console.log(deletedIndex);
 
@@ -650,48 +662,6 @@ export default function Manage({
             my: '1rem',
           }}
         >
-          {state.selectedTarget?.collectionName !== 'batches' && (
-            <Autocomplete
-              freeSolo
-              sx={{
-                width: 400,
-              }}
-              id="search-bar"
-              disableClearable
-              options={namesForSearchBar ?? []}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Tìm kiếm"
-                  InputProps={{
-                    ...params.InputProps,
-                    type: 'search',
-                  }}
-                />
-              )}
-              onInputChange={handleSearch}
-            />
-          )}
-
-          <FormControlLabel
-            labelPlacement="start"
-            control={
-              <Switch
-                color="secondary"
-                checked={state.isDisplayActiveOnly}
-                onChange={(e) => {
-                  dispatch({
-                    type: ManageActionType.SET_DISPLAY_ACTIVE_ONLY,
-                    payload: e.target.checked,
-                  });
-                }}
-              />
-            }
-            label={
-              <Typography variant="body2">Chỉ hiện còn cung cấp</Typography>
-            }
-          />
-
           <Divider
             orientation="vertical"
             sx={{
