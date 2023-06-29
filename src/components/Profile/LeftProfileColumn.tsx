@@ -29,7 +29,7 @@ const LeftProfileColumn = (props: LeftProfileColumnProps) => {
       spacing={2}
     >
       <Grid item xs={12}>
-        <Box sx={{ p: 4, width: '100%' }}>
+        <Box sx={{ p: { xs: 2, sm: 2, md: 2, lg: 4 }, width: '100%' }}>
           <Box
             sx={{
               width: '100%',
@@ -77,9 +77,9 @@ const LeftProfileColumn = (props: LeftProfileColumnProps) => {
 
       {/* Basic Information */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <LeftProfileBasicInformation {...props.LeftProfileBasicInfo} />
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

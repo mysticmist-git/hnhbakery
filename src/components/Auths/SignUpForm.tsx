@@ -67,21 +67,40 @@ const SignUpForm = ({
             autoFocus
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <DatePicker
             format="DD/MM/YYYY"
             inputRef={birthdayRef}
-            defaultValue={dayjs(new Date('2000-01-01'))}
+            views={['day', 'month', 'year']}
             sx={{
               overflow: 'hidden',
+              width: '100%',
               bgcolor: theme.palette.common.white,
               borderRadius: '8px',
               border: 3,
               borderColor: theme.palette.secondary.main,
+              fontSize: '16px',
+            }}
+            slotProps={{
+              textField: {
+                autoComplete: 'bday',
+                InputProps: {
+                  disableUnderline: true,
+                },
+                inputProps: {
+                  sx: {
+                    py: 1.5,
+                    fontSize: theme.typography.body2.fontSize,
+                    color: theme.palette.common.black,
+                    fontWeight: theme.typography.body2.fontWeight,
+                    fontFamily: theme.typography.body2.fontFamily,
+                  },
+                },
+              },
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <CustomTextField
             ref={telRef}
             placeholder="Số điện thoại"

@@ -1,4 +1,4 @@
-import { IconButton, Typography } from '@mui/material';
+import { Grid, IconButton, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import React, { memo } from 'react';
 import BasicInfoContentTypography from './BasicInfoContentTypography';
@@ -30,28 +30,23 @@ const LeftProfileBasicInformation = ({
   // #endregion
 
   return (
-    <Stack
-      alignContent={'start'}
-      rowGap={2}
-      sx={{
-        width: '100%',
-      }}
-    >
-      <Stack
-        direction={'row'}
-        justifyContent={'center'}
-        sx={{
-          position: 'relative',
-        }}
-      >
-        <Typography variant="h3" alignSelf={'center'}>
-          Thông tin cơ bản
+    <Grid container direction="row" justifyContent="center" alignItems="center">
+      <Grid item xs={12}>
+        <Typography
+          variant="h3"
+          color={theme.palette.common.black}
+          align={'center'}
+          sx={{
+            pb: 2,
+          }}
+        >
+          Phan Trường Huy
         </Typography>
+      </Grid>
+      {/* <Grid item xs={12}>
         <IconButton
           color="secondary"
           sx={{
-            position: 'absolute',
-            right: 0,
             transition: 'transform 0.3s ease-in-out',
             ':hover': {
               transform: 'scale(1.3) rotate(5deg)',
@@ -61,29 +56,28 @@ const LeftProfileBasicInformation = ({
         >
           <Edit />
         </IconButton>
-      </Stack>
-      <Stack rowGap={1}>
+      </Grid> */}
+      {/* <Stack rowGap={1}>
         <Stack direction={'row'} columnGap={1}>
           <BasicInfoHeadingTypography>Họ và tên:</BasicInfoHeadingTypography>
           <BasicInfoContentTypography>{name}</BasicInfoContentTypography>
         </Stack>
         <Stack direction={'row'} columnGap={1}>
           <BasicInfoHeadingTypography>
-            {' '}
-            Số điện thoại:{' '}
+            Số điện thoại:
           </BasicInfoHeadingTypography>
           <BasicInfoContentTypography>{phone}</BasicInfoContentTypography>
         </Stack>
         <Stack direction={'row'} columnGap={1}>
-          <BasicInfoHeadingTypography>Email: </BasicInfoHeadingTypography>
+          <BasicInfoHeadingTypography>Email:</BasicInfoHeadingTypography>
           <BasicInfoContentTypography>{email}</BasicInfoContentTypography>
         </Stack>
         <Stack direction={'row'} columnGap={1}>
-          <BasicInfoHeadingTypography>Địa chỉ: </BasicInfoHeadingTypography>
+          <BasicInfoHeadingTypography>Địa chỉ:</BasicInfoHeadingTypography>
           <BasicInfoContentTypography>{address}</BasicInfoContentTypography>
         </Stack>
-      </Stack>
-    </Stack>
+      </Stack> */}
+    </Grid>
   );
 };
 

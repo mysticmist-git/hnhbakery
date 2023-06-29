@@ -1,13 +1,5 @@
 import { LeftProfileColumn, RightProfileColumn } from '@/components/Profile';
-import {
-  Box,
-  Card,
-  Container,
-  Grid,
-  Link,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import avatar from '../assets/Logo.png';
 import { Timestamp, doc, getDoc } from 'firebase/firestore';
@@ -112,7 +104,7 @@ const Profile = () => {
           justifyContent={'center'}
           alignItems={'flex-start'}
         >
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={4} md={3}>
             <Box
               sx={{
                 backgroundColor: theme.palette.common.white,
@@ -125,26 +117,17 @@ const Profile = () => {
               <LeftProfileColumn
                 LeftProfileBasicInfo={{
                   avatarSrc: avatarSrc,
-                  address: userData.address ?? 'Không',
-                  email: userData.email ?? 'Không',
+                  // address: userData.addresses ?? 'Không',
+                  address: 'Không',
+                  email: userData.mail ?? 'Không',
                   name: userData.name ?? 'Không',
-                  phone: userData.phone ?? 'Không',
+                  phone: userData.tel ?? 'Không',
                 }}
               />
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6} md={8}>
-            <Box
-              sx={{
-                backgroundColor: theme.palette.common.white,
-                borderRadius: '8px',
-                overflow: 'hidden',
-                boxShadow: 3,
-                p: 2,
-              }}
-            >
-              <RightProfileColumn />
-            </Box>
+          <Grid item xs={12} sm={8} md={9}>
+            <RightProfileColumn />
           </Grid>
         </Grid>
       </Box>
