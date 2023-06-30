@@ -4,6 +4,7 @@ import { CustomIconButton } from '../Inputs/Buttons';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { CheckboxList } from './CheckboxList';
 import { XacNhanXoa_Dialog } from './XacNhanXoa_Dialog';
+
 export function AddressList(props: any) {
   const { textStyle, userData } = props;
   const theme = useTheme();
@@ -29,12 +30,12 @@ export function AddressList(props: any) {
   };
 
   const handleDeleteAll = () => {
-    setOpen(true);
+    setOpenXoaDiaChi(true);
   };
 
-  const [open, setOpen] = useState(false);
-  const handleClose = () => {
-    setOpen(false);
+  const [openXoaDiaChi, setOpenXoaDiaChi] = useState(false);
+  const handleCloseXoaDiaChi = () => {
+    setOpenXoaDiaChi(false);
   };
 
   return (
@@ -83,7 +84,10 @@ export function AddressList(props: any) {
           />
         </Grid>
       </Grid>
-      <XacNhanXoa_Dialog open={open} handleClose={handleClose} />
+      <XacNhanXoa_Dialog
+        open={openXoaDiaChi}
+        handleClose={handleCloseXoaDiaChi}
+      />
     </>
   );
 }
