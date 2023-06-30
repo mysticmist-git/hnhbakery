@@ -1,113 +1,24 @@
 import {
   Box,
-  Checkbox,
   Grid,
   IconButton,
   InputAdornment,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
   ListItemText,
   TextField,
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { CustomIconButton } from '../Inputs/Buttons';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import { Google } from '@mui/icons-material';
+import dayjs from 'dayjs';
+import { TelTextField } from './TelTextField';
+import { AddressList } from './AddressList';
 
-function CheckboxList(props: any) {
-  const { textStyle } = props;
-  const [checked, setChecked] = React.useState([0]);
-
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
-  };
-
-  const theme = useTheme();
-  return (
-    <List sx={{ width: '100%', p: 0, m: 0 }}>
-      {[0, 1, 2, 3].map((value) => {
-        const labelId = `checkbox-list-label-${value}`;
-
-        return (
-          <ListItem key={value} sx={{ px: 0, py: 2 }}>
-            <ListItemButton
-              sx={{ p: 0, mr: 1 }}
-              role={undefined}
-              onClick={handleToggle(value)}
-            >
-              <ListItemIcon>
-                <Checkbox
-                  checked={checked.indexOf(value) !== -1}
-                  tabIndex={-1}
-                  disableRipple
-                  inputProps={{ 'aria-labelledby': labelId }}
-                  color="secondary"
-                  sx={{
-                    color: theme.palette.secondary.main,
-                  }}
-                />
-              </ListItemIcon>
-            </ListItemButton>
-            <TextField
-              id={labelId}
-              label="Địa chỉ 1"
-              disabled
-              variant="outlined"
-              defaultValue={'123 Nguyễn Hữu Hùng, Hà Nội, Việt Nam'}
-              fullWidth
-              InputProps={{
-                style: {
-                  borderRadius: '8px',
-                },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <CustomIconButton
-                      sx={{
-                        color: theme.palette.common.black,
-                      }}
-                    >
-                      <EditRoundedIcon fontSize="small" />
-                    </CustomIconButton>
-                    <CustomIconButton
-                      sx={{
-                        color: theme.palette.success.main,
-                      }}
-                    >
-                      <CheckRoundedIcon fontSize="medium" />
-                    </CustomIconButton>
-                  </InputAdornment>
-                ),
-              }}
-              inputProps={{
-                sx: {
-                  ...textStyle,
-                },
-              }}
-              type="text"
-            />
-          </ListItem>
-        );
-      })}
-    </List>
-  );
-}
-
-const RightProfileColumn = () => {
+const RightProfileColumn = (props: any) => {
   const theme = useTheme();
   const textStyle = {
     fontSize: theme.typography.body2.fontSize,
@@ -115,6 +26,8 @@ const RightProfileColumn = () => {
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
+  const { userData } = props;
+
   return (
     <Grid
       container
@@ -155,7 +68,8 @@ const RightProfileColumn = () => {
                 label="Họ và tên"
                 disabled
                 variant="outlined"
-                defaultValue={'Nguyễn Hữu Hùng'}
+                defaultValue={'Họ và tên nhé'}
+                value={userData.name ?? ''}
                 fullWidth
                 InputProps={{
                   style: {
@@ -178,6 +92,7 @@ const RightProfileColumn = () => {
                 sx={{
                   width: '100%',
                 }}
+                value={dayjs(userData.birthday ?? '')}
                 format="DD/MM/YYYY"
                 slotProps={{
                   textField: {
@@ -230,30 +145,12 @@ const RightProfileColumn = () => {
                 label="Email"
                 disabled
                 variant="outlined"
-                defaultValue={'phantruong0701@gmail.com'}
+                value={userData.email ?? 'Trống'}
                 fullWidth
                 InputProps={{
                   style: {
                     borderRadius: '8px',
                   },
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.common.black,
-                        }}
-                      >
-                        <EditRoundedIcon fontSize="small" />
-                      </CustomIconButton>
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.success.main,
-                        }}
-                      >
-                        <CheckRoundedIcon fontSize="medium" />
-                      </CustomIconButton>
-                    </InputAdornment>
-                  ),
                 }}
                 inputProps={{
                   sx: {
@@ -264,90 +161,72 @@ const RightProfileColumn = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
-                label="Số điện thoại"
-                disabled
-                variant="outlined"
-                defaultValue={'0343214971'}
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Typography
-                        variant="button"
-                        color={theme.palette.text.secondary}
-                      >
-                        +84
-                      </Typography>
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.common.black,
-                        }}
-                      >
-                        <EditRoundedIcon fontSize="small" />
-                      </CustomIconButton>
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.success.main,
-                        }}
-                      >
-                        <CheckRoundedIcon fontSize="medium" />
-                      </CustomIconButton>
-                    </InputAdornment>
-                  ),
-                  style: {
-                    borderRadius: '8px',
-                  },
-                }}
-                inputProps={{
-                  sx: {
-                    ...textStyle,
-                  },
-                }}
-                type="phone"
-              />
+              <TelTextField textStyle={textStyle} userData={userData} />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                label="Mật khẩu"
-                disabled
-                variant="outlined"
-                defaultValue={'1234567890'}
-                fullWidth
-                InputProps={{
-                  style: {
+              {userData.accountType === 'google' && (
+                <Box
+                  sx={{
                     borderRadius: '8px',
-                  },
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.common.black,
-                        }}
-                      >
-                        <EditRoundedIcon fontSize="small" />
-                      </CustomIconButton>
-                      <CustomIconButton
-                        sx={{
-                          color: theme.palette.success.main,
-                        }}
-                      >
-                        <CheckRoundedIcon fontSize="medium" />
-                      </CustomIconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                inputProps={{
-                  sx: {
-                    ...textStyle,
-                  },
-                }}
-                type="password"
-              />
+                    border: 0.5,
+                    borderColor: theme.palette.text.secondary,
+                    width: '100%',
+                    py: 1.9,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  <Google fontSize="small" />
+                  <Typography
+                    variant="body2"
+                    color={theme.palette.text.secondary}
+                    sx={{ ml: 1 }}
+                  >
+                    Đã đăng nhập với Google
+                  </Typography>
+                </Box>
+              )}
+              {userData.accountType === 'email_n_password' && (
+                <TextField
+                  label="Mật khẩu"
+                  disabled
+                  variant="outlined"
+                  defaultValue={'1234567890'}
+                  fullWidth
+                  InputProps={{
+                    style: {
+                      borderRadius: '8px',
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <CustomIconButton
+                          sx={{
+                            color: theme.palette.common.black,
+                          }}
+                        >
+                          <EditRoundedIcon fontSize="small" />
+                        </CustomIconButton>
+                        <CustomIconButton
+                          sx={{
+                            color: theme.palette.success.main,
+                          }}
+                        >
+                          <CheckRoundedIcon fontSize="medium" />
+                        </CustomIconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  inputProps={{
+                    sx: {
+                      ...textStyle,
+                    },
+                  }}
+                  type="password"
+                />
+              )}
             </Grid>
           </Grid>
         </Box>
@@ -363,36 +242,7 @@ const RightProfileColumn = () => {
             p: 2,
           }}
         >
-          <Grid
-            container
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            spacing={2}
-          >
-            <Grid item xs={12}>
-              <Box
-                display={'flex'}
-                justifyContent="space-between"
-                alignItems="center"
-                flexDirection={'row'}
-              >
-                <Typography
-                  align="center"
-                  variant="button"
-                  color={theme.palette.common.black}
-                >
-                  Địa chỉ giao hàng
-                </Typography>
-                <CustomIconButton sx={{ color: theme.palette.secondary.main }}>
-                  <DeleteRoundedIcon fontSize="small" />
-                </CustomIconButton>
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <CheckboxList textStyle={textStyle} />
-            </Grid>
-          </Grid>
+          <AddressList textStyle={textStyle} userData={userData} />
         </Box>
       </Grid>
     </Grid>

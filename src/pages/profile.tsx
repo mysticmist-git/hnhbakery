@@ -44,13 +44,25 @@ const Profile = () => {
       // Get users
       const userDoc = await getDoc(doc(db, 'users', userId));
 
-      const userData = {
+      var userData = {
         id: userDoc.id,
         ...userDoc.data(),
-        lastLogin: (
-          (userDoc.data()?.lastLogin as Timestamp) ?? new Date()
-        ).toDate(),
+        birthday: userDoc.data()?.birthday
+          ? new Date(
+              (userDoc.data()?.birthday as Timestamp).seconds * 1000 +
+                7 * 60 * 60 * 1000
+            )
+          : new Date(),
+        lastLogin: userDoc.data()?.lastLogin
+          ? new Date(
+              (userDoc.data()?.lastLogin as Timestamp).seconds * 1000 +
+                7 * 60 * 60 * 1000
+            )
+          : new Date(),
+        addresses: userDoc.data()?.addresses ?? [],
       } as UserObject;
+
+      console.log(userData);
 
       setUserData(() => userData);
     };
@@ -127,7 +139,7 @@ const Profile = () => {
             </Box>
           </Grid>
           <Grid item xs={12} sm={8} md={9}>
-            <RightProfileColumn />
+            <RightProfileColumn userData={userData} />
           </Grid>
         </Grid>
       </Box>

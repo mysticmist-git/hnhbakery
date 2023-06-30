@@ -7,7 +7,7 @@ const CustomButton = (props: any) => {
     <Button
       {...props}
       style={{
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: props.sx?.bgcolor ?? theme.palette.secondary.main,
         color: theme.palette.common.white,
         transition: 'opacity 0.2s',
       }}
