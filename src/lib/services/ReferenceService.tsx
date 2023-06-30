@@ -1,6 +1,6 @@
 import { where } from 'firebase/firestore';
 import { getCollectionWithQuery } from '../firestore/firestoreLib';
-import { Reference } from '../models/Reference';
+import { ReferenceObject } from '../models/Reference';
 
 interface ReferenceServiceInterface {
   getColors: () => Promise<string[]>;
@@ -12,9 +12,9 @@ class ReferencesService implements ReferenceServiceInterface {
 
   async getColors(): Promise<string[]> {
     try {
-      const colors = await getCollectionWithQuery<Reference>(
+      const colors = await getCollectionWithQuery<ReferenceObject>(
         'references',
-        where('name', '==', 'colors'),
+        where('name', '==', 'colors')
       );
 
       return colors[0].values ?? [];
@@ -26,9 +26,9 @@ class ReferencesService implements ReferenceServiceInterface {
 
   async getSizes(): Promise<string[]> {
     try {
-      const sizes = await getCollectionWithQuery<Reference>(
+      const sizes = await getCollectionWithQuery<ReferenceObject>(
         'references',
-        where('name', '==', 'sizes'),
+        where('name', '==', 'sizes')
       );
       return sizes[0].values ?? [];
     } catch (error) {

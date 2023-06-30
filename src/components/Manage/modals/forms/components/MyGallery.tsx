@@ -1,14 +1,15 @@
+import theme from '@/styles/themes/lightTheme';
 import { Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { StaticImageData } from 'next/image';
-import { useState, useEffect, memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import MyGalleryImage from './MyGalleryImage';
 import MyGalleryImageNewButton from './MyGalleryImageNewButton';
-import theme from '@/styles/themes/lightTheme';
 
-const MyGallery = ({
+function MyGallery({
   title: title,
   srcs,
+  srcsConverter = (srcs) => srcs,
   placeholderImage,
   readOnly = false,
   handleUploadGalleryToBrowser,
@@ -16,24 +17,13 @@ const MyGallery = ({
 }: {
   title?: string;
   srcs: any[] | null;
+  srcsConverter?: (srcs: any[]) => string[];
   onChange: (values: (string | null)[]) => void;
   placeholderImage: StaticImageData;
   readOnly: boolean;
   handleUploadGalleryToBrowser: any;
-  handleDeleteImage: any;
-}) => {
-  //#region States
-
-  //#endregion
-
-  //#region UseEffects
-
-  //#endregion
-
-  //#region Methods
-
-  //#endregion
-
+  handleDeleteImage: (url: string) => void;
+}) {
   return (
     <Stack spacing={1}>
       {title && (
@@ -60,7 +50,7 @@ const MyGallery = ({
         </Typography>
       </Typography>
       <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
-        {srcs?.map((src) => (
+        {srcsConverter(srcs ?? []).map((src) => (
           <MyGalleryImage
             src={src && src !== '' ? src : placeholderImage}
             handleDeleteImage={handleDeleteImage}
@@ -82,6 +72,6 @@ const MyGallery = ({
       </Stack>
     </Stack>
   );
-};
+}
 
 export default memo(MyGallery);

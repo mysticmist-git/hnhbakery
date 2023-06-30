@@ -1,5 +1,4 @@
 import SimpleDialog from '@/components/Dialogs/SimpleDialog';
-import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { RowModal } from '@/components/Manage/modals/rowModals';
 import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
@@ -18,37 +17,41 @@ import {
 } from '@/lib/factories/StorageDocsFactory';
 import { isDataChanged } from '@/lib/localLib';
 import {
+  CrudTarget,
   DialogResult,
   FormRef,
   ManageAction,
   ManageActionType,
   ManageState,
+  ModalProductTypeObject,
   PATH,
   crudTargets,
+  generateDefaultRow,
   initManageState,
   manageReducer,
   validateCollectionNameParams,
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
 import {
+  AddData,
   DataManagerErrorCode,
   DataManagerStrategy,
+  ProductAddData,
+  ProductDataManagerStrategy,
   ProductTypeAddData,
   ProductTypeDataManagerStrategy,
   ProductTypeUpdateData,
+  ProductUpdateData,
   UpdateData,
 } from '@/lib/strategies/DataManagerStrategy';
 import { Add } from '@mui/icons-material';
 import {
-  Autocomplete,
   Box,
   Button,
-  CircularProgress,
   Container,
   Divider,
-  FormControlLabel,
-  Switch,
-  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   styled,
   useTheme,
@@ -137,10 +140,89 @@ export default function Manage({
         setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
         break;
       case COLLECTION_NAME.PRODUCTS:
+        setDataManager(() => new ProductDataManagerStrategy(dispatch));
+        break;
       case COLLECTION_NAME.BATCHES:
       default:
         setDataManager(() => null);
     }
+  }
+
+  function createAddData(): AddData | null {
+    let addData: AddData | null = null;
+
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        const imageFile = rowModalRef.current
+          ?.getProductTypeFormRef()
+          ?.getImageFile();
+
+        const productTypeData = state.modalData as ModalProductTypeObject;
+
+        if (!productTypeData) return null;
+
+        if (!productTypeData.name) {
+          handleSnackbarAlert('error', 'Vui lòng nhập tên sản phẩm');
+          return null;
+        }
+
+        addData = {
+          data: productTypeData,
+          imageFile: imageFile ?? undefined,
+        } as ProductTypeAddData;
+
+        break;
+
+      case COLLECTION_NAME.PRODUCTS:
+        const imageFiles = rowModalRef.current
+          ?.getProductFormRef()
+          ?.getImageFiles();
+
+        const productTypeName =
+          rowModalRef.current?.getProductFormRef()?.getProductTypeName() ??
+          'Lỗi';
+
+        addData = {
+          data: state.modalData!,
+          productTypeName: productTypeName,
+          imageFiles: imageFiles?.map((f) => f.file) ?? [],
+        } as ProductAddData;
+        break;
+      case COLLECTION_NAME.BATCHES:
+        break;
+    }
+
+    return addData;
+  }
+
+  function createUpdateData(): UpdateData | null {
+    let updateData: UpdateData | null = null;
+
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        updateData = {
+          newData: state.modalData,
+          originalData: state.originalModalData,
+          imageFile: rowModalRef.current
+            ?.getProductTypeFormRef()
+            ?.getImageFile() as File,
+        } as ProductTypeUpdateData;
+        break;
+      case COLLECTION_NAME.PRODUCTS:
+        updateData = {
+          newData: state.modalData,
+          originalData: state.originalModalData,
+          imageFiles:
+            rowModalRef.current?.getProductFormRef()?.getImageFiles() ?? [],
+        } as ProductUpdateData;
+        break;
+      case COLLECTION_NAME.BATCHES:
+        break;
+      default:
+        break;
+    }
+
+    return updateData;
   }
 
   //#endregion
@@ -157,6 +239,8 @@ export default function Manage({
     const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
 
     if (!mainDocs) return;
+
+    console.log(mainDocs);
 
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
@@ -230,26 +314,18 @@ export default function Manage({
 
   //#region Handlers
 
-  /**
-   * Updates the targets state when the value of the CRUD target selection has changed.
-   *
-   * @param {any} e - The event object passed from the target selection component.
-   * @param {any} newValue - The new value selected in the target selection component.
-   * @return {void} - This function does not return anything.
-   */
-  function handleCrudTargetChanged(newValue: string) {
-    const nextCrudTarget = crudTargets.find(
-      (target) => target.label === newValue
-    );
-
-    if (!nextCrudTarget) {
+  function handleCrudTargetChanged(
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    newTarget: CrudTarget
+  ) {
+    if (!newTarget) {
       console.log('Null Crud target');
       return;
     }
 
     dispatch({
       type: ManageActionType.SET_SELECTED_TARGET,
-      payload: nextCrudTarget,
+      payload: newTarget,
     });
   }
 
@@ -262,7 +338,7 @@ export default function Manage({
   function handleNewRow() {
     dispatch({
       type: ManageActionType.NEW_ROW,
-      payload: COLLECTION_NAME.PRODUCT_TYPES,
+      payload: paramCollectionName,
     });
   }
 
@@ -278,18 +354,25 @@ export default function Manage({
   }
 
   async function handleAddRow() {
-    if (!state.modalData) return;
+    console.log(state.modalData);
+
+    if (!state.modalData) {
+      handleSnackbarAlert('error', 'Lỗi khi thêm');
+
+      return;
+    }
 
     setLoading(true);
 
-    const imageFile = rowModalRef.current
-      ?.getProductTypeFormRef()
-      ?.getImageFile();
+    const addData = createAddData();
 
-    const addData: ProductTypeAddData = {
-      data: state.modalData,
-      imageFile: imageFile ?? undefined,
-    };
+    if (!addData) {
+      setLoading(false);
+
+      handleSnackbarAlert('error', 'Lỗi khi thêm');
+
+      return;
+    }
 
     try {
       const addedData = await dataManager?.addDoc(addData);
@@ -350,15 +433,14 @@ export default function Manage({
     const changed = isDataChanged(state.modalData, state.originalModalData);
 
     if (changed) {
-      const updateData: ProductTypeUpdateData = {
-        newData: state.modalData,
-        originalData: state.originalModalData,
-        imageFile: rowModalRef.current
-          ?.getProductTypeFormRef()
-          ?.getImageFile() as File,
-      };
-
       try {
+        const updateData = createUpdateData();
+
+        if (!updateData) {
+          console.log('Null update data');
+          return;
+        }
+
         const data = await dataManager?.updateDoc(updateData);
 
         if (!data) {
@@ -396,7 +478,12 @@ export default function Manage({
     setLoading(false);
   }
 
-  function handleResetForm() {}
+  function handleResetForm() {
+    dispatch({
+      type: ManageActionType.SET_MODAL_DATA,
+      payload: generateDefaultRow(paramCollectionName),
+    });
+  }
 
   const handleModalClose = () => {
     dispatch({
@@ -453,7 +540,7 @@ export default function Manage({
     setDialogOpen(() => true);
   }
 
-  function handleDialogClose(result: DialogResult) {
+  function handleDialogCloseWithConfirm(result: DialogResult) {
     setLoading(true);
 
     try {
@@ -471,14 +558,20 @@ export default function Manage({
           return;
         }
 
+        const deletedIndex = state.mainDocs.indexOf(state.deleteDoc);
         const updatedMainDocs = [...state.mainDocs];
-        const deletedIndex = updatedMainDocs.indexOf(state.deleteDoc);
-        console.log(deletedIndex);
         updatedMainDocs.splice(deletedIndex, 1);
+
+        console.log(deletedIndex);
 
         dispatch({
           type: ManageActionType.SET_MAIN_DOCS,
           payload: updatedMainDocs,
+        });
+
+        dispatch({
+          type: ManageActionType.SET_CRUD_MODAL_OPEN,
+          payload: false,
         });
 
         handleSnackbarAlert('success', 'Xóa thành công');
@@ -504,36 +597,28 @@ export default function Manage({
         my: 2,
       }}
     >
-      {state.loading && (
-        <CircularProgress
-          size={24}
-          sx={{
-            color: (theme) => theme.palette.secondary.main,
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            marginTop: '-12px',
-            marginLeft: '-12px',
-          }}
-        />
-      )}
-
       {/* Title */}
       <Typography sx={{ color: theme.palette.common.black }} variant="h4">
         Quản lý kho
       </Typography>
+
       <Divider
         sx={{
-          mt: 2,
+          my: 2,
         }}
       />
 
-      <MyMultiValuePickerInput
-        label="Kho"
-        options={crudTargets.map((target) => target.label)}
-        value={state.selectedTarget?.label}
+      <ToggleButtonGroup
+        value={state.selectedTarget}
         onChange={handleCrudTargetChanged}
-      />
+        exclusive
+      >
+        {crudTargets.map((target) => (
+          <ToggleButton key={target.collectionName} value={target}>
+            {target.label}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
 
       <Divider
         sx={{
@@ -554,48 +639,6 @@ export default function Manage({
             my: '1rem',
           }}
         >
-          {state.selectedTarget?.collectionName !== 'batches' && (
-            <Autocomplete
-              freeSolo
-              sx={{
-                width: 400,
-              }}
-              id="search-bar"
-              disableClearable
-              options={namesForSearchBar ?? []}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Tìm kiếm"
-                  InputProps={{
-                    ...params.InputProps,
-                    type: 'search',
-                  }}
-                />
-              )}
-              onInputChange={handleSearch}
-            />
-          )}
-
-          <FormControlLabel
-            labelPlacement="start"
-            control={
-              <Switch
-                color="secondary"
-                checked={state.isDisplayActiveOnly}
-                onChange={(e) => {
-                  dispatch({
-                    type: ManageActionType.SET_DISPLAY_ACTIVE_ONLY,
-                    payload: e.target.checked,
-                  });
-                }}
-              />
-            }
-            label={
-              <Typography variant="body2">Chỉ hiện còn cung cấp</Typography>
-            }
-          />
-
           <Divider
             orientation="vertical"
             sx={{
@@ -629,7 +672,7 @@ export default function Manage({
       {/* Dialogs */}
       <SimpleDialog
         open={dialogOpen}
-        onClose={handleDialogClose}
+        onClose={handleDialogCloseWithConfirm}
         title={'Xóa?'}
         content={'Bạn có chắc muốn xóa hàng này?'}
         actions={
@@ -641,11 +684,13 @@ export default function Manage({
                   backgroundColor: (theme) => theme.palette.common.darkGray,
                 },
               }}
-              onClick={() => handleDialogClose('close')}
+              onClick={() => handleDialogCloseWithConfirm('close')}
             >
               Đóng
             </DialogButton>
-            <DialogButton onClick={() => handleDialogClose('confirm')}>
+            <DialogButton
+              onClick={() => handleDialogCloseWithConfirm('confirm')}
+            >
               Xóa
             </DialogButton>
           </>

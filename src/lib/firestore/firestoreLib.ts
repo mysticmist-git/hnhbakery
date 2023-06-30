@@ -134,13 +134,43 @@ export const deleteDocFromFirestore = async (
  */
 
 export const uploadImageToFirebaseStorage = async (
-  imageFile: any
+  imageFile: File
 ): Promise<string> => {
   const storageRef = ref(storage, `images/${imageFile.name}`);
-  const file = imageFile;
 
-  const uploadImage = await uploadBytes(storageRef, file);
-  return uploadImage.metadata.fullPath;
+  let path = '';
+
+  try {
+    const result = await uploadBytes(storageRef, imageFile);
+    path = result.metadata.fullPath;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    return path;
+  }
+};
+
+export const uploadImagesToFirebaseStorage = async (
+  imageFiles: File[]
+): Promise<string[]> => {
+  const paths = Promise.all(
+    imageFiles.map(async (file) => {
+      const storageRef = ref(storage, `images/${file.name}`);
+
+      let path = '';
+
+      try {
+        const uploadImage = await uploadBytes(storageRef, file);
+        path = uploadImage.metadata.fullPath;
+      } catch (error) {
+        console.log(error);
+      } finally {
+        return path;
+      }
+    })
+  );
+
+  return paths;
 };
 
 export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
@@ -409,22 +439,40 @@ export const fetchProductTypesForStoragePage = async (): Promise<
   return storageProductTypes;
 };
 
+export type PathWithUrl = {
+  path?: string;
+  url: string;
+};
 export interface StorageProductObject extends ProductObject {
   productTypeName: string;
+  imageUrls: PathWithUrl[];
 }
 
 export const fetchProductsForStoragePage = async (): Promise<
   StorageProductObject[]
 > => {
-  const products = await getCollection<ProductObject>('products');
+  const products = await getCollection<ProductObject>(COLLECTION_NAME.PRODUCTS);
 
   const storageProducts = await Promise.all(
     products.map(async (product) => {
       let productType: ProductTypeObject | null = null;
+      let imageUrls: PathWithUrl[] = [];
+
       try {
         productType = await getDocFromFirestore<ProductTypeObject>(
           COLLECTION_NAME.PRODUCT_TYPES,
           product.productType_id
+        );
+
+        imageUrls = await Promise.all(
+          product.images.map(async (image) => {
+            const url = await getDownloadUrlFromFirebaseStorage(image);
+
+            return {
+              path: image,
+              url,
+            };
+          })
         );
       } catch (error) {
         console.log(error);
@@ -433,6 +481,7 @@ export const fetchProductsForStoragePage = async (): Promise<
       return {
         ...product,
         productTypeName: productType?.name ?? '',
+        imageUrls: imageUrls,
       } as StorageProductObject;
     })
   );

@@ -21,6 +21,14 @@ const MyGalleryImage = ({
           visibility: 'visible',
           opacity: 1,
         },
+        '&:hover > img': {
+          border: (theme) => `4px solid ${theme.palette.secondary.main}`,
+          transition: 'border 0.2s ease-in-out',
+        },
+        '&:hover': {
+          transform: 'scale(1.05)',
+          transition: 'transform 0.2s ease-in-out',
+        },
       }}
     >
       <Image
@@ -31,24 +39,26 @@ const MyGalleryImage = ({
         priority
         style={{ objectFit: 'cover', borderRadius: '1rem' }}
       />
-      <IconButton
-        sx={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          zIndex: 1,
-          color: 'common.white',
-          visibility: 'hidden',
-          opacity: 0,
-          transition: 'opacity 0.2s ease-in-out',
-        }}
-        onClick={() => {
-          handleDeleteImage(src);
-        }}
-        disabled={readOnly}
-      >
-        <Close />
-      </IconButton>
+      {!readOnly && (
+        <IconButton
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            zIndex: 1,
+            color: 'common.white',
+            visibility: 'hidden',
+            opacity: 0,
+            transition: 'opacity 0.2s ease-in-out',
+          }}
+          onClick={() => {
+            handleDeleteImage(src);
+          }}
+          disabled={readOnly}
+        >
+          <Close />
+        </IconButton>
+      )}
     </Box>
   );
 };

@@ -4,6 +4,7 @@ import {
   StorageProductObject,
   StorageProductTypeObject,
 } from '../firestore/firestoreLib';
+import { ProductObject } from '../models';
 import BaseObject from '../models/BaseObject';
 
 //#region Constants
@@ -134,13 +135,24 @@ export type ModalModeToggleHandler = VoidHandler;
 
 export interface FormRef {
   getProductTypeFormRef(): ProductTypeFormRef | null;
+  getProductFormRef(): ProductFormRef | null;
 }
 
 export interface ProductTypeFormRef {
   getImageFile(): File | null;
 }
 
+export interface ProductFormRef {
+  getProductTypeName(): string;
+  getImageFiles(): FileWithUrl[] | null;
+}
+
 export type DialogResult = 'close' | 'confirm';
+
+export type FileWithUrl = {
+  file: File;
+  url: string;
+};
 
 //#endregion
 
@@ -261,9 +273,8 @@ export function generateDefaultRow(collectionName: string) {
         name: '',
         description: '',
         ingredients: [],
-        materials: [],
         colors: [],
-        sizes: [],
+        variants: [],
         howToUse: '',
         preservation: '',
         images: [],

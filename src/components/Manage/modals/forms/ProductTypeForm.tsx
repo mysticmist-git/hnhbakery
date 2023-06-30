@@ -11,6 +11,7 @@ import {
   Divider,
   FormControlLabel,
   Grid,
+  Skeleton,
   Stack,
   Switch,
   TextField,
@@ -49,6 +50,7 @@ export default memo(
     //#region States
 
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imgLoading, setImgLoading] = useState<boolean>(true);
 
     //#endregion
 
@@ -238,25 +240,40 @@ export default memo(
                 fill
                 style={{
                   objectFit: 'cover',
+                  display: 'none',
+                }}
+                onLoadingComplete={(img) => {
+                  img.style.display = 'block';
+                  setImgLoading(() => false);
                 }}
               />
+              {imgLoading && (
+                <Skeleton
+                  variant="rectangular"
+                  width={'100%'}
+                  height={240}
+                  animation="wave"
+                />
+              )}
             </Box>
 
             {['update', 'create'].includes(mode) && (
-              <RowModalLayoutButton
-                disabled={disabled}
-                variant="contained"
-                color="secondary"
-              >
-                Tải ảnh lên
-                <input
-                  hidden
-                  accept="image/*"
-                  multiple
-                  type="file"
-                  onChange={handleUploadImage}
-                />
-              </RowModalLayoutButton>
+              <>
+                <RowModalLayoutButton
+                  disabled={disabled}
+                  variant="contained"
+                  color="secondary"
+                  component="label"
+                >
+                  Tải ảnh lên
+                  <input
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    onChange={handleUploadImage}
+                  />
+                </RowModalLayoutButton>
+              </>
             )}
           </Stack>
         </Grid>

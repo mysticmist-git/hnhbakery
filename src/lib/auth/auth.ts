@@ -2,6 +2,7 @@ import { auth, db, provider } from '@/firebase/config';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
 import { Timestamp, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import router from 'next/router';
+import { getDocFromFirestore } from '../firestore/firestoreLib';
 import { UserObject } from '../models/User';
 
 export interface SignupData {
@@ -29,7 +30,7 @@ export interface SignupUser {
 
 export const addUserWithEmailAndPassword = (
   id: string,
-  userData: SignupUser,
+  userData: SignupUser
 ) => {
   try {
     setDoc(doc(db, 'users', id), userData);
@@ -46,7 +47,7 @@ export const addUserWithGoogleLogin = (userCredential: UserCredential) => {
       id: user.uid,
       name: user.displayName ?? '',
       tel: user.phoneNumber ?? '',
-      email: user.email,
+      mail: user.email ?? '',
       accountType: 'google',
       role_id: 'customer',
     };
@@ -61,7 +62,16 @@ export const handleLoginWithGoogle = async () => {
   try {
     const userCredential = await signInWithPopup(auth, provider);
 
-    addUserWithGoogleLogin(userCredential);
+    try {
+      const user = await getDocFromFirestore<UserObject>(
+        'users',
+        userCredential.user.uid
+      );
+
+      if (!user) throw new Error('No user');
+    } catch (error) {
+      addUserWithGoogleLogin(userCredential);
+    }
 
     // Redirect to home page after successful login
     router.push('/');

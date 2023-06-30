@@ -5,34 +5,49 @@ import {
   statusTextResolver,
 } from '@/lib/localLib/manage';
 import BaseObject from '@/lib/models/BaseObject';
-import { Delete, PanoramaFishEye, Visibility } from '@mui/icons-material';
-import {
-  Checkbox,
-  LinearProgress,
-  Paper,
-  Skeleton,
-  Table,
-  TableBody,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  styled,
-} from '@mui/material';
+import formatPrice from '@/lib/utilities/formatCurrency';
+import { Delete, Visibility } from '@mui/icons-material';
+import { Checkbox, LinearProgress, Typography, styled } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridLoadingOverlay,
   GridRenderCellParams,
   GridRowModel,
   GridToolbar,
   GridValueGetterParams,
 } from '@mui/x-data-grid';
 import { memo, useMemo } from 'react';
-import { RowActionButtons } from './components';
-import GeneratedTableBody from './components/GeneratedTableBody';
-import GeneratedTableHead from './components/GeneratedTableHead';
+import CustomerGridToolBar from './components/CustomerGridToolBar';
+
+function StatusCell(params: GridRenderCellParams) {
+  const isActive = params.value as boolean;
+  const color = isActive ? 'green' : 'red';
+  return (
+    <Typography sx={{ color }} variant="body2">
+      {statusTextResolver(isActive)}
+    </Typography>
+  );
+}
+
+function ActionsCell(
+  params: GridRowModel,
+  handleViewRow: ViewRowHandler,
+  handleDeleteRow: DeleteRowHandler
+) {
+  return [
+    <GridActionsCellItem
+      icon={<Visibility />}
+      label="Xem"
+      onClick={() => handleViewRow(params.id)}
+    />,
+    <GridActionsCellItem
+      icon={<Delete />}
+      label="Xóa"
+      onClick={() => handleDeleteRow(params.row)}
+    />,
+  ];
+}
 
 const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -58,7 +73,6 @@ function generateDatagridColumn(
         {
           field: 'index',
           headerName: 'STT',
-          width: 70,
           valueGetter: (params: GridValueGetterParams) => {
             return params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
           },
@@ -72,13 +86,12 @@ function generateDatagridColumn(
           field: 'productCount',
           headerName: 'Sản phẩm',
           type: 'number',
-          width: 100,
           align: 'center',
         },
         {
           field: 'description',
           headerName: 'Mô tả',
-          width: 320,
+          flex: 1,
           align: 'left',
           headerAlign: 'left',
           sortable: false,
@@ -90,16 +103,7 @@ function generateDatagridColumn(
           headerAlign: 'center',
           type: 'boolean',
           align: 'center',
-          width: 160,
-          renderCell: (params: GridRenderCellParams) => {
-            const isActive = params.value as boolean;
-            const color = isActive ? 'green' : 'red';
-            return (
-              <Typography sx={{ color }} variant="body2">
-                {statusTextResolver(isActive)}
-              </Typography>
-            );
-          },
+          renderCell: StatusCell,
           sortComparator: (a, b) => {
             return a - b;
           },
@@ -110,25 +114,125 @@ function generateDatagridColumn(
           headerName: 'Hành động',
           headerAlign: 'right',
           align: 'right',
-          width: 200,
-          getActions: (params: GridRowModel) => [
-            <GridActionsCellItem
-              icon={<Visibility />}
-              label="Xem"
-              onClick={() => handleViewRow(params.id)}
-            />,
-            <GridActionsCellItem
-              icon={<Delete />}
-              label="Xóa"
-              onClick={() => handleDeleteRow(params)}
-            />,
-          ],
+          getActions: (params) =>
+            ActionsCell(params, handleViewRow, handleDeleteRow),
         },
       ];
     case COLLECTION_NAME.PRODUCTS:
-      return [];
+      return [
+        {
+          field: 'index',
+          headerName: 'STT',
+          valueGetter: (params: GridValueGetterParams) => {
+            return params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
+          },
+          align: 'center',
+          headerAlign: 'center',
+          sortable: false,
+          disableColumnMenu: true,
+        },
+        {
+          field: 'name',
+          headerName: 'Tên',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'productTypeName',
+          headerName: 'Loại',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'description',
+          headerName: 'Mô tả',
+          align: 'left',
+          headerAlign: 'left',
+          flex: 1,
+        },
+        {
+          field: 'variants',
+          headerName: 'Biến thể',
+          align: 'left',
+          headerAlign: 'left',
+          valueGetter: (params) => params.value?.length ?? 0,
+        },
+        {
+          field: 'isActive',
+          headerName: 'Trạng thái',
+          headerAlign: 'center',
+          type: 'boolean',
+          align: 'center',
+          renderCell: StatusCell,
+          sortComparator: (a, b) => {
+            return a - b;
+          },
+        },
+        {
+          field: 'actions',
+          type: 'actions',
+          headerName: 'Hành động',
+          headerAlign: 'right',
+          align: 'right',
+          getActions: (params) =>
+            ActionsCell(params, handleViewRow, handleDeleteRow),
+        },
+      ];
     case COLLECTION_NAME.BATCHES:
-      return [];
+      return [
+        {
+          field: 'index',
+          headerName: 'STT',
+          valueGetter: (params: GridValueGetterParams) => {
+            return params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
+          },
+          align: 'center',
+          headerAlign: 'center',
+          sortable: false,
+          disableColumnMenu: true,
+        },
+        {
+          field: 'productName',
+          headerName: 'Sản phẩm',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'productTypeName',
+          headerName: 'Loại',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'material',
+          headerName: 'Vật liệu',
+          align: 'left',
+          headerAlign: 'left',
+        },
+        {
+          field: 'size',
+          headerName: 'Kích cỡ',
+          headerAlign: 'left',
+          align: 'left',
+        },
+        {
+          field: 'price',
+          headerName: 'Kích cỡ',
+          headerAlign: 'left',
+          align: 'left',
+          type: 'number',
+          valueFormatter: (params) => formatPrice(params.value),
+        },
+        {
+          field: 'actions',
+          type: 'actions',
+          headerName: 'Hành động',
+          headerAlign: 'right',
+          align: 'right',
+          getActions: (params) =>
+            ActionsCell(params, handleViewRow, handleDeleteRow),
+        },
+      ];
     default:
       return [];
   }
@@ -157,9 +261,15 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
       autoHeight
       slots={{
         loadingOverlay: CustomLinearProgres,
-        toolbar: GridToolbar,
         baseCheckbox: (props) => {
           return <Checkbox color="secondary" {...props} />;
+        },
+        toolbar: CustomerGridToolBar,
+      }}
+      slotProps={{
+        toolbar: {
+          showQuickFilter: true,
+          quickFilterProps: { debounceMs: 500 },
         },
       }}
     />

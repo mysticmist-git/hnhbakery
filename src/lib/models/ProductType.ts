@@ -7,8 +7,8 @@ export interface ProductTypeObject extends BaseObject {
   isActive: boolean;
 }
 
-export function createProductTypeObject(source: BaseObject) {
-  const convertedSourcee = source as ProductTypeObject;
+export function createProductTypeObject(source: BaseObject): ProductTypeObject {
+  const convertedSourcee = { ...source } as ProductTypeObject;
 
   const productTypeObject: ProductTypeObject = {
     id: convertedSourcee.id,
