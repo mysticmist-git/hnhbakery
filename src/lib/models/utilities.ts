@@ -9,3 +9,7 @@ export type IsActivable = {
 export type Identifiable = {
   id?: string;
 };
+
+export type Countable = {
+  count?: number;
+};
