@@ -1,7 +1,12 @@
 import { ProductTypeObject } from '@/lib/models';
 import { IsActivable, Nameable } from '@/lib/models/utilities';
 import { Check, Close } from '@mui/icons-material';
-import { AutocompleteRenderOptionState, Box, Typography } from '@mui/material';
+import {
+  AutocompleteRenderOptionState,
+  Box,
+  Stack,
+  Typography,
+} from '@mui/material';
 import React from 'react';
 
 type ProductTypeRenderOptionProps<T> = {
@@ -17,12 +22,18 @@ function ProductTypeRenderOption<T extends Nameable & IsActivable>({
 }: ProductTypeRenderOptionProps<T>) {
   return (
     <Box {...props} component="li">
-      <Typography>{option.name}</Typography>
-      {option.isActive ? (
-        <Check sx={{ color: 'green' }} />
-      ) : (
-        <Close sx={{ color: 'red' }} />
-      )}
+      <Stack
+        sx={{ width: '100%' }}
+        direction="row"
+        justifyContent="space-between"
+      >
+        <Typography>{option.name}</Typography>
+        {option.isActive ? (
+          <Check sx={{ color: 'green' }} />
+        ) : (
+          <Close sx={{ color: 'red' }} />
+        )}
+      </Stack>
     </Box>
   );
 }
