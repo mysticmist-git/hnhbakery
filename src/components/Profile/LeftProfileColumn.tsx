@@ -8,17 +8,45 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import React, { memo, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { LeftProfileColumnProps } from './types';
 import LeftProfileBasicInformation from './LeftProfileBasicInformation';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { CustomIconButton } from '../Inputs/Buttons';
+import defaultAva from '@/assets/defaultAva.jpg';
 
 const LeftProfileColumn = (props: LeftProfileColumnProps) => {
   const theme = useTheme();
 
   const [avtHover, setAvtHover] = useState(false);
+
+  const inputfileRef = useRef<HTMLInputElement>(null);
+
+  const originalAvtSrc =
+    props.LeftProfileBasicInfo.avatarSrc != ''
+      ? props.LeftProfileBasicInfo.avatarSrc
+      : defaultAva.src;
+
+  const [avtSrc, setAvtSrc] = useState(originalAvtSrc);
+
+  const handleOnChangeInputFile = () => {
+    if (inputfileRef.current) {
+      console.log(inputfileRef.current.files);
+
+      const newImage = inputfileRef.current.files?.[0];
+      if (newImage) {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const imageData = e.target?.result;
+          setAvtSrc(imageData as string);
+        };
+
+        reader.readAsDataURL(newImage);
+      }
+    }
+  };
 
   return (
     <Grid
@@ -45,7 +73,7 @@ const LeftProfileColumn = (props: LeftProfileColumnProps) => {
           >
             <Box
               component={Image}
-              src={props.LeftProfileBasicInfo.avatarSrc}
+              src={avtSrc}
               fill
               sx={{
                 objectFit: 'cover',
@@ -67,8 +95,18 @@ const LeftProfileColumn = (props: LeftProfileColumnProps) => {
                     backgroundColor: alpha(theme.palette.common.black, 0.5),
                   },
                 }}
+                onClick={() =>
+                  inputfileRef.current && inputfileRef.current.click()
+                }
               >
                 <CameraAltIcon />
+                <input
+                  ref={inputfileRef}
+                  accept="image/*"
+                  type="file"
+                  hidden
+                  onChange={handleOnChangeInputFile}
+                />
               </CustomIconButton>
             )}
           </Box>
