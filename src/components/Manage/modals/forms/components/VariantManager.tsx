@@ -98,9 +98,15 @@ function VariantManager(props: VariantManagerProps) {
         />
       ))}
       {!props.readOnly && (
-        <ListItem>
+        <ListItem
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           <Button
             variant="contained"
+            sx={{ paddingX: 3 }}
             onClick={() =>
               handleAdd({
                 id: nanoid(2),

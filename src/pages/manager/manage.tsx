@@ -1,5 +1,4 @@
 import SimpleDialog from '@/components/Dialogs/SimpleDialog';
-import { MyMultiValuePickerInput } from '@/components/Inputs';
 import { RowModal } from '@/components/Manage/modals/rowModals';
 import { CustomDataTable } from '@/components/Manage/tables';
 import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
@@ -18,8 +17,8 @@ import {
 } from '@/lib/factories/StorageDocsFactory';
 import { isDataChanged } from '@/lib/localLib';
 import {
+  CrudTarget,
   DialogResult,
-  FileWithUrl,
   FormRef,
   ManageAction,
   ManageActionType,
@@ -32,7 +31,6 @@ import {
   manageReducer,
   validateCollectionNameParams,
 } from '@/lib/localLib/manage';
-import { ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
 import {
   AddData,
@@ -48,16 +46,12 @@ import {
 } from '@/lib/strategies/DataManagerStrategy';
 import { Add } from '@mui/icons-material';
 import {
-  Autocomplete,
-  Backdrop,
   Box,
   Button,
-  CircularProgress,
   Container,
   Divider,
-  FormControlLabel,
-  Switch,
-  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   styled,
   useTheme,
@@ -320,26 +314,18 @@ export default function Manage({
 
   //#region Handlers
 
-  /**
-   * Updates the targets state when the value of the CRUD target selection has changed.
-   *
-   * @param {any} e - The event object passed from the target selection component.
-   * @param {any} newValue - The new value selected in the target selection component.
-   * @return {void} - This function does not return anything.
-   */
-  function handleCrudTargetChanged(newValue: string) {
-    const nextCrudTarget = crudTargets.find(
-      (target) => target.label === newValue
-    );
-
-    if (!nextCrudTarget) {
+  function handleCrudTargetChanged(
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    newTarget: CrudTarget
+  ) {
+    if (!newTarget) {
       console.log('Null Crud target');
       return;
     }
 
     dispatch({
       type: ManageActionType.SET_SELECTED_TARGET,
-      payload: nextCrudTarget,
+      payload: newTarget,
     });
   }
 
@@ -611,23 +597,28 @@ export default function Manage({
         my: 2,
       }}
     >
-
       {/* Title */}
       <Typography sx={{ color: theme.palette.common.black }} variant="h4">
         Quản lý kho
       </Typography>
+
       <Divider
         sx={{
-          mt: 2,
+          my: 2,
         }}
       />
 
-      <MyMultiValuePickerInput
-        label="Kho"
-        options={crudTargets.map((target) => target.label)}
-        value={state.selectedTarget?.label}
+      <ToggleButtonGroup
+        value={state.selectedTarget}
         onChange={handleCrudTargetChanged}
-      />
+        exclusive
+      >
+        {crudTargets.map((target) => (
+          <ToggleButton key={target.collectionName} value={target}>
+            {target.label}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
 
       <Divider
         sx={{

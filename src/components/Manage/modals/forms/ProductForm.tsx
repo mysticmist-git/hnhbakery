@@ -1,8 +1,5 @@
 import placeholderImage from '@/assets/placeholder-image.png';
-import {
-  MyMultiValueCheckerInput,
-  MyMultiValueInput,
-} from '@/components/Inputs';
+import { MyMultiValueInput } from '@/components/Inputs';
 import CustomTextFieldWithLabel from '@/components/Inputs/CustomTextFieldWithLabel';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
@@ -20,12 +17,14 @@ import { ProductTypeObject } from '@/lib/models';
 import { ProductVariant } from '@/lib/models/Product';
 import { ReferenceObject } from '@/lib/models/Reference';
 import theme from '@/styles/themes/lightTheme';
+import { Check, Close } from '@mui/icons-material';
 import {
   Autocomplete,
   Box,
   Divider,
   FormControlLabel,
   Grid,
+  Skeleton,
   Stack,
   Switch,
   Tab,
@@ -34,8 +33,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  colors,
-  imageListItemBarClasses,
 } from '@mui/material';
 import { where } from 'firebase/firestore';
 import {
@@ -44,6 +41,7 @@ import {
   memo,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useState,
 } from 'react';
 import MyGallery from './components/MyGallery';
@@ -153,7 +151,6 @@ export default memo(
           productTypes = await getCollectionWithQuery<ProductTypeObject>(
             COLLECTION_NAME.PRODUCT_TYPES
           );
-          console.log(productTypes);
         } catch (error: any) {
           console.log(error);
         }
@@ -173,7 +170,6 @@ export default memo(
           if (!colorsRef || !colorsRef.length)
             throw new Error('Colors not found');
 
-          console.log(colorsRef);
           colors = colorsRef[0].values;
 
           setColors(() => colors);
@@ -195,7 +191,10 @@ export default memo(
       () => {
         return {
           getProductTypeName() {
-            return productTypes.find((i) => i.id === data.productType_id)?.name;
+            return (
+              productTypes.find((i) => i.id === data.productType_id)?.name ??
+              'Không tìm thấy'
+            );
           },
           getImageFiles() {
             return imageFiles;
@@ -204,6 +203,18 @@ export default memo(
       },
       [imageFiles]
     );
+
+    //#endregion
+
+    //#region useMemos
+
+    const selectedProductType = useMemo(() => {
+      const selected = productTypes.find(
+        (type) => type.id === data.productType_id
+      );
+
+      return selected ?? null;
+    }, [data.productType_id, productTypes]);
 
     //#endregion
 
@@ -260,23 +271,46 @@ export default memo(
                 }
               />
 
-              <Autocomplete
-                disablePortal
-                value={
-                  data.productType_id !== '' ? data.productType_id : undefined
-                }
-                readOnly={readOnly}
-                onChange={(e, value) =>
-                  handleProductTypeIdChange(value as string)
-                }
-                options={productTypes.map((p) => p.id)}
-                getOptionLabel={(option) =>
-                  productTypes.find((p) => p.id === option)?.name ?? 'Lỗi'
-                }
-                renderInput={(params) => (
-                  <CustomTextFieldWithLabel {...params} label="Loại sản phẩm" />
-                )}
-              />
+              {productTypes ? (
+                <Autocomplete
+                  disablePortal
+                  value={selectedProductType}
+                  onChange={(e, value) =>
+                    handleProductTypeIdChange(value?.id ?? '')
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  readOnly={readOnly}
+                  options={productTypes.sort(
+                    (a, b) => -b.name.localeCompare(a.name)
+                  )}
+                  getOptionLabel={(type) => type.name}
+                  renderInput={(params) => (
+                    <CustomTextFieldWithLabel
+                      {...params}
+                      label="Loại sản phẩm"
+                    />
+                  )}
+                  renderOption={(props, option) => (
+                    <Box {...props} component="li">
+                      <Typography>{option.name}</Typography>
+                      {option.isActive ? (
+                        <Check sx={{ color: 'green' }} />
+                      ) : (
+                        <Close sx={{ color: 'red' }} />
+                      )}
+                    </Box>
+                  )}
+                />
+              ) : (
+                <Skeleton variant="rectangular" animation="wave">
+                  <Autocomplete
+                    renderInput={(params) => <TextField {...params} />}
+                    options={[]}
+                  />
+                </Skeleton>
+              )}
 
               <TextField
                 label="Miêu tả"
