@@ -244,7 +244,7 @@ export const getCollectionWithQuery = async <T extends BaseObject>(
 
     return docs;
   } catch (error) {
-    throw new Error(`Error: ${error}`);
+    throw error;
   }
 };
 
@@ -364,6 +364,8 @@ export const sendContact = async (form: Contact) => {
 
 // #endregion
 
+//#region Bills
+
 export const updateBillState = async (
   billId: string,
   state: number
@@ -380,6 +382,8 @@ export const updateBillState = async (
     return false;
   }
 };
+
+//#endregion
 
 //#region Count
 
@@ -401,6 +405,7 @@ export const countDocs = async (
 //#endregion
 
 //#region Storage Page
+
 export interface StorageProductTypeObject extends ProductTypeObject {
   productCount: number;
   imageURL: string;
@@ -541,5 +546,25 @@ export const fetchBatchesForStoragePage = async (): Promise<
 
   return storageBatches;
 };
+
+//#endregion
+
+//#region Product
+
+/**
+ * Get products by product type id
+ * @param id - The id of the product
+ * @returns Promise<ProductObject[]> - The products
+ */
+export async function getProductsByType(id: string): Promise<ProductObject[]> {
+  if (!id) throw new Error('Id is null');
+
+  const products = await getCollectionWithQuery<ProductObject>(
+    COLLECTION_NAME.PRODUCTS,
+    where('productType_id', '==', id)
+  );
+
+  return products;
+}
 
 //#endregion

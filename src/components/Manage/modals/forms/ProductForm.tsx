@@ -44,6 +44,8 @@ import {
   useMemo,
   useState,
 } from 'react';
+import ProductTypeAutocomplete from '../../tables/components/ProductTypeAutocomplete';
+import ProductTypeRenderOption from '../../tables/components/ProductTypeRenderOption';
 import MyGallery from './components/MyGallery';
 import TabPanel from './components/TabPanel';
 import VariantManager from './components/VariantManager';
@@ -86,15 +88,10 @@ export default memo(
       onDataChange(newData);
     }
 
-    function handleProductTypeIdChange(id: string) {
-      if (!id) {
-        console.log('Null product type id');
-        return;
-      }
-
+    function handleProductTypeIdChange(value: ProductTypeObject) {
       const newData: ModalProductObject = {
         ...data,
-        productType_id: id,
+        productType_id: value.id ?? '',
       };
       onDataChange(newData);
     }
@@ -272,36 +269,11 @@ export default memo(
               />
 
               {productTypes ? (
-                <Autocomplete
-                  disablePortal
-                  value={selectedProductType}
-                  onChange={(e, value) =>
-                    handleProductTypeIdChange(value?.id ?? '')
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option.id === value.id
-                  }
+                <ProductTypeAutocomplete
                   readOnly={readOnly}
-                  options={productTypes.sort(
-                    (a, b) => -b.name.localeCompare(a.name)
-                  )}
-                  getOptionLabel={(type) => type.name}
-                  renderInput={(params) => (
-                    <CustomTextFieldWithLabel
-                      {...params}
-                      label="Loại sản phẩm"
-                    />
-                  )}
-                  renderOption={(props, option) => (
-                    <Box {...props} component="li">
-                      <Typography>{option.name}</Typography>
-                      {option.isActive ? (
-                        <Check sx={{ color: 'green' }} />
-                      ) : (
-                        <Close sx={{ color: 'red' }} />
-                      )}
-                    </Box>
-                  )}
+                  productTypes={productTypes}
+                  selectedProductType={selectedProductType}
+                  handleProductTypeChange={handleProductTypeIdChange}
                 />
               ) : (
                 <Skeleton variant="rectangular" animation="wave">

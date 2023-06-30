@@ -1,24 +1,36 @@
-import { countDocs, getCollection } from '@/lib/firestore/firestoreLib';
+import { COLLECTION_NAME } from '@/lib/constants';
+import {
+  countDocs,
+  getCollection,
+  getCollectionWithQuery,
+  getProductsByType,
+} from '@/lib/firestore/firestoreLib';
 import { ModalBatchObject, ModalFormProps } from '@/lib/localLib/manage';
-import { ProductTypeObject } from '@/lib/models';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { Autocomplete, TextField } from '@mui/material';
 import { where } from 'firebase/firestore';
 import { memo, useEffect, useState } from 'react';
+import ProductTypeAutocomplete from '../../tables/components/ProductTypeAutocomplete';
 
 interface BatchFormProps extends ModalFormProps {
   data: ModalBatchObject | null;
 }
 
-type SimpleProductType = {
-  id: string;
-  name: string;
-  productCount: number;
+type ProductTypeWithCount = ProductTypeObject & {
+  count: number;
 };
 
 export default memo(function BatchForm(props: BatchFormProps) {
   //#region States
 
-  const [productTypes, setProductTypes] = useState<SimpleProductType[]>([]);
+  const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
+  const [selectedProductType, setSelectedProductType] =
+    useState<ProductTypeObject | null>(null);
+
+  const [products, setProducts] = useState<ProductObject[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
+    null
+  );
 
   //#endregion
 
@@ -26,50 +38,84 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   useEffect(() => {
     async function fetchProductTypes() {
-      const productTypes = await getCollection<ProductTypeObject>(
-        'productTypes'
-      );
+      let productTypes: ProductTypeWithCount[] = [];
 
-      const simpleProductTypes = await Promise.all(
-        productTypes.map(async (type) => {
-          let count = 0;
-          try {
-            count = await countDocs(
-              'products',
-              where('productType_id', '==', type.id)
-            );
-          } catch (error: any) {
-            console.log(error);
-          }
+      try {
+        const docs = await getCollectionWithQuery<ProductTypeObject>(
+          COLLECTION_NAME.PRODUCT_TYPES
+        );
 
-          const simpleProductType: SimpleProductType = {
-            id: type.id ?? '',
-            name: type.name,
-            productCount: count,
-          };
+        productTypes = await Promise.all(
+          docs.map(async (doc) => {
+            const typeWithCount: ProductTypeWithCount = {
+              ...doc,
+              count: await countDocs(
+                COLLECTION_NAME.PRODUCTS,
+                where('productType_id', '==', doc.id)
+              ),
+            };
 
-          return simpleProductType;
-        })
-      );
-
-      setProductTypes(() => simpleProductTypes);
+            return typeWithCount;
+          })
+        );
+      } catch (error) {
+        console.log(error);
+      }
+      setProductTypes(() => productTypes);
     }
 
     fetchProductTypes();
   }, []);
 
+  useEffect(() => {
+    async function fetchProducts() {
+      if (!selectedProductType) return;
+
+      let products: ProductObject[] = [];
+
+      try {
+        products = await getProductsByType(selectedProductType.id ?? '');
+      } catch (error) {
+        console.log(error);
+      }
+
+      setProducts(() => products);
+    }
+
+    fetchProducts();
+  }, [selectedProductType]);
+
+  //#endregion
+
+  //#region Handlers
+
+  function handleProductTypeChange(value: ProductTypeObject) {
+    setSelectedProductType(value);
+  }
+
+  function handleSelectedProductChange(value: ProductObject) {
+    setSelectedProduct(() => value);
+  }
+
   //#endregion
 
   return (
-    <Autocomplete
-      disablePortal
-      id="combo-box-productTypes"
-      options={productTypes.map((type) => type.id)}
-      getOptionLabel={(typeId) =>
-        productTypes.find((type) => type.id === typeId)?.name ?? ''
-      }
-      sx={{ width: 300 }}
-      renderInput={(params) => <TextField {...params} label="Movie" />}
-    />
+    <>
+      <ProductTypeAutocomplete
+        productTypes={productTypes}
+        handleProductTypeChange={handleProductTypeChange}
+        readOnly={props.readOnly}
+        selectedProductType={selectedProductType}
+      />
+
+      <Autocomplete
+        options={products}
+        value={selectedProduct}
+        onChange={(e, value) => {
+          if (value) handleSelectedProductChange(value);
+        }}
+        renderInput={(params) => <TextField {...params} />}
+      />
+    </>
   );
 });
