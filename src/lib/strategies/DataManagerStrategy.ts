@@ -1,7 +1,9 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { gridColumnsTotalWidthSelector } from '@mui/x-data-grid';
 import { data } from 'autoprefixer';
+import { Timestamp } from 'firebase/firestore';
 import { url } from 'inspector';
+import { Dispatch } from 'react';
 import { updateCartToLocal } from '../contexts/cartContext';
 import {
   PathWithUrl,
@@ -21,6 +23,10 @@ import {
   ModalProductTypeObject,
 } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
+import {
+  BatchObject,
+  createBatchObjecet as createBatchObject,
+} from '../models/Batch';
 import { ProductObject, createProductObject } from '../models/Product';
 import {
   ProductTypeObject,
@@ -52,22 +58,26 @@ export type ProductAddData = AddData & {
   imageFiles: File[];
 };
 
+export type BatchAddData = AddData & {};
+
 //#endregion
 
 //#region Update
 
-export interface UpdateData {
+export type UpdateData = {
   newData: BaseObject;
   originalData: BaseObject;
-}
+};
 
-export interface ProductTypeUpdateData extends UpdateData {
+export type ProductTypeUpdateData = UpdateData & {
   imageFile: File;
-}
+};
 
-export interface ProductUpdateData extends UpdateData {
+export type ProductUpdateData = UpdateData & {
   imageFiles: FileWithUrl[];
-}
+};
+
+export type BatchUpdateData = UpdateData & {};
 
 //#endregion
 
@@ -289,6 +299,69 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
   }
 }
 
+export class BatchDataManagerStrategy implements DataManagerStrategy {
+  dispatch: Dispatch<ManageAction>;
+
+  constructor(dispatch: Dispatch<ManageAction>) {
+    this.dispatch = dispatch;
+  }
+
+  async addDoc(addData: AddData): Promise<BaseObject> {
+    if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
+
+    const batchAddData = addData as BatchAddData;
+
+    const data = createBatchObject(batchAddData.data);
+
+    if (!batchAddData.data) throw new Error(DataManagerErrorCode.NULL_DATA);
+
+    const newDocRef = await addDocToFirestore(
+      {
+        ...data,
+        MFG: Timestamp.fromDate(data.MFG),
+        EXP: Timestamp.fromDate(data.EXP),
+        discount: {
+          ...data.discount,
+          date: Timestamp.fromDate(data.discount.date),
+        },
+      } as BaseObject,
+      COLLECTION_NAME.BATCHES
+    );
+
+    return { ...batchAddData.data, id: newDocRef.id };
+  }
+  async updateDoc(updateData: UpdateData): Promise<BaseObject> {
+    const batchUpdateData = { ...updateData } as BatchUpdateData;
+
+    const data = createBatchObject(batchUpdateData.newData);
+
+    console.log(data);
+
+    try {
+      updateDocToFirestore(data, COLLECTION_NAME.BATCHES);
+
+      return batchUpdateData.newData;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+  deleteDoc(doc: BaseObject): void {
+    if (!doc) {
+      console.log('Null doc');
+      throw new Error('Null doc');
+    }
+
+    if (!doc.id) {
+      console.log('Null id');
+      throw new Error('Null id');
+    }
+
+    deleteDocFromFirestore(COLLECTION_NAME.BATCHES, doc.id);
+  }
+}
+
+//#region Local Functions
+
 function deleteOldImages(
   originalImageUrls: PathWithUrl[],
   newImageUrls: PathWithUrl[]
@@ -347,3 +420,5 @@ async function deleteOldImagesAndAddNewImagesToFirebaseStorage(
 
   return updatedPaths;
 }
+
+//#endregion

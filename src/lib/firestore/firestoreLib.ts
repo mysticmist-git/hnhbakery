@@ -32,6 +32,8 @@ import { memoize } from '../localLib/manage-modal';
 import { ProductObject, ProductTypeObject } from '../models';
 import BaseObject from '../models/BaseObject';
 import { BatchObject } from '../models/Batch';
+import { ProductVariant } from '../models/Product';
+import { ProductTypeWithCount } from '../models/ProductType';
 import { filterDuplicates } from '../utilities/utilities';
 
 //#region Document Related Functions
@@ -499,12 +501,15 @@ export interface StorageBatchObject extends BatchObject {
   productIsActive: boolean;
   productTypeName: string;
   productTypeIsActive: boolean;
+  material: string;
+  size: string;
+  price: number;
 }
 
 export const fetchBatchesForStoragePage = async (): Promise<
   StorageBatchObject[]
 > => {
-  const batches = await getCollection<BatchObject>('batches');
+  const batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
 
   const storageBatches = await Promise.all(
     batches.map(async (batch) => {
@@ -530,8 +535,19 @@ export const fetchBatchesForStoragePage = async (): Promise<
           );
         } catch (error) {
           console.log(error);
-          productType = null;
         }
+      }
+
+      const variant = product?.variants.find(
+        (variant) => variant.id === batch.variant_id
+      );
+
+      let discountDate: Date | null = null;
+
+      try {
+        discountDate = (batch.discount.date as unknown as Timestamp).toDate();
+      } catch (error) {
+        console.log(error);
       }
 
       return {
@@ -540,12 +556,54 @@ export const fetchBatchesForStoragePage = async (): Promise<
         productIsActive: product?.isActive ?? false,
         productTypeName: productType?.name ?? '',
         productTypeIsActive: productType?.isActive ?? false,
+        material: variant?.material ?? '',
+        size: variant?.size ?? '',
+        price: variant?.price ?? 0,
+        discount: {
+          ...batch.discount,
+          date: discountDate,
+        },
       } as StorageBatchObject;
     })
   );
 
   return storageBatches;
 };
+
+//#endregion
+
+//#region Product Types
+
+export async function getProductTypeWithCount(type: ProductTypeObject) {
+  const typeWithCount: ProductTypeWithCount = {
+    ...type,
+    count: await countDocs(
+      COLLECTION_NAME.PRODUCTS,
+      where('productType_id', '==', type.id)
+    ),
+  };
+
+  return typeWithCount;
+}
+
+export async function getProductTypeWithCountById(id: string) {
+  if (!id) throw new Error('Null ID');
+
+  const productType = await getDocFromFirestore<ProductTypeObject>(
+    COLLECTION_NAME.PRODUCT_TYPES,
+    id
+  );
+
+  const typeWithCount: ProductTypeWithCount = {
+    ...productType,
+    count: await countDocs(
+      COLLECTION_NAME.PRODUCTS,
+      where('productType_id', '==', productType.id)
+    ),
+  };
+
+  return typeWithCount;
+}
 
 //#endregion
 

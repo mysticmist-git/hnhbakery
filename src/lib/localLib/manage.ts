@@ -6,6 +6,7 @@ import {
 } from '../firestore/firestoreLib';
 import { ProductObject } from '../models';
 import BaseObject from '../models/BaseObject';
+import { BatchObject } from '../models/Batch';
 
 //#region Constants
 
@@ -287,23 +288,23 @@ export function generateDefaultRow(collectionName: string) {
       EXP.setDate(MFG.getDate() + 1);
 
       const discountDate = new Date(EXP);
-      discountDate.setHours(discountDate.getHours() - 6);
+      discountDate.setHours(discountDate.getHours() - 3);
 
-      const discountPercent = 30;
-
-      return {
+      const batch: BatchObject = {
         id: '',
         totalQuantity: 0,
         soldQuantity: 0,
         MFG: MFG,
         EXP: EXP,
-        material: '',
-        size: '',
-        price: 0,
-        discountDate: discountDate,
-        discountPercent: discountPercent,
+        discount: {
+          percent: 0,
+          date: discountDate,
+        },
         product_id: '',
+        variant_id: '',
       };
+
+      return batch;
     default:
       return {};
   }

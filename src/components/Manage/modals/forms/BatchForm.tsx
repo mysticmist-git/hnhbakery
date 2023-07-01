@@ -1,95 +1,33 @@
 import { CustomTextFieldWithLabel } from '@/components/Inputs';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
-  countDocs,
   getCollectionWithQuery,
+  getDocFromFirestore,
+  getProductTypeWithCount,
+  getProductTypeWithCountById,
   getProductsByType,
 } from '@/lib/firestore/firestoreLib';
 import { ModalBatchObject, ModalFormProps } from '@/lib/localLib/manage';
 import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { ProductVariant } from '@/lib/models/Product';
+import { ProductTypeWithCount } from '@/lib/models/ProductType';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import {
   Autocomplete,
-  Box,
   Divider,
   Grid,
+  InputAdornment,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import { where } from 'firebase/firestore';
+import dayjs from 'dayjs';
 import { memo, useEffect, useState } from 'react';
-import ProductTypeAutocomplete from '../../tables/components/ProductTypeAutocomplete';
+import CustomDateTimePicker from './components/CustomDateTimePicker';
+import { ProductTypeRenderOption } from './components/ProductTypeRenderOption';
+import { ProductVariantRenderOption } from './components/ProductVariantRenderOption';
 
 interface BatchFormProps extends ModalFormProps {
   data: ModalBatchObject | null;
-}
-
-type ProductTypeWithCount = ProductTypeObject & {
-  count: number;
-};
-
-type ProductTypeRenderOptionProps = {
-  props: React.HTMLAttributes<HTMLLIElement>;
-  option: ProductTypeWithCount;
-};
-
-function ProductTypeRenderOption({
-  props,
-  option,
-}: ProductTypeRenderOptionProps) {
-  return (
-    <Box {...props} component={'li'} key={option.id}>
-      <Box
-        sx={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'start',
-        }}
-      >
-        <Typography>{option.name}</Typography>
-        <Typography variant="body2">Số sản phẩm: {option.count}</Typography>
-      </Box>
-    </Box>
-  );
-}
-
-type ProductVariantRenderOptionProps = {
-  props: React.HTMLAttributes<HTMLLIElement>;
-  option: ProductVariant;
-};
-
-function ProductVariantListItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <Stack direction="row" gap={1} alignItems={'center'}>
-      <Typography>{`${label}:`}</Typography>
-      <Typography variant="body2">{value}</Typography>
-    </Stack>
-  );
-}
-
-function ProductVariantRenderOption({
-  props,
-  option,
-}: ProductVariantRenderOptionProps) {
-  return (
-    <Box {...props} component={'li'} key={option.id}>
-      <Stack>
-        <ProductVariantListItem label={'Vật liệu'} value={option.material} />
-        <ProductVariantListItem label={'Kích cỡ'} value={option.size} />
-        <ProductVariantListItem label={'Giá tiền'} value={option.price} />
-      </Stack>
-    </Box>
-  );
 }
 
 export default memo(function BatchForm(props: BatchFormProps) {
@@ -107,6 +45,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
   const [selectedProductVariant, setSelectedProductVariant] =
     useState<ProductVariant | null>(null);
 
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
+
   //#endregion
 
   //#region UseEffects
@@ -121,17 +61,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
         );
 
         productTypes = await Promise.all(
-          docs.map(async (doc) => {
-            const typeWithCount: ProductTypeWithCount = {
-              ...doc,
-              count: await countDocs(
-                COLLECTION_NAME.PRODUCTS,
-                where('productType_id', '==', doc.id)
-              ),
-            };
-
-            return typeWithCount;
-          })
+          docs.map(async (doc) => await getProductTypeWithCount(doc))
         );
       } catch (error) {
         console.log(error);
@@ -142,7 +72,46 @@ export default memo(function BatchForm(props: BatchFormProps) {
       setProductTypes(() => haveProductTypes);
     }
 
+    async function fetchNeededDataForView() {
+      if (!props.data) return;
+      if (!props.data.product_id) return;
+
+      let product: ProductObject | null = null;
+
+      try {
+        product = await getDocFromFirestore<ProductObject>(
+          COLLECTION_NAME.PRODUCTS,
+          props.data.product_id
+        );
+      } catch (error) {
+        console.log(error);
+      }
+
+      if (!product) return;
+
+      let productType: ProductTypeWithCount | null = null;
+
+      try {
+        productType = await getProductTypeWithCountById(product.productType_id);
+      } catch (error) {
+        console.log(error);
+      }
+
+      setSelectedProductType(() => productType);
+
+      if (product) {
+        setSelectedProduct(() => product);
+        setSelectedProductVariant(
+          () =>
+            product?.variants.find(
+              (variant) => variant.id === props.data?.variant_id
+            ) ?? null
+        );
+      }
+    }
+
     fetchProductTypes();
+    fetchNeededDataForView();
   }, []);
 
   useEffect(() => {
@@ -163,6 +132,22 @@ export default memo(function BatchForm(props: BatchFormProps) {
     fetchProducts();
   }, [selectedProductType]);
 
+  useEffect(() => {
+    setDiscountAmount(() => calculateDiscountMoney());
+  }, [props.data?.discount.percent]);
+
+  useEffect(() => {
+    if (!selectedProduct) return;
+
+    handleFieldChange('product_id', selectedProduct.id);
+  }, [selectedProduct]);
+
+  useEffect(() => {
+    if (!selectedProductVariant) return;
+
+    handleFieldChange('variant_id', selectedProductVariant.id);
+  }, [selectedProductVariant]);
+
   //#endregion
 
   //#region Handlers
@@ -182,6 +167,39 @@ export default memo(function BatchForm(props: BatchFormProps) {
     setSelectedProductVariant(() => value);
   }
 
+  function handleFieldChange<
+    Property extends keyof ModalBatchObject
+  >(property: Property, value: ModalBatchObject[Property]) {
+    if (!props.data) return;
+
+    const newData: ModalBatchObject = {
+      ...props.data,
+      [property]: value,
+    };
+
+    props.onDataChange(newData);
+  }
+
+  //#endregion
+
+  //#region Methods
+
+  function calculateDiscountMoney(): number {
+    if (!selectedProductVariant || !props.data) return 0;
+
+    return (selectedProductVariant.price * props.data.discount.percent) / 100;
+  }
+
+  //#endregion
+
+  //#region Functions
+
+  function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
+    const shouldDisabled =
+      day.isBefore(props.data?.MFG) || day.isAfter(props.data?.EXP);
+    return shouldDisabled;
+  }
+
   //#endregion
 
   return (
@@ -190,6 +208,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
         {/* First grid item */}
         <Grid item xs={6}>
           <Stack gap={2}>
+            {/* General */}
             <Typography>Thông tin lô</Typography>
             <Divider />
             <Autocomplete
@@ -201,11 +220,13 @@ export default memo(function BatchForm(props: BatchFormProps) {
               onChange={(e, value) => handleProductTypeChange(value)}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
-                <CustomTextFieldWithLabel {...params} label="Loại sẩn phẩm" />
+                <CustomTextFieldWithLabel {...params} label="Loại sản phẩm" />
               )}
               renderOption={(props, option) => (
                 <ProductTypeRenderOption props={props} option={option} />
               )}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
             />
 
             <Autocomplete
@@ -218,6 +239,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
               renderInput={(params) => (
                 <CustomTextFieldWithLabel {...params} label="Sản phẩm" />
               )}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
             />
 
             <Autocomplete
@@ -237,12 +260,116 @@ export default memo(function BatchForm(props: BatchFormProps) {
               renderOption={(props, option) => (
                 <ProductVariantRenderOption props={props} option={option} />
               )}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
             />
           </Stack>
         </Grid>
 
         {/* Second grid item */}
-        <Grid item xs={6}></Grid>
+        <Grid item xs={6}>
+          <Stack gap={2}>
+            {/* Detail */}
+            <Typography>Chi tiết</Typography>
+            <Divider />
+            <CustomTextFieldWithLabel
+              label="Số sản phẩm"
+              value={props.data?.totalQuantity.toString()}
+              type="number"
+              onChange={(e) =>
+                handleFieldChange(
+                  'totalQuantity',
+                  parseInt(e.target.value) || 0
+                )
+              }
+              disabled={props.disabled}
+              InputProps={{
+                readOnly: props.readOnly,
+              }}
+            />
+
+            <CustomDateTimePicker
+              label="Sản xuất lúc"
+              value={dayjs(props.data?.MFG)}
+              disablePast
+              onChange={(value) => {
+                if (value) handleFieldChange('MFG', value.toDate());
+              }}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
+            />
+
+            <CustomDateTimePicker
+              label="Hết hạn lúc"
+              value={dayjs(props.data?.EXP)}
+              shouldDisableDate={(day) => day.isBefore(props.data?.MFG)}
+              onChange={(value) => {
+                if (value) handleFieldChange('EXP', value.toDate());
+              }}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
+            />
+          </Stack>
+        </Grid>
+
+        {/* Third grid item */}
+        <Grid item xs={12}>
+          <Stack gap={2}>
+            {/* Discount */}
+            <Typography>Chi tiết</Typography>
+            <Divider />
+
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <CustomTextFieldWithLabel
+                  label="Tỉ lệ giảm"
+                  value={props.data?.discount.percent.toString() ?? ''}
+                  onChange={(e) => {
+                    if (props.data)
+                      handleFieldChange('discount', {
+                        ...props.data.discount,
+                        percent: parseInt(e.target.value) || 0,
+                      });
+                  }}
+                  fullWidth
+                  InputProps={{
+                    readOnly: props.readOnly,
+                    endAdornment: (
+                      <InputAdornment position="end">%</InputAdornment>
+                    ),
+                  }}
+                  disabled={props.disabled}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <CustomTextFieldWithLabel
+                  disabled
+                  label="Số tiền giảm"
+                  value={formatPrice(calculateDiscountMoney())}
+                  fullWidth
+                  inputProps={{
+                    readOnly: props.readOnly,
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <CustomDateTimePicker
+              label="Bắt đầu từ"
+              value={dayjs(props.data?.discount.date)}
+              shouldDisableDate={checkShouldDisableDiscountDate}
+              onChange={(value) => {
+                if (props.data && value)
+                  handleFieldChange('discount', {
+                    ...props.data.discount,
+                    date: value.toDate(),
+                  });
+              }}
+              readOnly={props.readOnly}
+              disabled={props.disabled}
+            />
+          </Stack>
+        </Grid>
       </Grid>
     </>
   );

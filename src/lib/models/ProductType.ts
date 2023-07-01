@@ -20,3 +20,7 @@ export function createProductTypeObject(source: BaseObject): ProductTypeObject {
 
   return productTypeObject;
 }
+
+export type ProductTypeWithCount = ProductTypeObject & {
+  count: number;
+};
