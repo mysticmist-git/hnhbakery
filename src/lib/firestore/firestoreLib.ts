@@ -542,14 +542,6 @@ export const fetchBatchesForStoragePage = async (): Promise<
         (variant) => variant.id === batch.variant_id
       );
 
-      let discountDate: Date | null = null;
-
-      try {
-        discountDate = (batch.discount.date as unknown as Timestamp).toDate();
-      } catch (error) {
-        console.log(error);
-      }
-
       return {
         ...batch,
         productName: product?.name ?? '',
@@ -559,10 +551,6 @@ export const fetchBatchesForStoragePage = async (): Promise<
         material: variant?.material ?? '',
         size: variant?.size ?? '',
         price: variant?.price ?? 0,
-        discount: {
-          ...batch.discount,
-          date: discountDate,
-        },
       } as StorageBatchObject;
     })
   );
