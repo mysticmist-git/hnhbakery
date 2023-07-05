@@ -1,50 +1,86 @@
-import { Card, Divider, Stack, Typography, useTheme } from '@mui/material';
-import React, { memo } from 'react';
+import {
+  Box,
+  Card,
+  Divider,
+  Grid,
+  Stack,
+  Typography,
+  alpha,
+  useTheme,
+} from '@mui/material';
+import React, { memo, useState } from 'react';
 import Image from 'next/image';
 import { LeftProfileColumnProps } from './types';
 import LeftProfileBasicInformation from './LeftProfileBasicInformation';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import { CustomIconButton } from '../Inputs/Buttons';
 
 const LeftProfileColumn = (props: LeftProfileColumnProps) => {
   const theme = useTheme();
 
+  const [avtHover, setAvtHover] = useState(false);
+
   return (
-    <Card
-      sx={{
-        height: 600,
-      }}
+    <Grid
+      container
+      direction="row"
+      justifyContent="center"
+      alignItems="center"
+      spacing={2}
     >
-      <Stack alignItems={'center'} padding={4} rowGap={2}>
-        <Image
-          src={props.LeftProfileBasicInfo.avatarSrc}
-          width={300}
-          height={300}
-          style={{
-            borderColor: theme.palette.common.black,
-            borderWidth: '2px',
-            borderStyle: 'solid',
-            borderRadius: '1rem',
-            maxWidth: '100%', // Ensure image doesn't exceed container width
-          }}
-          alt="user-photoURL"
-        />
+      <Grid item xs={12}>
+        <Box sx={{ p: { xs: 2, sm: 2, md: 2, lg: 4 }, width: '100%' }}>
+          <Box
+            sx={{
+              width: '100%',
+              aspectRatio: 1,
+              overflow: 'hidden',
+              borderRadius: '50%',
+              position: 'relative',
+              border: 3,
+              borderColor: theme.palette.secondary.main,
+            }}
+            onMouseEnter={() => setAvtHover(true)}
+            onMouseLeave={() => setAvtHover(false)}
+          >
+            <Box
+              component={Image}
+              src={props.LeftProfileBasicInfo.avatarSrc}
+              fill
+              sx={{
+                objectFit: 'cover',
+              }}
+              alt="user-photoURL"
+            />
+            {avtHover && (
+              <CustomIconButton
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  width: '100%',
+                  aspectRatio: 1,
+                  left: '50%',
+                  transform: 'translate(-50%,-50%)',
+                  backgroundColor: alpha(theme.palette.common.black, 0.5),
+                  color: theme.palette.common.white,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.common.black, 0.5),
+                  },
+                }}
+              >
+                <CameraAltIcon />
+              </CustomIconButton>
+            )}
+          </Box>
+        </Box>
+      </Grid>
 
-        <Divider
-          sx={{
-            color: (theme) => theme.palette.common.black,
-            width: '100%',
-          }}
-        />
+      {/* Basic Information */}
 
-        {/* Basic Information */}
+      {/* <Grid item xs={12}>
         <LeftProfileBasicInformation {...props.LeftProfileBasicInfo} />
-        <Divider
-          sx={{
-            color: (theme) => theme.palette.common.black,
-            width: '100%',
-          }}
-        />
-      </Stack>
-    </Card>
+      </Grid> */}
+    </Grid>
   );
 };
 

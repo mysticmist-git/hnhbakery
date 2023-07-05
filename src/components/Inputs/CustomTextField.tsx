@@ -9,10 +9,10 @@ const CustomTextField = (props: any, ref: ForwardedRef<HTMLInputElement>) => {
       <TextField
         {...props}
         inputRef={ref}
-        hiddenLabel
         variant="filled"
         maxRows="1"
         InputProps={{
+          ...props.InputProps,
           disableUnderline: true,
         }}
         inputProps={{

@@ -52,10 +52,9 @@ const CustomCarousel = memo((props: any) => {
         indicatorContainerProps={{
           style: {
             position: 'absolute',
-            bottom: 0,
+            bottom: 8,
             left: '0',
             right: '0',
-            paddingTop: 0,
             zIndex: 1,
           },
         }}
@@ -406,8 +405,17 @@ function Home({
             }}
           >
             <TopSlideInDiv>
-              <CustomCarousel height="60vh" duration={500} />
-              <SolidDownWhite />
+              <Box
+                sx={{
+                  overflow: 'hidden',
+                  position: 'relative',
+                  borderBottom: 3,
+                  borderColor: theme.palette.secondary.main,
+                }}
+              >
+                <CustomCarousel height="60vh" duration={500} />
+              </Box>
+              {/* <SolidDownWhite /> */}
             </TopSlideInDiv>
 
             <BottomSlideInDiv>
