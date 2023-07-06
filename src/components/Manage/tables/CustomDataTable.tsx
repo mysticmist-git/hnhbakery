@@ -137,12 +137,14 @@ function generateDatagridColumn(
           headerName: 'Tên',
           align: 'left',
           headerAlign: 'left',
+          flex: 1,
         },
         {
           field: 'productTypeName',
           headerName: 'Loại',
           align: 'left',
           headerAlign: 'left',
+          flex: 1,
         },
         {
           field: 'description',
@@ -197,12 +199,14 @@ function generateDatagridColumn(
           headerName: 'Sản phẩm',
           align: 'left',
           headerAlign: 'left',
+          flex: 1,
         },
         {
           field: 'productTypeName',
           headerName: 'Loại',
           align: 'left',
           headerAlign: 'left',
+          flex: 1,
         },
         {
           field: 'material',
