@@ -34,6 +34,8 @@ import {
 import BaseObject from '@/lib/models/BaseObject';
 import {
   AddData,
+  BatchDataManagerStrategy,
+  BatchUpdateData,
   DataManagerErrorCode,
   DataManagerStrategy,
   ProductAddData,
@@ -143,8 +145,11 @@ export default function Manage({
         setDataManager(() => new ProductDataManagerStrategy(dispatch));
         break;
       case COLLECTION_NAME.BATCHES:
+        setDataManager(() => new BatchDataManagerStrategy(dispatch));
+        break;
       default:
         setDataManager(() => null);
+        break;
     }
   }
 
@@ -172,7 +177,6 @@ export default function Manage({
         } as ProductTypeAddData;
 
         break;
-
       case COLLECTION_NAME.PRODUCTS:
         const imageFiles = rowModalRef.current
           ?.getProductFormRef()
@@ -189,6 +193,9 @@ export default function Manage({
         } as ProductAddData;
         break;
       case COLLECTION_NAME.BATCHES:
+        addData = {
+          data: state.modalData!,
+        };
         break;
     }
 
@@ -217,6 +224,10 @@ export default function Manage({
         } as ProductUpdateData;
         break;
       case COLLECTION_NAME.BATCHES:
+        updateData = {
+          newData: state.modalData,
+          originalData: state.originalModalData,
+        } as BatchUpdateData;
         break;
       default:
         break;
@@ -329,12 +340,6 @@ export default function Manage({
     });
   }
 
-  // TODO: Implement
-  function handleSearch() {
-    alert('Not implemented yet');
-  }
-
-  // TODO: Implement
   function handleNewRow() {
     dispatch({
       type: ManageActionType.NEW_ROW,
@@ -375,6 +380,7 @@ export default function Manage({
     }
 
     try {
+      console.log(dataManager);
       const addedData = await dataManager?.addDoc(addData);
 
       if (!addedData) {
@@ -382,20 +388,6 @@ export default function Manage({
         handleSnackbarAlert('error', 'Thêm thất bại');
         return;
       }
-
-      if (!state.mainDocs) {
-        console.log('Null main docs');
-        handleSnackbarAlert('error', 'Thêm thất bại');
-        return;
-      }
-
-      const updatedDocs = [...state.mainDocs];
-      updatedDocs.splice(0, 0, addedData);
-
-      dispatch({
-        type: ManageActionType.SET_MAIN_DOCS,
-        payload: updatedDocs,
-      });
 
       dispatch({
         type: ManageActionType.SET_MODAL_DATA,
@@ -405,6 +397,19 @@ export default function Manage({
       dispatch({
         type: ManageActionType.VIEW_ROW,
         payload: addedData,
+      });
+
+      if (!state.mainDocs) {
+        console.log('Null main docs');
+        return;
+      }
+
+      const updatedDocs = [...state.mainDocs];
+      updatedDocs.splice(0, 0, addedData);
+
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: updatedDocs,
       });
 
       handleSnackbarAlert('success', 'Thêm thành công');
@@ -438,6 +443,7 @@ export default function Manage({
 
         if (!updateData) {
           console.log('Null update data');
+          setLoading(false);
           return;
         }
 

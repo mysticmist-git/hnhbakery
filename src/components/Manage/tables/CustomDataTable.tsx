@@ -1,4 +1,5 @@
 import { COLLECTION_NAME } from '@/lib/constants';
+import { StorageBatchObject } from '@/lib/firestore/firestoreLib';
 import {
   DeleteRowHandler,
   ViewRowHandler,
@@ -217,10 +218,10 @@ function generateDatagridColumn(
         },
         {
           field: 'price',
-          headerName: 'Kích cỡ',
+          type: 'number',
+          headerName: 'Giá',
           headerAlign: 'left',
           align: 'left',
-          type: 'number',
           valueFormatter: (params) => formatPrice(params.value),
         },
         {
