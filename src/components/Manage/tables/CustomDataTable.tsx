@@ -171,12 +171,19 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             sortable: false,
             disableColumnMenu: true,
           },
-          { field: 'name', headerName: 'Tên', width: 160 },
+          {
+            field: 'name',
+            headerName: 'Tên',
+            width: 160,
+            filterable: false,
+            hideable: false,
+          },
           {
             field: 'productCount',
             headerName: 'Sản phẩm',
             type: 'number',
             align: 'center',
+            hideable: false,
           },
           {
             field: 'description',
@@ -186,6 +193,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerAlign: 'left',
             sortable: false,
             filterable: false,
+            hideable: false,
           },
           {
             field: 'isActive',
@@ -197,6 +205,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             sortComparator: (a, b) => {
               return a - b;
             },
+            hideable: false,
           },
           {
             field: 'actions',
@@ -205,6 +214,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerAlign: 'right',
             align: 'right',
             getActions: getActions,
+            hideable: false,
           },
         ];
       case COLLECTION_NAME.PRODUCTS:
@@ -226,6 +236,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             align: 'left',
             headerAlign: 'left',
             flex: 1,
+            hideable: false,
           },
           {
             field: 'productType_id',
@@ -247,6 +258,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             align: 'left',
             headerAlign: 'left',
             flex: 1,
+            hideable: false,
           },
           {
             field: 'description',
@@ -254,13 +266,16 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             align: 'left',
             headerAlign: 'left',
             flex: 1,
+            hideable: false,
           },
           {
             field: 'variants',
+            type: 'number',
             headerName: 'Biến thể',
             align: 'left',
             headerAlign: 'left',
             valueGetter: (params) => params.value?.length ?? 0,
+            hideable: false,
           },
           {
             field: 'isActive',
@@ -272,6 +287,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             sortComparator: (a, b) => {
               return a - b;
             },
+            hideable: false,
           },
           {
             field: 'actions',
@@ -280,6 +296,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerAlign: 'right',
             align: 'right',
             getActions: getActions,
+            hideable: false,
           },
         ];
       case COLLECTION_NAME.BATCHES:
@@ -315,6 +332,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
               return productName ?? 'Không tìm thấy';
             },
             flex: 1,
+            hideable: false,
           },
           {
             field: 'productType_id',
@@ -336,18 +354,21 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
               return typeName ?? 'Không tìm thấy';
             },
             flex: 1,
+            hideable: false,
           },
           {
             field: 'material',
             headerName: 'Vật liệu',
             align: 'left',
             headerAlign: 'left',
+            hideable: false,
           },
           {
             field: 'size',
             headerName: 'Kích cỡ',
             headerAlign: 'left',
             align: 'left',
+            hideable: false,
           },
           {
             field: 'price',
@@ -356,6 +377,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerAlign: 'left',
             align: 'left',
             valueFormatter: (params) => formatPrice(params.value),
+            hideable: false,
           },
           {
             field: 'actions',
@@ -364,6 +386,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerAlign: 'right',
             align: 'right',
             getActions: getActions,
+            hideable: false,
           },
         ];
       default:
