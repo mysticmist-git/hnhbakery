@@ -28,6 +28,7 @@ import {
   GridColDef,
   GridFilterItem,
   GridFilterOperator,
+  GridLogicOperator,
   GridRenderCellParams,
   GridRowModel,
   GridToolbar,
@@ -85,11 +86,9 @@ interface CustomDataTableProps {
 export default memo(function CustomDataTable(props: CustomDataTableProps) {
   //#region States
 
-  const [productTypes, setProductTypes] = useState<ProductTypeObject[] | null>(
-    null
-  );
+  const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
 
-  const [products, setProducts] = useState<ProductObject[] | null>(null);
+  const [products, setProducts] = useState<ProductObject[]>([]);
 
   //#endregion
 
@@ -97,7 +96,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   useEffect(() => {
     async function fetchTypes() {
-      let productTypes: ProductTypeObject[] | null = null;
+      let productTypes: ProductTypeObject[] = [];
 
       try {
         productTypes = await getCollection<ProductTypeObject>(
@@ -111,7 +110,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
     }
 
     async function fetchProducts() {
-      let products: ProductObject[] | null = null;
+      let products: ProductObject[] = [];
 
       try {
         products = await getCollection<ProductObject>(COLLECTION_NAME.PRODUCTS);
@@ -126,18 +125,11 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         break;
       case COLLECTION_NAME.PRODUCTS:
-        if (!productTypes) {
-          fetchTypes();
-        }
+        fetchTypes();
         break;
       case COLLECTION_NAME.BATCHES:
-        if (!productTypes) {
-          fetchTypes();
-        }
-
-        if (!products) {
-          fetchProducts();
-        }
+        fetchTypes();
+        fetchProducts();
         break;
       default:
         break;
@@ -150,7 +142,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   const columns = useMemo(() => {
     return generateDatagridColumn();
-  }, [props]);
+  }, [props, productTypes, products]);
 
   //#endregion
 
@@ -242,13 +234,12 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             field: 'productType_id',
             headerName: 'Loại',
             type: 'singleSelect',
-            valueOptions: productTypes?.map((type) => type.id ?? ''),
-            getOptionLabel(value) {
+            valueOptions: productTypes.map((type) => type.id ?? ''),
+
+            getOptionLabel: (value) => {
               return productTypes?.find((i) => i.id === value)?.name ?? 'Không';
             },
             valueFormatter: (params: GridValueFormatterParams) => {
-              if (!productTypes) return 'Không tìm thấy';
-
               const typeName = productTypes.find(
                 (i) => i.id === params.value
               )?.name;
@@ -323,8 +314,6 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
               return products?.find((i) => i.id === value)?.name ?? 'Không';
             },
             valueFormatter: (params: GridValueFormatterParams) => {
-              if (!products) return 'Không tìm thấy';
-
               const productName = products.find(
                 (i) => i.id === params.value
               )?.name;
@@ -401,7 +390,6 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
     //#endregion
   }
-
   //#endregion
 
   return (
@@ -427,6 +415,52 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
         toolbar: {
           showQuickFilter: true,
           quickFilterProps: { debounceMs: 500 },
+        },
+        filterPanel: {
+          // Force usage of "And" operator
+          logicOperators: [GridLogicOperator.And],
+          // Display columns by ascending alphabetical order
+          columnsSort: 'asc',
+          filterFormProps: {
+            // Customize inputs by passing props
+            logicOperatorInputProps: {
+              variant: 'outlined',
+              size: 'small',
+            },
+            columnInputProps: {
+              variant: 'outlined',
+              size: 'small',
+              sx: { mt: 'auto' },
+            },
+            operatorInputProps: {
+              variant: 'outlined',
+              size: 'small',
+              sx: { mt: 'auto' },
+            },
+            valueInputProps: {
+              InputComponentProps: {
+                variant: 'outlined',
+                size: 'small',
+              },
+            },
+            deleteIconProps: {
+              sx: {
+                '& .MuiSvgIcon-root': { color: '#d32f2f' },
+              },
+            },
+          },
+          sx: {
+            // Customize inputs using css selectors
+            '& .MuiDataGrid-filterForm': { p: 2 },
+            '& .MuiDataGrid-filterForm:nth-child(even)': {
+              backgroundColor: (theme) =>
+                theme.palette.mode === 'dark' ? '#444' : '#f5f5f5',
+            },
+            '& .MuiDataGrid-filterFormLogicOperatorInput': { mr: 2 },
+            '& .MuiDataGrid-filterFormColumnInput': { mr: 2, width: 150 },
+            '& .MuiDataGrid-filterFormOperatorInput': { mr: 2 },
+            '& .MuiDataGrid-filterFormValueInput': { width: 200 },
+          },
         },
       }}
     />
