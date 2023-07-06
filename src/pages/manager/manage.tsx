@@ -46,7 +46,7 @@ import {
   ProductUpdateData,
   UpdateData,
 } from '@/lib/strategies/DataManagerStrategy';
-import { Add } from '@mui/icons-material';
+import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -595,6 +595,50 @@ export default function Manage({
     }
   }
 
+  async function handleReloadTable() {
+    setLoading(true);
+
+    dispatch({
+      type: ManageActionType.SET_MAIN_DOCS,
+      payload: null,
+    });
+
+    let fetcher: StorageDocsFetcher | null = null;
+
+    switch (paramCollectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        fetcher = new ProductTypeStorageDocsFetcher();
+        break;
+      case COLLECTION_NAME.PRODUCTS:
+        fetcher = new ProductStorageDocsFetcher();
+        break;
+      case COLLECTION_NAME.BATCHES:
+        fetcher = new BatchStorageDocsFetcher();
+        break;
+      default:
+        break;
+    }
+
+    if (!fetcher) {
+      handleSnackbarAlert('error', 'Lỗi khi tải lại');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const docs = await fetcher.fetch();
+
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: docs,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   //#endregion
 
   return (
@@ -637,27 +681,28 @@ export default function Manage({
         <Box
           sx={{
             display: 'flex',
-            justifyContent:
-              state.selectedTarget?.collectionName !== 'batches'
-                ? 'space-between'
-                : 'end',
+            justifyContent: 'end',
             alignItems: 'center',
             my: '1rem',
+            gap: 1,
           }}
         >
-          <Divider
-            orientation="vertical"
+          <TableActionButton
+            startIcon={<RestartAlt />}
+            onClick={handleReloadTable}
             sx={{
-              mx: 1,
+              paddingX: 2,
             }}
-          />
+          >
+            Tải lại
+          </TableActionButton>
 
           <TableActionButton
             startIcon={<Add />}
             variant="contained"
             onClick={handleNewRow}
           >
-            <Typography variant="body2">{addRowText}</Typography>
+            {addRowText}
           </TableActionButton>
         </Box>
       }
