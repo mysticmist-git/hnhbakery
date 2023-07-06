@@ -459,7 +459,6 @@ export type PathWithUrl = {
   url: string;
 };
 export interface StorageProductObject extends ProductObject {
-  productTypeName: string;
   imageUrls: PathWithUrl[];
 }
 
@@ -495,7 +494,6 @@ export const fetchProductsForStoragePage = async (): Promise<
 
       return {
         ...product,
-        productTypeName: productType?.name ?? '',
         imageUrls: imageUrls,
       } as StorageProductObject;
     })
