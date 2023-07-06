@@ -1,5 +1,6 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { Typography } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Grid, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import MuiDrawer from '@mui/material/Drawer';
@@ -11,7 +12,7 @@ import * as React from 'react';
 import { memo } from 'react';
 import Sidebar from './components/Sidebar';
 
-const drawerWidth: number = 240;
+const drawerWidth: string = '100%';
 
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== 'open',
@@ -47,48 +48,82 @@ function Layout({ children }: { children: any }) {
 
   return (
     <>
-      <Box sx={{ display: 'flex' }}>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              px: [1],
-            }}
+      <Grid
+        container
+        direction="row"
+        justifyContent="center"
+        alignItems="flex-start"
+        spacing={2}
+      >
+        <Grid item xs={12} md={open ? 4 : 'auto'} lg={open ? 3 : 'auto'}>
+          <Drawer
+            variant="permanent"
+            open={open}
+            sx={{ height: { md: '100vh', xs: 'auto' } }}
           >
-            {open && (
-              <Link
-                href="/"
-                style={{
-                  textDecoration: 'none',
-                }}
+            <Box
+              sx={{ py: 2, px: open ? 4 : 0, width: '100%', height: '100%' }}
+            >
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'center'}
+                spacing={2}
               >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color: 'common.black',
-                    textDecoration: 'none',
-                    fontWeight: 'bold',
-                    ml: '3.5rem',
-                    '&:hover': {
-                      color: 'secondary.main',
-                    },
-                  }}
-                >
-                  Trang chủ
-                </Typography>
-              </Link>
-            )}
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <Sidebar />
-        </Drawer>
-        {children}
-      </Box>
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      width: '100%',
+                      alignItems: 'center',
+                      justifyContent: open ? 'space-between' : 'center',
+                      flexDirection: 'row',
+                    }}
+                  >
+                    {open && (
+                      <Link
+                        href="/"
+                        style={{
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            color: 'common.black',
+                            textDecoration: 'none',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                              color: 'secondary.main',
+                            },
+                          }}
+                        >
+                          Trang chủ
+                        </Typography>
+                      </Link>
+                    )}
+                    <IconButton onClick={toggleDrawer}>
+                      {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                    </IconButton>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Divider />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Sidebar />
+                </Grid>
+              </Grid>
+            </Box>
+          </Drawer>
+        </Grid>
+        <Grid item xs={12} md={open ? 8 : true} lg={open ? 9 : true}>
+          {children}
+        </Grid>
+      </Grid>
     </>
   );
 }

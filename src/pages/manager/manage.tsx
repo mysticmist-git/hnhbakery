@@ -633,34 +633,33 @@ export default function Manage({
       />
 
       {/* Manage Buttons */}
-      {
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent:
-              state.selectedTarget?.collectionName !== 'batches'
-                ? 'space-between'
-                : 'end',
-            alignItems: 'center',
-            my: '1rem',
-          }}
-        >
-          <Divider
-            orientation="vertical"
-            sx={{
-              mx: 1,
-            }}
-          />
 
-          <TableActionButton
-            startIcon={<Add />}
-            variant="contained"
-            onClick={handleNewRow}
-          >
-            <Typography variant="body2">{addRowText}</Typography>
-          </TableActionButton>
-        </Box>
-      }
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent:
+            state.selectedTarget?.collectionName !== 'batches'
+              ? 'space-between'
+              : 'end',
+          alignItems: 'center',
+          my: '1rem',
+        }}
+      >
+        <Divider
+          orientation="vertical"
+          sx={{
+            mx: 1,
+          }}
+        />
+
+        <TableActionButton
+          startIcon={<Add />}
+          variant="contained"
+          onClick={handleNewRow}
+        >
+          <Typography variant="body2">{addRowText}</Typography>
+        </TableActionButton>
+      </Box>
 
       <CustomDataTable
         mainDocs={state.mainDocs}

@@ -4,7 +4,7 @@ import { MainListItems, SecondaryListItems } from './listItems';
 
 export default function Sidebar() {
   return (
-    <List component="nav">
+    <List>
       <MainListItems />
       <Divider sx={{ my: 1 }} />
       <SecondaryListItems />
