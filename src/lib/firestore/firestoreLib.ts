@@ -175,11 +175,17 @@ export const uploadImagesToFirebaseStorage = async (
   return paths;
 };
 
-export const deleteImageFromFirebaseStorage = async (imagePath: string) => {
+export async function deleteImageFromFirebaseStorage(imagePath: string) {
   const storageRef = ref(storage, imagePath);
 
-  await deleteObject(storageRef);
-};
+  deleteObject(storageRef);
+}
+
+export async function deleteImagesFromFirebaseStorage(paths: string[]) {
+  paths.forEach((path) => {
+    deleteImageFromFirebaseStorage(path);
+  });
+}
 
 export const getDownloadUrlsFromFirebaseStorage = memoize(
   async (paths: string[]) => {
@@ -416,7 +422,9 @@ export interface StorageProductTypeObject extends ProductTypeObject {
 export const fetchProductTypesForStoragePage = async (): Promise<
   StorageProductTypeObject[]
 > => {
-  const productTypes = await getCollection<ProductTypeObject>('productTypes');
+  const productTypes = await getCollection<ProductTypeObject>(
+    COLLECTION_NAME.PRODUCT_TYPES
+  );
 
   const storageProductTypes = await Promise.all(
     productTypes.map(async (type) => {
@@ -425,7 +433,7 @@ export const fetchProductTypesForStoragePage = async (): Promise<
 
       try {
         productCount = await countDocs(
-          'products',
+          COLLECTION_NAME.PRODUCTS,
           where('productType_id', '==', type.id)
         );
 

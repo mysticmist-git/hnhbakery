@@ -1,16 +1,14 @@
 import { COLLECTION_NAME } from '@/lib/constants';
-import { gridColumnsTotalWidthSelector } from '@mui/x-data-grid';
-import { data } from 'autoprefixer';
 import { Timestamp } from 'firebase/firestore';
-import { url } from 'inspector';
 import { Dispatch } from 'react';
-import { updateCartToLocal } from '../contexts/cartContext';
 import {
   PathWithUrl,
+  StorageProductObject,
   StorageProductTypeObject,
   addDocToFirestore,
   deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
+  deleteImagesFromFirebaseStorage,
   getDocFromDocRef,
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
@@ -23,19 +21,13 @@ import {
   ModalProductTypeObject,
 } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
-import {
-  BatchObject,
-  createBatchObjecet as createBatchObject,
-} from '../models/Batch';
+import { createBatchObjecet as createBatchObject } from '../models/Batch';
 import { ProductObject, createProductObject } from '../models/Product';
 import {
   ProductTypeObject,
   createProductTypeObject,
 } from '../models/ProductType';
-import {
-  getDownloadUrlsFromFirebaseStorage,
-  uploadImagesToFirebaseStorage,
-} from './../firestore/firestoreLib';
+import { uploadImagesToFirebaseStorage } from './../firestore/firestoreLib';
 
 export enum DataManagerErrorCode {
   NULL_FIELD = 'null-field',
@@ -291,11 +283,11 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
       throw new Error('Null id');
     }
 
-    const castedDoc = doc as StorageProductTypeObject;
+    const castedDoc = doc as StorageProductObject;
 
-    if (castedDoc.image) deleteImageFromFirebaseStorage(castedDoc.image);
+    if (castedDoc.images) deleteImagesFromFirebaseStorage(castedDoc.images);
 
-    deleteDocFromFirestore(COLLECTION_NAME.PRODUCT_TYPES, doc.id);
+    deleteDocFromFirestore(COLLECTION_NAME.PRODUCTS, doc.id);
   }
 }
 
