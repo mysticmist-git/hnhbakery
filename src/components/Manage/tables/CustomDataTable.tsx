@@ -10,7 +10,7 @@ import {
   ViewRowHandler,
   statusTextResolver,
 } from '@/lib/localLib/manage';
-import { ProductTypeObject } from '@/lib/models';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import { Delete, Visibility } from '@mui/icons-material';
@@ -89,7 +89,11 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
     null
   );
 
+  const [products, setProducts] = useState<ProductObject[] | null>(null);
+
   //#endregion
+
+  //#region useEffect
 
   useEffect(() => {
     async function fetchTypes() {
@@ -106,6 +110,18 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
       setProductTypes(() => productTypes);
     }
 
+    async function fetchProducts() {
+      let products: ProductObject[] | null = null;
+
+      try {
+        products = await getCollection<ProductObject>(COLLECTION_NAME.PRODUCTS);
+      } catch (error) {
+        console.log(error);
+      }
+
+      setProducts(() => products);
+    }
+
     switch (props.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         break;
@@ -115,11 +131,20 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
         }
         break;
       case COLLECTION_NAME.BATCHES:
+        if (!productTypes) {
+          fetchTypes();
+        }
+
+        if (!products) {
+          fetchProducts();
+        }
         break;
       default:
         break;
     }
   }, [props.collectionName]);
+
+  //#endregion
 
   //#region useMemos
 
@@ -271,17 +296,45 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             disableColumnMenu: true,
           },
           {
-            field: 'productName',
+            field: 'product_id',
             headerName: 'Sản phẩm',
             align: 'left',
             headerAlign: 'left',
+            type: 'singleSelect',
+            valueOptions: products?.map((type) => type.id ?? ''),
+            getOptionLabel(value) {
+              return products?.find((i) => i.id === value)?.name ?? 'Không';
+            },
+            valueFormatter: (params: GridValueFormatterParams) => {
+              if (!products) return 'Không tìm thấy';
+
+              const productName = products.find(
+                (i) => i.id === params.value
+              )?.name;
+
+              return productName ?? 'Không tìm thấy';
+            },
             flex: 1,
           },
           {
-            field: 'productTypeName',
+            field: 'productType_id',
             headerName: 'Loại',
             align: 'left',
             headerAlign: 'left',
+            type: 'singleSelect',
+            valueOptions: productTypes?.map((type) => type.id ?? ''),
+            getOptionLabel(value) {
+              return productTypes?.find((i) => i.id === value)?.name ?? 'Không';
+            },
+            valueFormatter: (params: GridValueFormatterParams) => {
+              if (!productTypes) return 'Không tìm thấy';
+
+              const typeName = productTypes.find(
+                (i) => i.id === params.value
+              )?.name;
+
+              return typeName ?? 'Không tìm thấy';
+            },
             flex: 1,
           },
           {
