@@ -3,6 +3,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PeopleIcon from '@mui/icons-material/People';
@@ -69,108 +70,193 @@ function typographySxProps(route: string) {
 }
 
 //#endregion
-export const MainListItems = memo(() => {
+export const MainListItems = memo((props: any) => {
   //#region Hooks
 
   const router = useRouter();
-
+  const { open } = props;
   return (
     <React.Fragment>
-      <ListItemButton onClick={() => router.push('/manager/dashboard')}>
-        <ListItemIcon>
+      {/* <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/dashboard')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
           <DashboardIcon sx={iconSxProps('dashboard')} />
         </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography sx={typographySxProps('dashboard')}>
-              Dashboard
-            </Typography>
-          }
-        />
-        {isActive('dashboard') && <Check color="secondary" />}
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('dashboard')}>
+                  Dashboard
+                </Typography>
+              }
+            />
+            {isActive('dashboard') && <Check color="secondary" />}
+          </>
+        )}
+      </ListItemButton> */}
+
+      <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/manage')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
+          <Inventory2RoundedIcon sx={iconSxProps('manage')} />
+        </ListItemIcon>
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('manage')}>
+                  Kho hàng
+                </Typography>
+              }
+            />
+            {isActive('manage') && <Check color="secondary" />}
+          </>
+        )}
       </ListItemButton>
-      <ListItemButton onClick={() => router.push('/manager/orders')}>
-        <ListItemIcon>
+
+      <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/orders')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
           <ShoppingCartIcon sx={iconSxProps('orders')} />
         </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography sx={typographySxProps('orders')}>Đơn hàng</Typography>
-          }
-        />
-        {isActive('orders') && <Check color="secondary" />}
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('orders')}>
+                  Đơn hàng
+                </Typography>
+              }
+            />
+            {isActive('orders') && <Check color="secondary" />}
+          </>
+        )}
       </ListItemButton>
-      <ListItemButton onClick={() => router.push('/manager/customers')}>
-        <ListItemIcon>
+
+      <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/customers')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
           <PeopleIcon sx={iconSxProps('customers')} />
         </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography sx={typographySxProps('customers')}>
-              Khách hàng
-            </Typography>
-          }
-        />
-        {isActive('customers') && <Check color="secondary" />}
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('customers')}>
+                  Khách hàng
+                </Typography>
+              }
+            />
+            {isActive('customers') && <Check color="secondary" />}
+          </>
+        )}
       </ListItemButton>
-      <ListItemButton onClick={() => router.push('/manager/reports')}>
-        <ListItemIcon>
+
+      <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/reports')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
           <BarChartIcon sx={iconSxProps('reports')} />
         </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography sx={typographySxProps('reports')}>Báo cáo</Typography>
-          }
-        />
-        {isActive('reports') && <Check color="secondary" />}
-      </ListItemButton>
-      <ListItemButton onClick={() => router.push('/manager/manage')}>
-        <ListItemIcon>
-          <LayersIcon sx={iconSxProps('manage')} />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography sx={typographySxProps('manage')}>Kho hàng</Typography>
-          }
-        />
-        {isActive('manage') && <Check color="secondary" />}
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('reports')}>
+                  Báo cáo
+                </Typography>
+              }
+            />
+            {isActive('reports') && <Check color="secondary" />}
+          </>
+        )}
       </ListItemButton>
     </React.Fragment>
   );
 });
 
-export const SecondaryListItems = memo(() => {
+export const SecondaryListItems = memo((props: any) => {
+  const { open } = props;
   return (
     <React.Fragment>
-      <ListSubheader component="div" inset>
-        Báo cáo đã lưu
+      <ListSubheader sx={{ height: '60px' }} component="div" inset>
+        {open && 'Báo cáo đã lưu'}
       </ListSubheader>
-      <ListItemButton>
+
+      <ListItemButton sx={{ height: '60px' }}>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText
-          sx={{ color: theme.palette.text.secondary }}
-          primary="Tháng này"
-        />
+        {open && (
+          <ListItemText
+            sx={{ color: theme.palette.text.secondary }}
+            primary="Tháng này"
+          />
+        )}
       </ListItemButton>
-      <ListItemButton>
+
+      <ListItemButton sx={{ height: '60px' }}>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText
-          sx={{ color: theme.palette.text.secondary }}
-          primary="Quý trước"
-        />
+        {open && (
+          <ListItemText
+            sx={{ color: theme.palette.text.secondary }}
+            primary="Quý trước"
+          />
+        )}
       </ListItemButton>
-      <ListItemButton>
+
+      <ListItemButton sx={{ height: '60px' }}>
         <ListItemIcon>
           <AssignmentIcon />
         </ListItemIcon>
-        <ListItemText
-          sx={{ color: theme.palette.text.secondary }}
-          primary="Year-end sale"
-        />
+        {open && (
+          <ListItemText
+            sx={{ color: theme.palette.text.secondary }}
+            primary="Year-end sale"
+          />
+        )}
       </ListItemButton>
     </React.Fragment>
   );
