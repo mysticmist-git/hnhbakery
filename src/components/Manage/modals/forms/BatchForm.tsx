@@ -20,6 +20,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { renderTimeViewClock } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { memo, useEffect, useState } from 'react';
 import CustomDateTimePicker from './components/CustomDateTimePicker';
@@ -288,6 +289,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
               }}
             />
 
+            {/* TODO: Chỉnh cho cái đồng hồ nó không bị mất màu */}
             <CustomDateTimePicker
               label="Sản xuất lúc"
               value={dayjs(props.data?.MFG)}
@@ -297,8 +299,14 @@ export default memo(function BatchForm(props: BatchFormProps) {
               }}
               readOnly={props.readOnly}
               disabled={props.disabled}
+              viewRenderers={{
+                hours: renderTimeViewClock,
+                minutes: renderTimeViewClock,
+                seconds: renderTimeViewClock,
+              }}
             />
 
+            {/* TODO: Chỉnh cái đồng hồ không bị mất màu */}
             <CustomDateTimePicker
               label="Hết hạn lúc"
               value={dayjs(props.data?.EXP)}
@@ -308,6 +316,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
               }}
               readOnly={props.readOnly}
               disabled={props.disabled}
+              viewRenderers={{
+                hours: renderTimeViewClock,
+                minutes: renderTimeViewClock,
+                seconds: renderTimeViewClock,
+              }}
             />
           </Stack>
         </Grid>
@@ -354,6 +367,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
               </Grid>
             </Grid>
 
+            {/* TODO: Chỉnh cái đồng hồ không bị mất màu */}
             <CustomDateTimePicker
               label="Bắt đầu từ"
               value={dayjs(props.data?.discount.date)}
@@ -367,6 +381,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
               }}
               readOnly={props.readOnly}
               disabled={props.disabled}
+              viewRenderers={{
+                hours: renderTimeViewClock,
+                minutes: renderTimeViewClock,
+                seconds: renderTimeViewClock,
+              }}
             />
           </Stack>
         </Grid>

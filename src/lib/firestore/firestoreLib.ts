@@ -503,10 +503,7 @@ export const fetchProductsForStoragePage = async (): Promise<
 };
 
 export interface StorageBatchObject extends BatchObject {
-  productName: string;
-  productIsActive: boolean;
-  productTypeName: string;
-  productTypeIsActive: boolean;
+  productType_id: string;
   material: string;
   size: string;
   price: number;
@@ -550,10 +547,7 @@ export const fetchBatchesForStoragePage = async (): Promise<
 
       return {
         ...batch,
-        productName: product?.name ?? '',
-        productIsActive: product?.isActive ?? false,
-        productTypeName: productType?.name ?? '',
-        productTypeIsActive: productType?.isActive ?? false,
+        productType_id: productType?.id ?? '',
         material: variant?.material ?? '',
         size: variant?.size ?? '',
         price: variant?.price ?? 0,
