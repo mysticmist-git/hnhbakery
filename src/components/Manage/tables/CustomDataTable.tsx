@@ -21,6 +21,7 @@ import {
   TextField,
   Typography,
   styled,
+  useTheme,
 } from '@mui/material';
 import {
   DataGrid,
@@ -392,11 +393,16 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
   }
   //#endregion
 
+  const theme = useTheme();
+
   return (
     <DataGrid
       rows={props.mainDocs ?? []}
       loading={props.mainDocs === null}
       columns={columns}
+      localeText={{
+        toolbarFilters: 'Bộ lọc',
+      }}
       initialState={{
         pagination: {
           paginationModel: { page: 0, pageSize: 5 },
@@ -415,6 +421,11 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
         toolbar: {
           showQuickFilter: true,
           quickFilterProps: { debounceMs: 500 },
+        },
+        baseButton: {
+          sx: {
+            color: theme.palette.common.black,
+          },
         },
         filterPanel: {
           // Force usage of "And" operator

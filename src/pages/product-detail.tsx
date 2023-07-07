@@ -722,7 +722,7 @@ const ProductDetailInfo = (props: any) => {
 
       return {
         isSuccess: true,
-        msg: 'Thêm vào giỏ local thành công',
+        msg: 'Thêm vào giỏ hàng local thành công',
       };
     } catch (error) {
       console.log(error);

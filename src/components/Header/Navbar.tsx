@@ -27,6 +27,7 @@ import RightMenu from './RightMenu';
 import Link from 'next/link';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Image from 'next/image';
+import { LOCAL_CART_KEY } from '@/lib';
 
 //#region Tab
 
@@ -185,6 +186,14 @@ function Navbar() {
       }
     });
 
+    const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
+    if (!currentLocalCart) {
+      setCartCount(0);
+    } else {
+      const currentCart = JSON.parse(currentLocalCart);
+      setCartCount(currentCart.length);
+    }
+
     return () => unsubscribe();
   }, []);
 
@@ -234,7 +243,7 @@ function Navbar() {
   //#endregion
 
   //#region CartCount Hên ở đây nè Hên!
-  const [cartCount, setCartCount] = useState(10);
+  const [cartCount, setCartCount] = useState(0);
   //#endregion
 
   return (

@@ -4,11 +4,9 @@ export interface BillObject extends BaseObject {
   id?: string;
   paymentTime?: Date;
   originalPrice?: number;
-  totalPrice?: number;
+  totalPrice?: number; // = ori - saleamount
   note?: string;
-  state?: 1 | 0 | -1;
-  rating?: 1 | 2 | 3 | 4 | 5;
-  comment?: string;
+  state?: 1 | 0 | -1; // 1: đã thanh toán , 0: chưa thanh toán, -1:hủy
   payment_id?: string;
   saleAmount?: number;
   sale_id: string;
