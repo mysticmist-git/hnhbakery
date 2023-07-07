@@ -7,7 +7,6 @@ import {
 import BaseObject from '@/lib/models/BaseObject';
 import {
   Box,
-  Button,
   Divider,
   FormControlLabel,
   Grid,
@@ -134,7 +133,6 @@ export default memo(
             <TextField
               disabled={disabled}
               label="Tên loại sản phẩm"
-              error={data.name === ''}
               placeholder="Tên loại sản phẩm"
               variant="standard"
               color="secondary"

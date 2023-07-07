@@ -19,6 +19,7 @@ import {
   limit,
   orderBy,
   query,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
@@ -28,6 +29,7 @@ import {
   ref,
   uploadBytes,
 } from 'firebase/storage';
+import { nanoid } from 'nanoid';
 import { memoize } from '../localLib/manage-modal';
 import { ProductObject, ProductTypeObject } from '../models';
 import BaseObject from '../models/BaseObject';
@@ -62,6 +64,13 @@ export const getDocFromFirestore = async <T extends BaseObject>(
     throw error;
   }
 };
+
+export async function addDocToFirestoreWithRef(
+  ref: DocumentReference,
+  data: BaseObject
+): Promise<void> {
+  await setDoc(ref, data);
+}
 
 export const addDocToFirestore = async (
   data: BaseObject,
@@ -136,28 +145,31 @@ export const deleteDocFromFirestore = async (
  */
 
 export const uploadImageToFirebaseStorage = async (
+  imagePath: string,
   imageFile: File
 ): Promise<string> => {
-  const storageRef = ref(storage, `images/${imageFile.name}`);
+  console.log(imagePath);
 
-  let path = '';
+  const storageRef = ref(storage, imagePath);
 
-  try {
-    const result = await uploadBytes(storageRef, imageFile);
-    path = result.metadata.fullPath;
-  } catch (error) {
-    console.log(error);
-  } finally {
-    return path;
-  }
+  const result = await uploadBytes(storageRef, imageFile);
+  const path = result.metadata.fullPath;
+
+  return path;
 };
 
+/**
+ * This function is used specificially for products ONLY.
+ * @param imageFiles - The image files to upload.
+ * @returns paths
+ */
 export const uploadImagesToFirebaseStorage = async (
+  galleryPath: string,
   imageFiles: File[]
 ): Promise<string[]> => {
   const paths = Promise.all(
     imageFiles.map(async (file) => {
-      const storageRef = ref(storage, `images/${file.name}`);
+      const storageRef = ref(storage, `${galleryPath}/${nanoid(4)}`);
 
       let path = '';
 
@@ -338,7 +350,7 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   if (productIds.length === 0) return [];
 
   const products = getCollectionWithQuery<ProductObject>(
-    'products',
+    COLLECTION_NAME.PRODUCTS,
     where(documentId(), 'in', productIds)
   );
 

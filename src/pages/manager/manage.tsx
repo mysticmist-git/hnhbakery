@@ -359,8 +359,6 @@ export default function Manage({
   }
 
   async function handleAddRow() {
-    console.log(state.modalData);
-
     if (!state.modalData) {
       handleSnackbarAlert('error', 'Lỗi khi thêm');
 

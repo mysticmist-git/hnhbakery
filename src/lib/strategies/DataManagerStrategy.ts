@@ -1,15 +1,19 @@
+import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, collection, doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
+import { isReturnStatement } from 'typescript';
 import {
   PathWithUrl,
   StorageProductObject,
   StorageProductTypeObject,
   addDocToFirestore,
+  addDocToFirestoreWithRef,
   deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
   deleteImagesFromFirebaseStorage,
   getDocFromDocRef,
+  getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
@@ -97,19 +101,23 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
 
     const data = createProductTypeObject(productTypeAddData.data);
 
+    const ref = doc(collection(db, COLLECTION_NAME.PRODUCT_TYPES));
+
     let image: string = '';
+
     if (productTypeAddData.imageFile)
-      image = await uploadImageToFirebaseStorage(productTypeAddData.imageFile);
+      image = await uploadImageToFirebaseStorage(
+        `typeFeaturedImages/${ref.id}`,
+        productTypeAddData.imageFile
+      );
 
     data.image = image;
 
-    const newProductTypeRef = await addDocToFirestore(
-      data,
-      COLLECTION_NAME.PRODUCT_TYPES
-    );
+    await addDocToFirestoreWithRef(ref, data);
 
-    const refetchData = await getDocFromDocRef<ProductTypeObject>(
-      newProductTypeRef
+    const refetchData = await getDocFromFirestore<ProductTypeObject>(
+      COLLECTION_NAME.PRODUCT_TYPES,
+      ref.id
     );
 
     let imageURL = '';
@@ -136,27 +144,39 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
       productTypeUpdateData.originalData
     );
 
-    try {
-      if (
-        (productTypeUpdateData.newData as ModalProductTypeObject).imageURL !==
-        (productTypeUpdateData.originalData as ModalProductTypeObject).imageURL
-      ) {
-        const newImagePath = await uploadImageToFirebaseStorage(
+    if (
+      (productTypeUpdateData.newData as ModalProductTypeObject).imageURL !==
+      (productTypeUpdateData.originalData as ModalProductTypeObject).imageURL
+    ) {
+      let newImagePath = '';
+
+      try {
+        newImagePath = await uploadImageToFirebaseStorage(
+          `typeFeaturedImages/${productTypeUpdateData.newData.id}`,
           productTypeUpdateData.imageFile
         );
-
-        data.image = newImagePath;
-
-        if (originalData.image)
-          deleteImageFromFirebaseStorage(originalData.image);
+      } catch (error) {
+        console.log(error);
       }
 
-      updateDocToFirestore(data, COLLECTION_NAME.PRODUCT_TYPES);
+      data.image = newImagePath;
 
-      return data;
-    } catch (error: any) {
-      throw new Error(error.message);
+      // if (originalData.image)
+      //   try {
+      //     deleteImageFromFirebaseStorage(originalData.image);
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
     }
+
+    try {
+      updateDocToFirestore(data, COLLECTION_NAME.PRODUCT_TYPES);
+      console.log('reach');
+    } catch (error) {
+      console.log(error);
+    }
+
+    return data;
   }
 
   deleteDoc(doc: BaseObject): void {
@@ -194,19 +214,24 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     const data = createProductObject(productAddData.data);
 
+    const ref = doc(collection(db, COLLECTION_NAME.PRODUCTS));
+
     let images: string[] = [];
 
     if (productAddData.imageFiles)
-      images = await uploadImagesToFirebaseStorage(productAddData.imageFiles);
+      images = await uploadImagesToFirebaseStorage(
+        `productGalleries/${ref.id}`,
+        productAddData.imageFiles
+      );
 
     data.images = images;
 
-    const newProductRef = await addDocToFirestore(
-      data,
-      COLLECTION_NAME.PRODUCTS
-    );
+    await addDocToFirestoreWithRef(ref, data);
 
-    const refetchData = await getDocFromDocRef<ProductObject>(newProductRef);
+    const refetchData = await getDocFromFirestore<ProductObject>(
+      COLLECTION_NAME.PRODUCTS,
+      ref.id
+    );
 
     let imageUrls: PathWithUrl[] = [];
 
@@ -230,7 +255,6 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     const refinedData: ModalProductObject = {
       ...refetchData,
-      productTypeName: productAddData.productTypeName,
       imageUrls: imageUrls,
     };
 
@@ -240,26 +264,22 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
   async updateDoc(updateData: UpdateData): Promise<BaseObject> {
     const productUpdateData = { ...updateData } as ProductUpdateData;
 
-    console.log(updateData);
-
     const data = createProductObject(updateData.newData);
     // const originalData = createProductObject(updateData.originalData);
-
-    console.log(data);
 
     try {
       if (
         (productUpdateData.newData as ModalProductObject).imageUrls !==
         (productUpdateData.originalData as ModalProductObject).imageUrls
       ) {
-        const updatedPaths: string[] =
-          await deleteOldImagesAndAddNewImagesToFirebaseStorage(
-            (productUpdateData.originalData as ModalProductObject).imageUrls,
-            (productUpdateData.newData as ModalProductObject).imageUrls,
-            productUpdateData.imageFiles
-          );
+        let updatedPaths: string[] = [];
 
-        console.log(updatedPaths);
+        updatedPaths = await deleteOldImagesAndAddNewImagesToFirebaseStorage(
+          productUpdateData.newData.id ?? '',
+          (productUpdateData.originalData as ModalProductObject).imageUrls,
+          (productUpdateData.newData as ModalProductObject).imageUrls,
+          productUpdateData.imageFiles
+        );
 
         data.images = updatedPaths;
       }
@@ -377,6 +397,7 @@ function deleteOldImages(
 }
 
 async function uploadNewImages(
+  path: string,
   newImageUrls: PathWithUrl[],
   imageFiles: FileWithUrl[]
 ): Promise<string[]> {
@@ -386,26 +407,35 @@ async function uploadNewImages(
     .filter((url) => url.path)
     .map((url) => url.path ?? '');
 
-  const uploadPaths = await Promise.all(
-    imageFiles.map(
-      async (file) => await uploadImageToFirebaseStorage(file.file)
-    )
+  const uploadPaths = await uploadImagesToFirebaseStorage(
+    path,
+    imageFiles.map((file) => file.file)
   );
+
+  // const uploadPaths = await Promise.all(
+  //   imageFiles.map(
+  //     async (file) => await uploadImageToFirebaseStorage(path, file.file)
+  //   )
+  // );
 
   return [...paths, ...uploadPaths];
 }
 
 async function deleteOldImagesAndAddNewImagesToFirebaseStorage(
+  id: string,
   originalImageUrls: PathWithUrl[],
   newImageUrls: PathWithUrl[],
   imageFiles: FileWithUrl[]
 ): Promise<string[]> {
+  if (!id) throw new Error('Null id');
+
   const deletedPaths: string[] = deleteOldImages(
     originalImageUrls,
     newImageUrls
   );
 
   const updatedPaths: string[] = await uploadNewImages(
+    `productGalleries/${id}`,
     newImageUrls,
     imageFiles
   );
