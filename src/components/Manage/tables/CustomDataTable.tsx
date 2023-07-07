@@ -44,8 +44,13 @@ import CustomerGridToolBar from './components/CustomerGridToolBar';
 //#endregion
 
 function StatusCell(params: GridRenderCellParams) {
+  const theme = useTheme();
+
   const isActive = params.value as boolean;
-  const color = isActive ? 'green' : 'red';
+  const color = isActive
+    ? theme.palette.success.main
+    : theme.palette.error.main;
+
   return (
     <Typography sx={{ color }} variant="body2">
       {statusTextResolver(isActive)}
@@ -236,7 +241,6 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerName: 'Loại',
             type: 'singleSelect',
             valueOptions: productTypes.map((type) => type.id ?? ''),
-
             getOptionLabel: (value) => {
               return productTypes?.find((i) => i.id === value)?.name ?? 'Không';
             },

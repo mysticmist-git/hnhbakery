@@ -1,27 +1,15 @@
-import ImageBackground from '@/components/imageBackground';
-import { Grid, Typography, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
-import Link from 'next/link';
-import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { CaiKhungCoTitle } from '../components/Layouts/components/CaiKhungCoTitle';
-import { DanhSachSanPham } from '../components/Payment/DanhSachSanPham';
-import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
-import FormGiaoHang from '../components/Payment/FormGiaoHang';
-import bfriday from '../assets/blackfriday.jpg';
 import CustomButton from '@/components/Inputs/Buttons/customButton';
+import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
+import ImageBackground from '@/components/imageBackground';
+import { db } from '@/firebase/config';
+import { useSnackbarService } from '@/lib/contexts';
 import {
   AppContext,
   AppContextType,
   AppDispatchAction,
 } from '@/lib/contexts/appContext';
-import { useRouter } from 'next/router';
-import { useSnackbarService } from '@/lib/contexts';
 import { DisplayCartItem, saveCart } from '@/lib/contexts/cartContext';
 import { Ref } from '@/lib/contexts/payment';
-import { DeliveryObject } from '@/lib/models/Delivery';
-import { BillObject } from '@/lib/models/Bill';
-import { BillDetailObject } from '@/lib/models/BillDetail';
-import DialogHinhThucThanhToan from '@/components/Payment/DialogHinhThucThanhToan';
 import {
   PaymentContext,
   initPaymentContext,
@@ -33,8 +21,13 @@ import {
   getCollectionWithQuery,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { SaleObject } from '@/lib/models';
+import { BillObject } from '@/lib/models/Bill';
+import { BillDetailObject } from '@/lib/models/BillDetail';
+import { DeliveryObject } from '@/lib/models/Delivery';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { Box } from '@mui/system';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {
   Timestamp,
   collection,
@@ -43,7 +36,14 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import bfriday from '../assets/blackfriday.jpg';
+import { CaiKhungCoTitle } from '../components/Layouts/components/CaiKhungCoTitle';
+import { DanhSachSanPham } from '../components/Payment/DanhSachSanPham';
+import { DonHangCuaBan } from '../components/Payment/DonHangCuaBan';
+import FormGiaoHang from '../components/Payment/FormGiaoHang';
 
 // #endregion
 
