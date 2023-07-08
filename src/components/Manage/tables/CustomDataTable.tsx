@@ -106,6 +106,7 @@ interface CustomDataTableProps {
   handleViewRow: ViewRowHandler;
   handleDeleteRow: DeleteRowHandler;
 }
+
 export default memo(function CustomDataTable(props: CustomDataTableProps) {
   //#region Hooks
 
@@ -171,7 +172,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   const columns = useMemo(() => {
     return generateDatagridColumn();
-  }, [props, productTypes, products]);
+  }, [props.mainDocs, props.collectionName, productTypes, products]);
 
   //#endregion
 
@@ -268,6 +269,8 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
               return productTypes?.find((i) => i.id === value)?.name ?? 'Không';
             },
             valueFormatter: (params: GridValueFormatterParams) => {
+              console.log(params);
+
               const typeName = productTypes.find(
                 (i) => i.id === params.value
               )?.name;

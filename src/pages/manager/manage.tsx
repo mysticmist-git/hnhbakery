@@ -378,7 +378,6 @@ export default function Manage({
     }
 
     try {
-      console.log(dataManager);
       const addedData = await dataManager?.addDoc(addData);
 
       if (!addedData) {
