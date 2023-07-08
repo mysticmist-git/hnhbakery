@@ -286,7 +286,7 @@ export function getDocsFromQuerySnapshot<T extends BaseObject>(
     // Convert Date objects to ISO strings
     Object.keys(data).forEach((key) => {
       if (data[key] instanceof Timestamp) {
-        data[key] = data[key].toDate();
+        data[key] = new Date(data[key].toDate());
       }
     });
     return { ...data, id: doc.id } as T;
@@ -320,7 +320,7 @@ export function getDocFromDocumentSnapshot<T extends BaseObject>(
 
   Object.keys(data).forEach((key) => {
     if (data[key] instanceof Timestamp) {
-      data[key] = data[key].toDate();
+      data[key] = new Date(data[key].toDate());
     }
   });
 
@@ -332,8 +332,7 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   const minSoldQuantity = 5;
   const queryLimit = 7;
 
-  const batches = await getCollectionWithQuery<BatchObject>(
-    'batches',
+  const batches = await getBatchesWithQuery(
     where('soldQuantity', '>=', minSoldQuantity),
     orderBy('soldQuantity', 'desc'),
     limit(queryLimit)
@@ -524,7 +523,7 @@ export interface StorageBatchObject extends BatchObject {
 export const fetchBatchesForStoragePage = async (): Promise<
   StorageBatchObject[]
 > => {
-  const batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
+  const batches = await getBatches();
 
   const storageBatches = await Promise.all(
     batches.map(async (batch) => {
@@ -637,10 +636,12 @@ export const getBatches = async (): Promise<BatchObject[]> => {
       ...batch,
       discount: {
         ...batch.discount,
-        date: (batch.discount.date as unknown as Timestamp).toDate(),
+        date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
       },
     };
   });
+
+  console.log(batches);
 
   return batches;
 };
@@ -658,10 +659,12 @@ export const getBatchesWithQuery = async (
       ...batch,
       discount: {
         ...batch.discount,
-        date: (batch.discount.date as unknown as Timestamp).toDate(),
+        date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
       },
     };
   });
+
+  console.log(batches);
 
   return batches;
 };
