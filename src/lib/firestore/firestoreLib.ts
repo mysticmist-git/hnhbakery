@@ -626,3 +626,44 @@ export async function getProductsByType(id: string): Promise<ProductObject[]> {
 }
 
 //#endregion
+
+//#region Batch
+
+export const getBatches = async (): Promise<BatchObject[]> => {
+  let batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
+
+  batches = batches.map((batch) => {
+    return {
+      ...batch,
+      discount: {
+        ...batch.discount,
+        date: (batch.discount.date as unknown as Timestamp).toDate(),
+      },
+    };
+  });
+
+  return batches;
+};
+
+export const getBatchesWithQuery = async (
+  ...queryConstraints: QueryConstraint[]
+): Promise<BatchObject[]> => {
+  let batches = await getCollectionWithQuery<BatchObject>(
+    COLLECTION_NAME.BATCHES,
+    ...queryConstraints
+  );
+
+  batches = batches.map((batch) => {
+    return {
+      ...batch,
+      discount: {
+        ...batch.discount,
+        date: (batch.discount.date as unknown as Timestamp).toDate(),
+      },
+    };
+  });
+
+  return batches;
+};
+
+//#endregion
