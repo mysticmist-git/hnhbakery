@@ -1,3 +1,4 @@
+import { SaleObject } from '@/lib/models';
 import { useTheme } from '@mui/material';
 import RenderSaleItem from './RenderSaleItem';
 export default function RenderSale(props: any) {

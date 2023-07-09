@@ -3,6 +3,7 @@ import {} from '@/lib/manage/manage';
 import { BaseObject } from '@/lib/models';
 import {
   AddRowHandler,
+  CommonRowModalProps,
   DeleteRowHandler,
   FormRef,
   ModalFormDataChangeHandler,
@@ -14,7 +15,7 @@ import React, { forwardRef, memo, useEffect, useState } from 'react';
 import Form from '../../forms/Form';
 import RowModalLayout from '../RowModalLayout';
 
-interface RowModalProps extends RowModalProps {
+interface RowModalProps extends CommonRowModalProps {
   handleAddRow: AddRowHandler;
   handleUpdateRow: UpdateRowHandler;
   handleDeleteRow: DeleteRowHandler;

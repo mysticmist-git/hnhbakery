@@ -459,9 +459,8 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
     //#endregion
   }
-  //#endregion
 
-  const theme = useTheme();
+  //#endregion
 
   return (
     <DataGrid

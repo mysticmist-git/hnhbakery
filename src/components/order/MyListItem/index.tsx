@@ -1,3 +1,4 @@
+import { AssembledBillDetail } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { Card, Chip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
