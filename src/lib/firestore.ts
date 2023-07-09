@@ -29,7 +29,8 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
-import { COLLECTION_NAME } from './constants';
+import { COLLECTION_NAME, DETAIL_PATH } from './constants';
+import { AssembledProduct } from './contexts/productsContext';
 import { memoize } from './manage/manage-modal';
 import {
   BaseObject,
@@ -602,6 +603,114 @@ export async function getProductsByType(id: string): Promise<ProductObject[]> {
 
   return products;
 }
+
+//#region Local Functions
+
+export async function fetchAvailableBatches(): Promise<BatchObject[]> {
+  try {
+    let batches = await getBatchesWithQuery(
+      where('EXP', '>=', Timestamp.now())
+    );
+
+    batches = batches.filter(
+      (batch) => batch.soldQuantity < batch.totalQuantity
+    );
+
+    console.log(batches);
+    return batches;
+  } catch (error) {
+    console.log('Error at fetchAvailableBatches:', error);
+    return [];
+  }
+}
+
+export type LowestPriceAndItsMFGProductId = {
+  id: string;
+  price: number;
+  MFG: Date;
+};
+
+export function calculateTotalSoldQuantity(batches: BatchObject[]): number {
+  return batches.reduce((acc: number, batch: BatchObject) => {
+    return acc + batch.soldQuantity;
+  }, 0);
+}
+
+//#endregion
+
+type GetBelongBatchesStrategy = (
+  productId: string,
+  batches?: BatchObject[]
+) => Promise<BatchObject[]>;
+
+const getBelongBatchesWithExistedBatches: GetBelongBatchesStrategy = async (
+  productId,
+  batches
+) => {
+  if (!productId || !batches) return [];
+
+  const belongBatches = (batches as BatchObject[]).filter(
+    (b) => b.product_id === productId
+  );
+
+  return belongBatches;
+};
+
+const getBelongBatchesWithProductId: GetBelongBatchesStrategy = async (
+  productId,
+  batches
+) => {
+  if (!productId) return [];
+
+  const belongBatches = await getBatchesWithQuery(
+    where('product_id', '==', productId)
+  );
+
+  return belongBatches;
+};
+
+export const assembleProduct = async (
+  product: ProductObject,
+  batches?: BatchObject[]
+): Promise<AssembledProduct> => {
+  const type = await getDocFromFirestore<ProductTypeObject>(
+    COLLECTION_NAME.PRODUCT_TYPES,
+    product.productType_id
+  );
+
+  const getBelongBatches: GetBelongBatchesStrategy = batches
+    ? getBelongBatchesWithExistedBatches
+    : getBelongBatchesWithProductId;
+
+  const belongBatches = await getBelongBatches(product.id, batches);
+
+  const assembledProduct: AssembledProduct = {
+    ...product,
+    images: await getDownloadUrlsFromFirebaseStorage(product.images),
+    type: type,
+    batches: belongBatches,
+    totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),
+    variants: product.variants.filter((v) =>
+      belongBatches.map((b) => b.variant_id).includes(v.id)
+    ),
+    href: `/${DETAIL_PATH}?id=${product.id}`,
+  };
+
+  return assembledProduct;
+};
+
+export const fetchAssembledProduct = async (
+  id: string
+): Promise<AssembledProduct> => {
+  const product = await getDocFromFirestore<ProductObject>(
+    COLLECTION_NAME.PRODUCTS,
+    id
+  );
+
+  const assembledProduct = await assembleProduct(product);
+
+  return assembledProduct;
+};
 
 //#endregion
 

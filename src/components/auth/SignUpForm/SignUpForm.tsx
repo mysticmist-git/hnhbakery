@@ -1,8 +1,8 @@
+import CustomButton from '@/components/buttons/CustomButton';
 import {
   CustomTextField,
   CustomTextFieldPassword,
 } from '@/components/Inputs/textFields';
-import CustomButton from '@/components/buttons/CustomButton';
 import { SignupData } from '@/lib/types/auth';
 import theme from '@/styles/themes/lightTheme';
 import { Box, Grid, Link, Typography } from '@mui/material';

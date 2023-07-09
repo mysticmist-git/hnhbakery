@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import { BatchObject } from '../models';
+import { AssembledProduct } from './productsContext';
 export interface ExtendedBatchObject extends BatchObject {
   discountPrice: number;
 }
@@ -18,7 +19,7 @@ export interface ProductDetail {
 }
 
 const initProductDetailContext: ProductDetailContextType = {
-  productDetail: {} as any,
+  product: {} as any,
   starState: {},
   setStarState: () => {},
   form: {},
@@ -26,7 +27,7 @@ const initProductDetailContext: ProductDetailContextType = {
 };
 
 export interface ProductDetailContextType {
-  productDetail: ProductDetail;
+  product: AssembledProduct;
   starState: any;
   setStarState: any;
   // TODO: make it strongly type

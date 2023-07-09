@@ -470,12 +470,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
       localeText={{
         toolbarFilters: 'Bộ lọc',
       }}
-      initialState={{
-        pagination: {
-          paginationModel: { page: 0, pageSize: 5 },
-        },
-      }}
-      pageSizeOptions={[5, 10]}
+      pageSizeOptions={[15, 25]}
       autoHeight
       slots={{
         loadingOverlay: CustomLinearProgres,

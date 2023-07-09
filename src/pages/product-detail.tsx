@@ -5,7 +5,7 @@ import ImageBackground from '@/components/Imagebackground';
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import { CustomButton } from '@/components/buttons';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
-import { LOCAL_CART_KEY } from '@/lib/constants';
+import { COLLECTION_NAME, LOCAL_CART_KEY } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   CartItem,
@@ -17,12 +17,14 @@ import {
   ProductDetailContextType,
   SUCCESS_ADD_CART_MSG,
 } from '@/lib/contexts/productDetail';
+import { AssembledProduct } from '@/lib/contexts/productsContext';
 import {
+  assembleProduct,
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore';
-import { BatchObject } from '@/lib/models';
+import { BatchObject, ProductObject } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import {
   Box,
@@ -117,7 +119,7 @@ const similiarProducts = [
 function ProductCarousel(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
-  const { productDetail } = context;
+  const { product: productDetail } = context;
   const [activeIndex, setActiveIndex] = useState(0);
   function handleChange(index: any) {
     setActiveIndex(index);
@@ -329,7 +331,7 @@ function CheckboxButtonGroup({
 function Comments(props: any) {
   const theme = useTheme();
   const context = useContext(ProductDetailContext);
-  const { productDetail } = context;
+  const { product: productDetail } = context;
   const avatarHeight = '50px';
   return (
     <>
@@ -522,8 +524,11 @@ const ProductDetailInfo = (props: any) => {
   // #region Hooks
 
   const theme = useTheme();
-  const { productDetail, form, setForm } =
-    useContext<ProductDetailContextType>(ProductDetailContext);
+  const {
+    product: productDetail,
+    form,
+    setForm,
+  } = useContext<ProductDetailContextType>(ProductDetailContext);
   const auth = getAuth();
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
@@ -1226,11 +1231,26 @@ const initStars = {
 
 const ProductDetail = ({
   invalid,
-  productDetailJSONString,
+  product: paramProduct,
 }: {
   invalid?: boolean;
-  productDetailJSONString: string;
+  product: string;
 }) => {
+  if (invalid)
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Typography variant="h2">
+          Đã có lỗi xảy ra hoặc Không tồn tại sản phẩm này
+        </Typography>
+      </Box>
+    );
   // #region Hooks
 
   const theme = useTheme();
@@ -1240,9 +1260,9 @@ const ProductDetail = ({
 
   // #region useMemos
 
-  const convertedProductDetail: ProductDetail = useMemo(() => {
+  const product: AssembledProduct = useMemo(() => {
     {
-      return JSON.parse(productDetailJSONString);
+      return JSON.parse(paramProduct);
     }
   }, [ProductDetail]);
 
@@ -1251,8 +1271,8 @@ const ProductDetail = ({
   // #region States
 
   const [form, setForm] = useState({
-    size: convertedProductDetail.batches[0].size,
-    material: convertedProductDetail.batches[0].material,
+    size: product.batches[0].size,
+    material: product.batches[0].material,
     quantity: 0,
   });
 
@@ -1264,7 +1284,7 @@ const ProductDetail = ({
     <>
       <ProductDetailContext.Provider
         value={{
-          productDetail: convertedProductDetail,
+          product: product,
           starState,
           setStarState,
           form: form,
@@ -1311,7 +1331,7 @@ const ProductDetail = ({
                       variant="h2"
                       color={theme.palette.primary.main}
                     >
-                      Bánh Croissant
+                      {product.name}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -1352,103 +1372,6 @@ const ProductDetail = ({
       </ProductDetailContext.Provider>
     </>
   );
-};
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  context.res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59'
-  );
-
-  if (!context.query.id) {
-    // Redirect
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
-
-  try {
-    // Get product
-    const productId = context.query.id as string;
-    const product = await getDocFromFirestore('products', productId);
-
-    // Get product type
-    const productType = await getDocFromFirestore(
-      'productTypes',
-      product.productType_id
-    );
-
-    const productTypeName = productType.name ?? 'Unknown';
-
-    // Get batches
-    const batches: BatchObject[] = await getCollectionWithQuery<BatchObject>(
-      'batches',
-      where('product_id', '==', productId)
-    );
-
-    // Filter out batches that is expired
-    // Filter out batches that out of stock
-    const filteredBatches = batches.filter(
-      (batch) =>
-        batch.soldQuantity < batch.totalQuantity &&
-        new Date(batch.EXP).getTime() > new Date().getTime()
-    );
-
-    const stockAvailable = filteredBatches.length > 0;
-
-    // Generate discount prices
-    const batchesWithDiscountPrices = filteredBatches.map((batch) => {
-      if (new Date(batch.discountDate).getTime() <= new Date().getTime()) {
-        return {
-          ...batch,
-          discountPrice:
-            batch.price - (batch.price * batch.discountPercent) / 100,
-        };
-      } else {
-        return {
-          ...batch,
-          discountPrice: -1,
-        };
-      }
-    });
-
-    // Get product images
-    const images = await getDownloadUrlsFromFirebaseStorage(product.images);
-
-    const productDetail: ProductDetail = {
-      id: product.id,
-      name: product.name,
-      type: productTypeName,
-      state: stockAvailable,
-      description: product.description,
-      ingredients: product.ingredients,
-      howToUse: product.howToUse,
-      preservation: product.preservation,
-      images: images.map((image: string) => ({
-        src: image,
-        alt: product.name,
-      })),
-      batches: batchesWithDiscountPrices,
-    };
-
-    return {
-      props: {
-        productDetailJSONString: JSON.stringify(productDetail),
-      },
-    };
-  } catch (error) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
 };
 
 export default memo(ProductDetail);

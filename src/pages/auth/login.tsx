@@ -1,10 +1,10 @@
 import banh1 from '@/assets/Carousel/3.jpg';
 import bg2 from '@/assets/Decorate/bg2.png';
+import { CustomButton } from '@/components/buttons';
 import {
   CustomTextField,
   CustomTextFieldPassword,
 } from '@/components/Inputs/textFields';
-import { CustomButton } from '@/components/buttons';
 import { auth } from '@/firebase/config';
 import { handleLoginWithGoogle } from '@/lib/auth/auth';
 import { authMessages } from '@/lib/constants';

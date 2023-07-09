@@ -66,3 +66,18 @@ export function formatPrice(price: number): string {
 export function filterDuplicates<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);
 }
+
+export const filterDuplicatesById = <T extends { id: string }>(data: T[]) => {
+  const ids: string[] = [];
+
+  const uniqueData = data.filter((obj, index, self) => {
+    if (!ids.includes(obj.id)) {
+      ids.push(obj.id);
+      return true;
+    }
+
+    return false;
+  });
+
+  return uniqueData;
+};

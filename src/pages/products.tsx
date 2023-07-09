@@ -2,20 +2,27 @@ import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
 import { CustomIconButton } from '@/components/buttons';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { COLLECTION_NAME, DETAIL_PATH } from '@/lib/constants';
 import ProductsContext, {
   AssembledProduct,
   BoLocItem,
   ProductsContextType,
 } from '@/lib/contexts/productsContext';
 import {
+  assembleProduct,
+  calculateTotalSoldQuantity,
+  fetchAvailableBatches,
   getBatchesWithQuery,
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore';
 import { BatchObject, ProductObject, ProductTypeObject } from '@/lib/models';
-import { formatPrice } from '@/lib/utils';
+import {
+  filterDuplicates,
+  filterDuplicatesById,
+  formatPrice,
+} from '@/lib/utils';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridView from '@mui/icons-material/GridView';
 import ListAlt from '@mui/icons-material/ListAlt';
@@ -47,7 +54,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 
-const DETAIL_PATH = '/product-detail';
+
+const dateComparerByValue = (a: number, b: number) => {
+  console.log(a, b);
+
+  if (a > b) {
+    return -1;
+  }
+  if (a < b) {
+    return 1;
+  }
+  return 0;
+};
 
 const dateComparer = (a: Date, b: Date) => {
   if (a.valueOf() > b.valueOf()) {
@@ -485,6 +503,7 @@ const CakeCard = memo(
       () => props.imageHeightList,
       [props.imageHeightList]
     );
+
     const imageStyles = {
       cardNormal: {
         width: '100%',
@@ -744,18 +763,16 @@ const ProductList = memo((props: any) => {
       case '5':
         console.log('Option raised');
         return [...productList].sort((a, b) => {
-          return dateComparer(
-            new Date(
-              Math.min(
-                ...a.batches.map((b) => b.MFG).map((date) => date.getTime())
-              )
+          return dateComparerByValue(
+            Math.min(
+              ...a.batches
+                .map((b) => b.MFG)
+                .map((date) => new Date(date).valueOf())
             ),
-            new Date(
-              Math.min(
-                ...b.batches
-                  .map((batch) => batch.MFG)
-                  .map((date) => date.getTime())
-              )
+            Math.min(
+              ...b.batches
+                .map((batch) => batch.MFG)
+                .map((date) => new Date(date).valueOf())
             )
           );
         });
@@ -763,18 +780,16 @@ const ProductList = memo((props: any) => {
       case '6':
         console.log('Option raised');
         return [...productList].sort((a, b) => {
-          return dateComparer(
-            new Date(
-              Math.min(
-                ...b.batches.map((b) => b.MFG).map((date) => date.getTime())
-              )
+          return dateComparerByValue(
+            Math.min(
+              ...b.batches
+                .map((b) => b.MFG)
+                .map((date) => new Date(date).valueOf())
             ),
-            new Date(
-              Math.min(
-                ...a.batches
-                  .map((batch) => batch.MFG)
-                  .map((date) => date.getTime())
-              )
+            Math.min(
+              ...a.batches
+                .map((batch) => batch.MFG)
+                .map((date) => new Date(date).valueOf())
             )
           );
         });
@@ -939,7 +954,7 @@ const ProductList = memo((props: any) => {
             const minInRange = range.min === 'infinity' ? -Infinity : range.min;
             const maxInRange = range.max === 'infinity' ? Infinity : range.max;
             return (
-              Math.min(...product.variants.map((v) => v.price)) >= minInRange ||
+              Math.min(...product.variants.map((v) => v.price)) >= minInRange &&
               Math.max(...product.variants.map((v) => v.price)) <= maxInRange
             );
           });
@@ -1059,6 +1074,8 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
       isChecked: false,
     }));
 
+    console.log(types, children);
+
     // This is to handle if a product type is selected from the index.tsx page
     const initialProductTypeCheckk = router.query.product_type;
 
@@ -1069,18 +1086,16 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
           isChecked: !item.isChecked,
         };
       } else {
-        return { ...item };
+        return item;
       }
     });
 
-    const productTypeFilter = {
-      heading: 'Loại bánh',
-      heading_value: 'typeCake',
-      children: children,
-    };
-
     return [
-      productTypeFilter,
+      {
+        heading: 'Loại bánh',
+        heading_value: 'typeCake',
+        children: children,
+      },
       {
         heading: 'Màu sắc',
         heading_value: 'color',
@@ -1176,12 +1191,30 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
   //#region useEffects
 
   useEffect(() => {
-    const products: AssembledProduct[] = JSON.parse(stringifiedProducts);
+    let products: AssembledProduct[] = JSON.parse(stringifiedProducts);
+    products.map((p) => {
+      const mapProduct: AssembledProduct = {
+        ...p,
+        batches: p.batches.map((b) => ({
+          ...b,
+          MFG: new Date(b.MFG),
+          EXP: new Date(b.EXP),
+          discount: {
+            ...b.discount,
+            date: new Date(b.discount.date),
+          },
+        })),
+      };
+
+      return mapProduct;
+    });
 
     setProducts(() => products);
     setGroupBoLocState(() =>
       generateGroupBoLoc(
-        products.map((p) => ({ id: p.type.id ?? '', name: p.type.name }))
+        filterDuplicatesById(
+          products.map((p) => ({ id: p.type.id ?? '', name: p.type.name }))
+        )
       )
     );
   }, [stringifiedProducts]);
@@ -1412,40 +1445,6 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
   );
 };
 
-//#region Local Functions
-
-async function fetchAvailableBatches(): Promise<BatchObject[]> {
-  try {
-    let batches = await getBatchesWithQuery(
-      where('EXP', '>=', Timestamp.now())
-    );
-
-    batches = batches.filter(
-      (batch) => batch.soldQuantity < batch.totalQuantity
-    );
-
-    console.log(batches);
-    return batches;
-  } catch (error) {
-    console.log('Error at fetchAvailableBatches:', error);
-    return [];
-  }
-}
-
-interface LowestPriceAndItsMFGProductId {
-  id: string;
-  price: number;
-  MFG: Date;
-}
-
-function calculateTotalSoldQuantity(batches: BatchObject[]): number {
-  return batches.reduce((acc: number, batch: BatchObject) => {
-    return acc + batch.soldQuantity;
-  }, 0);
-}
-
-//#endregion
-
 export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
 
@@ -1460,26 +1459,7 @@ export async function getServerSideProps() {
 
   const assembledProducts: AssembledProduct[] = await Promise.all(
     products.map(async (p) => {
-      const type = await getDocFromFirestore<ProductTypeObject>(
-        COLLECTION_NAME.PRODUCT_TYPES,
-        p.productType_id
-      );
-
-      const belongBatches = batches.filter((b) => b.product_id === p.id);
-
-      const assembledProduct: AssembledProduct = {
-        ...p,
-        images: await getDownloadUrlsFromFirebaseStorage(p.images),
-        type: type,
-        batches: belongBatches,
-        totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),
-        variants: p.variants.filter((v) =>
-          belongBatches.map((b) => b.variant_id).includes(v.id)
-        ),
-        href: `/${DETAIL_PATH}?id=${p.id}`,
-      };
-
-      return assembledProduct;
+      return assembleProduct(p, batches);
     })
   );
 
