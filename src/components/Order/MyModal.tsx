@@ -15,11 +15,15 @@ import { BatchObject } from '@/lib/models/Batch';
 import { BillDetailObject } from '@/lib/models/BillDetail';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import { Close } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Button,
   Card,
   CardActions,
   CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControl,
   Grid,
@@ -32,10 +36,12 @@ import {
   Select,
   Skeleton,
   Typography,
+  useTheme,
 } from '@mui/material';
-import { Box, Stack } from '@mui/system';
+import { Box, Stack, alpha } from '@mui/system';
 import { where } from 'firebase/firestore';
 import { memo, useEffect, useState } from 'react';
+import { CustomIconButton } from '../Inputs/Buttons';
 
 const modalStyle = {
   // These 4 below are positionings I used for larger
@@ -90,52 +96,52 @@ const MyModal = ({
 
   //#region UseEffects
 
-  useEffect(() => {
-    const getData = async (bill: CustomBill) => {
-      const billDetails = await getCollectionWithQuery<BillDetailObject>(
-        'bill_details',
-        where('bill_id', '==', bill.id)
-      );
+  // useEffect(() => {
+  //   const getData = async (bill: CustomBill) => {
+  //     const billDetails = await getCollectionWithQuery<BillDetailObject>(
+  //       'bill_details',
+  //       where('bill_id', '==', bill.id)
+  //     );
 
-      const assembledBillDetails = await Promise.all(
-        billDetails.map(async (detail) => {
-          const batch = (await getDocFromFirestore(
-            'batches',
-            detail.batch_id!
-          )) as BatchObject;
+  //     const assembledBillDetails = await Promise.all(
+  //       billDetails.map(async (detail) => {
+  //         const batch = (await getDocFromFirestore(
+  //           'batches',
+  //           detail.batch_id!
+  //         )) as BatchObject;
 
-          const product = (await getDocFromFirestore(
-            'products',
-            batch.product_id
-          )) as ProductObject;
+  //         const product = (await getDocFromFirestore(
+  //           'products',
+  //           batch.product_id
+  //         )) as ProductObject;
 
-          const productType = (await getDocFromFirestore(
-            'productTypes',
-            product.productType_id
-          )) as ProductTypeObject;
+  //         const productType = (await getDocFromFirestore(
+  //           'productTypes',
+  //           product.productType_id
+  //         )) as ProductTypeObject;
 
-          return {
-            ...detail,
-            productName: product.name,
-            productTypeName: productType.name,
-            material: batch.material,
-            size: batch.size,
-          };
-        })
-      );
+  //         return {
+  //           ...detail,
+  //           productName: product.name,
+  //           productTypeName: productType.name,
+  //           material: batch.material,
+  //           size: batch.size,
+  //         };
+  //       })
+  //     );
 
-      setBillDetails(() => assembledBillDetails);
-    };
+  //     setBillDetails(() => assembledBillDetails);
+  //   };
 
-    if (!bill) {
-      handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
-      handleClose();
-      return;
-    }
+  //   if (!bill) {
+  //     handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
+  //     handleClose();
+  //     return;
+  //   }
 
-    setBillState(() => bill.state ?? 0);
-    getData(bill);
-  }, [bill]);
+  //   setBillState(() => bill.state ?? 0);
+  //   getData(bill);
+  // }, [bill]);
 
   //#endregion
 
@@ -175,263 +181,55 @@ const MyModal = ({
 
   //#endregion
 
+  const theme = useTheme();
+
   return (
-    <Modal
-      open={open}
-      onClose={localHandleClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <Card sx={modalStyle}>
-        {/* Header */}
-        <Stack
-          direction={'row'}
-          alignItems={'center'}
-          justifyContent={'space-between'}
-        >
-          <Typography variant="h6">Xem đơn hàng</Typography>
-          <IconButton onClick={localHandleClose}>
-            <Close />
-          </IconButton>
-        </Stack>
+    <>
+      <Dialog
+        open={open}
+        onClose={localHandleClose}
+        sx={{
+          backgroundColor: alpha(theme.palette.primary.main, 0.5),
+          '& .MuiDialog-paper': {
+            backgroundColor: theme.palette.common.white,
+            borderRadius: '8px',
+            width: { md: '50vw', xs: '85vw' },
+          },
+          transition: 'all 0.5s ease-in-out',
+        }}
+      >
+        <DialogTitle>
+          <Typography
+            align="center"
+            variant="body1"
+            sx={{
+              fontWeight: 'bold',
+            }}
+            color={theme.palette.common.black}
+          >
+            Chọn phương thức thanh toán
+          </Typography>
 
-        <Divider />
-
-        {/* Content */}
-        <CardContent>
-          <Grid container paddingY={2}>
-            {/* Left  */}
-            <Grid item xs={5.5}>
-              {/* Mã đơn */}
-              <Stack direction="row" spacing={1} alignItems={'center'}>
-                <Typography variant="h6">Mã đơn: </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 'normal',
-                  }}
-                >
-                  {bill?.id ?? 'Null value'}
-                </Typography>
-              </Stack>
-              <Divider sx={{ my: 1 }} />
-              <Typography variant="body1">Thông tin chung</Typography>
-              <Divider sx={{ my: 1 }} />
-
-              {/* Khách hàng */}
-              <Stack direction="row" spacing={1} alignItems={'center'}>
-                <Typography variant="h6">Khách hàng:</Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 'normal',
-                  }}
-                >
-                  {bill?.customerName ?? 'Không tìm thấy'}
-                </Typography>
-              </Stack>
-
-              {/* Số điện thoại */}
-              <Stack direction="row" spacing={1} alignItems={'center'}>
-                <Typography variant="h6">Số điện thoại:</Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 'normal',
-                  }}
-                >
-                  {bill?.customerTel ?? 'Không tìm thấy'}
-                </Typography>
-              </Stack>
-
-              {/* Địa chỉ */}
-              <Stack direction="row" spacing={1} alignItems={'center'}>
-                <Typography variant="h6">Địa chỉ:</Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 'normal',
-                  }}
-                >
-                  {bill?.customerAddress ?? 'Không tìm thấy'}
-                </Typography>
-              </Stack>
-
-              <Divider sx={{ my: 1 }} />
-              {/* Trạng thái */}
-
-              <FormControl fullWidth>
-                <InputLabel
-                  id="state-select"
-                  sx={{
-                    '&.Mui-focused': {
-                      color: 'secondary.main',
-                    },
-                  }}
-                >
-                  Trạng thái
-                </InputLabel>
-                <Select
-                  fullWidth
-                  labelId="state-select"
-                  value={billState}
-                  label="Age"
-                  renderValue={(value) => (
-                    <Typography
-                      sx={{
-                        color:
-                          value === 1
-                            ? 'green'
-                            : value == 0
-                            ? 'secondary.main'
-                            : 'secondary.main',
-                      }}
-                    >
-                      {billStatusParse(value)}
-                    </Typography>
-                  )}
-                  onChange={(e) =>
-                    handleBillStateChange(e.target.value as number)
-                  }
-                >
-                  {[1, 0, -1].map((state) => (
-                    <MenuItem value={state}>
-                      <Typography
-                        sx={{
-                          color:
-                            state === 1
-                              ? 'green'
-                              : state == 0
-                              ? 'secondary.main'
-                              : 'secondary.main',
-                        }}
-                      >
-                        {billStatusParse(state)}
-                      </Typography>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Divider sx={{ my: 1 }} />
-
-              {/* Note */}
-              <Typography variant="body1">Ghi chú</Typography>
-              <Divider sx={{ my: 1 }} />
-              <Typography sx={{ fontWeight: 'normal' }}>
-                {bill?.note && bill?.note !== '' ? bill?.note : 'Không'}
-              </Typography>
-            </Grid>
-
-            <Grid
-              item
-              xs={1}
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+          <Box>
+            <CustomIconButton
+              onClick={handleClose}
+              sx={{ position: 'absolute', top: '8px', right: '8px' }}
             >
-              <Divider orientation="vertical" />
-            </Grid>
-
-            {/* Right */}
-            <Grid item xs={5.5}>
-              <Typography variant="h6">Đơn hàng</Typography>
-              <Divider sx={{ my: 1 }} />
-
-              {/* Item List */}
-              {!billDetails && <Skeleton variant="rectangular" height={60} />}
-              <List>
-                {billDetails?.map(
-                  (billDetail: BillDetailObject, index: number) => {
-                    return (
-                      <ListItem key={index}>
-                        <MyListItem billDetail={billDetail} />
-                      </ListItem>
-                    );
-                  }
-                )}
-              </List>
-
-              <Divider />
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'end',
-                  marginTop: 1,
-                }}
-              >
-                {/* Sale */}
-                {bill?.sale_id && (
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="h5">Sale: </Typography>
-                    <Typography variant="body1">
-                      {`${bill?.sale_id} | ${bill?.salePercent ?? 0}%`}
-                    </Typography>
-                  </Stack>
-                )}
-
-                {/* Tổng tiền */}
-                <Stack direction="row" spacing={1} alignItems="start">
-                  <Typography variant="h5">Giá trị đơn hàng:</Typography>
-                  <Stack>
-                    {bill?.sale_id && (
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 'normal',
-                          textDecoration: 'line-through',
-                        }}
-                      >
-                        {formatPrice(bill?.originalPrice ?? 0)}
-                      </Typography>
-                    )}
-                    <Typography variant="body1">
-                      {formatPrice(bill?.totalPrice ?? 0)}
-                    </Typography>
-                  </Stack>
-                </Stack>
-
-                {/* Phí vận chuyển */}
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5">Phí vận chuyển: </Typography>
-                  <Typography variant="body1">
-                    {formatPrice(bill?.deliveryPrice ?? 0)}
-                  </Typography>
-                </Stack>
-              </Box>
-
-              <Divider sx={{ my: 1 }} />
-              {/* Thành tiền */}
-
-              <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-                <Stack direction="row" spacing={1} alignItems="start">
-                  <Typography variant="h5">Thành tiền:</Typography>
-                  <Typography variant="body1">
-                    {formatPrice(
-                      (bill?.totalPrice ?? 0) + (bill?.deliveryPrice ?? 0)
-                    )}
-                  </Typography>
-                </Stack>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-
-        <Divider />
-
-        {/* Buttons */}
-        <CardActions
-          sx={{
-            display: 'flex',
-            justifyContent: 'end',
-          }}
-        >
-          <Button onClick={handleSave}>Lưu</Button>
-          <Button onClick={localHandleClose}>Đóng</Button>
-        </CardActions>
-      </Card>
-    </Modal>
+              <CloseIcon />
+            </CustomIconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Grid
+            container
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            spacing={2}
+          ></Grid>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
