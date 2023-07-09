@@ -1,10 +1,9 @@
-import ContactForm from '@/components/Contact/ContactForm';
-import ContactWrapper from '@/components/Contact/ContactWrapper';
+import bg2 from '@/assets/Decorate/bg2.png';
+import contactImage from '@/assets/contact-img.jpg';
+import ImageBackground from '@/components/Imagebackground';
+import { ContactForm, ContactWrapper } from '@/components/contact';
 import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
 import React, { memo, useMemo } from 'react';
-import bg2 from '../assets/Decorate/bg2.png';
-import ImageBackground from '@/components/imageBackground';
-import contactImage from '@/assets/contact-img.jpg';
 
 const Contact = () => {
   const wrapperTitle = useMemo(

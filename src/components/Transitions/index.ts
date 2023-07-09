@@ -1,1 +1,1 @@
-export { default as TransitionUp } from './TransitionUp';
+export { default as TransitionUp } from './Transtitionup';

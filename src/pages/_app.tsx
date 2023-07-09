@@ -11,7 +11,7 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 // const clientSideEmotionCache = createEmotionCache();
 
-import Layout from '@/components/Layouts/Layout';
+import MainLayout from '@/components/layouts/MainLayout';
 import { TransitionUp } from '@/components/Transitions';
 import { SnackbarService } from '@/lib/contexts';
 import {
@@ -60,9 +60,9 @@ const MyApp = (props: AppProps) => {
           <AppContext.Provider value={{ state, dispatch }}>
             <SnackbarService.Provider value={{ handleSnackbarAlert }}>
               <CssBaseline />
-              <Layout>
+              <MainLayout>
                 <Component {...pageProps} />
-              </Layout>
+              </MainLayout>
               <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={3000}

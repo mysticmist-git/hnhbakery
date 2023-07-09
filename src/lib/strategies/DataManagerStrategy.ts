@@ -5,10 +5,6 @@ import { Timestamp, collection, doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
 import { isReturnStatement } from 'typescript';
 import {
-  PathWithUrl,
-  StorageBatchObject,
-  StorageProductObject,
-  StorageProductTypeObject,
   addDocToFirestore,
   addDocToFirestoreWithRef,
   deleteDocFromFirestore,
@@ -19,25 +15,29 @@ import {
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
-} from '../firestore/firestoreLib';
+  uploadImagesToFirebaseStorage,
+} from '../firestore';
+import {
+  BaseObject,
+  PathWithUrl,
+  ProductObject,
+  ProductTypeObject,
+  ProductVariant,
+  StorageBatchObject,
+  StorageProductObject,
+  StorageProductTypeObject,
+} from '../models';
 import {
   FileWithUrl,
   ManageAction,
   ModalProductObject,
   ModalProductTypeObject,
-} from '../localLib/manage';
-import BaseObject from '../models/BaseObject';
-import { createBatchObjecet as createBatchObject } from '../models/Batch';
+} from '../types/manage';
 import {
-  ProductObject,
-  ProductVariant,
+  createBatchObject,
   createProductObject,
-} from '../models/Product';
-import {
-  ProductTypeObject,
   createProductTypeObject,
-} from '../models/ProductType';
-import { uploadImagesToFirebaseStorage } from './../firestore/firestoreLib';
+} from '../utils';
 
 export enum DataManagerErrorCode {
   NULL_FIELD = 'null-field',

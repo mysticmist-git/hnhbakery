@@ -1,7 +1,7 @@
-import SimpleDialog from '@/components/Dialogs/SimpleDialog';
 import { RowModal } from '@/components/Manage/modals/rowModals';
-import { CustomDataTable } from '@/components/Manage/tables';
-import { TableActionButton } from '@/components/Manage/tables/TableActionButton';
+import CustomDataTable from '@/components/Manage/tables/CustomDataTable';
+import { TableActionButton } from '@/components/buttons';
+import SimpleDialog from '@/components/dialogs/SimpleDialog';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
@@ -15,23 +15,16 @@ import {
   ProductTypeStorageDocsFetcher,
   StorageDocsFetcher,
 } from '@/lib/factories/StorageDocsFactory';
-import { isDataChanged } from '@/lib/localLib';
+import { isDataChanged } from '@/lib/manage';
 import {
-  CrudTarget,
-  DialogResult,
-  FormRef,
-  ManageAction,
-  ManageActionType,
-  ManageState,
-  ModalProductTypeObject,
   PATH,
   crudTargets,
   generateDefaultRow,
   initManageState,
   manageReducer,
   validateCollectionNameParams,
-} from '@/lib/localLib/manage';
-import BaseObject from '@/lib/models/BaseObject';
+} from '@/lib/manage/manage';
+import { BaseObject } from '@/lib/models';
 import {
   AddData,
   BatchDataManagerStrategy,
@@ -46,6 +39,15 @@ import {
   ProductUpdateData,
   UpdateData,
 } from '@/lib/strategies/DataManagerStrategy';
+import {
+  CrudTarget,
+  DialogResult,
+  FormRef,
+  ManageAction,
+  ManageActionType,
+  ManageState,
+  ModalProductTypeObject,
+} from '@/lib/types/manage';
 import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,

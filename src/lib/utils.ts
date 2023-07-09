@@ -1,0 +1,68 @@
+import {
+  BaseObject,
+  BatchObject,
+  ProductObject,
+  ProductTypeObject,
+} from './models';
+
+export function createProductTypeObject(source: BaseObject): ProductTypeObject {
+  const convertedSourcee = { ...source } as ProductTypeObject;
+
+  const productTypeObject: ProductTypeObject = {
+    id: convertedSourcee.id,
+    name: convertedSourcee.name,
+    description: convertedSourcee.description,
+    image: convertedSourcee.image,
+    isActive: convertedSourcee.isActive,
+  };
+
+  return productTypeObject;
+}
+
+export function createBatchObject(source: BaseObject): BatchObject {
+  const convertedSourcee = { ...source } as BatchObject;
+
+  const batchObject: BatchObject = {
+    id: convertedSourcee.id,
+    totalQuantity: convertedSourcee.totalQuantity,
+    soldQuantity: convertedSourcee.soldQuantity,
+    MFG: convertedSourcee.MFG,
+    EXP: convertedSourcee.EXP,
+    discount: convertedSourcee.discount,
+    variant_id: convertedSourcee.variant_id,
+    product_id: convertedSourcee.product_id,
+  };
+
+  return batchObject;
+}
+
+export function createProductObject(source: BaseObject): ProductObject {
+  const convertedSourcee = { ...source } as ProductObject;
+
+  const productObject: ProductObject = {
+    id: convertedSourcee.id,
+    productType_id: convertedSourcee.productType_id,
+    colors: convertedSourcee.colors,
+    description: convertedSourcee.description,
+    howToUse: convertedSourcee.howToUse,
+    images: convertedSourcee.images,
+    isActive: convertedSourcee.isActive,
+    ingredients: convertedSourcee.ingredients,
+    name: convertedSourcee.name,
+    preservation: convertedSourcee.preservation,
+    variants: convertedSourcee.variants,
+  };
+
+  return productObject;
+}
+export function isVNPhoneNumber(number: string) {
+  return /([\+84|84|0]+(3|5|7|8|9|1[2|6|8|9]))+([0-9]{8})\b/.test(number);
+}
+
+export function formatPrice(price: number): string {
+  const formatter = new Intl.NumberFormat('vi-VN');
+  return formatter.format(price) + ' đồng';
+}
+export function filterDuplicates<T>(array: T[]) {
+  return array.filter((item, index) => array.indexOf(item) === index);
+}

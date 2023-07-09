@@ -1,8 +1,10 @@
-import ImageBackground from '@/components/imageBackground';
+import ImageBackground from '@/components/Imagebackground';
 
-import { CustomButton, CustomIconButton } from '@/components/Inputs/Buttons';
-import { NumberInputWithButtons } from '@/components/Inputs/NumberInputWithButtons';
-import { LOCAL_CART_KEY } from '@/lib';
+import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
+import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
+import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import { CustomButton, CustomIconButton } from '@/components/buttons';
+import { LOCAL_CART_KEY } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   AppContext,
@@ -22,8 +24,8 @@ import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
 import {
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
-import formatPrice from '@/lib/utilities/formatCurrency';
+} from '@/lib/firestore';
+import { formatPrice } from '@/lib/utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,
@@ -54,8 +56,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { CustomTextarea } from '../components/Inputs/CustomTextarea';
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 
 //#region Đọc export default trước rồi hả lên đây!
 function UI_Name(props: any) {

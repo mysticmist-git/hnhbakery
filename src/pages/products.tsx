@@ -1,6 +1,7 @@
+import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import { CustomIconButton } from '@/components/Inputs/Buttons';
-import ImageBackground from '@/components/imageBackground';
+import ImageBackground from '@/components/Imagebackground';
+import { CustomIconButton } from '@/components/buttons';
 import { COLLECTION_NAME } from '@/lib/constants';
 import ProductsContext, {
   AssembledProduct,
@@ -12,10 +13,9 @@ import {
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
-import { ProductObject, ProductTypeObject } from '@/lib/models';
-import { BatchObject } from '@/lib/models/Batch';
-import formatPrice from '@/lib/utilities/formatCurrency';
+} from '@/lib/firestore';
+import { BatchObject, ProductObject, ProductTypeObject } from '@/lib/models';
+import { formatPrice } from '@/lib/utils';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridView from '@mui/icons-material/GridView';
 import ListAlt from '@mui/icons-material/ListAlt';
@@ -46,7 +46,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-import bg12 from '../assets/Decorate/bg12.png';
 
 const DETAIL_PATH = '/product-detail';
 

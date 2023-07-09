@@ -2,8 +2,8 @@ import {
   fetchBatchesForStoragePage,
   fetchProductTypesForStoragePage,
   fetchProductsForStoragePage,
-} from '@/lib/firestore/firestoreLib';
-import BaseObject from '@/lib/models/BaseObject';
+} from '@/lib/firestore';
+import { BaseObject } from '../models';
 
 export interface StorageDocsFetcher {
   fetch(): Promise<BaseObject[]>;

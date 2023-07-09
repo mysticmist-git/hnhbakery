@@ -1,23 +1,23 @@
+import banh1 from '@/assets/Carousel/3.jpg';
+import bg10 from '@/assets/Decorate/bg10.png';
+import bg2 from '@/assets/Decorate/bg2.png';
 import { Box, Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import React, { memo, useContext, useEffect, useState } from 'react';
-import banh1 from '../assets/Carousel/3.jpg';
-import bg10 from '../assets/Decorate/bg10.png';
-import bg2 from '../assets/Decorate/bg2.png';
 
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
 import FadeDiv from '@/components/Animation/Loof/FadeDiv';
-import SolidDownWhite, {
-  DashDownWhite,
-  DashUpWhite,
-} from '@/components/Decorate/DecorateDivider';
-import { CustomButton } from '@/components/Inputs/Buttons';
-import CustomTextField from '@/components/Inputs/CustomTextField';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import { CustomButton } from '@/components/buttons';
 import {
   CustomCard,
   CustomCardSlider,
   CustomCardWithButton,
-} from '@/components/Layouts/components';
+} from '@/components/cards';
+import {
+  DashDownWhite,
+  DashUpWhite,
+} from '@/components/decorates/DecorateDivider';
 import {
   BestSellerItem,
   CarouselImageItem,
@@ -29,7 +29,7 @@ import {
   getBestSellterProducts,
   getCollection,
   getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
+} from '@/lib/firestore';
 import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { alpha } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
@@ -361,7 +361,7 @@ function Home({
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
       const images = await Promise.all(
-        imagePaths.map((path) => import(`../assets/Carousel/${path}`))
+        imagePaths.map((path) => import(`@/assets/Carousel/${path}`))
       );
 
       setCarouselImagesState(() =>

@@ -2,31 +2,9 @@ import { auth, db, provider } from '@/firebase/config';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
 import { Timestamp, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import router from 'next/router';
-import { getDocFromFirestore } from '../firestore/firestoreLib';
-import { UserObject } from '../models/User';
-
-export interface SignupData {
-  name?: string;
-  birthday?: Date;
-  tel?: string;
-  mail?: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
-export interface SignupUser {
-  id?: string;
-  name?: string;
-  mail?: string;
-  password?: string;
-  birthday?: Timestamp;
-  tel?: string;
-  image?: string;
-  isActive?: boolean;
-  role_id?: string;
-  addresses?: string[];
-  accountType?: 'google' | 'email_n_password';
-}
+import { getDocFromFirestore } from '../firestore';
+import { UserObject } from '../models';
+import { SignupUser } from '../types/auth';
 
 export const addUserWithEmailAndPassword = (
   id: string,
@@ -79,10 +57,3 @@ export const handleLoginWithGoogle = async () => {
     console.log(error);
   }
 };
-
-export interface SignInInfo {
-  email: string;
-  password: string;
-}
-
-export enum AuthErrorCode {}

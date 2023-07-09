@@ -1,6 +1,5 @@
 import { createContext } from 'react';
-import { ProductObject, ProductTypeObject } from '../models';
-import { BatchObject } from '../models/Batch';
+import { BatchObject, ProductObject, ProductTypeObject } from '../models';
 
 export type ProductItem = ProductObject & {
   totalSoldQuantity: number;

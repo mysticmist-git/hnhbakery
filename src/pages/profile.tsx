@@ -1,12 +1,13 @@
-import { LeftProfileColumn, RightProfileColumn } from '@/components/Profile';
-import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import avatar from '../assets/Logo.png';
-import { Timestamp, doc, getDoc } from 'firebase/firestore';
+import avatar from '@/assets/Logo.png';
+import ImageBackground from '@/components/Imagebackground';
+import { LeftProfileColumn } from '@/components/profile';
+import RightProfileColumn from '@/components/profile/RightProfileColumn';
 import { db } from '@/firebase/config';
-import { UserObject } from '@/lib/models/User';
+import { UserObject } from '@/lib/models';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import ImageBackground from '@/components/imageBackground';
+import { Timestamp, doc, getDoc } from 'firebase/firestore';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 
 const Profile = () => {
   // #region states

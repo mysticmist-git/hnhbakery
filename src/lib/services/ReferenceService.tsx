@@ -1,11 +1,11 @@
 import { where } from 'firebase/firestore';
-import { getCollectionWithQuery } from '../firestore/firestoreLib';
-import { ReferenceObject } from '../models/Reference';
+import { getCollectionWithQuery } from '../firestore';
+import { ReferenceObject } from '../models';
 
-interface ReferenceServiceInterface {
+type ReferenceServiceInterface = {
   getColors: () => Promise<string[]>;
   getSizes: () => Promise<string[]>;
-}
+};
 
 class ReferencesService implements ReferenceServiceInterface {
   constructor() {}

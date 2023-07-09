@@ -1,6 +1,6 @@
 import { createContext } from 'react';
+import { LOCAL_CART_KEY } from '../constants';
 import { CartItem, CartItemAddingResult } from './productDetail';
-import { LOCAL_CART_KEY } from '..';
 
 // #region Context
 export interface CartContextType {

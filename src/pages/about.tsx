@@ -1,17 +1,17 @@
-import CustomButton from '@/components/Inputs/Buttons/customButton';
-import CustomCard from '@/components/Layouts/components/CustomCard';
-import ImageBackground from '@/components/imageBackground';
+import HenImage from '@/assets/CoFounder/Hen.jpg';
+import HuyImage from '@/assets/CoFounder/Huy.png';
+import cake3 from '@/assets/Decorate/Cake3.png';
+import cake4 from '@/assets/Decorate/Cake4.png';
+import cake5 from '@/assets/Decorate/Cake5.png';
+import cake6 from '@/assets/Decorate/Cake6.png';
+import cake1 from '@/assets/Decorate/cake1.jpg';
+import cake7 from '@/assets/Decorate/cake7.jpg';
+import ImageBackground from '@/components/Imagebackground';
+import CustomButton from '@/components/buttons/CustomButton';
+import { CustomCard } from '@/components/cards';
 import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
-import React, { memo } from 'react';
-import HenImage from '../assets/CoFounder/Hen.jpg';
-import HuyImage from '../assets/CoFounder/Huy.png';
-import cake1 from '../assets/Decorate/cake1.jpg';
-import cake3 from '../assets/Decorate/Cake3.png';
-import cake4 from '../assets/Decorate/Cake4.png';
-import cake5 from '../assets/Decorate/Cake5.png';
-import cake6 from '../assets/Decorate/Cake6.png';
-import cake7 from '../assets/Decorate/cake7.jpg';
 import Image from 'next/image';
+import React, { memo } from 'react';
 
 const cofounder = [
   {

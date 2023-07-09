@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { BatchObject } from '../models/Batch';
+import { BatchObject } from '../models';
 export interface ExtendedBatchObject extends BatchObject {
   discountPrice: number;
 }
@@ -35,7 +35,7 @@ export interface ProductDetailContextType {
 }
 
 export const ProductDetailContext = createContext<ProductDetailContextType>(
-  initProductDetailContext,
+  initProductDetailContext
 );
 
 export interface CartItem {

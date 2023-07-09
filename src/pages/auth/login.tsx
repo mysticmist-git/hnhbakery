@@ -1,35 +1,30 @@
-//#region Import
-
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
+import banh1 from '@/assets/Carousel/3.jpg';
+import bg2 from '@/assets/Decorate/bg2.png';
+import {
+  CustomTextField,
+  CustomTextFieldPassword,
+} from '@/components/Inputs/textFields';
+import { CustomButton } from '@/components/buttons';
+import { auth } from '@/firebase/config';
+import { handleLoginWithGoogle } from '@/lib/auth/auth';
+import { authMessages } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
+import { SignInInfo } from '@/lib/types/auth';
+import theme from '@/styles/themes/lightTheme';
+import { Google } from '@mui/icons-material';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
+import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/system';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
-import { Google } from '@mui/icons-material';
-import { authMessages } from '@/lib/constants';
-import { alpha } from '@mui/system';
-import banh1 from '../../assets/Carousel/3.jpg';
-import theme from '@/styles/themes/lightTheme';
-import CustomTextFieldPassWord from '@/components/Inputs/CustomTextFieldPassWord';
-import CustomTextField from '@/components/Inputs/CustomTextField';
-import { useSnackbarService } from '@/lib/contexts';
-import { CustomButton } from '@/components/Inputs/Buttons';
+import * as React from 'react';
 import { memo, useRef } from 'react';
-import bg2 from '../../assets/Decorate/bg2.png';
-import {
-  SignInInfo,
-  AuthErrorCode,
-  handleLoginWithGoogle,
-} from '@/lib/auth/auth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase/config';
-
-//#endregion
 
 //#region Top
 
@@ -100,7 +95,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         signinInfo.email,
-        signinInfo.password,
+        signinInfo.password
       );
 
       handleSnackbarAlert('success', 'Đăng nhập thành công');
@@ -135,7 +130,7 @@ const Login = () => {
           alignItems: 'center',
           background: `linear-gradient(to bottom, ${alpha(
             theme.palette.common.black,
-            0.4,
+            0.4
           )}, ${alpha(theme.palette.primary.main, 0.6)})`,
           backdropFilter: 'blur(1px)',
         }}
@@ -270,7 +265,7 @@ const Login = () => {
                         />
                       </Grid>
                       <Grid item xs={12}>
-                        <CustomTextFieldPassWord
+                        <CustomTextFieldPassword
                           ref={passwordRef}
                           required
                           fullWidth

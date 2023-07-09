@@ -1,19 +1,15 @@
-import { Box, Typography, Grid, useTheme, Link } from '@mui/material';
-import React, { useState, createContext, memo } from 'react';
-import banh1 from '../assets/Carousel/3.jpg';
-import bfriday from '../assets/blackfriday.jpg';
-import ImageBackground from '@/components/imageBackground';
-import CustomTextField from '@/components/Inputs/CustomTextField';
-import { CustomButton } from '@/components/Inputs/Buttons';
-import { CustomAccordionFrame } from '../components/Layouts/components/CustomAccordionFrame';
+import banh1 from '@/assets/Carousel/3.jpg';
+import bfriday from '@/assets/blackfriday.jpg';
+import ImageBackground from '@/components/Imagebackground';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import { ListBillItem, ListProductItem } from '@/components/Search';
+import { CustomButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { getDocFromFirestore } from '@/lib/firestore/firestoreLib';
+import { getDocFromFirestore } from '@/lib/firestore';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { FirebaseError } from 'firebase/app';
-import { ListBillItem } from '../components/Search/ListBillItem';
-import { ChiTietHoaDon } from '../components/Search/ChiTietHoaDon';
-import { ThongTinGiaoHang } from '../components/Search/ThongTinGiaoHang';
-import { ThongTinKhuyenMai } from '../components/Search/ThongTinKhuyenMai';
-import { ListProductItem } from '../components/Search/ListProductItem';
+import React, { createContext, memo, useState } from 'react';
+import { CustomAccordionFrame } from '../components/accordions/CustomAccordionFrame/index';
 
 const MSG_NOTIFY_EMPTY_SEARCH_TEXT =
   'Vui lòng nhập mã đơn hàng để tiến hành tìm kiếm';

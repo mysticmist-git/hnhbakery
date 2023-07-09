@@ -1,7 +1,11 @@
-import { CustomButton } from '@/components/Inputs/Buttons';
-import { CustomCard, CustomCardSlider } from '@/components/Layouts/components';
-import ImageBackground from '@/components/imageBackground';
-import { LOCAL_CART_KEY } from '@/lib';
+import banh1 from '@/assets/Carousel/1.jpg';
+import banh2 from '@/assets/Carousel/2.jpg';
+import banh3 from '@/assets/Carousel/3.jpg';
+import ImageBackground from '@/components/Imagebackground';
+import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
+import { CustomButton } from '@/components/buttons';
+import { CustomCard, CustomCardSlider } from '@/components/cards';
+import { LOCAL_CART_KEY } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   CartItem,
@@ -17,9 +21,9 @@ import {
   getCollectionWithQuery,
   getDocFromFirestore,
   getDownloadUrlsFromFirebaseStorage,
-} from '@/lib/firestore/firestoreLib';
-import { BatchObject } from '@/lib/models/Batch';
-import formatPrice from '@/lib/utilities/formatCurrency';
+} from '@/lib/firestore';
+import { BatchObject } from '@/lib/models';
+import { formatPrice } from '@/lib/utils';
 import {
   Box,
   Button,
@@ -41,10 +45,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
-import banh1 from '../assets/Carousel/1.jpg';
-import banh2 from '../assets/Carousel/2.jpg';
-import banh3 from '../assets/Carousel/3.jpg';
-import { NumberInputWithButtons } from '../components/Inputs/NumberInputWithButtons';
 
 // Mock Data
 

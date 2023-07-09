@@ -1,31 +1,27 @@
-import * as React from 'react';
+import banh1 from '@/assets/Carousel/3.jpg';
+import bg2 from '@/assets/Decorate/bg2.png';
+import { SignUpForm } from '@/components/auth/SignUpForm';
+import Copyright from '@/components/Copyright';
+import { auth } from '@/firebase/config';
+import { addUserWithEmailAndPassword } from '@/lib/auth/auth';
+import { useSnackbarService } from '@/lib/contexts';
+import { SignupData, SignupUser } from '@/lib/types/auth';
+import theme from '@/styles/themes/lightTheme';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { alpha, Grid } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { auth } from '@/firebase/config';
+import Typography from '@mui/material/Typography';
+import { generateKey } from 'crypto';
 import {
   createUserWithEmailAndPassword,
   User,
   UserCredential,
 } from 'firebase/auth';
-import Copyright from '@/components/Copyright';
-import { useRouter } from 'next/router';
-import theme from '@/styles/themes/lightTheme';
-import { useSnackbarService } from '@/lib/contexts';
-import { SignUpForm } from '@/components/Auths';
-import { alpha, Grid } from '@mui/material';
-import bg2 from '../../assets/Decorate/bg2.png';
-import banh1 from '../../assets/Carousel/3.jpg';
-import { UserObject } from '@/lib/models/User';
-import {
-  addUserWithEmailAndPassword,
-  SignupData,
-  SignupUser,
-} from '@/lib/auth/auth';
 import { Timestamp } from 'firebase/firestore';
-import { generateKey } from 'crypto';
+import { useRouter } from 'next/router';
+import * as React from 'react';
 
 enum SignupValidationMsg {
   Success = 'Đăng ký thành công',

@@ -1,5 +1,4 @@
-import { ProductObject, ProductTypeObject } from '@/lib/models';
-import BaseObject from '@/lib/models/BaseObject';
+import { BaseObject, ProductObject, ProductTypeObject } from '../models';
 
 export interface SearchBarNamesFactory {
   generate(mainDocs: BaseObject[]): string[];

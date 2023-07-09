@@ -1,13 +1,12 @@
-import MyModal from '@/components/Order/MyModal';
-import { CustomBill, billStatusParse } from '@/lib/contexts/orders';
+import MyModal from '@/components/order/MyModal';
 import {
   getCollection,
   getCollectionWithQuery,
   getDocFromFirestore,
-} from '@/lib/firestore/firestoreLib';
-import { BillObject } from '@/lib/models/Bill';
-import { DeliveryObject } from '@/lib/models/Delivery';
-import formatPrice from '@/lib/utilities/formatCurrency';
+} from '@/lib/firestore';
+import { billStatusParse } from '@/lib/manage/manage';
+import { BillObject, CustomBill, DeliveryObject } from '@/lib/models';
+import { formatPrice } from '@/lib/utils';
 import {
   Button,
   Card,
