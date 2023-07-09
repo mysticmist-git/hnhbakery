@@ -54,6 +54,7 @@ import {
   Button,
   Container,
   Divider,
+  Grid,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -285,7 +286,7 @@ export default function Manage({
   const addRowText = useMemo(() => {
     switch (state.selectedTarget?.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
-        return 'Thêm loại sản phẩm';
+        return 'Thêm loại sản phẩm';
       case COLLECTION_NAME.PRODUCTS:
         return 'Thêm sản phẩm';
       case COLLECTION_NAME.BATCHES:
@@ -641,83 +642,88 @@ export default function Manage({
   //#endregion
 
   return (
-    <Container
-      sx={{
-        my: 2,
-      }}
-    >
-      {/* Title */}
-      <Typography sx={{ color: theme.palette.common.black }} variant="h4">
-        Quản lý kho
-      </Typography>
-
-      <Divider
-        sx={{
-          my: 2,
-        }}
-      />
-
-      <ToggleButtonGroup
-        value={state.selectedTarget}
-        onChange={handleCrudTargetChanged}
-        exclusive
-      >
-        {crudTargets.map((target) => (
-          <ToggleButton key={target.collectionName} value={target}>
-            {target.label}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-
-      <Divider
-        sx={{
-          marginY: '1rem',
-        }}
-      />
-
-      {/* Manage Buttons */}
-      {
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'end',
-            alignItems: 'center',
-            my: '1rem',
-            gap: 1,
-          }}
+    <>
+      <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
+        <Grid
+          container
+          justifyContent={'center'}
+          alignItems={'center'}
+          spacing={2}
         >
-          <TableActionButton
-            startIcon={<RestartAlt />}
-            onClick={handleReloadTable}
-            sx={{
-              paddingX: 2,
-            }}
-          >
-            Tải lại
-          </TableActionButton>
+          <Grid item xs={12}>
+            <Typography sx={{ color: theme.palette.common.black }} variant="h4">
+              Quản lý kho
+            </Typography>
+          </Grid>
 
-          <TableActionButton
-            startIcon={<Add />}
-            variant="contained"
-            onClick={handleNewRow}
-          >
-            {addRowText}
-          </TableActionButton>
-        </Box>
-      }
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
 
-      <CustomDataTable
-        mainDocs={state.mainDocs}
-        collectionName={paramCollectionName}
-        handleViewRow={handleViewRow}
-        handleDeleteRow={handleDeleteRow}
-      />
+          <Grid item xs={12}>
+            <ToggleButtonGroup
+              value={state.selectedTarget}
+              onChange={handleCrudTargetChanged}
+              exclusive
+            >
+              {crudTargets.map((target) => (
+                <ToggleButton key={target.collectionName} value={target}>
+                  {target.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Grid>
 
-      <Divider
-        sx={{
-          mt: 4,
-        }}
-      />
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
+          {/* Manage Buttons */}
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'end',
+                alignItems: 'center',
+                flexDirection: 'row',
+                gap: 1,
+                py: 2,
+              }}
+            >
+              <TableActionButton
+                startIcon={<RestartAlt />}
+                onClick={handleReloadTable}
+                sx={{
+                  px: 2,
+                }}
+              >
+                Tải lại
+              </TableActionButton>
+
+              <TableActionButton
+                startIcon={<Add />}
+                variant="contained"
+                onClick={handleNewRow}
+              >
+                {addRowText}
+              </TableActionButton>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12}>
+            <CustomDataTable
+              mainDocs={state.mainDocs}
+              collectionName={paramCollectionName}
+              handleViewRow={handleViewRow}
+              handleDeleteRow={handleDeleteRow}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+        </Grid>
+      </Box>
 
       {/* Dialogs */}
       <SimpleDialog
@@ -767,7 +773,7 @@ export default function Manage({
           loading={state.loading}
         />
       )}
-    </Container>
+    </>
   );
 }
 

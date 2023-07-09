@@ -1,5 +1,8 @@
 import logo from '@/assets/Logo.png';
+import CustomDrawer from '@/components/Navigation/Header/CustomDrawer';
+import Skeleton_img from '@/components/Skeletons/skeleton_img';
 import { CustomIconButton } from '@/components/buttons';
+import { LOCAL_CART_KEY } from '@/lib/constants';
 import Menu from '@mui/icons-material/Menu';
 import {
   AppBar,
@@ -24,8 +27,6 @@ import React, {
   useState,
 } from 'react';
 import { CustomTab, NavbarContextType } from '..';
-import Skeleton_img from '../../../Skeletons/skeleton_img';
-import CustomDrawer from '../CustomDrawer';
 import RightMenu from '../RightMenu';
 
 //#region Tab
@@ -185,6 +186,14 @@ function Navbar() {
       }
     });
 
+    const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
+    if (!currentLocalCart) {
+      setCartCount(0);
+    } else {
+      const currentCart = JSON.parse(currentLocalCart);
+      setCartCount(currentCart.length);
+    }
+
     return () => unsubscribe();
   }, []);
 
@@ -234,7 +243,7 @@ function Navbar() {
   //#endregion
 
   //#region CartCount Hên ở đây nè Hên!
-  const [cartCount, setCartCount] = useState(10);
+  const [cartCount, setCartCount] = useState(0);
   //#endregion
 
   return (

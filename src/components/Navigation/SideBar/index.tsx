@@ -1,13 +1,15 @@
-import { Divider, List } from '@mui/material';
+import { Divider, List, useTheme } from '@mui/material';
 import React from 'react';
 import { MainListItems, SecondaryListItems } from '../ListItem';
 
-export default function Sidebar() {
+export default function Sidebar(props: any) {
+  const theme = useTheme();
+  const { open } = props;
   return (
-    <List component="nav">
-      <MainListItems />
-      <Divider sx={{ my: 1 }} />
-      <SecondaryListItems />
+    <List>
+      <MainListItems open={open} />
+      {/* <Divider sx={{ my: 1 }} />
+      <SecondaryListItems open={open} /> */}
     </List>
   );
 }

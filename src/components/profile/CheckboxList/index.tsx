@@ -4,6 +4,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
+  Typography,
   useTheme,
 } from '@mui/material';
 import React, { useState } from 'react';
@@ -65,6 +66,19 @@ export default function CheckboxList(props: any) {
           </ListItem>
         );
       })}
+
+      {addresses?.length == 0 && (
+        <ListItem>
+          <Typography
+            align="center"
+            variant="h3"
+            color={theme.palette.text.secondary}
+            sx={{ width: '100%' }}
+          >
+            Trống
+          </Typography>
+        </ListItem>
+      )}
     </List>
   );
 }

@@ -30,12 +30,12 @@ export default function AddressList(props: any) {
   };
 
   const handleDeleteAll = () => {
-    setOpen(true);
+    setOpenXoaDiaChi(true);
   };
 
-  const [open, setOpen] = useState(false);
-  const handleClose = () => {
-    setOpen(false);
+  const [openXoaDiaChi, setOpenXoaDiaChi] = useState(false);
+  const handleCloseXoaDiaChi = () => {
+    setOpenXoaDiaChi(false);
   };
 
   return (
@@ -84,7 +84,10 @@ export default function AddressList(props: any) {
           />
         </Grid>
       </Grid>
-      <XacNhanXoa_Dialog open={open} handleClose={handleClose} />
+      <XacNhanXoa_Dialog
+        open={openXoaDiaChi}
+        handleClose={handleCloseXoaDiaChi}
+      />
     </>
   );
 }
