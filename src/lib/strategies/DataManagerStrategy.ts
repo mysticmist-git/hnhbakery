@@ -1,10 +1,12 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
+import { DesktopDateTimePicker } from '@mui/x-date-pickers';
 import { Timestamp, collection, doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
 import { isReturnStatement } from 'typescript';
 import {
   PathWithUrl,
+  StorageBatchObject,
   StorageProductObject,
   StorageProductTypeObject,
   addDocToFirestore,
@@ -26,7 +28,11 @@ import {
 } from '../localLib/manage';
 import BaseObject from '../models/BaseObject';
 import { createBatchObjecet as createBatchObject } from '../models/Batch';
-import { ProductObject, createProductObject } from '../models/Product';
+import {
+  ProductObject,
+  ProductVariant,
+  createProductObject,
+} from '../models/Product';
 import {
   ProductTypeObject,
   createProductTypeObject,
@@ -340,7 +346,29 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
       COLLECTION_NAME.BATCHES
     );
 
-    return { ...batchAddData.data, id: newDocRef.id };
+    const product = await getDocFromFirestore<ProductObject>(
+      COLLECTION_NAME.PRODUCTS,
+      data.product_id
+    );
+
+    const variant: ProductVariant | undefined = product.variants.find(
+      (v) => v.id === data.variant_id
+    );
+
+    const type = await getDocFromFirestore<ProductTypeObject>(
+      COLLECTION_NAME.PRODUCT_TYPES,
+      product.productType_id
+    );
+
+    return {
+      ...batchAddData.data,
+      id: newDocRef.id,
+      productType_id: type.id,
+      material: variant?.material,
+      size: variant?.size,
+      price: variant?.price,
+      variant_id: variant?.id,
+    } as StorageBatchObject;
   }
   async updateDoc(updateData: UpdateData): Promise<BaseObject> {
     const batchUpdateData = { ...updateData } as BatchUpdateData;

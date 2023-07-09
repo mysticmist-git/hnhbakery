@@ -1,18 +1,10 @@
 import { createContext } from 'react';
+import { ProductObject, ProductTypeObject } from '../models';
+import { BatchObject } from '../models/Batch';
 
-export interface ProductItem {
-  id: string;
-  image: string;
-  name: string;
-  price: number;
-  colors: string[];
-  sizes: string[];
-  MFG: Date;
-  description: string;
+export type ProductItem = ProductObject & {
   totalSoldQuantity: number;
-  productType_id: string;
-  href: string;
-}
+};
 
 export interface BoLocItem {
   heading: string;
@@ -33,7 +25,7 @@ export interface ProductsContextType {
   handleSetViewState: any;
   SortList: any;
   handleSetSortList: any;
-  ProductList: ProductItem[];
+  ProductList: AssembledProduct[];
   searchText: string;
 }
 
@@ -52,4 +44,11 @@ export const initProductsContext: ProductsContextType = {
 
 const ProductsContext = createContext<ProductsContextType>(initProductsContext);
 
-export default ProductsContext;
+export default ProductsContext; //#endregion
+
+export type AssembledProduct = ProductObject & {
+  type: ProductTypeObject;
+  batches: BatchObject[];
+  totalSoldQuantity: number;
+  href: string;
+};

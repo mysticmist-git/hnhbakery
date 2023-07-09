@@ -13,6 +13,7 @@ import {
 import { ProductObject, ProductTypeObject } from '@/lib/models';
 import BaseObject from '@/lib/models/BaseObject';
 import formatPrice from '@/lib/utilities/formatCurrency';
+import theme from '@/styles/themes/lightTheme';
 import { Delete, Visibility } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -39,7 +40,23 @@ import {
 import { memo, useEffect, useMemo, useState } from 'react';
 import CustomerGridToolBar from './components/CustomerGridToolBar';
 
-//#region Operators
+//#region Types
+
+type BatchState = 'ok' | 'soldout' | 'expired' | 'unknown';
+
+//#endregion
+
+//#region functions
+
+const resolveState = (batch: StorageBatchObject): BatchState => {
+  if (batch.soldQuantity >= batch.totalQuantity) return 'soldout';
+
+  if (new Date(batch.EXP).getTime() < Date.now()) return 'expired';
+
+  return 'ok';
+
+  // return 'unknown';
+};
 
 //#endregion
 
@@ -89,7 +106,14 @@ interface CustomDataTableProps {
   handleViewRow: ViewRowHandler;
   handleDeleteRow: DeleteRowHandler;
 }
+
 export default memo(function CustomDataTable(props: CustomDataTableProps) {
+  //#region Hooks
+
+  const theme = useTheme();
+
+  //#endregion
+
   //#region States
 
   const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
@@ -148,7 +172,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   const columns = useMemo(() => {
     return generateDatagridColumn();
-  }, [props, productTypes, products]);
+  }, [props.mainDocs, props.collectionName, productTypes, products]);
 
   //#endregion
 
@@ -245,6 +269,8 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
               return productTypes?.find((i) => i.id === value)?.name ?? 'Không';
             },
             valueFormatter: (params: GridValueFormatterParams) => {
+              console.log(params);
+
               const typeName = productTypes.find(
                 (i) => i.id === params.value
               )?.name;
@@ -372,6 +398,54 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             align: 'left',
             valueFormatter: (params) => formatPrice(params.value),
             hideable: false,
+          },
+          {
+            field: 'quantity',
+            headerName: 'Số lượng',
+            type: 'string',
+            valueGetter: (params) => {
+              const batch = params.row as StorageBatchObject;
+              return `${batch.soldQuantity}/${batch.totalQuantity}`;
+            },
+          },
+          {
+            field: 'state',
+            type: 'string',
+            headerName: 'Tình trạng',
+            headerAlign: 'left',
+            align: 'left',
+            hideable: false,
+            valueGetter: (params): BatchState => {
+              const state = resolveState(params.row);
+              return state;
+            },
+            valueFormatter: (params) => {
+              const state: BatchState = params.value;
+              switch (state) {
+                case 'ok':
+                  return 'Hoạt động';
+                case 'soldout':
+                  return 'Hết hàng';
+                case 'expired':
+                  return 'Hết hạn';
+                default:
+                  return 'Đã có lỗi xảy ra';
+              }
+            },
+            renderCell: (params) => {
+              return (
+                <span
+                  style={{
+                    color:
+                      params.value === 'ok'
+                        ? theme.palette.success.main
+                        : theme.palette.error.main,
+                  }}
+                >
+                  {params.formattedValue}
+                </span>
+              );
+            },
           },
           {
             field: 'actions',

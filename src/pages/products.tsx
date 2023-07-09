@@ -1,19 +1,19 @@
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import LeftSlideInDiv from '@/components/Animation/Appear/LeftSlideInDiv';
 import { CustomIconButton } from '@/components/Inputs/Buttons';
 import ImageBackground from '@/components/imageBackground';
+import { COLLECTION_NAME } from '@/lib/constants';
 import ProductsContext, {
+  AssembledProduct,
   BoLocItem,
-  ProductItem,
   ProductsContextType,
 } from '@/lib/contexts/productsContext';
 import {
-  getCollection,
+  getBatchesWithQuery,
   getCollectionWithQuery,
   getDocFromFirestore,
-  getDownloadUrlFromFirebaseStorage,
+  getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore/firestoreLib';
-import { ProductTypeObject } from '@/lib/models';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { BatchObject } from '@/lib/models/Batch';
 import formatPrice from '@/lib/utilities/formatCurrency';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -41,12 +41,11 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { Timestamp, where } from 'firebase/firestore';
+import { Timestamp, documentId, where } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-import banh1 from '../assets/Carousel/3.jpg';
 import bg12 from '../assets/Decorate/bg12.png';
 
 const DETAIL_PATH = '/product-detail';
@@ -458,221 +457,211 @@ const TypeSort = memo((props: any) => {
 //   },
 // ];
 
-const productDefault: ProductItem = {
-  id: '1',
-  image: banh1.src,
-  name: 'Bánh Quy',
-  price: 100000,
-  sizes: ['nhỏ', 'lớn'],
-  colors: ['đỏ, vàng'],
-  MFG: new Date(),
-  description: 'Bánh ngon dữ lắm bà ơi',
-  totalSoldQuantity: 15,
-  productType_id: '0',
-  href: '#',
-};
+const CakeCard = memo(
+  (props: {
+    item: AssembledProduct;
+    imageHeight: number;
+    imageHeightList: number;
+  }) => {
+    // #region States
 
-const CakeCard = memo((props: any) => {
-  // #region States
+    const [cardHover, setCardHover] = useState(false);
 
-  const [cardHover, setCardHover] = useState(false);
+    // #endregion
 
-  // #endregion
+    // #region Hooks
 
-  // #region Hooks
+    const theme = useTheme();
+    const context = useContext(ProductsContext);
 
-  const theme = useTheme();
-  const context = useContext(ProductsContext);
+    // #endregion
 
-  // #endregion
+    // #region useEffects
 
-  // #region useEffects
+    // #endregion
 
-  // #endregion
-
-  const isList = useMemo(() => context.View === 'list', [context.View]);
-  const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
-  const imageHeightList = useMemo(
-    () => props.imageHeightList,
-    [props.imageHeightList]
-  );
-  const imageStyles = {
-    cardNormal: {
-      width: '100%',
-      height: '100%',
-      transition: 'transform 0.3s ease-in-out',
-      objectFit: 'cover',
-      cursor: 'pointer',
-    },
-    cardHovered: {
-      width: '100%',
-      height: '100%',
-      transition: 'transform 0.3s ease-in-out',
-      transform: 'scale(1.3) rotate(5deg)',
-      objectFit: 'cover',
-      cursor: 'pointer',
-    },
-  };
-
-  return (
-    <Card
-      onMouseOver={() => setCardHover(true)}
-      onMouseOut={() => setCardHover(false)}
-      raised={cardHover}
-      sx={{
-        borderRadius: '16px',
-        display: 'flex',
-        flexDirection: isList ? 'row' : 'column',
+    const isList = useMemo(() => context.View === 'list', [context.View]);
+    const imageHeight = useMemo(() => props.imageHeight, [props.imageHeight]);
+    const imageHeightList = useMemo(
+      () => props.imageHeightList,
+      [props.imageHeightList]
+    );
+    const imageStyles = {
+      cardNormal: {
         width: '100%',
-        height: 'auto',
-      }}
-    >
-      <CardActionArea
-        LinkComponent={Link}
-        href={props.href ? props.href : productDefault.href}
+        height: '100%',
+        transition: 'transform 0.3s ease-in-out',
+        objectFit: 'cover',
+        cursor: 'pointer',
+      },
+      cardHovered: {
+        width: '100%',
+        height: '100%',
+        transition: 'transform 0.3s ease-in-out',
+        transform: 'scale(1.3) rotate(5deg)',
+        objectFit: 'cover',
+        cursor: 'pointer',
+      },
+    };
+
+    return (
+      <Card
+        onMouseOver={() => setCardHover(true)}
+        onMouseOut={() => setCardHover(false)}
+        raised={cardHover}
         sx={{
-          width: isList ? '50%' : '100%',
-          height: isList ? imageHeightList : imageHeight,
-        }}
-      >
-        <Box
-          fill={true}
-          component={Image}
-          sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
-          alt=""
-          src={props.image ? props.image : productDefault.image}
-          loading="lazy"
-        />
-      </CardActionArea>
-      <CardActions
-        sx={{
-          p: 0,
-          bgcolor: theme.palette.common.white,
-          zIndex: 1,
-          width: isList ? '50%' : '100%',
+          borderRadius: '16px',
+          display: 'flex',
+          flexDirection: isList ? 'row' : 'column',
+          width: '100%',
           height: 'auto',
-          maxHeight: isList ? imageHeightList : imageHeight,
         }}
       >
-        <Grid
-          container
-          direction={isList ? 'column' : 'row'}
-          justifyContent={'space-between'}
-          alignItems={isList ? 'start' : 'center'}
+        <CardActionArea
+          LinkComponent={Link}
+          href={props.item.href}
           sx={{
-            p: 2,
-            zIndex: 1,
-            width: '100%',
-            height: 'auto',
+            width: isList ? '50%' : '100%',
+            height: isList ? imageHeightList : imageHeight,
           }}
-          spacing={1}
         >
-          <Grid item xs={isList ? 'auto' : 9}>
-            <Grid
-              container
-              direction={'column'}
-              justifyContent={'space-between'}
-              alignItems={'start'}
-              spacing={1}
-              sx={{
-                height: '100%',
-                width: '100%',
-              }}
-            >
-              <Grid item sx={{ width: '100%' }}>
-                <Typography
-                  variant="body1"
-                  color={theme.palette.common.black}
-                  sx={{
-                    width: '100%',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {props.name ? props.name : productDefault.name}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color={theme.palette.text.secondary}
-                  display={isList ? 'block' : 'none'}
-                  sx={{
-                    maxHeight: '10vh',
-                    whiteSpace: 'normal',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    wordBreak: 'break-word',
-                    fontWeight: 'medium',
-                  }}
-                >
-                  {props.description
-                    ? props.description
-                    : productDefault.description}
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Grid
-                  container
-                  justifyContent={'flex-start'}
-                  alignItems={'center'}
-                  direction={'row'}
-                  spacing={1}
-                >
-                  <Grid item>
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.text.secondary}
-                    >
-                      Giá:
-                    </Typography>
-                  </Grid>
-                  <Grid item>
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.secondary.main}
-                    >
-                      {props.price
-                        ? formatPrice(props.price)
-                        : formatPrice(productDefault.price)}
-                    </Typography>
+          <Box
+            fill={true}
+            component={Image}
+            sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
+            alt=""
+            src={props.item.images[0] ?? ''}
+            loading="lazy"
+          />
+        </CardActionArea>
+        <CardActions
+          sx={{
+            p: 0,
+            bgcolor: theme.palette.common.white,
+            zIndex: 1,
+            width: isList ? '50%' : '100%',
+            height: 'auto',
+            maxHeight: isList ? imageHeightList : imageHeight,
+          }}
+        >
+          <Grid
+            container
+            direction={isList ? 'column' : 'row'}
+            justifyContent={'space-between'}
+            alignItems={isList ? 'start' : 'center'}
+            sx={{
+              p: 2,
+              zIndex: 1,
+              width: '100%',
+              height: 'auto',
+            }}
+            spacing={1}
+          >
+            <Grid item xs={isList ? 'auto' : 9}>
+              <Grid
+                container
+                direction={'column'}
+                justifyContent={'space-between'}
+                alignItems={'start'}
+                spacing={1}
+                sx={{
+                  height: '100%',
+                  width: '100%',
+                }}
+              >
+                <Grid item sx={{ width: '100%' }}>
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.common.black}
+                    sx={{
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {props.item.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color={theme.palette.text.secondary}
+                    display={isList ? 'block' : 'none'}
+                    sx={{
+                      maxHeight: '10vh',
+                      whiteSpace: 'normal',
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word',
+                      fontWeight: 'medium',
+                    }}
+                  >
+                    {props.item.description}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Grid
+                    container
+                    justifyContent={'flex-start'}
+                    alignItems={'center'}
+                    direction={'row'}
+                    spacing={1}
+                  >
+                    <Grid item>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.text.secondary}
+                      >
+                        Giá:
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.secondary.main}
+                      >
+                        {formatPrice(
+                          Math.min(...props.item.variants.map((v) => v.price))
+                        )}
+                      </Typography>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>
             </Grid>
+            <Grid item xs={isList ? 'auto' : 'auto'}>
+              <Box
+                sx={{
+                  bgcolor: theme.palette.secondary.main,
+                  borderRadius: '8px',
+                }}
+              >
+                <CustomIconButton>
+                  <ShoppingCartIcon
+                    sx={{
+                      color: theme.palette.common.white,
+                      display: isList ? 'none' : 'block',
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    color={theme.palette.common.white}
+                    display={isList ? 'block' : 'none'}
+                    sx={{
+                      px: 0.5,
+                    }}
+                  >
+                    Thêm vào giỏ hàng
+                  </Typography>
+                </CustomIconButton>
+              </Box>
+            </Grid>
           </Grid>
-          <Grid item xs={isList ? 'auto' : 'auto'}>
-            <Box
-              sx={{
-                bgcolor: theme.palette.secondary.main,
-                borderRadius: '8px',
-              }}
-            >
-              <CustomIconButton>
-                <ShoppingCartIcon
-                  sx={{
-                    color: theme.palette.common.white,
-                    display: isList ? 'none' : 'block',
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  color={theme.palette.common.white}
-                  display={isList ? 'block' : 'none'}
-                  sx={{
-                    px: 0.5,
-                  }}
-                >
-                  Thêm vào giỏ hàng
-                </Typography>
-              </CustomIconButton>
-            </Box>
-          </Grid>
-        </Grid>
-      </CardActions>
-    </Card>
-  );
-});
+        </CardActions>
+      </Card>
+    );
+  }
+);
 
 const ProductList = memo((props: any) => {
   //#region Hooks
@@ -698,11 +687,11 @@ const ProductList = memo((props: any) => {
     [props.imageHeightList]
   );
 
-  const displayProducts: ProductItem[] = useMemo(() => {
-    const filteredProductList = filterProductList(context.ProductList);
-    const sortedProductList = sortProductList(filteredProductList);
+  const displayProducts: AssembledProduct[] = useMemo(() => {
+    const filteredProducts = filterProductList(context.ProductList);
+    const sortedProducts = sortProductList(filteredProducts);
     const searchResultProductList = searchProductList(
-      sortedProductList,
+      sortedProducts,
       context.searchText
     );
 
@@ -718,7 +707,9 @@ const ProductList = memo((props: any) => {
 
   //#region Functions
 
-  function sortProductList(productList: ProductItem[]): ProductItem[] {
+  function sortProductList(
+    productList: AssembledProduct[]
+  ): AssembledProduct[] {
     const choosenSort: string = context.SortList.value;
 
     switch (choosenSort) {
@@ -729,11 +720,19 @@ const ProductList = memo((props: any) => {
       // Giá tăng dần
       case '1':
         console.log('Option raised');
-        return [...productList].sort((a, b) => a.price - b.price);
+        return [...productList].sort(
+          (a, b) =>
+            Math.min(...a.variants.map((v) => v.price)) -
+            Math.min(...b.variants.map((v) => v.price))
+        );
       // Giá giảm dần
       case '2':
         console.log('Option raised');
-        return [...productList].sort((a, b) => b.price - a.price);
+        return [...productList].sort(
+          (a, b) =>
+            Math.min(...b.variants.map((v) => v.price)) -
+            Math.min(...a.variants.map((v) => v.price))
+        );
       // A - Z
       case '3':
         console.log('Option raised');
@@ -746,13 +745,39 @@ const ProductList = memo((props: any) => {
       case '5':
         console.log('Option raised');
         return [...productList].sort((a, b) => {
-          return dateComparer(a.MFG, b.MFG);
+          return dateComparer(
+            new Date(
+              Math.min(
+                ...a.batches.map((b) => b.MFG).map((date) => date.getTime())
+              )
+            ),
+            new Date(
+              Math.min(
+                ...b.batches
+                  .map((batch) => batch.MFG)
+                  .map((date) => date.getTime())
+              )
+            )
+          );
         });
       // Mới nhất
       case '6':
         console.log('Option raised');
         return [...productList].sort((a, b) => {
-          return dateComparer(b.MFG, a.MFG);
+          return dateComparer(
+            new Date(
+              Math.min(
+                ...b.batches.map((b) => b.MFG).map((date) => date.getTime())
+              )
+            ),
+            new Date(
+              Math.min(
+                ...a.batches
+                  .map((batch) => batch.MFG)
+                  .map((date) => date.getTime())
+              )
+            )
+          );
         });
       // Bán chạy nhất
       case '7':
@@ -766,10 +791,12 @@ const ProductList = memo((props: any) => {
     }
   }
 
-  function filterProductList(productList: ProductItem[]): ProductItem[] {
+  function filterProductList(products: AssembledProduct[]): AssembledProduct[] {
     //#region Local Functions
 
-    function filterProductType(productList: ProductItem[]): ProductItem[] {
+    function filterProductType(
+      products: AssembledProduct[]
+    ): AssembledProduct[] {
       const productTypeFilter = context.GroupBoLoc.find(
         (item) => item.heading_value === 'typeCake'
       );
@@ -778,32 +805,32 @@ const ProductList = memo((props: any) => {
         .filter((item) => item.isChecked)
         .map((item) => item.value);
 
-      if (productTypeIdChecked?.length === 0) return [...productList];
+      if (productTypeIdChecked?.length === 0) return [...products];
 
       const productTypeFilteredResult = [
-        ...productList.filter((product) => {
-          return productTypeIdChecked?.includes(product.productType_id);
+        ...products.filter((p) => {
+          return productTypeIdChecked?.includes(p.productType_id);
         }),
       ];
 
       return productTypeFilteredResult;
     }
 
-    function filterColor(productList: ProductItem[]): ProductItem[] {
+    function filterColor(products: AssembledProduct[]): AssembledProduct[] {
       const colorFilter = context.GroupBoLoc.find(
         (item) => item.heading_value === 'color'
       );
 
-      if (!colorFilter) return [...productList];
+      if (!colorFilter) return [...products];
 
       const colorChecks = colorFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.realValue);
 
-      if (colorChecks.length === 0) return [...productList];
+      if (colorChecks.length === 0) return [...products];
 
       return [
-        ...productList.filter((product) => {
+        ...products.filter((product) => {
           for (const color of product.colors) {
             if (colorChecks.includes(color)) {
               return true;
@@ -814,24 +841,24 @@ const ProductList = memo((props: any) => {
       ];
     }
 
-    function filterSize(productList: ProductItem[]): ProductItem[] {
+    function filterSize(products: AssembledProduct[]): AssembledProduct[] {
       // Get size filter
       const sizeFilter = context.GroupBoLoc.find(
         (item) => item.heading_value === 'size'
       );
 
-      if (!sizeFilter) return [...productList];
+      if (!sizeFilter) return [...products];
 
       const sizeChecks = sizeFilter.children
         .filter((item) => item.isChecked)
         .map((item) => item.value);
 
-      if (sizeChecks.length === 0) return [...productList];
+      if (sizeChecks.length === 0) return [...products];
 
       return [
-        ...productList.filter((product) => {
+        ...products.filter((product) => {
           for (const size of sizeChecks) {
-            if (!product.sizes.includes(size)) {
+            if (!product.variants.map((v) => v.size).includes(size)) {
               return false;
             }
           }
@@ -840,19 +867,19 @@ const ProductList = memo((props: any) => {
       ];
     }
 
-    function filterPrice(productList: ProductItem[]): ProductItem[] {
+    function filterPrice(products: AssembledProduct[]): AssembledProduct[] {
       // Get price range
       const priceFilter = context.GroupBoLoc.find(
         (item) => item.heading_value === 'price'
       );
 
-      if (!priceFilter) return [...productList];
+      if (!priceFilter) return [...products];
 
       const priceRanges = filterPriceRange(priceFilter);
 
-      if (priceRanges.length === 0) return [...productList];
+      if (priceRanges.length === 0) return [...products];
 
-      return filterProductListBaseOnPriceRanges(productList, priceRanges);
+      return filterProductListBaseOnPriceRanges(products, priceRanges);
 
       //#region Local Functions
 
@@ -905,14 +932,17 @@ const ProductList = memo((props: any) => {
       }
 
       function filterProductListBaseOnPriceRanges(
-        productList: ProductItem[],
+        products: AssembledProduct[],
         priceRanges: PriceRange[]
-      ): ProductItem[] {
-        return productList.filter((product) => {
+      ): AssembledProduct[] {
+        return products.filter((product) => {
           return priceRanges.some((range) => {
             const minInRange = range.min === 'infinity' ? -Infinity : range.min;
             const maxInRange = range.max === 'infinity' ? Infinity : range.max;
-            return product.price >= minInRange && product.price <= maxInRange;
+            return (
+              Math.min(...product.variants.map((v) => v.price)) >= minInRange ||
+              Math.max(...product.variants.map((v) => v.price)) <= maxInRange
+            );
           });
         });
       }
@@ -922,20 +952,20 @@ const ProductList = memo((props: any) => {
 
     //#endregion
 
-    let filteredProductList: ProductItem[] = productList;
+    let filteredProducts: AssembledProduct[] = products;
 
     // Filter Color
-    filteredProductList = filterColor(filteredProductList);
+    filteredProducts = filterColor(filteredProducts);
 
     // Filter Size
-    filteredProductList = filterSize(filteredProductList);
+    filteredProducts = filterSize(filteredProducts);
 
     // Filter Price
-    filteredProductList = filterPrice(filteredProductList);
+    filteredProducts = filterPrice(filteredProducts);
 
-    filteredProductList = filterProductType(filteredProductList);
+    filteredProducts = filterProductType(filteredProducts);
 
-    return filteredProductList;
+    return filteredProducts;
   }
   function removeAccents(str: string) {
     return str
@@ -945,7 +975,10 @@ const ProductList = memo((props: any) => {
       .replace(/Đ/g, 'D');
   }
 
-  function searchProductList(productList: ProductItem[], searchText: string) {
+  function searchProductList(
+    productList: AssembledProduct[],
+    searchText: string
+  ) {
     return productList.filter((product) => {
       return removeAccents(product.name.toLowerCase()).includes(
         searchText.toLowerCase()
@@ -974,7 +1007,7 @@ const ProductList = memo((props: any) => {
             lg={context.View != 'grid' ? 12 : 4}
           >
             <CakeCard
-              {...item}
+              item={item}
               imageHeight={imageHeight}
               imageHeightList={imageHeightList}
             />
@@ -999,13 +1032,7 @@ const ProductList = memo((props: any) => {
 
 //#endregion
 
-const Products = ({
-  products,
-  productTypesNamesAndIds: stringifiedProductTypesNamesAndIds,
-}: {
-  products: string;
-  productTypesNamesAndIds: string;
-}) => {
+const Products = ({ products: stringifiedProducts }: { products: string }) => {
   //#region Hooks
 
   const theme = useTheme();
@@ -1013,16 +1040,23 @@ const Products = ({
 
   // #endregion
 
+  //#region States
+
+  const [products, setProducts] = useState<AssembledProduct[]>([]);
+
+  const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>([]);
+  const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
+  const [sortListState, setSortListState] = useState<any>(initSortList);
+  const [searchText, setSearchText] = useState('');
+
+  //#endregion
+
   // #region functions
 
-  const generateGroupBoLoc = (stringifiedProductTypesNamesAndIds: string) => {
-    const productTypesNamesAndIds: { id: string; name: string }[] = JSON.parse(
-      stringifiedProductTypesNamesAndIds
-    );
-
-    let children = productTypesNamesAndIds.map((productType) => ({
-      display: productType.name,
-      value: productType.id,
+  const generateGroupBoLoc = (types: { id: string; name: string }[]) => {
+    let children = types.map((type) => ({
+      display: type.name,
+      value: type.id,
       isChecked: false,
     }));
 
@@ -1140,25 +1174,20 @@ const Products = ({
 
   // #endregion
 
-  //#region States
+  //#region useEffects
 
-  const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>(
-    generateGroupBoLoc(stringifiedProductTypesNamesAndIds)
-  );
-  const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
-  const [sortListState, setSortListState] = useState<any>(initSortList);
-  const [searchText, setSearchText] = useState('');
+  useEffect(() => {
+    const products: AssembledProduct[] = JSON.parse(stringifiedProducts);
+
+    setProducts(() => products);
+    setGroupBoLocState(() =>
+      generateGroupBoLoc(
+        products.map((p) => ({ id: p.type.id ?? '', name: p.type.name }))
+      )
+    );
+  }, [stringifiedProducts]);
 
   //#endregion
-
-  // #region useMemos
-
-  const productListState: ProductItem[] = useMemo(
-    () => JSON.parse(products),
-    [products]
-  );
-
-  // #endregion
 
   //#region Handlers
 
@@ -1219,7 +1248,7 @@ const Products = ({
           handleSetViewState: handleSetViewState,
           SortList: sortListState,
           handleSetSortList: handleSetSortList,
-          ProductList: productListState,
+          ProductList: products,
           searchText: searchText,
         }}
       >
@@ -1388,8 +1417,7 @@ const Products = ({
 
 async function fetchAvailableBatches(): Promise<BatchObject[]> {
   try {
-    let batches = await getCollectionWithQuery<BatchObject>(
-      'batches',
+    let batches = await getBatchesWithQuery(
       where('EXP', '>=', Timestamp.now())
     );
 
@@ -1397,6 +1425,7 @@ async function fetchAvailableBatches(): Promise<BatchObject[]> {
       (batch) => batch.soldQuantity < batch.totalQuantity
     );
 
+    console.log(batches);
     return batches;
   } catch (error) {
     console.log('Error at fetchAvailableBatches:', error);
@@ -1410,81 +1439,10 @@ interface LowestPriceAndItsMFGProductId {
   MFG: Date;
 }
 
-async function fetchLowestPriceAndMFGBatchProductIds(
-  batches: BatchObject[]
-): Promise<LowestPriceAndItsMFGProductId[]> {
-  try {
-    const groupedBatches = batches.reduce((acc: any, batch: BatchObject) => {
-      if (!acc[batch.product_id]) {
-        acc[batch.product_id] = [];
-      }
-      acc[batch.product_id].push({ price: batch.price, MFG: batch.MFG });
-      return acc;
-    }, {});
-
-    const lowestPrices: LowestPriceAndItsMFGProductId[] = Object.keys(
-      groupedBatches
-    ).map((product_id) => {
-      const pricesAndMFGs = groupedBatches[product_id];
-      const priceAndMFGThatHasTheLowestPrice = pricesAndMFGs.find(
-        (priceAndMFG: any) => priceAndMFG.price === pricesAndMFGs[0].price
-      );
-      // const lowestPrice = Math.min(...pricesAndMFGs.map((priceAndMFG) => priceAndMFG.price));
-      return {
-        id: product_id,
-        price: priceAndMFGThatHasTheLowestPrice.price,
-        MFG: priceAndMFGThatHasTheLowestPrice.MFG,
-      };
-    });
-
-    return lowestPrices;
-  } catch (error) {
-    console.log('Error at fetchLowestPriceBatchProductIds:', error);
-    return [];
-  }
-}
-
-async function getTotalSoldQuantity(productId: string): Promise<number> {
-  const batches = await getCollectionWithQuery<BatchObject>(
-    'batches',
-    where('product_id', '==', productId)
-  );
-
-  const totalSoldQuantity: number = batches.reduce((acc, batch) => {
+function calculateTotalSoldQuantity(batches: BatchObject[]): number {
+  return batches.reduce((acc: number, batch: BatchObject) => {
     return acc + batch.soldQuantity;
   }, 0);
-
-  return totalSoldQuantity;
-}
-
-async function fetchProductTypesWithLowestPrices(
-  lowestPricesAndTheirMFGs: LowestPriceAndItsMFGProductId[]
-): Promise<ProductItem[]> {
-  try {
-    const products = await Promise.all(
-      lowestPricesAndTheirMFGs.map(async ({ id, price, MFG }) => {
-        const productData = await getDocFromFirestore('products', id);
-
-        return {
-          id: productData.id,
-          name: productData.name,
-          description: productData.description,
-          price: price,
-          MFG: MFG,
-          image: await getDownloadUrlFromFirebaseStorage(productData.images[0]),
-          href: `${DETAIL_PATH}?id=${productData.id}`,
-          totalSoldQuantity: await getTotalSoldQuantity(productData.id),
-          colors: productData.colors,
-          productType_id: productData.productType_id,
-        } as ProductItem;
-      })
-    );
-
-    return products;
-  } catch (error) {
-    console.log('Error at fetchProductTypesWithLowestPrices:', error);
-    return [];
-  }
 }
 
 //#endregion
@@ -1492,41 +1450,43 @@ async function fetchProductTypesWithLowestPrices(
 export async function getServerSideProps() {
   const batches = await fetchAvailableBatches();
 
-  const lowestPricesAndTheirMFGs = await fetchLowestPriceAndMFGBatchProductIds(
-    batches
+  const products = await getCollectionWithQuery<ProductObject>(
+    COLLECTION_NAME.PRODUCTS,
+    where(
+      documentId(),
+      'in',
+      batches.map((batch) => batch.product_id)
+    )
   );
 
-  const fetchedProducts = await fetchProductTypesWithLowestPrices(
-    lowestPricesAndTheirMFGs
+  const assembledProducts: AssembledProduct[] = await Promise.all(
+    products.map(async (p) => {
+      const type = await getDocFromFirestore<ProductTypeObject>(
+        COLLECTION_NAME.PRODUCT_TYPES,
+        p.productType_id
+      );
+
+      const belongBatches = batches.filter((b) => b.product_id === p.id);
+
+      const assembledProduct: AssembledProduct = {
+        ...p,
+        images: await getDownloadUrlsFromFirebaseStorage(p.images),
+        type: type,
+        batches: belongBatches,
+        totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),
+        variants: p.variants.filter((v) =>
+          belongBatches.map((b) => b.variant_id).includes(v.id)
+        ),
+        href: `/${DETAIL_PATH}?id=${p.id}`,
+      };
+
+      return assembledProduct;
+    })
   );
-
-  const productTypes = await getCollection<ProductTypeObject>('productTypes');
-  const productTypesNamesAndIds = productTypes.map((productType) => {
-    return {
-      name: productType.name,
-      id: productType.id,
-    };
-  });
-
-  const products = fetchedProducts.map((product) => {
-    const productBatches: BatchObject[] = batches.filter(
-      (batch) => batch.product_id === product.id
-    );
-
-    const sizes = productBatches.map((batch) => batch.size);
-
-    return {
-      ...product,
-      sizes: sizes.filter(function (item, pos) {
-        return sizes.indexOf(item) == pos;
-      }),
-    };
-  });
 
   return {
     props: {
-      products: JSON.stringify(products),
-      productTypesNamesAndIds: JSON.stringify(productTypesNamesAndIds),
+      products: JSON.stringify(assembledProducts),
     },
   };
 }
