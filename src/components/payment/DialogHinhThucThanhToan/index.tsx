@@ -2,6 +2,7 @@ import momo from '@/assets/Decorate/MOMO.jpg';
 import bg from '@/assets/Decorate/bg10.png';
 import vnpay from '@/assets/Decorate/vnpay.jpg';
 import { CustomIconButton } from '@/components/buttons';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import { PaymentObject } from '@/lib/models';
 import CloseIcon from '@mui/icons-material/Close';
@@ -108,7 +109,7 @@ export default function DialogHinhThucThanhToan({
 
   useEffect(() => {
     const getPayments = async () => {
-      const payments = await getCollection<PaymentObject>('payments');
+      const payments = await getCollection<PaymentObject>(COLLECTION_NAME.PAYMENTS);
 
       for (const pttt of payments) {
         if (pttt.name === 'VNPay') {

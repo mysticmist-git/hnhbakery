@@ -2,7 +2,7 @@ import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
 import { CustomIconButton } from '@/components/buttons';
-import { COLLECTION_NAME, DETAIL_PATH } from '@/lib/constants';
+import { COLLECTION_NAME } from '@/lib/constants';
 import ProductsContext, {
   AssembledProduct,
   BoLocItem,
@@ -10,19 +10,11 @@ import ProductsContext, {
 } from '@/lib/contexts/productsContext';
 import {
   assembleProduct,
-  calculateTotalSoldQuantity,
   fetchAvailableBatches,
-  getBatchesWithQuery,
   getCollectionWithQuery,
-  getDocFromFirestore,
-  getDownloadUrlsFromFirebaseStorage,
 } from '@/lib/firestore';
-import { BatchObject, ProductObject, ProductTypeObject } from '@/lib/models';
-import {
-  filterDuplicates,
-  filterDuplicatesById,
-  formatPrice,
-} from '@/lib/utils';
+import { ProductObject } from '@/lib/models';
+import { filterDuplicatesById, formatPrice } from '@/lib/utils';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridView from '@mui/icons-material/GridView';
 import ListAlt from '@mui/icons-material/ListAlt';
@@ -48,12 +40,11 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { Timestamp, documentId, where } from 'firebase/firestore';
+import { documentId, where } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
-
 
 const dateComparerByValue = (a: number, b: number) => {
   console.log(a, b);
@@ -504,6 +495,15 @@ const CakeCard = memo(
       [props.imageHeightList]
     );
 
+    const price = useMemo(() => {
+      let price = 0;
+
+      if (props.item && props.item.variants && props.item.variants.length > 0)
+        price = Math.min(...props.item.variants.map((v) => v.price));
+
+      return formatPrice(price);
+    }, [props.item.variants]);
+
     const imageStyles = {
       cardNormal: {
         width: '100%',
@@ -638,9 +638,7 @@ const CakeCard = memo(
                         variant="body2"
                         color={theme.palette.secondary.main}
                       >
-                        {formatPrice(
-                          Math.min(...props.item.variants.map((v) => v.price))
-                        )}
+                        {price}
                       </Typography>
                     </Grid>
                   </Grid>

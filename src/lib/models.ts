@@ -60,6 +60,8 @@ export type BatchObject = BaseObject & {
   product_id: string;
 };
 
+export type BatchObjectWithDiscount = BatchObject & { discounted: boolean };
+
 export type StorageBatchObject = BatchObject & {
   productType_id: string;
   material: string;

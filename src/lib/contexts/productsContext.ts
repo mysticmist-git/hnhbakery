@@ -1,5 +1,10 @@
 import { createContext } from 'react';
-import { BatchObject, ProductObject, ProductTypeObject } from '../models';
+import {
+  BatchObject,
+  BatchObjectWithDiscount,
+  ProductObject,
+  ProductTypeObject,
+} from '../models';
 
 export type ProductItem = ProductObject & {
   totalSoldQuantity: number;
@@ -47,7 +52,8 @@ export default ProductsContext; //#endregion
 
 export type AssembledProduct = ProductObject & {
   type: ProductTypeObject;
-  batches: BatchObject[];
+  batches: BatchObjectWithDiscount[];
   totalSoldQuantity: number;
   href: string;
+  hasDiscounted: boolean;
 };

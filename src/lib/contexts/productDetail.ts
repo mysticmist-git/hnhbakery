@@ -5,7 +5,7 @@ export interface ExtendedBatchObject extends BatchObject {
   discountPrice: number;
 }
 
-export interface ProductDetail {
+export interface ProductDetailObject {
   id: string;
   name: string;
   type: string;

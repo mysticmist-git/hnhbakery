@@ -12,10 +12,10 @@ import React, { useEffect, useState } from 'react';
 export default function NumberInputWithButtons({
   min,
   max,
-  value,
+  value: paramValue,
+  onChange,
   size = 'large',
   justifyContent = 'flex-start',
-  onChange,
 }: {
   min: number;
   max: number;
@@ -31,38 +31,43 @@ export default function NumberInputWithButtons({
     input_p: size === 'small' ? 0.5 : 1.5,
   };
 
-  const [inputValue, setInputValue] = useState(value ?? min);
+  const [value, setValue] = useState(min);
   const theme = useTheme();
 
   const handleAddClick = () => {
-    if (inputValue < max) {
-      setInputValue((prevValue: number) => prevValue + 1);
+    if (value < max) {
+      if (onChange) onChange(value + 1);
+      else setValue((prev: number) => prev + 1);
     }
   };
 
   const handleMinusClick = () => {
-    if (inputValue > min) {
-      setInputValue((prevValue: number) => prevValue - 1);
+    if (value > min) {
+      if (onChange) onChange(value - 1);
+      else setValue((prev: number) => prev - 1);
     }
   };
 
   const handleOnBlur = () => {
-    if (inputValue < min) {
-      setInputValue(() => min);
-    } else if (inputValue > max) {
-      setInputValue(() => max);
+    if (value < min) {
+      if (onChange) onChange(min);
+      else setValue(() => min);
+    } else if (value > max) {
+      if (onChange) onChange(max);
+      else setValue(() => max);
     }
   };
 
   useEffect(() => {
-    if (onChange) onChange(inputValue);
-  }, [inputValue]);
+    if (paramValue) setValue(() => paramValue);
+  }, [paramValue]);
 
   useEffect(() => {
-    if (!value && value! > max) {
-      setInputValue((prev: number) => min);
+    if (max < value) {
+      if (onChange) onChange(max);
+      else setValue(() => max);
     }
-  }, [min, max]);
+  }, [max]);
 
   return (
     <Grid
@@ -97,9 +102,9 @@ export default function NumberInputWithButtons({
       </Grid>
       <Grid item>
         <TextField
-          value={inputValue}
+          value={value}
           onBlur={handleOnBlur}
-          onChange={(e) => setInputValue(Number(e.target.value))}
+          onChange={(e) => setValue(Number(e.target.value))}
           type="number"
           variant="filled"
           hiddenLabel
