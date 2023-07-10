@@ -1,6 +1,9 @@
 import Sidebar from '@/components/Navigation/SideBar';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { Typography } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import MuiDrawer from '@mui/material/Drawer';
@@ -11,84 +14,117 @@ import Link from 'next/link';
 import * as React from 'react';
 import { memo } from 'react';
 
-const drawerWidth: number = 240;
-
-const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-  '& .MuiDrawer-paper': {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    boxSizing: 'border-box',
-    ...(!open && {
-      overflowX: 'hidden',
-      transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      width: theme.spacing(7),
-      [theme.breakpoints.up('sm')]: {
-        width: theme.spacing(9),
-      },
-    }),
-  },
-}));
-
 function Layout({ children }: { children: any }) {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
+  const theme = useTheme();
+
+  const underMD = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
     <>
-      <Box sx={{ display: 'flex' }}>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
+      <Grid container direction="row" alignItems="flex-start" spacing={2}>
+        <Grid
+          item
+          xs={12}
+          md={open ? 3 : 1}
+          lg={open ? 3 : 1}
+          alignSelf={'stretch'}
+          sx={{ transition: 'all 0.05s linear' }}
+        >
+          <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              px: [1],
+              minHeight: { md: '100vh', xs: 'auto' },
+              height: { md: '100%', xs: 'auto' },
+              bgcolor: 'common.white',
+              py: 2,
+              px: 0,
             }}
           >
-            {open && (
-              <Link
-                href="/"
-                style={{
-                  textDecoration: 'none',
-                }}
-              >
-                <Typography
-                  variant="h5"
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Box
                   sx={{
-                    color: 'common.black',
-                    textDecoration: 'none',
-                    fontWeight: 'bold',
-                    ml: '3.5rem',
-                    '&:hover': {
-                      color: 'secondary.main',
-                    },
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent:
+                      !open && !underMD ? 'center' : 'space-between',
+                    flexDirection: 'row',
+                    p: 2,
                   }}
                 >
-                  Trang chủ
-                </Typography>
-              </Link>
-            )}
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <Sidebar />
-        </Drawer>
-        {children}
-      </Box>
+                  {!open && !underMD ? (
+                    <></>
+                  ) : (
+                    <Link
+                      href="/"
+                      style={{
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          color: 'common.black',
+                          textDecoration: 'none',
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            color: 'secondary.main',
+                          },
+                        }}
+                      >
+                        Trang chủ
+                      </Typography>
+                    </Link>
+                  )}
+
+                  <IconButton onClick={toggleDrawer}>
+                    {open ? (
+                      !underMD ? (
+                        <ChevronLeftIcon />
+                      ) : (
+                        <CloseRoundedIcon />
+                      )
+                    ) : !underMD ? (
+                      <ChevronRightIcon />
+                    ) : (
+                      <MenuRoundedIcon />
+                    )}
+                  </IconButton>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} display={!open && underMD ? 'none' : 'block'}>
+                <Divider />
+              </Grid>
+
+              <Grid item xs={12} display={!open && underMD ? 'none' : 'block'}>
+                <Sidebar open={open} />
+              </Grid>
+            </Grid>
+          </Box>
+        </Grid>
+
+        <Grid
+          item
+          xs={12}
+          md={open ? 9 : 11}
+          lg={open ? 9 : 11}
+          alignSelf={'stretch'}
+          sx={{ transition: 'all 0.05s linear' }}
+        >
+          {children}
+        </Grid>
+      </Grid>
     </>
   );
 }

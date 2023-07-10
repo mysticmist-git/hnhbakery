@@ -90,7 +90,12 @@ export const MainListItems = memo((props: any) => {
       </ListItemButton> */}
 
       <ListItemButton
-        sx={{ height: '60px' }}
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
         onClick={() => router.push('/manager/manage')}
       >
         <ListItemIcon
@@ -117,7 +122,12 @@ export const MainListItems = memo((props: any) => {
       </ListItemButton>
 
       <ListItemButton
-        sx={{ height: '60px' }}
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
         onClick={() => router.push('/manager/orders')}
       >
         <ListItemIcon
@@ -144,7 +154,12 @@ export const MainListItems = memo((props: any) => {
       </ListItemButton>
 
       <ListItemButton
-        sx={{ height: '60px' }}
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
         onClick={() => router.push('/manager/customers')}
       >
         <ListItemIcon
@@ -171,7 +186,12 @@ export const MainListItems = memo((props: any) => {
       </ListItemButton>
 
       <ListItemButton
-        sx={{ height: '60px' }}
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
         onClick={() => router.push('/manager/reports')}
       >
         <ListItemIcon
