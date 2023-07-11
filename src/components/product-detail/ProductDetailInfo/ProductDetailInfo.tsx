@@ -1,6 +1,7 @@
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import CheckboxButtonGroup from '@/components/Inputs/MultiValue/CheckboxButtonGroup';
 import { CustomButton } from '@/components/buttons';
+import { DataManagerErrorCode } from '@/lib/strategies/DataManagerStrategy';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
@@ -42,7 +43,7 @@ function ProductDetailInfo({
   }, [product.batches]);
 
   const maxQuantity = useMemo(() => {
-    let max = 0;
+    let max = 1;
 
     if (batch) max = batch.totalQuantity - batch.soldQuantity;
 
@@ -333,15 +334,24 @@ function ProductDetailInfo({
                   <CheckboxButtonGroup
                     options={batchOptions}
                     value={batch}
-                    getOptionLabel={(batch) =>
+                    getOptionLabel={
+                      (batch) => {
+                        const label = new Date(batch.EXP).toLocaleString(
+                          'vi-VN',
+                          {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          }
+                        );
+
+                        console.log(label);
+
+                        return label;
+                      }
                       // TODO: fix this formating
-                      batch.EXP.toLocaleString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })
                     }
                     onChange={onBatchChange}
                     valueEqualOption={(value, option) =>
@@ -369,7 +379,7 @@ function ProductDetailInfo({
                 </Grid>
                 <Grid item xs={9}>
                   <NumberInputWithButtons
-                    min={0}
+                    min={1}
                     max={maxQuantity}
                     value={quantity}
                     onChange={onQuantityChange}

@@ -4,27 +4,11 @@ import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
 import { CustomButton, CustomIconButton } from '@/components/buttons';
-import { LOCAL_CART_KEY } from '@/lib/constants';
-import { useSnackbarService } from '@/lib/contexts';
-import {
-  AppContext,
-  AppContextType,
-  AppDispatchAction,
-  AppState,
-} from '@/lib/contexts/appContext';
 import {
   CartContext,
   CartContextType,
   DisplayCartItem,
-  FAIL_SAVE_CART_MSG,
-  SUCCESS_SAVE_CART_MSG,
-  saveCart,
 } from '@/lib/contexts/cartContext';
-import { CartItem, CartItemAddingResult } from '@/lib/contexts/productDetail';
-import {
-  getDocFromFirestore,
-  getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore';
 import { formatPrice } from '@/lib/utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
@@ -45,133 +29,18 @@ import {
   useTheme,
 } from '@mui/material';
 import Image from 'next/image';
-import router from 'next/router';
 import React, {
   ForwardedRef,
   forwardRef,
   memo,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
-  useState,
 } from 'react';
 
 //#region Đọc export default trước rồi hả lên đây!
-function UI_Name(props: any) {
-  const hello = 5;
-  const theme = useTheme();
-  const { row } = props;
 
-  return (
-    <>
-      <Typography
-        variant="body1"
-        color={{
-          xs: theme.palette.secondary.main,
-          md: theme.palette.common.black,
-        }}
-      >
-        {row.name}
-      </Typography>
-    </>
-  );
-}
 
-function UI_SizeMaterial(props: any) {
-  const theme = useTheme();
-  const { row } = props;
-  return (
-    <>
-      <Typography variant={'button'} color={theme.palette.text.secondary}>
-        {'Size ' + row.size + ' + ' + row.material}
-      </Typography>
-    </>
-  );
-}
 
-function UI_Price(props: any) {
-  const theme = useTheme();
-  const { row } = props;
-  const isMd = useMediaQuery(theme.breakpoints.up('md'));
-
-  const hasDiscount = useMemo(() => {
-    return row.discountPrice && row.discountPrice > 0;
-  }, []);
-
-  return (
-    <>
-      <Typography
-        variant={'button'}
-        color={theme.palette.common.black}
-        sx={{
-          fontWeight: hasDiscount ? 'none' : 'bold',
-          textDecoration: hasDiscount ? 'line-through' : 'none',
-          opacity: hasDiscount ? 0.5 : 1,
-        }}
-      >
-        {formatPrice(row.price) + (isMd ? '' : ' /sản phẩm')}
-      </Typography>
-      {hasDiscount && (
-        <Typography variant={'button'} color={theme.palette.common.black}>
-          {formatPrice(row.discountPrice) + (isMd ? '' : ' /sản phẩm')}
-        </Typography>
-      )}
-    </>
-  );
-}
-
-function UI_Quantity(props: any) {
-  const theme = useTheme();
-  const { row, justifyContent = 'flex-start', onChange } = props;
-
-  return (
-    <>
-      <NumberInputWithButtons
-        min={1}
-        value={row.quantity}
-        max={row.maxQuantity}
-        justifyContent={justifyContent}
-        size="small"
-        onChange={onChange}
-      />
-    </>
-  );
-}
-
-function UI_TotalPrice(props: any) {
-  const theme = useTheme();
-  const { row }: { row: DisplayCartItem } = props;
-  const isMd = useMediaQuery(theme.breakpoints.up('md'));
-
-  const finalTotalPrice = useMemo(() => {
-    if (row.discountPrice && row.discountPrice > 0) {
-      return row.quantity * row.discountPrice;
-    }
-
-    return row.quantity * row.price;
-  }, [row.quantity]);
-
-  return (
-    <>
-      {isMd ? (
-        <Stack>
-          <Typography
-            variant="button"
-            color={theme.palette.common.black}
-            sx={{
-              fontWeight: 'bold',
-            }}
-          >
-            {formatPrice(finalTotalPrice)}
-          </Typography>
-        </Stack>
-      ) : (
-        <></>
-      )}
-    </>
-  );
-}
 
 function UI_Delete(props: any) {
   const theme = useTheme();
@@ -639,362 +508,178 @@ const headingTable = [
 ];
 
 const Cart = () => {
-  // #region Hooks
-
-  const theme = useTheme();
-  const { state, dispatch } = useContext<AppContextType>(AppContext);
-  const handleSnackbarAlert = useSnackbarService();
-
-  // #endregion
-
-  // #region States
-
-  const [productBill, setProductBill] = useState<DisplayCartItem[]>([]);
-
-  // #endregion
-
-  // #region Refs
-
-  const noteRef = useRef<HTMLTextAreaElement>(null);
-
-  // #endregion
-
-  // #region useEffects
-
-  useEffect(() => {
-    getCartItems();
-  }, []);
-
-  // #endregion
-
-  // #region Methods
-
-  const getCartItems = async () => {
-    const localCartItems = getLocalCartItems();
-
-    try {
-      const firestoreCartItems = await getFirestoreCartItem();
-
-      const finalCartItems = syncLocalCartItemToFirestore(
-        localCartItems,
-        firestoreCartItems
-      );
-
-      const displayCartItems = await fetchCartItemData(finalCartItems);
-
-      // TODO: Please actually remove the Ids from localStorage
-      const temps = displayCartItems.filter((item) => {
-        return new Date(item.EXP).getTime() > new Date().getTime();
-      });
-
-      displayCartItemsToView(temps);
-      handleSaveCartSilent();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getLocalCartItems = (): CartItem[] => {
-    const cartItemsString = localStorage.getItem(LOCAL_CART_KEY);
-
-    if (cartItemsString) {
-      return JSON.parse(cartItemsString);
-    }
-
-    return [];
-  };
-
-  const getFirestoreCartItem = async (): Promise<CartItem[]> => {
-    return [];
-  };
-
-  const syncLocalCartItemToFirestore = (
-    localCartItems: any,
-    firestoreCartItems: any
-  ): CartItem[] => {
-    return localCartItems;
-  };
-
-  const fetchCartItemData = async (
-    cartItems: CartItem[]
-  ): Promise<DisplayCartItem[]> => {
-    if (!cartItems || cartItems.length <= 0) return [];
-
-    const displayCartItems = await Promise.all(
-      cartItems.map(async (item) => {
-        const batch = await getDocFromFirestore('batches', item.batchId);
-        const product = await getDocFromFirestore('products', batch.product_id);
-
-        const discountPrice =
-          new Date(batch.discountDate).getTime() < new Date().getTime()
-            ? batch.price - (batch.price * batch.discountPercent) / 100
-            : -1;
-
-        const displayCartItem: DisplayCartItem = {
-          ...item,
-          name: product.name,
-          image: await getDownloadUrlFromFirebaseStorage(product.images[0]),
-          size: batch.size,
-          material: batch.material,
-          maxQuantity: batch.totalQuantity - batch.soldQuantity,
-          price: batch.price,
-          discountPercent: batch.discountPercent,
-          discountPrice: discountPrice,
-          discountDate: batch.discountDate,
-          MFG: batch.MFG,
-          EXP: batch.EXP,
-        };
-
-        return displayCartItem;
-      })
-    );
-
-    return displayCartItems;
-  };
-
-  const displayCartItemsToView = (cartItems: DisplayCartItem[]) => {
-    setProductBill(() => cartItems);
-  };
-
-  // #endregion
-
-  // #region Handlers
-
-  const handlePayment = async () => {
-    if (isCartEmpty) {
-      handleSnackbarAlert('info', 'Giỏ hàng trống');
-      return;
-    }
-
-    handleSaveCart();
-
-    dispatch({
-      type: AppDispatchAction.SET_PRODUCT_BILL,
-      payload: [...productBill],
-    });
-
-    dispatch({
-      type: AppDispatchAction.SET_CART_NOTE,
-      payload: noteRef.current?.value,
-    });
-
-    router.push('/payment');
-  };
-
-  const handleContinueToSurf = async () => {
-    handleSaveCart();
-
-    router.push('/products');
-  };
-
-  const handleSaveCart = async () => {
-    if (isCartEmpty) {
-      handleSnackbarAlert('info', 'Giỏ hàng trống');
-      return;
-    }
-
-    const result = await saveCart(productBill);
-
-    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  };
-
-  const handleSaveCartSilent = async () => {
-    if (isCartEmpty) {
-      handleSnackbarAlert('info', 'Giỏ hàng trống');
-      return;
-    }
-
-    await saveCart(productBill);
-  };
-
-  // #endregion
-
-  //#region UseMemos
-
-  const isCartEmpty = useMemo(() => {
-    return !Boolean(productBill) || productBill.length <= 0;
-  }, [productBill]);
-
-  //#endregion
-
   return (
     <>
-      <CartContext.Provider
-        value={{
-          productBill,
-        }}
-      >
-        <Box>
-          <ImageBackground>
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              height={'100%'}
-              sx={{ px: 6 }}
-            >
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  spacing={2}
-                >
-                  <Grid item xs={12}>
-                    <Link href="/products" style={{ textDecoration: 'none' }}>
-                      <Typography
-                        align="center"
-                        variant="h3"
-                        color={theme.palette.primary.main}
-                        sx={{
-                          '&:hover': {
-                            textDecoration: 'underline',
-                          },
-                        }}
-                      >
-                        Sản phẩm
-                      </Typography>
-                    </Link>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography
-                      align="center"
-                      variant="h2"
-                      color={theme.palette.primary.main}
-                    >
-                      Giỏ hàng
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </ImageBackground>
-
-          <BottomSlideInDiv>
-            <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+      <Box>
+        <ImageBackground>
+          <Grid
+            container
+            direction={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            height={'100%'}
+            sx={{ px: 6 }}
+          >
+            <Grid item xs={12}>
               <Grid
                 container
                 direction={'row'}
                 justifyContent={'center'}
-                alignItems={'start'}
-                spacing={4}
+                alignItems={'center'}
+                spacing={2}
               >
-                {isCartEmpty && (
-                  <>
-                    <Grid item xs={12}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          mt: 2,
-                        }}
-                      >
-                        <Typography variant="h2">Giỏ hàng trống</Typography>
-                      </Box>
-                    </Grid>
+                <Grid item xs={12}>
+                  <Link href="/products" style={{ textDecoration: 'none' }}>
+                    <Typography
+                      align="center"
+                      variant="h3"
+                      color={theme.palette.primary.main}
+                      sx={{
+                        '&:hover': {
+                          textDecoration: 'underline',
+                        },
+                      }}
+                    >
+                      Sản phẩm
+                    </Typography>
+                  </Link>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography
+                    align="center"
+                    variant="h2"
+                    color={theme.palette.primary.main}
+                  >
+                    Giỏ hàng
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </ImageBackground>
 
-                    <Grid item>
-                      <CustomButton
-                        onClick={handleContinueToSurf}
-                        sx={{
-                          py: 1.5,
-                          px: 5,
-                          width: 'auto',
-                          bgColor: theme.palette.secondary.dark,
-                        }}
+        <BottomSlideInDiv>
+          <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'start'}
+              spacing={4}
+            >
+              {isCartEmpty && (
+                <>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        mt: 2,
+                      }}
+                    >
+                      <Typography variant="h2">Giỏ hàng trống</Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item>
+                    <CustomButton
+                      onClick={handleContinueToSurf}
+                      sx={{
+                        py: 1.5,
+                        px: 5,
+                        width: 'auto',
+                        bgColor: theme.palette.secondary.dark,
+                      }}
+                    >
+                      <Typography
+                        variant="button"
+                        color={theme.palette.common.white}
                       >
-                        <Typography
-                          variant="button"
-                          color={theme.palette.common.white}
+                        Mua hàng ngay!
+                      </Typography>
+                    </CustomButton>
+                  </Grid>
+                </>
+              )}
+
+              {!isCartEmpty && (
+                <>
+                  <Grid item xs={12}>
+                    <ProductTable
+                      setProductBill={setProductBill}
+                      handleSaveCart={() => {
+                        handleSaveCart();
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        bgcolor: theme.palette.secondary.main,
+                        borderRadius: '8px',
+                        p: 0.2,
+                      }}
+                    ></Box>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <GhiChuCuaBan ref={noteRef} />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Grid
+                      container
+                      direction={'row'}
+                      spacing={4}
+                      alignItems={'start'}
+                      justifyContent={'center'}
+                    >
+                      <Grid item xs={12}>
+                        <TongTienHoaDon />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <CustomButton
+                          onClick={handleContinueToSurf}
+                          sx={{
+                            py: 1.5,
+                            width: '100%',
+                            bgColor: theme.palette.secondary.dark,
+                          }}
                         >
-                          Mua hàng ngay!
-                        </Typography>
-                      </CustomButton>
-                    </Grid>
-                  </>
-                )}
-
-                {!isCartEmpty && (
-                  <>
-                    <Grid item xs={12}>
-                      <ProductTable
-                        setProductBill={setProductBill}
-                        handleSaveCart={() => {
-                          handleSaveCart();
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <Box
-                        sx={{
-                          bgcolor: theme.palette.secondary.main,
-                          borderRadius: '8px',
-                          p: 0.2,
-                        }}
-                      ></Box>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <GhiChuCuaBan ref={noteRef} />
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Grid
-                        container
-                        direction={'row'}
-                        spacing={4}
-                        alignItems={'start'}
-                        justifyContent={'center'}
-                      >
-                        <Grid item xs={12}>
-                          <TongTienHoaDon />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <CustomButton
-                            onClick={handleContinueToSurf}
-                            sx={{
-                              py: 1.5,
-                              width: '100%',
-                              bgColor: theme.palette.secondary.dark,
-                            }}
+                          <Typography
+                            variant="button"
+                            color={theme.palette.common.white}
                           >
-                            <Typography
-                              variant="button"
-                              color={theme.palette.common.white}
-                            >
-                              Tiếp tục mua hàng
-                            </Typography>
-                          </CustomButton>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <CustomButton
-                            onClick={handlePayment}
-                            sx={{
-                              py: 1.5,
-                              width: '100%',
-                            }}
+                            Tiếp tục mua hàng
+                          </Typography>
+                        </CustomButton>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <CustomButton
+                          onClick={handlePayment}
+                          sx={{
+                            py: 1.5,
+                            width: '100%',
+                          }}
+                        >
+                          <Typography
+                            variant="button"
+                            color={theme.palette.common.white}
                           >
-                            <Typography
-                              variant="button"
-                              color={theme.palette.common.white}
-                            >
-                              Thanh toán
-                            </Typography>
-                          </CustomButton>
-                        </Grid>
+                            Thanh toán
+                          </Typography>
+                        </CustomButton>
                       </Grid>
                     </Grid>
-                  </>
-                )}
-              </Grid>
-            </Box>
-          </BottomSlideInDiv>
-        </Box>
-      </CartContext.Provider>
+                  </Grid>
+                </>
+              )}
+            </Grid>
+          </Box>
+        </BottomSlideInDiv>
+      </Box>
     </>
   );
 };

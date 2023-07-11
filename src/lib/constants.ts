@@ -28,6 +28,6 @@ export const COLLECTION_NAME = {
   NONE: 'none',
 };
 
-export const LOCAL_CART_KEY: string = 'LOCAL_CART_KEY';
+export const LOCAL_CART_KEY: string = 'cart';
 
 export const DETAIL_PATH = '/product-detail';

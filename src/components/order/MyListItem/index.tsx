@@ -22,7 +22,7 @@ export function MyListItem({
         <Stack direction={'row'} spacing={1} justifyContent="end">
           <Typography
             sx={
-              (billDetail.discountPrice ?? -1) <= 0
+              (billDetail.discountAmount ?? -1) <= 0
                 ? {}
                 : {
                     fontWeight: 'normal',
@@ -32,9 +32,9 @@ export function MyListItem({
           >
             {formatPrice(billDetail.price ?? 0)}
           </Typography>
-          {(billDetail.discountPrice ?? -1) > 0 && (
+          {(billDetail.discountAmount ?? -1) > 0 && (
             <Typography>
-              {formatPrice(billDetail.discountPrice ?? 0)}
+              {formatPrice(billDetail.discountAmount ?? 0)}
             </Typography>
           )}
         </Stack>

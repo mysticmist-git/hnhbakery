@@ -90,7 +90,7 @@ export type BillDetailObject = BaseObject & {
   amount?: number;
   price?: number;
   discount?: number;
-  discountPrice?: number;
+  discountAmount?: number;
   batch_id?: string;
   bill_id?: string;
 };

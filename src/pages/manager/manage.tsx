@@ -13,7 +13,7 @@ import {
   BatchStorageDocsFetcher,
   ProductStorageDocsFetcher,
   ProductTypeStorageDocsFetcher,
-  StorageDocsFetcher,
+  StorageDocsFactory,
 } from '@/lib/factories/StorageDocsFactory';
 import { isDataChanged } from '@/lib/manage';
 import {
@@ -603,30 +603,30 @@ export default function Manage({
       payload: null,
     });
 
-    let fetcher: StorageDocsFetcher | null = null;
+    let factory: StorageDocsFactory | null = null;
 
     switch (paramCollectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
-        fetcher = new ProductTypeStorageDocsFetcher();
+        factory = new ProductTypeStorageDocsFetcher();
         break;
       case COLLECTION_NAME.PRODUCTS:
-        fetcher = new ProductStorageDocsFetcher();
+        factory = new ProductStorageDocsFetcher();
         break;
       case COLLECTION_NAME.BATCHES:
-        fetcher = new BatchStorageDocsFetcher();
+        factory = new BatchStorageDocsFetcher();
         break;
       default:
         break;
     }
 
-    if (!fetcher) {
+    if (!factory) {
       handleSnackbarAlert('error', 'Lỗi khi tải lại');
       setLoading(false);
       return;
     }
 
     try {
-      const docs = await fetcher.fetch();
+      const docs = await factory.createDocs();
 
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
@@ -818,7 +818,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   // Get the documents from the specified collection.
   // const mainDocs = await getCollection<BaseObject>(collectionName);
-  let fetcher: StorageDocsFetcher | null = null;
+  let fetcher: StorageDocsFactory | null = null;
 
   switch (collectionName) {
     case 'productTypes':
@@ -839,7 +839,7 @@ export const getServerSideProps: GetServerSideProps = async (
   let mainDocs: BaseObject[] = [];
 
   try {
-    mainDocs = await fetcher.fetch();
+    mainDocs = await fetcher.createDocs();
   } catch (error) {
     console.error('Lỗi fetch main docs: ', error);
   }

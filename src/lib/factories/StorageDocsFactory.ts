@@ -1,30 +1,30 @@
 import {
+  fetchProductTypesForStoragePage as createProductTypesForStoragePage,
   fetchBatchesForStoragePage,
-  fetchProductTypesForStoragePage,
   fetchProductsForStoragePage,
 } from '@/lib/firestore';
 import { BaseObject } from '../models';
 
-export interface StorageDocsFetcher {
-  fetch(): Promise<BaseObject[]>;
+export interface StorageDocsFactory {
+  createDocs(): Promise<BaseObject[]>;
 }
 
-export class ProductTypeStorageDocsFetcher implements StorageDocsFetcher {
-  async fetch(): Promise<BaseObject[]> {
-    const docs = await fetchProductTypesForStoragePage();
+export class ProductTypeStorageDocsFetcher implements StorageDocsFactory {
+  async createDocs(): Promise<BaseObject[]> {
+    const docs = await createProductTypesForStoragePage();
     return docs;
   }
 }
 
-export class ProductStorageDocsFetcher implements StorageDocsFetcher {
-  async fetch(): Promise<BaseObject[]> {
+export class ProductStorageDocsFetcher implements StorageDocsFactory {
+  async createDocs(): Promise<BaseObject[]> {
     const docs = await fetchProductsForStoragePage();
     return docs;
   }
 }
 
-export class BatchStorageDocsFetcher implements StorageDocsFetcher {
-  async fetch(): Promise<BaseObject[]> {
+export class BatchStorageDocsFetcher implements StorageDocsFactory {
+  async createDocs(): Promise<BaseObject[]> {
     const docs = await fetchBatchesForStoragePage();
     return docs;
   }

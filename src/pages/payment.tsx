@@ -207,7 +207,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       amount: productBill.quantity,
       price: productBill.price,
       discount: productBill.discountPercent,
-      discountPrice: productBill.discountPrice,
+      discountAmount: productBill.discountPrice,
       batch_id: productBill.batchId,
       bill_id: billId,
     } as BillDetailObject;

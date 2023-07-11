@@ -5,8 +5,11 @@ import ImageBackground from '@/components/Imagebackground';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
 import Comments from '@/components/product-detail/Comments';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
+import { auth } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
 import { AssembledProduct } from '@/lib/contexts/productsContext';
+import { CartItem, CartItemFactory } from '@/lib/factories/CartItemFactory';
 import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
 import {
   BatchObject,
@@ -15,13 +18,20 @@ import {
   ProductVariant,
 } from '@/lib/models';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import {
+  Backdrop,
+  Box,
+  CircularProgress,
+  Grid,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
-
-// Mock Data
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useLocalStorage } from 'usehooks-ts';
 
 const comments = {
   ratingAverage: 4.5,
@@ -160,20 +170,23 @@ function ProductDetail({
 
   const theme = useTheme();
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
 
   // #endregion
 
   // #region States
 
+  const [backdropOpen, setBackdropOpen] = useState<boolean>(false);
+  const [user, loading, error] = useAuthState(auth);
   const [starState, setStarState] = useState(initStars);
-
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     null
   );
   const [selectedBatch, setSelectedBatch] =
     useState<BatchObjectWithDiscount | null>(null);
-
   const [quantity, setQuantity] = useState<number>(1);
+  const [isAdding, setIsLoading] = useState<boolean>(false);
+  const [cart, setCart] = useLocalStorage<CartItem[]>('cart', []);
 
   // #endregion
 
@@ -205,7 +218,7 @@ function ProductDetail({
       quantity: quantity,
       onQuantityChange: handleQuantityChange,
       comments: comments,
-      onAddToCart: () => {},
+      onAddToCart: handleAddToCart,
     };
   }, [
     product,
@@ -234,6 +247,10 @@ function ProductDetail({
     }
   }, [batchOptions]);
 
+  useEffect(() => {
+    setBackdropOpen(() => isAdding);
+  }, [isAdding]);
+
   //#endregion
 
   //#region Handlers
@@ -248,6 +265,46 @@ function ProductDetail({
 
   function handleQuantityChange(quantity: number) {
     setQuantity(() => quantity);
+  }
+
+  function handleAddToCart() {
+    setIsLoading(() => true);
+
+    if (loading) {
+      handleSnackbarAlert('error', 'Đang tải người dùng');
+      return;
+    }
+
+    if (!product) {
+      handleSnackbarAlert('error', 'Lỗi khi tải sản phẩm');
+      return;
+    }
+
+    if (!selectedVariant) {
+      handleSnackbarAlert('error', 'Lỗi khi tải biến thể');
+      return;
+    }
+
+    if (!selectedBatch) {
+      handleSnackbarAlert('error', 'Lỗi khi tải lô hàng');
+      return;
+    }
+
+    const factory = new CartItemFactory(
+      user?.uid ?? '',
+      selectedBatch.id,
+      quantity
+    );
+
+    const cartItem: CartItem = factory.create();
+
+    setCart((prev) => [...prev, cartItem]);
+
+    handleSnackbarAlert('success', 'Đã thêm sản phẩm vào giỏ hàng');
+
+    router.push('/cart');
+
+    setIsLoading(() => false);
   }
 
   //#endregion
@@ -332,6 +389,13 @@ function ProductDetail({
           />
         </Box>
       </Box>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={backdropOpen}
+        onClick={() => setBackdropOpen(() => false)}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   );
 }
