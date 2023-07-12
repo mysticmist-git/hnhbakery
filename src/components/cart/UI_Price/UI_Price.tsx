@@ -2,13 +2,18 @@ import { formatPrice } from '@/lib/utils';
 import { Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 
-export default function UI_Price(props: any) {
+export default function UI_Price({
+  price = 0,
+  discountAmount = 0,
+}: {
+  price?: number;
+  discountAmount?: number;
+}) {
   const theme = useTheme();
-  const { row } = props;
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
   const hasDiscount = useMemo(() => {
-    return row.discountPrice && row.discountPrice > 0;
+    return Boolean(discountAmount) && discountAmount > 0;
   }, []);
 
   return (
@@ -22,11 +27,11 @@ export default function UI_Price(props: any) {
           opacity: hasDiscount ? 0.5 : 1,
         }}
       >
-        {formatPrice(row.price) + (isMd ? '' : ' /sản phẩm')}
+        {formatPrice(price) + (isMd ? '' : ' /sản phẩm')}
       </Typography>
       {hasDiscount && (
         <Typography variant={'button'} color={theme.palette.common.black}>
-          {formatPrice(row.discountPrice) + (isMd ? '' : ' /sản phẩm')}
+          {formatPrice(price - discountAmount) + (isMd ? '' : ' /sản phẩm')}
         </Typography>
       )}
     </>

@@ -10,15 +10,15 @@ import {
 import React, { useEffect, useState } from 'react';
 
 export default function NumberInputWithButtons({
-  min,
-  max,
+  min = 1,
+  max = 1,
   value: paramValue,
   onChange,
   size = 'large',
   justifyContent = 'flex-start',
 }: {
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
   value?: number;
   size?: 'small' | 'large';
   justifyContent?: 'flex-start' | 'center' | 'flex-end';

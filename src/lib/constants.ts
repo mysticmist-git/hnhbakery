@@ -31,3 +31,12 @@ export const COLLECTION_NAME = {
 export const LOCAL_CART_KEY: string = 'cart';
 
 export const DETAIL_PATH = '/product-detail';
+
+export const ROUTES = {
+  PRODUCTS: '/products',
+  PRODUCT_DETAIL: '/product-detail',
+} as const;
+
+type ObjectValues<T> = T[keyof T];
+
+export type Routes = ObjectValues<typeof ROUTES>;

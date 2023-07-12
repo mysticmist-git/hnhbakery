@@ -1,3 +1,4 @@
+import { CartItem, ICartItem } from '@/@types/cart';
 import banh1 from '@/assets/Carousel/1.jpg';
 import banh2 from '@/assets/Carousel/2.jpg';
 import banh3 from '@/assets/Carousel/3.jpg';
@@ -9,7 +10,7 @@ import { auth } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { AssembledProduct } from '@/lib/contexts/productsContext';
-import { CartItem, CartItemFactory } from '@/lib/factories/CartItemFactory';
+import { CartItemFactory } from '@/lib/factories/CartItemFactory';
 import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
 import {
   BatchObject,
@@ -290,13 +291,13 @@ function ProductDetail({
       return;
     }
 
-    const factory = new CartItemFactory(
+    const factory = new CartItemFactory();
+
+    const cartItem: ICartItem = factory.create(
       user?.uid ?? '',
       selectedBatch.id,
       quantity
     );
-
-    const cartItem: CartItem = factory.create();
 
     setCart((prev) => [...prev, cartItem]);
 

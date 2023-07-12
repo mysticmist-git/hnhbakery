@@ -1,3 +1,4 @@
+import { AssembledCartItem } from '@/@types/cart';
 import {
   Box,
   Grid,
@@ -13,7 +14,12 @@ import {
   useTheme,
 } from '@mui/material';
 import Image from 'next/image';
-import React from 'react';
+import UI_Delete from '../UI_Delete';
+import UI_Name from '../UI_Name';
+import UI_Price from '../UI_Price';
+import UI_Quantity from '../UI_Quantity';
+import UI_SizeMaterial from '../UI_SizeMaterial/UI_SizeMaterial';
+import UI_TotalPrice from '../UI_TotalPrice/UI_TotalPrice';
 
 function resolveBatchMax(total?: number, sold?: number) {
   if (!total || !sold) return 1;
@@ -132,12 +138,18 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                       <UI_Name name={item.product?.name} />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_SizeMaterial row={item} />
+                      <UI_SizeMaterial
+                        size={item.variant?.size}
+                        material={item.variant?.material}
+                      />
                     </Grid>
                   </Grid>
                 </TableCell>
                 <TableCell align="center">
-                  <UI_Price row={item} />
+                  <UI_Price
+                    price={item.variant?.price}
+                    discountAmount={item.discountAmount}
+                  />
                 </TableCell>
                 <TableCell align="center">
                   <UI_Quantity
@@ -152,10 +164,9 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                         items.map((item) => {
                           if (item.id !== item.id) return item;
 
-                          return {
-                            ...item,
-                            quantity,
-                          };
+                          item.quantity = quantity;
+
+                          return item;
                         })
                       );
                     }}
@@ -163,7 +174,10 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                   />
                 </TableCell>
                 <TableCell align="center">
-                  <UI_TotalPrice row={item} />
+                  <UI_TotalPrice
+                    price={item.variant?.price}
+                    discountAmount={item.discountAmount}
+                  />
                 </TableCell>
                 <TableCell align="center">
                   <UI_Delete row={item} onDelete={handleDeleteRow} />
@@ -186,7 +200,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
           },
         }}
       >
-        {productBill.map((row: any, index: number) => (
+        {items.map((item, index) => (
           <Grid item xs={12} key={index}>
             <Box
               sx={{
@@ -203,7 +217,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                 spacing={2}
               >
                 <Grid item xs={5} alignSelf={'stretch'}>
-                  <Link href={row.href}>
+                  <Link href={item.href}>
                     <Box
                       sx={{
                         width: '100%',
@@ -214,8 +228,8 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                     >
                       <Box
                         component={Image}
-                        src={row.image}
-                        alt={row.name}
+                        src={item.image ?? ''}
+                        alt={'Cart Item Image'}
                         loading="lazy"
                         fill={true}
                         sx={{
@@ -242,22 +256,50 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                     }}
                   >
                     <Grid item xs={12}>
-                      <UI_Name row={row} />
+                      <UI_Name name={item.product?.name} />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_SizeMaterial row={row} />
+                      <UI_SizeMaterial
+                        size={item.variant?.size}
+                        material={item.variant?.material}
+                      />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_Price row={row} />
+                      <UI_Price
+                        price={item.variant?.price}
+                        discountAmount={item.discountAmount}
+                      />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_Quantity row={row} />
+                      <UI_Quantity
+                        value={item.quantity}
+                        min={1}
+                        max={resolveBatchMax(
+                          item.batch?.totalQuantity,
+                          item.batch?.soldQuantity
+                        )}
+                        onChange={(quantity: number) => {
+                          onChange(
+                            items.map((item) => {
+                              if (item.id !== item.id) return item;
+
+                              item.quantity = quantity;
+
+                              return item;
+                            })
+                          );
+                        }}
+                        justifyContent={'center'}
+                      />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_TotalPrice row={row} />
+                      <UI_TotalPrice
+                        price={item.variant?.price}
+                        discountAmount={item.discountAmount}
+                      />
                     </Grid>
                     <Grid item xs={12}>
-                      <UI_Delete row={row} onDelete={handleDeleteRow} />
+                      <UI_Delete row={item} onDelete={handleDeleteRow} />
                     </Grid>
                   </Grid>
                 </Grid>

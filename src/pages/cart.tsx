@@ -1,513 +1,108 @@
-import ImageBackground from '@/components/Imagebackground';
-
+import { AssembledCartItem, CartItem } from '@/@types/cart';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
-import { CustomButton, CustomIconButton } from '@/components/buttons';
-import {
-  CartContext,
-  CartContextType,
-  DisplayCartItem,
-} from '@/lib/contexts/cartContext';
-import { formatPrice } from '@/lib/utils';
-import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  Box,
-  Grid,
-  Link,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  alpha,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
-import Image from 'next/image';
-import React, {
-  ForwardedRef,
-  forwardRef,
-  memo,
-  useContext,
-  useMemo,
-} from 'react';
+import ImageBackground from '@/components/Imagebackground';
+import { CustomButton } from '@/components/buttons';
+import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
+import ProductTable from '@/components/cart/ProductTable';
+import { AssembledCartItemBuilder } from '@/lib/builders/CartItem/builders';
+import { AssembledCartItemDirector } from '@/lib/builders/CartItem/directors';
+import { ROUTES } from '@/lib/constants';
+import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
+import { useLocalStorageValue } from '@react-hookz/web';
+import { useRouter } from 'next/router';
+import React, { memo, useEffect, useMemo, useState } from 'react';
+import { theme } from '../../tailwind.config';
 
-//#region Đọc export default trước rồi hả lên đây!
+function Cart() {
+  //#region Hooks
 
-
-
-
-function UI_Delete(props: any) {
   const theme = useTheme();
-  const { row, onDelete } = props;
-  const isMd = useMediaQuery(theme.breakpoints.up('md'));
-  return (
-    <>
-      {isMd ? (
-        <CustomIconButton
-          onClick={() => onDelete(row.id)}
-          sx={{
-            bgcolor: theme.palette.secondary.main,
-            borderRadius: '8px',
-            '&:hover': {
-              bgcolor: theme.palette.secondary.dark,
-              color: theme.palette.common.white,
-            },
-          }}
-        >
-          <DeleteIcon sx={{ color: theme.palette.common.white }} />
-        </CustomIconButton>
-      ) : (
-        <CustomButton onClick={() => onDelete(row.id)}>
-          <Typography
-            sx={{ px: 4 }}
-            variant="button"
-            color={theme.palette.common.white}
-          >
-            Xóa
-          </Typography>
-        </CustomButton>
-      )}
-    </>
+  const router = useRouter();
+
+  //#endregion
+
+  //#region State
+
+  const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
+    'cart',
+    {
+      defaultValue: [],
+      initializeWithValue: false,
+    }
   );
-}
+  const [assembledCartItems, setAssembledCartItems] = useState<
+    AssembledCartItem[]
+  >([]);
+  const [note, setNote] = useState<string>('');
 
-function ProductTable({ setProductBill, handleSaveCart }: any) {
-  const theme = useTheme();
-  const { productBill } = useContext<CartContextType>(CartContext);
-  const imageHeight = '20vh';
+  //#endregion
 
-  const handleDeleteRow = (id: string) => {
-    setProductBill((prev: DisplayCartItem[]) =>
-      prev.filter((item) => item.id !== id)
-    );
-  };
+  //#region Handlers
 
-  return (
-    <>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'end',
-        }}
-      >
-        <CustomButton onClick={handleSaveCart}>
-          <Typography
-            sx={{ px: 4 }}
-            variant="button"
-            color={theme.palette.common.white}
-          >
-            Lưu giỏ hàng
-          </Typography>
-        </CustomButton>
-      </Box>
-
-      <TableContainer
-        component={Paper}
-        sx={{
-          bgcolor: theme.palette.common.white,
-          borderRadius: '8px',
-          border: 3,
-          borderColor: theme.palette.secondary.main,
-          marginTop: 1,
-          display: {
-            xs: 'none',
-            md: 'block',
-          },
-        }}
-      >
-        <Table sx={{ minWidth: 650 }}>
-          <TableHead
-            sx={{
-              bgcolor: theme.palette.secondary.main,
-            }}
-          >
-            <TableRow>
-              {headingTable.map((item, i) => (
-                <TableCell
-                  key={i}
-                  align="center"
-                  sx={{ minWidth: i == 2 ? '255px' : '0px' }}
-                >
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.common.white}
-                  >
-                    {item}
-                  </Typography>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {productBill.map((row: any) => (
-              <TableRow
-                key={row.id}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                }}
-              >
-                <TableCell component="th" scope="row" align="center">
-                  <Grid
-                    container
-                    direction={'row'}
-                    alignItems={'center'}
-                    spacing={0}
-                    justifyContent={'center'}
-                  >
-                    <Grid item xs={12} pb={1}>
-                      <Link href={row.href}>
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: imageHeight,
-                            border: 3,
-                            borderColor: theme.palette.secondary.main,
-                            overflow: 'hidden',
-                            borderRadius: '8px',
-                            position: 'relative',
-                          }}
-                        >
-                          <Box
-                            component={Image}
-                            src={row.image}
-                            alt={row.name}
-                            loading="lazy"
-                            fill={true}
-                            sx={{
-                              objectFit: 'cover',
-                              cursor: 'pointer',
-                              transition: 'transform 0.3s ease-in-out',
-                              ':hover': {
-                                transform: 'scale(1.3) rotate(5deg)',
-                              },
-                            }}
-                          />
-                        </Box>
-                      </Link>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Name row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_SizeMaterial row={row} />
-                    </Grid>
-                  </Grid>
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Price row={row} />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Quantity
-                    row={row}
-                    justifyContent={'center'}
-                    onChange={(quantity: number) => {
-                      if (setProductBill && quantity) {
-                        const indexOfUpdatedRow = productBill.indexOf(row);
-                        const updatedProductBill = [...productBill];
-                        updatedProductBill[indexOfUpdatedRow].quantity =
-                          quantity;
-
-                        setProductBill(() => updatedProductBill);
-                      }
-                    }}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_TotalPrice row={row} />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Delete row={row} onDelete={handleDeleteRow} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Grid
-        container
-        justifyContent={'center'}
-        alignItems={'center'}
-        spacing={2}
-        sx={{
-          display: {
-            xs: 'block',
-            md: 'none',
-          },
-        }}
-      >
-        {productBill.map((row: any, index: number) => (
-          <Grid item xs={12} key={index}>
-            <Box
-              sx={{
-                border: 3,
-                borderColor: theme.palette.secondary.main,
-                borderRadius: '8px',
-                overflow: 'hidden',
-              }}
-            >
-              <Grid
-                container
-                justifyContent={'center'}
-                alignItems={'center'}
-                spacing={2}
-              >
-                <Grid item xs={5} alignSelf={'stretch'}>
-                  <Link href={row.href}>
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        overflow: 'hidden',
-                        position: 'relative',
-                      }}
-                    >
-                      <Box
-                        component={Image}
-                        src={row.image}
-                        alt={row.name}
-                        loading="lazy"
-                        fill={true}
-                        sx={{
-                          objectFit: 'cover',
-                          cursor: 'pointer',
-                          transition: 'transform 0.3s ease-in-out',
-                          ':hover': {
-                            transform: 'scale(1.3) rotate(5deg)',
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Link>
-                </Grid>
-                <Grid item xs={7}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    alignItems={'center'}
-                    justifyContent={'center'}
-                    spacing={0.5}
-                    sx={{
-                      py: 1,
-                    }}
-                  >
-                    <Grid item xs={12}>
-                      <UI_Name row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_SizeMaterial row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Price row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Quantity row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_TotalPrice row={row} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Delete row={row} onDelete={handleDeleteRow} />
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
-    </>
-  );
-}
-
-function TongTienHoaDon(props: any) {
-  const theme = useTheme();
-  const context = useContext<CartContextType>(CartContext);
-
-  const totalPriceBill: number = useMemo(() => {
-    return context.productBill.reduce((acc, row) => {
-      if (row.discountPrice && row.discountPrice > 0)
-        return acc + row.quantity * row.discountPrice;
-      else return acc + row.quantity * row.price;
-    }, 0);
-  }, [context.productBill]);
-
-  return (
-    <Box
-      sx={{
-        border: 3,
-        borderColor: theme.palette.secondary.main,
-        borderRadius: '8px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        bgcolor: theme.palette.common.white,
-      }}
-    >
-      <Box
-        sx={{
-          alignSelf: 'stretch',
-          p: 2,
-          bgcolor: theme.palette.secondary.main,
-        }}
-      >
-        <Typography
-          align="left"
-          variant="body1"
-          color={theme.palette.common.white}
-        >
-          Tổng hóa đơn
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          alignSelf: 'stretch',
-          p: 2,
-          pb: 1,
-
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Typography
-          align="left"
-          variant="body1"
-          color={theme.palette.text.secondary}
-        >
-          Giá tiền bạn trả:
-        </Typography>
-        <Typography
-          align="right"
-          variant="body1"
-          color={theme.palette.common.black}
-        >
-          {formatPrice(totalPriceBill)}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          alignSelf: 'stretch',
-          p: 2,
-          pt: 0,
-        }}
-      >
-        <Typography
-          align="left"
-          variant="body2"
-          color={theme.palette.text.secondary}
-        >
-          Vận chuyển, thuế và giảm giá sẽ được tính khi thanh toán.
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
-
-const GhiChuCuaBan = forwardRef(
-  (props: any, noteRef: ForwardedRef<HTMLTextAreaElement>) => {
-    const theme = useTheme();
-
-    return (
-      <Box
-        sx={{
-          border: 3,
-          borderColor: theme.palette.secondary.main,
-          borderRadius: '8px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          bgcolor: theme.palette.common.white,
-        }}
-      >
-        <Box
-          sx={{
-            alignSelf: 'stretch',
-            p: 2,
-
-            bgcolor: theme.palette.secondary.main,
-          }}
-        >
-          <Typography
-            align="left"
-            variant="body1"
-            color={theme.palette.common.white}
-          >
-            Ghi chú
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            alignSelf: 'stretch',
-            justifySelf: 'stretch',
-            '&:hover': {
-              boxShadow: `0px 0px 5px 2px ${alpha(
-                theme.palette.secondary.main,
-                0.3
-              )}`,
-            },
-          }}
-        >
-          <CustomTextarea
-            minRows={3}
-            style={{ minHeight: '40px' }}
-            placeholder="Ghi chú cho đầu bếp bên mình"
-            ref={noteRef}
-          />
-        </Box>
-      </Box>
-    );
+  function handleContinueToSurf() {
+    router.push(ROUTES.PRODUCTS);
   }
-);
 
-//#endregion
+  function handlePayment() {
+    alert('paid');
+  }
 
-//#region Giả dữ liệu
-function createDataRow({
-  id,
-  href,
-  image,
-  name,
-  size,
-  material,
-  quantity,
-  maxQuantity,
-  price,
-  discountPercent,
-}: DisplayCartItem) {
-  return {
-    id,
-    href,
-    image,
-    name,
-    size,
-    material,
-    price,
-    quantity,
-    maxQuantity,
-    discountPercent,
-  };
-}
-const headingTable = [
-  'Sản phẩm',
-  'Giá tiền /sản phẩm',
-  'Số lượng',
-  'Tổng',
-  'Xóa',
-];
+  //#endregion
 
-const Cart = () => {
+  //#region useEffect
+
+  useEffect(() => {
+    async function assembleItems() {
+      const builder = new AssembledCartItemBuilder();
+      const director = new AssembledCartItemDirector(builder);
+
+      const items = await Promise.all(
+        cart?.map(async (item) => {
+          builder.reset(item);
+
+          const assembledItem = await director.build();
+
+          return assembledItem;
+        }) ?? []
+      );
+
+      setAssembledCartItems(() => items);
+    }
+
+    assembleItems();
+  }, [cart]);
+
+  //#endregion
+
+  //#region Handlers
+
+  function handleCartItemChange(items: AssembledCartItem[]) {
+    setCart(() => items.map((item) => item.getRawItem()));
+  }
+
+  //#endregion
+
+  //#region useMemos
+
+  const totalPrice = useMemo(() => {
+    const price = assembledCartItems.reduce((acc, item) => {
+      let price = item.variant?.price ?? 0;
+      let discountAmount = 0;
+
+      if (item.discounted) {
+        discountAmount = item.discountAmount;
+      }
+
+      const itemTotalPrice = (price - discountAmount) * item.quantity;
+
+      return acc + itemTotalPrice;
+    }, 0);
+
+    return price;
+  }, [cart]);
+
+  //#endregion
+
   return (
     <>
       <Box>
@@ -567,7 +162,7 @@ const Cart = () => {
               alignItems={'start'}
               spacing={4}
             >
-              {isCartEmpty && (
+              {(cart?.length ?? 0) <= 0 && (
                 <>
                   <Grid item xs={12}>
                     <Box
@@ -603,14 +198,12 @@ const Cart = () => {
                 </>
               )}
 
-              {!isCartEmpty && (
+              {(cart?.length ?? 0) > 0 && (
                 <>
                   <Grid item xs={12}>
                     <ProductTable
-                      setProductBill={setProductBill}
-                      handleSaveCart={() => {
-                        handleSaveCart();
-                      }}
+                      items={assembledCartItems}
+                      onChange={handleCartItemChange}
                     />
                   </Grid>
 
@@ -625,7 +218,10 @@ const Cart = () => {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <GhiChuCuaBan ref={noteRef} />
+                    <GhiChuCuaBan
+                      note={note}
+                      onChange={(note: string) => setNote(() => note)}
+                    />
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -637,7 +233,7 @@ const Cart = () => {
                       justifyContent={'center'}
                     >
                       <Grid item xs={12}>
-                        <TongTienHoaDon />
+                        <TongTienHoaDon totalPrice={totalPrice} />
                       </Grid>
                       <Grid item xs={12} md={6}>
                         <CustomButton
@@ -682,6 +278,6 @@ const Cart = () => {
       </Box>
     </>
   );
-};
+}
 
-export default memo(Cart);
+export default Cart;

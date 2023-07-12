@@ -1,9 +1,11 @@
 import { Typography, useTheme } from '@mui/material';
 
-export default function UI_Name(props: any) {
-  const hello = 5;
+type UI_NameProps = {
+  name?: string;
+};
+
+export default function UI_Name({ name = '' }: UI_NameProps) {
   const theme = useTheme();
-  const { row } = props;
 
   return (
     <>
@@ -14,7 +16,7 @@ export default function UI_Name(props: any) {
           md: theme.palette.common.black,
         }}
       >
-        {row.name}
+        {name}
       </Typography>
     </>
   );

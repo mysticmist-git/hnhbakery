@@ -1,16 +1,27 @@
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import { useTheme } from '@mui/material';
 
-export default function UI_Quantity(props: any) {
+export default function UI_Quantity({
+  value,
+  max,
+  min,
+  onChange,
+  justifyContent = 'flex-start',
+}: {
+  value: number;
+  max?: number;
+  min?: number;
+  onChange: (value: number) => void;
+  justifyContent: any;
+}) {
   const theme = useTheme();
-  const { row, justifyContent = 'flex-start', onChange } = props;
 
   return (
     <>
       <NumberInputWithButtons
-        min={1}
-        value={row.quantity}
-        max={row.maxQuantity}
+        value={value}
+        min={min}
+        max={max}
         justifyContent={justifyContent}
         size="small"
         onChange={onChange}
