@@ -28,6 +28,17 @@ function Cart() {
     {
       defaultValue: [],
       initializeWithValue: false,
+      parse(str, fallback) {
+        if (!str) return fallback;
+
+        const value: any[] = JSON.parse(str);
+        const items = value.map(
+          (item) =>
+            new CartItem(item._userId, item._batchId, item._quantity, item._id)
+        );
+
+        return items;
+      },
     }
   );
   const [assembledCartItems, setAssembledCartItems] = useState<
@@ -56,6 +67,8 @@ function Cart() {
       const builder = new AssembledCartItemBuilder();
       const director = new AssembledCartItemDirector(builder);
 
+      console.log(cart);
+
       const items = await Promise.all(
         cart?.map(async (item) => {
           builder.reset(item);
@@ -66,6 +79,7 @@ function Cart() {
         }) ?? []
       );
 
+      console.log(items);
       setAssembledCartItems(() => items);
     }
 
@@ -81,6 +95,9 @@ function Cart() {
   }
 
   //#endregion
+
+  console.log(cart);
+  console.log(assembledCartItems);
 
   //#region useMemos
 

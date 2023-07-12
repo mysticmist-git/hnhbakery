@@ -9,13 +9,13 @@ class AssembledCartItemNormalDirector implements AssembledCartItemDirector {
     this._builder = builder;
   }
 
-  build(): AssembledCartItem {
-    this._builder.fetchBatch();
-    this._builder.checkDiscount();
-    this._builder.fetchProduct();
-    this._builder.fetchVariant();
+  async build(): Promise<AssembledCartItem> {
+    let builder = await this._builder.fetchBatch();
+    builder = await builder?.checkDiscount();
+    builder = await builder?.fetchProduct();
+    builder = await builder?.fetchVariant();
 
-    return this._builder.build();
+    return await builder?.build();
   }
 }
 

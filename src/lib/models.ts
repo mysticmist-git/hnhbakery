@@ -40,6 +40,10 @@ export type ProductObject = BaseObject & {
   isActive: boolean;
 };
 
+export type ProductObjectWithURLs = ProductObject & {
+  imageUrls: PathWithUrl[];
+};
+
 export type StorageProductObject = ProductObject & {
   imageUrls: PathWithUrl[];
 };
