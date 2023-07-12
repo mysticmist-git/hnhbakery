@@ -76,8 +76,8 @@ export type BillObject = BaseObject & {
   totalPrice?: number;
   note?: string;
   state?: 1 | 0 | -1;
-  rating?: 1 | 2 | 3 | 4 | 5;
-  comment?: string;
+  // rating?: 1 | 2 | 3 | 4 | 5;
+  // comment?: string;
   payment_id?: string;
   saleAmount?: number;
   sale_id: string;
@@ -218,4 +218,11 @@ export type AssembledBillDetail = BillDetailObject & {
   productTypeName?: string;
   material?: string;
   size?: string;
+};
+
+export type SuperDetail_BillObject = BillObject & {
+  paymentObject?: PaymentObject;
+  userObject?: UserObject;
+  saleObject?: SaleObject;
+  deliveryObject?: DeliveryObject;
 };

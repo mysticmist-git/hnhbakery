@@ -2,7 +2,15 @@ import MyModal from '@/components/order/MyModal';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import { billStatusParse } from '@/lib/manage/manage';
-import { BillObject, CustomBill, PaymentObject } from '@/lib/models';
+import {
+  BillObject,
+  CustomBill,
+  DeliveryObject,
+  PaymentObject,
+  SaleObject,
+  UserObject,
+  SuperDetail_BillObject,
+} from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import {
   Box,
@@ -38,6 +46,7 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 import { documentId, where } from 'firebase/firestore';
+import { type } from 'os';
 import React, { useEffect, useMemo, useState } from 'react';
 
 const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
@@ -386,11 +395,39 @@ export const getServerSideProps = async () => {
     const payments = await getCollection<PaymentObject>(
       COLLECTION_NAME.PAYMENTS
     );
+    const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
+    const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
+    const deliveries = await getCollection<DeliveryObject>(
+      COLLECTION_NAME.DELIVERIES
+    );
+
+    const finalBills: SuperDetail_BillObject[] = bills.map(
+      (bill: BillObject) => {
+        const finalBill: SuperDetail_BillObject = {
+          ...bill,
+          paymentObject: payments.find((payment: PaymentObject) => {
+            return payment.id === bill.payment_id;
+          }),
+          userObject: users.find((user: UserObject) => {
+            return user.id === bill.user_id;
+          }),
+          saleObject: sales.find((sale: SaleObject) => {
+            return sale.id === bill.sale_id;
+          }),
+          deliveryObject: deliveries.find((delivery: DeliveryObject) => {
+            return delivery.bill_id === bill.id;
+          }),
+        };
+
+        return {
+          ...finalBill,
+        };
+      }
+    );
 
     return {
       props: {
-        bills: JSON.stringify(bills),
-        payments: payments,
+        finalBills: JSON.stringify(finalBills),
       },
     };
   } catch (error) {
@@ -398,7 +435,7 @@ export const getServerSideProps = async () => {
 
     return {
       props: {
-        bills: [],
+        finalBills: [],
       },
     };
   }
