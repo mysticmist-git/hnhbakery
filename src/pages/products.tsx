@@ -13,7 +13,7 @@ import {
   fetchAvailableBatches,
   getCollectionWithQuery,
 } from '@/lib/firestore';
-import { ProductObject } from '@/lib/models';
+import { BatchObject, ProductObject } from '@/lib/models';
 import { filterDuplicatesById, formatPrice } from '@/lib/utils';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridView from '@mui/icons-material/GridView';
@@ -1444,7 +1444,21 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
 };
 
 export async function getServerSideProps() {
-  const batches = await fetchAvailableBatches();
+  let batches: BatchObject[] = [];
+
+  try {
+    batches = await fetchAvailableBatches();
+  } catch (error) {
+    console.log(error);
+  }
+
+  if (batches.length <= 0) {
+    return {
+      props: {
+        products: JSON.stringify([]),
+      },
+    };
+  }
 
   const products = await getCollectionWithQuery<ProductObject>(
     COLLECTION_NAME.PRODUCTS,
@@ -1468,4 +1482,4 @@ export async function getServerSideProps() {
   };
 }
 
-export default memo(Products);
+export default Products;
