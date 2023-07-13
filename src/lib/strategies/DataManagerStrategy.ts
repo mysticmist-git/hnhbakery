@@ -1,16 +1,13 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { DesktopDateTimePicker } from '@mui/x-date-pickers';
 import { Timestamp, collection, doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
-import { isReturnStatement } from 'typescript';
 import {
   addDocToFirestore,
   addDocToFirestoreWithRef,
   deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
   deleteImagesFromFirebaseStorage,
-  getDocFromDocRef,
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,

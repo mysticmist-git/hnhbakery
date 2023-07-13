@@ -40,6 +40,10 @@ export type ProductObject = BaseObject & {
   isActive: boolean;
 };
 
+export type ProductObjectWithURLs = ProductObject & {
+  imageUrls: PathWithUrl[];
+};
+
 export type StorageProductObject = ProductObject & {
   imageUrls: PathWithUrl[];
 };
@@ -90,7 +94,7 @@ export type BillDetailObject = BaseObject & {
   amount?: number;
   price?: number;
   discount?: number;
-  discountPrice?: number;
+  discountAmount?: number;
   batch_id?: string;
   bill_id?: string;
 };

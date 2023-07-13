@@ -7,11 +7,32 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+
+// Button component to avoid code duplication
+function Button({ onClick, children, style }: any) {
+  return (
+    <Grid
+      item
+      sx={{
+        display: {
+          xs: 'none',
+          sm: 'block',
+        },
+      }}
+    >
+      <CustomButton onClick={onClick} sx={style}>
+        <Typography variant="body1" color="white">
+          {children}
+        </Typography>
+      </CustomButton>
+    </Grid>
+  );
+}
 
 export default function NumberInputWithButtons({
-  min,
-  max,
+  min = 1,
+  max = 1,
   value: paramValue,
   onChange,
   size = 'large',
@@ -20,54 +41,76 @@ export default function NumberInputWithButtons({
   min: number;
   max: number;
   value?: number;
+  onChange?: (value: number) => void;
   size?: 'small' | 'large';
   justifyContent?: 'flex-start' | 'center' | 'flex-end';
-  onChange?: (value: number) => void;
 }) {
-  const style = {
-    spacing: size === 'small' ? 0.5 : 1,
-    button_py: size === 'small' ? 0.5 : 1.5,
-    button_px: size === 'small' ? 0 : 3,
-    input_p: size === 'small' ? 0.5 : 1.5,
-  };
+  const style = useMemo(
+    () => ({
+      spacing: size === 'small' ? 0.5 : 1,
+      button_py: size === 'small' ? 0.5 : 1.5,
+      button_px: size === 'small' ? 0 : 3,
+      input_p: size === 'small' ? 0.5 : 1.5,
+    }),
+    [size]
+  );
 
   const [value, setValue] = useState(min);
   const theme = useTheme();
 
-  const handleAddClick = () => {
+  function handleAddClick() {
     if (value < max) {
-      if (onChange) onChange(value + 1);
-      else setValue((prev: number) => prev + 1);
+      const newValue = value + 1;
+      setValue(newValue);
+      if (onChange) {
+        onChange(newValue);
+      }
     }
-  };
+  }
 
-  const handleMinusClick = () => {
+  function handleMinusClick() {
     if (value > min) {
-      if (onChange) onChange(value - 1);
-      else setValue((prev: number) => prev - 1);
+      const newValue = value - 1;
+      setValue(newValue);
+      if (onChange) {
+        onChange(newValue);
+      }
     }
-  };
+  }
 
-  const handleOnBlur = () => {
+  function handleOnBlur() {
     if (value < min) {
-      if (onChange) onChange(min);
-      else setValue(() => min);
+      setValue(min);
+      if (onChange) {
+        onChange(min);
+      }
     } else if (value > max) {
-      if (onChange) onChange(max);
-      else setValue(() => max);
+      setValue(max);
+      if (onChange) {
+        onChange(max);
+      }
     }
-  };
-
-  useEffect(() => {
-    if (paramValue) setValue(() => paramValue);
-  }, [paramValue]);
+  }
 
   useEffect(() => {
     if (max < value) {
-      if (onChange) onChange(max);
-      else setValue(() => max);
+      setValue(() => max);
+
+      if (onChange) {
+        onChange(max);
+      }
     }
   }, [max]);
+
+  useEffect(() => {
+    if (paramValue !== undefined) setValue(paramValue);
+  }, [paramValue]);
+
+  const buttonStyle = {
+    py: style.button_py,
+    px: style.button_px,
+    borderRadius: '8px',
+  };
 
   return (
     <Grid
@@ -78,33 +121,23 @@ export default function NumberInputWithButtons({
       alignItems={'center'}
       width={'auto'}
     >
-      <Grid
-        item
-        sx={{
-          display: {
-            xs: 'none',
-            sm: 'block',
-          },
-        }}
-      >
-        <CustomButton
-          onClick={handleMinusClick}
-          sx={{
-            py: style.button_py,
-            px: style.button_px,
-            borderRadius: '8px',
-          }}
-        >
-          <Typography variant="body1" color={theme.palette.common.white}>
-            -
-          </Typography>
-        </CustomButton>
-      </Grid>
+      <Button onClick={handleMinusClick} style={buttonStyle}>
+        -
+      </Button>
       <Grid item>
         <TextField
           value={value}
           onBlur={handleOnBlur}
-          onChange={(e) => setValue(Number(e.target.value))}
+          onChange={(e) => {
+            const newValue = Number(e.target.value);
+            if (
+              Number.isInteger(newValue) &&
+              newValue >= min &&
+              newValue <= max
+            ) {
+              setValue(newValue);
+            }
+          }}
           type="number"
           variant="filled"
           hiddenLabel
@@ -167,28 +200,9 @@ export default function NumberInputWithButtons({
           }}
         />
       </Grid>
-      <Grid
-        item
-        sx={{
-          display: {
-            xs: 'none',
-            sm: 'block',
-          },
-        }}
-      >
-        <CustomButton
-          onClick={handleAddClick}
-          sx={{
-            py: style.button_py,
-            px: style.button_px,
-            borderRadius: '8px',
-          }}
-        >
-          <Typography variant="body1" color={theme.palette.common.white}>
-            +
-          </Typography>
-        </CustomButton>
-      </Grid>
+      <Button onClick={handleAddClick} style={buttonStyle}>
+        +
+      </Button>
     </Grid>
   );
 }
