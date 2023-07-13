@@ -22,7 +22,7 @@ import UI_SizeMaterial from '../UI_SizeMaterial/UI_SizeMaterial';
 import UI_TotalPrice from '../UI_TotalPrice/UI_TotalPrice';
 
 function resolveBatchMax(total?: number, sold?: number) {
-  if (!total || !sold) return 1;
+  if (total === undefined || sold === undefined) return 0;
 
   return total - sold;
 }
@@ -47,6 +47,19 @@ function ProductTable({ items, onChange }: ProductTableProps) {
   const handleDeleteRow = (id: string) => {
     onChange(items.filter((item) => item.id !== id));
   };
+
+  function handleQuantityChange(
+    quantity: number,
+    changeItem: AssembledCartItem
+  ) {
+    onChange(
+      items.map((i) => {
+        if (i.id === changeItem.id) i.quantity = quantity;
+
+        return i;
+      })
+    );
+  }
 
   return (
     <>
@@ -159,17 +172,9 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                       item.batch?.totalQuantity,
                       item.batch?.soldQuantity
                     )}
-                    onChange={(quantity: number) => {
-                      onChange(
-                        items.map((item) => {
-                          if (item.id !== item.id) return item;
-
-                          item.quantity = quantity;
-
-                          return item;
-                        })
-                      );
-                    }}
+                    onChange={(quantity: number) =>
+                      handleQuantityChange(quantity, item)
+                    }
                     justifyContent={'center'}
                   />
                 </TableCell>
@@ -278,17 +283,9 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                           item.batch?.totalQuantity,
                           item.batch?.soldQuantity
                         )}
-                        onChange={(quantity: number) => {
-                          onChange(
-                            items.map((item) => {
-                              if (item.id !== item.id) return item;
-
-                              item.quantity = quantity;
-
-                              return item;
-                            })
-                          );
-                        }}
+                        onChange={(quantity: number) =>
+                          handleQuantityChange(quantity, item)
+                        }
                         justifyContent={'center'}
                       />
                     </Grid>

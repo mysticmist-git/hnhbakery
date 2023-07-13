@@ -5,6 +5,7 @@ import {
   ProductVariant,
 } from '@/lib/models';
 import { FromObjectable, Prototype } from '@/utils/prototype';
+import { ClosedCaptionDisabledTwoTone } from '@mui/icons-material';
 import { nanoid } from 'nanoid';
 
 export class CartItem implements Prototype {
@@ -131,5 +132,21 @@ export class AssembledCartItem extends CartItem {
 
   getRawItem() {
     return new CartItem(this.userId, this.batchId, this.quantity);
+  }
+
+  clone(): AssembledCartItem {
+    const clonedItem = new AssembledCartItem();
+
+    clonedItem.id = this.id;
+    clonedItem.userId = this.userId;
+    clonedItem.batchId = this.batchId;
+    clonedItem.quantity = this.quantity;
+    clonedItem.batch = this.batch ? { ...this.batch } : null;
+    clonedItem.variant = this.variant ? { ...this.variant } : null;
+    clonedItem.product = this.product ? { ...this.product } : null;
+    clonedItem.discounted = this.discounted;
+    clonedItem.discountAmount = this.discountAmount;
+
+    return clonedItem;
   }
 }

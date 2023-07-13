@@ -11,13 +11,15 @@ import {
 } from '@/lib/models';
 
 class AssembledCartItemBuilder {
-  private _item: AssembledCartItem;
+  private _item: AssembledCartItem | null = null;
 
   constructor(item?: CartItem) {
-    this._item = new AssembledCartItem(item);
+    if (item) this._item = new AssembledCartItem(item?.clone());
   }
 
   async fetchBatch(): Promise<AssembledCartItemBuilder> {
+    if (!this._item) throw new Error('Item not found');
+
     try {
       const batch = await getDocFromFirestore<BatchObject>(
         COLLECTION_NAME.BATCHES,
@@ -33,6 +35,8 @@ class AssembledCartItemBuilder {
   }
 
   async checkDiscount(): Promise<AssembledCartItemBuilder> {
+    if (!this._item) throw new Error('Item not found');
+
     if (!this._item.batch) await this.fetchBatch();
 
     if (!this._item.batch) throw new Error('Batch not found');
@@ -52,6 +56,8 @@ class AssembledCartItemBuilder {
   }
 
   async fetchProduct(): Promise<AssembledCartItemBuilder> {
+    if (!this._item) throw new Error('Item not found');
+
     if (!this._item.batch) await this.fetchBatch();
 
     if (!this._item.batch) throw new Error('Batch not found');
@@ -67,7 +73,6 @@ class AssembledCartItemBuilder {
         product.images.length ?? 0
           ? await getDownloadUrlFromFirebaseStorage(product.images[0])
           : '';
-      console.log(image);
       this._item.image = image;
     } catch (error) {
       console.log(error);
@@ -78,13 +83,15 @@ class AssembledCartItemBuilder {
   }
 
   async fetchVariant(): Promise<AssembledCartItemBuilder> {
+    if (!this._item) throw new Error('Item not found');
+
     if (!this._item.product) await this.fetchProduct();
 
     if (!this._item.product) throw new Error('Product not found');
 
     this._item.variant =
       this._item.product.variants.find(
-        (v) => v.id === this._item.batch?.variant_id
+        (v) => v.id === this._item?.batch?.variant_id
       ) ?? null;
 
     return this;
@@ -96,6 +103,7 @@ class AssembledCartItemBuilder {
   }
 
   build(): AssembledCartItem {
+    if (!this._item) throw new Error('Item not found');
     return this._item;
   }
 }

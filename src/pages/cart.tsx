@@ -65,15 +65,13 @@ function Cart() {
 
   useEffect(() => {
     async function assembleItems() {
-      const builder = new AssembledCartItemBuilder();
-      const director: AssembledCartItemDirector =
-        new AssembledCartItemNormalDirector(builder);
-
       const items = await Promise.all(
         cart?.map(async (item) => {
-          builder.reset(item);
+          const builder = new AssembledCartItemBuilder(item);
+          const director: AssembledCartItemDirector =
+            new AssembledCartItemNormalDirector(builder);
 
-          director.directBuild();
+          await director.directBuild();
 
           const assembledItem = builder.build();
 
@@ -92,6 +90,7 @@ function Cart() {
   //#region Handlers
 
   function handleCartItemChange(items: AssembledCartItem[]) {
+    setAssembledCartItems(() => items);
     setCart(() => items.map((item) => item.getRawItem()));
   }
 
