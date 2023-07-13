@@ -208,6 +208,7 @@ export const validateCollectionNameParams = (
 ): boolean => {
   return manageCollections.includes(collectionName);
 };
+
 export function billStatusParse(state: number | undefined) {
   switch (state) {
     case -1:
@@ -216,6 +217,21 @@ export function billStatusParse(state: number | undefined) {
       return 'Chưa thanh toán';
     case 1:
       return 'Đã thanh toán';
+    default:
+      return 'Lỗi';
+  }
+}
+
+export function deliveryStatusParse(state: string | undefined) {
+  switch (state) {
+    case 'fail':
+      return 'Giao hàng thất bại';
+    case 'success':
+      return 'Giao hàng thành công';
+    case 'inProcress':
+      return 'Đang xử lý';
+    case 'inTransit':
+      return 'Trên đường giao';
     default:
       return 'Lỗi';
   }

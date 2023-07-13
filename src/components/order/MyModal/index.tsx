@@ -1,55 +1,57 @@
-import { CustomIconButton } from '@/components/buttons';
+import { CustomButton, CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
 import { updateDocToFirestore } from '@/lib/firestore';
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import {
   AssembledBillDetail,
   CustomBill,
   SuperDetail_BillObject,
 } from '@/lib/models';
-import { formatDateString, formatPrice } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
 import {
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
   Grid,
-  InputAdornment,
-  TextField,
-  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
 import { Box, alpha } from '@mui/system';
-import { memo, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import { deliveryStatusParse } from '@/lib/manage/manage';
+import { Outlined_TextField } from './Outlined_TextField';
+import { ThongTin_Content } from './ThongTin_Content';
+import { SaleDelivery_Content } from './SaleDelivery_Content';
 
-function Outlined_TextField(props: any) {
+type EditType = {
+  name?: string;
+  tel?: string;
+  email?: string;
+  address?: string;
+  date?: Date;
+  time?: string;
+};
+
+function ResetEditContent(bill: SuperDetail_BillObject | null) {
+  return {
+    name: bill?.deliveryObject?.name ?? 'Trống',
+    tel: bill?.deliveryObject?.tel ?? 'Trống',
+    email: bill?.deliveryObject?.email ?? 'Trống',
+    address: bill?.deliveryObject?.address ?? 'Trống',
+    date: bill?.deliveryObject?.date ?? new Date(),
+    time: bill?.deliveryObject?.time ?? 'Trống',
+  };
+}
+
+function SanPham_Content(props: any) {
   return (
     <>
-      <TextField
-        {...props}
-        variant="outlined"
-        fullWidth
-        InputProps={{
-          readOnly: true,
-          style: {
-            borderRadius: '8px',
-            pointerEvents: 'none',
-          },
-          ...props.InputProps,
-        }}
-        inputProps={{
-          sx: {
-            ...props.textStyle,
-          },
-        }}
-        type="text"
-      >
-        {props.children}
-      </TextField>
+      <Box>Huy</Box>
     </>
   );
 }
@@ -67,10 +69,43 @@ const MyModal = ({
 }) => {
   const handleSnackbarAlert = useSnackbarService();
 
-  const [billDetails, setBillDetails] = useState<AssembledBillDetail | null>(
-    null
+  //#region Style
+  const theme = useTheme();
+
+  const StyleCuaCaiBox = {
+    width: '100%',
+    height: '100%',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    border: 1,
+    borderColor: theme.palette.text.secondary,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'start',
+    alignItems: 'center',
+    opacity: 0.8,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      opacity: 1,
+      boxShadow: 10,
+    },
+  };
+  const textStyle = {
+    fontSize: theme.typography.body2.fontSize,
+    color: theme.palette.common.black,
+    fontWeight: theme.typography.body2.fontWeight,
+    fontFamily: theme.typography.body2.fontFamily,
+  };
+  //#endregion
+
+  const [modalBill, setModalBill] = useState<SuperDetail_BillObject | null>(
+    bill
   );
-  const [billState, setBillState] = useState<number>(0);
+
+  const [billState, setBillState] = useState<number>(modalBill?.state ?? 0);
+  const handleBillStateChange = (state: number) => {
+    setBillState(() => state);
+  };
 
   //#region UseEffects
 
@@ -123,16 +158,30 @@ const MyModal = ({
 
   //#endregion
 
+  //#region Modal Chi tiết
   const clearData = () => {
-    setBillDetails(() => null);
+    setModalBill(() => null);
     setBillState(() => 0);
   };
-
-  const handleBillStateChange = (state: number) => {
-    setBillState(() => state);
+  const localHandleClose = () => {
+    // Clear data
+    clearData();
+    handleClose();
   };
 
-  const handleSave = () => {
+  const [editMode, setEditMode] = useState(false);
+  const [editContent, setEditContent] = useState<EditType>(
+    ResetEditContent(bill)
+  );
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setEditContent(() => ResetEditContent(bill));
+    handleSnackbarAlert('info', 'Đã hủy thay đổi.');
+  };
+
+  const handleSaveEdit = () => {
+    setEditMode(false);
+    // Hỏi Hên Hàm update
     // const data = {
     //   ...bill,
     //   state: billState,
@@ -140,40 +189,14 @@ const MyModal = ({
     // updateDocToFirestore(data, 'bills');
     // handleSnackbarAlert('success', 'Đã cập nhật đơn hàng');
     // handleBillDataChange(data);
+    handleSnackbarAlert('success', 'Thay đổi thành công!');
   };
+  //#endregion
 
-  const localHandleClose = () => {
-    // Clear data
-    clearData();
-    handleClose();
-  };
-
-  const theme = useTheme();
-
-  const StyleCuaCaiBox = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    border: 1,
-    borderColor: theme.palette.text.secondary,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'start',
-    alignItems: 'center',
-    opacity: 0.8,
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      opacity: 1,
-      boxShadow: 10,
-    },
-  };
-  const textStyle = {
-    fontSize: theme.typography.body2.fontSize,
-    color: theme.palette.common.black,
-    fontWeight: theme.typography.body2.fontWeight,
-    fontFamily: theme.typography.body2.fontFamily,
-  };
+  useEffect(() => {
+    setModalBill(() => bill);
+    setEditContent(() => ResetEditContent(bill));
+  }, [bill]);
 
   return (
     <>
@@ -191,7 +214,7 @@ const MyModal = ({
           transition: 'all 0.5s ease-in-out',
         }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ boxShadow: 3 }}>
           <Typography
             align="center"
             variant="body1"
@@ -212,464 +235,353 @@ const MyModal = ({
             </CustomIconButton>
           </Box>
         </DialogTitle>
-        <DialogContent>
-          <Grid
-            container
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            spacing={2}
-          >
-            {/* Thông tin */}
-            <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
-              <Box sx={StyleCuaCaiBox}>
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    height: '40px',
-                    p: 2,
-                    bgcolor: theme.palette.text.secondary,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color={theme.palette.common.white}
-                  >
-                    Thông tin đặt hàng
-                  </Typography>
-                </Box>
 
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 2,
-                    gap: 3,
-                  }}
-                >
-                  <Outlined_TextField
-                    label="Người đặt"
-                    value={bill?.userObject?.name ?? 'GUEST'}
-                    textStyle={textStyle}
-                    InputProps={{
-                      readOnly: true,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                      endAdornment: bill?.userObject && (
-                        <InputAdornment position="end">
-                          <CustomIconButton
-                            edge="end"
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                bill?.userObject?.id ?? 'GUEST'
-                              );
-                              handleSnackbarAlert(
-                                'success',
-                                'Đã sao chép mã người dùng vào clipboard!'
-                              );
-                            }}
-                          >
-                            <Tooltip title="Sao chép mã người dùng vào clipboard">
-                              <ContentCopyRoundedIcon fontSize="small" />
-                            </Tooltip>
-                          </CustomIconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Grid
+              container
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              spacing={2}
+            >
+              {/* Thông tin */}
+              <Grid item xs={12} md={6} lg={5} alignSelf={'stretch'}>
+                <Box sx={StyleCuaCaiBox}>
                   <Box
                     sx={{
                       width: '100%',
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 3,
+                      justifyContent: 'space-between',
+                      height: '40px',
+                      p: 2,
+                      bgcolor: theme.palette.text.secondary,
                     }}
                   >
-                    <Outlined_TextField
-                      textStyle={textStyle}
-                      label="Thanh toán lúc"
-                      value={formatDateString(bill?.paymentTime ?? new Date())}
-                    />
-                    <Outlined_TextField
-                      textStyle={textStyle}
-                      label="Thanh toán qua"
-                      value={bill?.paymentObject?.name ?? 'Trống'}
-                    />
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.common.white}
+                    >
+                      Thông tin đặt hàng
+                    </Typography>
                   </Box>
 
-                  <Outlined_TextField
+                  <ThongTin_Content
                     textStyle={textStyle}
-                    label="Ghi chú cho đơn hàng"
-                    multiline
-                    maxRows={2}
-                    InputProps={{
-                      readOnly: true,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                    }}
-                    value={
-                      bill?.note && bill?.note !== '' ? bill?.note : 'Trống '
-                    }
+                    modalBill={modalBill}
                   />
                 </Box>
-              </Box>
-            </Grid>
+              </Grid>
 
-            {/* Sales và deliver */}
-            <Grid item xs={12} md={6} lg={8} alignSelf={'stretch'}>
-              <Box sx={StyleCuaCaiBox}>
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 2,
-                    height: '40px',
-                    bgcolor: theme.palette.text.secondary,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color={theme.palette.common.white}
-                  >
-                    Khuyến mãi và vận chuyển
-                  </Typography>
-
+              {/* Sales và deliver */}
+              <Grid item xs={12} md={6} lg={7} alignSelf={'stretch'}>
+                <Box sx={StyleCuaCaiBox}>
                   <Box
                     sx={{
+                      width: '100%',
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 0.5,
+                      justifyContent: 'space-between',
+                      p: 2,
+                      height: '40px',
+                      bgcolor: theme.palette.text.secondary,
                     }}
                   >
-                    <CustomIconButton>
-                      <CloseIcon fontSize="small" />
-                    </CustomIconButton>
-                    <CustomIconButton>
-                      <CloseIcon fontSize="small" />
-                    </CustomIconButton>
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.common.white}
+                    >
+                      Khuyến mãi và vận chuyển
+                    </Typography>
                   </Box>
-                </Box>
 
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 2,
-                    gap: 3,
-                  }}
-                >
-                  <Outlined_TextField
+                  <SaleDelivery_Content
                     textStyle={textStyle}
-                    label="Khuyến mãi áp dụng"
-                    multiline
-                    value={
-                      bill?.saleObject
-                        ? bill?.saleObject?.name +
-                          ' | Mã code: ' +
-                          bill?.saleObject?.code +
-                          ' | Giảm ' +
-                          bill?.saleObject?.percent +
-                          '% (Tối đa ' +
-                          formatPrice(bill?.saleObject?.maxSalePrice ?? 0) +
-                          ')\nÁp dụng: ' +
-                          new Date(
-                            bill?.saleObject?.start_at ?? new Date()
-                          ).toLocaleString('vi-VI', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          }) +
-                          ' - ' +
-                          new Date(
-                            bill?.saleObject?.end_at ?? new Date()
-                          ).toLocaleString('vi-VI', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })
-                        : 'Không áp dụng'
-                    }
-                    InputProps={{
-                      readOnly: true,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                      endAdornment: bill?.saleObject && (
-                        <InputAdornment position="end">
-                          <CustomIconButton
-                            edge="end"
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                bill?.saleObject?.id ?? 'Trống'
-                              );
-                              handleSnackbarAlert(
-                                'success',
-                                'Đã sao chép mã khuyến mãi vào clipboard!'
-                              );
-                            }}
-                          >
-                            <Tooltip title="Sao chép mã khuyến mãi vào clipboard">
-                              <ContentCopyRoundedIcon fontSize="small" />
-                            </Tooltip>
-                          </CustomIconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  <Outlined_TextField
-                    textStyle={textStyle}
-                    label="Vận chuyển"
-                    multiline
-                    value={
-                      bill?.deliveryObject
-                        ? 'Mã vận chuyển: ' +
-                          bill?.deliveryObject?.id +
-                          '\nGhi chú cho shipper: ' +
-                          (bill?.deliveryObject?.shipperNote !== ''
-                            ? bill?.deliveryObject?.shipperNote
-                            : 'Trống')
-                        : 'Trống'
-                    }
-                    InputProps={{
-                      readOnly: true,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                      endAdornment: bill?.deliveryObject && (
-                        <InputAdornment position="end">
-                          <CustomIconButton
-                            edge="end"
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                bill?.deliveryObject?.id ?? 'Trống'
-                              );
-                              handleSnackbarAlert(
-                                'success',
-                                'Đã sao chép mã vận chuyển vào clipboard!'
-                              );
-                            }}
-                          >
-                            <Tooltip title="Sao chép mã vận chuyển vào clipboard">
-                              <ContentCopyRoundedIcon fontSize="small" />
-                            </Tooltip>
-                          </CustomIconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+                    modalBill={modalBill}
                   />
                 </Box>
-              </Box>
-            </Grid>
+              </Grid>
 
-            {/* Người nhận */}
-            <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
-              <Box sx={StyleCuaCaiBox}>
-                <Box
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 2,
-                    height: '40px',
-                    bgcolor: theme.palette.text.secondary,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color={theme.palette.common.white}
-                  >
-                    Người nhận
-                  </Typography>
-
+              {/* Người nhận */}
+              <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
+                <Box sx={StyleCuaCaiBox}>
                   <Box
                     sx={{
+                      width: '100%',
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 0.5,
+                      justifyContent: 'space-between',
+                      p: 2,
+                      height: '40px',
+                      bgcolor: theme.palette.text.secondary,
                     }}
                   >
-                    <CustomIconButton>
-                      <CloseIcon fontSize="small" />
-                    </CustomIconButton>
-                    <CustomIconButton>
-                      <CloseIcon fontSize="small" />
-                    </CustomIconButton>
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.common.white}
+                    >
+                      Người nhận
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      {!editMode && (
+                        <CustomIconButton onClick={() => setEditMode(true)}>
+                          <EditRoundedIcon fontSize="small" color="primary" />
+                        </CustomIconButton>
+                      )}
+                      {editMode && (
+                        <>
+                          <CustomIconButton onClick={handleSaveEdit}>
+                            <SaveAsRoundedIcon
+                              fontSize="small"
+                              color="primary"
+                            />
+                          </CustomIconButton>
+                          <CustomIconButton onClick={handleCancelEdit}>
+                            <CloseIcon fontSize="small" color="primary" />
+                          </CustomIconButton>
+                        </>
+                      )}
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      width: '100%',
+                      p: 2,
+                    }}
+                  >
+                    <Grid
+                      container
+                      spacing={3}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Grid item xs={12} md={6} lg={4}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Tên"
+                          value={editContent.name}
+                          onChange={(event: any) => {
+                            setEditContent({
+                              ...editContent,
+                              name: event.target.value,
+                            });
+                          }}
+                          InputProps={{
+                            readOnly: !editMode,
+                            style: {
+                              pointerEvents: editMode ? 'auto' : 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={6} lg={4}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Số điện thoại"
+                          value={editContent.tel}
+                          onChange={(event: any) => {
+                            setEditContent({
+                              ...editContent,
+                              tel: event.target.value,
+                            });
+                          }}
+                          InputProps={{
+                            readOnly: !editMode,
+                            style: {
+                              pointerEvents: editMode ? 'auto' : 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                          type="tel"
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={12} lg={4}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Email"
+                          value={editContent.email}
+                          onChange={(event: any) => {
+                            setEditContent({
+                              ...editContent,
+                              email: event.target.value,
+                            });
+                          }}
+                          InputProps={{
+                            readOnly: !editMode,
+                            style: {
+                              pointerEvents: editMode ? 'auto' : 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                          type="email"
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={12} lg={12}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Địa chỉ giao hàng"
+                          value={editContent.address}
+                          onChange={(event: any) => {
+                            setEditContent({
+                              ...editContent,
+                              address: event.target.value,
+                            });
+                          }}
+                          InputProps={{
+                            readOnly: !editMode,
+                            style: {
+                              pointerEvents: editMode ? 'auto' : 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={12} lg={12}>
+                        <Divider sx={{ width: '100%' }} />
+                      </Grid>
+
+                      <Grid item xs={12} md={6} lg={4}>
+                        <DatePicker
+                          label="Ngày muốn nhận"
+                          views={['day', 'month', 'year']}
+                          sx={{
+                            width: '100%',
+                          }}
+                          value={dayjs(editContent.date)}
+                          onChange={(day: any) => {
+                            setEditContent({
+                              ...editContent,
+                              date: new Date(day),
+                            });
+                          }}
+                          format="DD/MM/YYYY"
+                          slotProps={{
+                            textField: {
+                              InputProps: {
+                                readOnly: !editMode,
+                                style: {
+                                  pointerEvents: editMode ? 'auto' : 'none',
+                                  borderRadius: '8px',
+                                },
+                              },
+                              inputProps: {
+                                sx: {
+                                  ...textStyle,
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={6} lg={4}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Giờ muốn nhận"
+                          value={editContent.time}
+                          onChange={(event: any) => {
+                            setEditContent({
+                              ...editContent,
+                              time: event.target.value,
+                            });
+                          }}
+                          InputProps={{
+                            readOnly: !editMode,
+                            style: {
+                              pointerEvents: editMode ? 'auto' : 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={12} lg={4}>
+                        <Outlined_TextField
+                          textStyle={textStyle}
+                          label="Trạng thái giao hàng"
+                          value={deliveryStatusParse(
+                            modalBill?.deliveryObject?.state ?? 'Trống'
+                          )}
+                          InputProps={{
+                            readOnly: true,
+                            style: {
+                              pointerEvents: 'none',
+                              borderRadius: '8px',
+                            },
+                          }}
+                          inputProps={{
+                            sx: {
+                              color: () => {
+                                switch (
+                                  modalBill?.deliveryObject?.state ??
+                                  'Trống'
+                                ) {
+                                  case 'fail':
+                                    return theme.palette.error.main;
+                                  case 'success':
+                                    return theme.palette.success.main;
+                                  case 'inProcress':
+                                    return theme.palette.text.secondary;
+                                  case 'inTransit':
+                                    return theme.palette.secondary.main;
+                                  default:
+                                    return theme.palette.common.black;
+                                }
+                              },
+                            },
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
                   </Box>
                 </Box>
+              </Grid>
 
-                <Box
-                  sx={{
-                    width: '100%',
-                    p: 2,
-                  }}
-                >
-                  <Grid
-                    container
-                    spacing={3}
-                    alignItems="center"
-                    justifyContent="center"
+              <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
+                <Box sx={StyleCuaCaiBox}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      height: '40px',
+                      bgcolor: theme.palette.text.secondary,
+                    }}
                   >
-                    <Grid item xs={12} md={6} lg={4}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        label="Tên"
-                        value={bill?.deliveryObject?.name ?? 'Trống'}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6} lg={4}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        label="Số điện thoại"
-                        value={bill?.deliveryObject?.tel ?? 'Trống'}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                        type="tel"
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6} lg={4}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        label="Email"
-                        value={bill?.deliveryObject?.email ?? 'Trống'}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                        type="email"
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={12} lg={12}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        label="Địa chỉ giao hàng"
-                        value={bill?.deliveryObject?.address ?? 'Trống'}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={12} lg={12}>
-                      <Divider sx={{ width: '100%' }} />
-                    </Grid>
-
-                    <Grid item xs={12} md={6} lg={4}>
-                      <DatePicker
-                        label="Ngày muốn nhận"
-                        views={['day', 'month', 'year']}
-                        sx={{
-                          width: '100%',
-                        }}
-                        value={dayjs(bill?.deliveryObject?.date ?? '')}
-                        format="DD/MM/YYYY"
-                        slotProps={{
-                          textField: {
-                            InputProps: {
-                              readOnly: true,
-                              style: {
-                                borderRadius: '8px',
-                                pointerEvents: 'none',
-                              },
-                            },
-                            inputProps: {
-                              sx: {
-                                ...textStyle,
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6} lg={4}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        select
-                        label="Giờ muốn nhận"
-                        value={formatDateString(
-                          bill?.paymentTime ?? new Date()
-                        )}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6} lg={4}>
-                      <Outlined_TextField
-                        textStyle={textStyle}
-                        label="Trạng thái"
-                        value={formatDateString(
-                          bill?.paymentTime ?? new Date()
-                        )}
-                        InputProps={{
-                          readOnly: true,
-                          style: {
-                            pointerEvents: 'auto',
-                            borderRadius: '8px',
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.common.white}
+                    >
+                      Danh sách sản phẩm
+                    </Typography>
+                  </Box>
+                  <SanPham_Content />
                 </Box>
-              </Box>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </DialogContent>
       </Dialog>
     </>
