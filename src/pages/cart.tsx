@@ -4,16 +4,13 @@ import ImageBackground from '@/components/Imagebackground';
 import { CustomButton } from '@/components/buttons';
 import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
 import ProductTable from '@/components/cart/ProductTable';
-import { AssembledCartItemBuilder } from '@/lib/builders/CartItem/builders';
-import AssembledCartItemDirector from '@/lib/builders/CartItem/directors/AssembledCartItemInterface';
-import AssembledCartItemNormalDirector from '@/lib/builders/CartItem/directors/AssembledCartItemNormalDirector';
+import { assembleItems, filterExpired } from '@/lib/cart';
 import { ROUTES } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useRouter } from 'next/router';
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import { theme } from '../../tailwind.config';
+import React, { useEffect, useMemo, useState } from 'react';
 
 function Cart() {
   //#region Hooks
@@ -54,6 +51,8 @@ function Cart() {
     AssembledCartItem[]
   >([]);
 
+  const [firstLoad, setFirstLoad] = useState(true);
+
   //#endregion
 
   //#region Handlers
@@ -80,25 +79,25 @@ function Cart() {
   //#region useEffect
 
   useEffect(() => {
-    async function assembleItems() {
-      const items = await Promise.all(
-        cart?.map(async (item) => {
-          const builder = new AssembledCartItemBuilder(item);
-          const director: AssembledCartItemDirector =
-            new AssembledCartItemNormalDirector(builder);
+    async function execute() {
+      if (!cart) return;
 
-          await director.directBuild();
+      try {
+        let filteredCart: CartItem[] = cart;
 
-          const assembledItem = builder.build();
+        if (firstLoad) filteredCart = await filterExpired(cart);
+        const assembledCartItem = await assembleItems(filteredCart);
 
-          return assembledItem;
-        }) ?? []
-      );
+        setAssembledCartItems(assembledCartItem);
 
-      setAssembledCartItems(() => items);
+        if (firstLoad) setCart(filteredCart);
+        setFirstLoad(false);
+      } catch (error) {
+        console.log(error);
+      }
     }
 
-    assembleItems();
+    execute();
   }, [cart]);
 
   //#endregion
