@@ -81,3 +81,13 @@ export const filterDuplicatesById = <T extends { id: string }>(data: T[]) => {
 
   return uniqueData;
 };
+
+export function formatDateString(value: Date): string {
+  return new Date(value).toLocaleString('vi-VI', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

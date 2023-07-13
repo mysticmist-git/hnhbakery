@@ -107,7 +107,7 @@ export type DeliveryObject = BaseObject & {
   startAt?: Date;
   endAt?: Date;
   state?: 'fail' | 'success' | 'inProcress' | 'inTransit';
-  cancelReason?: string;
+  shipperNote?: string;
   bill_id?: string;
 };
 

@@ -8,10 +8,10 @@ import {
   DeliveryObject,
   PaymentObject,
   SaleObject,
-  UserObject,
   SuperDetail_BillObject,
+  UserObject,
 } from '@/lib/models';
-import { formatPrice } from '@/lib/utils';
+import { formatDateString, formatPrice } from '@/lib/utils';
 import {
   Box,
   Button,
@@ -48,6 +48,7 @@ import {
 import { documentId, where } from 'firebase/firestore';
 import { type } from 'os';
 import React, { useEffect, useMemo, useState } from 'react';
+import stringHash from 'string-hash';
 
 const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -55,20 +56,28 @@ const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-function BillTable(props: any) {
+function BillTable({
+  billsData,
+  handleViewBill,
+}: {
+  billsData: SuperDetail_BillObject[];
+  handleViewBill: any;
+}) {
   const theme = useTheme();
-  const { billsData, payments, handleViewBill } = props;
 
   const columns: GridColDef[] = [
     {
       field: 'id',
       headerName: 'Mã đơn',
       flex: 1,
-      align: 'center',
+      align: 'left',
       headerAlign: 'center',
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
+      // valueFormatter: (params: any) => {
+      //   return stringHash(params.value);
+      // },
     },
     {
       field: 'created_at',
@@ -78,28 +87,8 @@ function BillTable(props: any) {
       headerAlign: 'center',
       disableColumnMenu: true,
       hideable: false,
-    },
-    {
-      field: 'paid_at',
-      headerName: 'Thanh toán lúc',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
-      disableColumnMenu: true,
-      hideable: false,
-    },
-    {
-      field: 'payment_id',
-      headerName: 'Thanh toán qua',
-      flex: 1,
-      align: 'center',
-      headerAlign: 'center',
-      disableColumnMenu: true,
-      hideable: false,
       valueFormatter: (params: any) => {
-        return (
-          payments.find((item: any) => item.id === params.value)?.name ?? 'Lỗi'
-        );
+        return formatDateString(params.value);
       },
     },
     {
@@ -113,6 +102,38 @@ function BillTable(props: any) {
       valueFormatter: (params: any) => {
         return formatPrice(params.value);
       },
+      renderCell: (params) => {
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              gap: 0.2,
+            }}
+          >
+            {params.row.saleAmount > 0 && (
+              <span
+                style={{
+                  color: theme.palette.text.secondary,
+                  textDecoration: 'line-through',
+                }}
+              >
+                {formatPrice(params.row.originalPrice)}
+              </span>
+            )}
+
+            <span
+              style={{
+                fontWeight: 'bold',
+              }}
+            >
+              {formatPrice(params.value)}
+            </span>
+          </Box>
+        );
+      },
     },
     {
       field: 'state',
@@ -122,6 +143,9 @@ function BillTable(props: any) {
       headerAlign: 'center',
       disableColumnMenu: true,
       hideable: false,
+      valueFormatter: (params: any) => {
+        return billStatusParse(params.value);
+      },
       renderCell: (params: any) => {
         return (
           <span
@@ -154,6 +178,7 @@ function BillTable(props: any) {
             color="secondary"
             onClick={() => {
               handleViewBill(params.row);
+              console.log(params.row);
             }}
           >
             Chi tiết
@@ -163,33 +188,10 @@ function BillTable(props: any) {
     },
   ];
 
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<SuperDetail_BillObject[]>(billsData);
 
   useEffect(() => {
-    const formatRow = billsData.map((bill: any) => {
-      return {
-        id: bill.id,
-        created_at: new Date(bill.created_at).toLocaleString('vi-VI', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        paid_at: new Date(bill.paymentTime).toLocaleString('vi-VI', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        payment_id: bill.payment_id,
-        totalPrice: bill.totalPrice,
-        state: bill.state,
-      };
-    });
-
-    setRows(formatRow);
+    setRows(billsData);
   }, [billsData]);
 
   return (
@@ -294,43 +296,26 @@ function BillTable(props: any) {
   );
 }
 
-const Order = ({
-  bills,
-  payments,
-}: {
-  bills: string;
-  payments: PaymentObject[];
-}) => {
-  //#region States
-
-  const [open, setOpen] = React.useState(false);
-  const [currentViewBill, setCurrentViewBill] = useState<CustomBill | null>(
-    null
-  );
+const Order = ({ finalBills }: { finalBills: string }) => {
+  //#region Bảng
   const [billsData, setBillsData] = useState([]);
 
   //#endregion
 
-  //#region  UseEffects
-
-  useEffect(() => {
-    const parsedBills = JSON.parse(bills) ?? [];
-    setBillsData(() => parsedBills);
-  }, []);
-
-  //#endregion
-
-  //#region Handlers
+  //#region Modal
+  const [open, setOpen] = React.useState(false);
+  const [currentViewBill, setCurrentViewBill] =
+    useState<SuperDetail_BillObject | null>(null);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleViewBill = (value: CustomBill) => {
+  const handleViewBill = (value: SuperDetail_BillObject) => {
     handleOpen();
     setCurrentViewBill(() => value);
   };
 
-  const handleBillDataChange = (value: CustomBill) => {
+  const handleBillDataChange = (value: SuperDetail_BillObject) => {
     // setBillsData(() => {
     //   // Find the id and alter the value of it with new value
     //   return billsData.map((bill) => {
@@ -342,8 +327,12 @@ const Order = ({
     //   });
     // });
   };
-
   //#endregion
+
+  useEffect(() => {
+    const parsedBills = JSON.parse(finalBills) ?? [];
+    setBillsData(() => parsedBills);
+  }, []);
 
   const theme = useTheme();
 
@@ -368,11 +357,7 @@ const Order = ({
 
           <Grid item xs={12}>
             {/* Table */}
-            <BillTable
-              billsData={billsData}
-              payments={payments}
-              handleViewBill={handleViewBill}
-            />
+            <BillTable billsData={billsData} handleViewBill={handleViewBill} />
             {/* <MyTable billsData={billsData} handleViewBill={handleViewBill} /> */}
 
             {/* Modals */}

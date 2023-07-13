@@ -812,6 +812,7 @@ const Cart = () => {
   //#region UseMemos
 
   const isCartEmpty = useMemo(() => {
+    return false;
     return !Boolean(productBill) || productBill.length <= 0;
   }, [productBill]);
 
