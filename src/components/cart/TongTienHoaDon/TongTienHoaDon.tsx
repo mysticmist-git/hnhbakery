@@ -1,5 +1,5 @@
 import { CartItem } from '@/@types/cart';
-import { AssembledProduct } from '@/lib/contexts/productsContext';
+import { AssembledProduct } from '@/lib/types/products';
 import { formatPrice } from '@/lib/utils';
 import { Box, Typography, useTheme } from '@mui/material';
 import { default as React, useContext, useMemo } from 'react';

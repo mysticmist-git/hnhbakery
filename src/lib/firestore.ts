@@ -1,4 +1,5 @@
 import { db, storage } from '@/firebase/config';
+import { withHashCache, withHashCacheAsync } from '@/utils/withHashCache';
 import { FirebaseError } from 'firebase/app';
 import {
   DocumentData,
@@ -30,8 +31,6 @@ import {
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
-import { AssembledProduct } from './contexts/productsContext';
-import { memoize } from './manage/manage-modal';
 import {
   BaseObject,
   BatchObject,
@@ -45,6 +44,7 @@ import {
   StorageProductObject,
   StorageProductTypeObject,
 } from './models';
+import { AssembledProduct } from './types/products';
 import { filterDuplicates } from './utils';
 
 //#region Document Related Functions
@@ -206,7 +206,7 @@ export async function deleteImagesFromFirebaseStorage(paths: string[]) {
   });
 }
 
-export const getDownloadUrlsFromFirebaseStorage = memoize(
+export const getDownloadUrlsFromFirebaseStorage = withHashCacheAsync(
   async (paths: string[]) => {
     if (!paths) {
       throw new Error('Paths is null');
@@ -226,7 +226,7 @@ export const getDownloadUrlsFromFirebaseStorage = memoize(
   }
 );
 
-export const getDownloadUrlFromFirebaseStorage = memoize(
+export const getDownloadUrlFromFirebaseStorage = withHashCacheAsync(
   async (path: string) => {
     if (!path) {
       throw new Error('Path is null');
@@ -675,7 +675,7 @@ const getBelongBatchesWithProductId: GetBelongBatchesStrategy = async (
 };
 
 export function checkBatchDiscounted(batch: BatchObject): boolean {
-  return batch.discount.date.getTime() > new Date().getTime();
+  return new Date().getTime() > batch.discount.date.getTime();
 }
 
 export async function assembleProduct(
@@ -734,6 +734,19 @@ export const fetchAssembledProduct = async (
 
   return assembledProduct;
 };
+
+/**
+ * Get total sold quantity of a product
+ * @param id - The id of the product
+ */
+export async function getTotalSoldOfProduct(id: string): Promise<number> {
+  const batches = await getCollectionWithQuery<BatchObject>(
+    COLLECTION_NAME.BATCHES,
+    where('product_id', '==', id)
+  );
+
+  return await calculateTotalSoldQuantity(batches);
+}
 
 //#endregion
 

@@ -9,7 +9,6 @@ import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
 import { auth } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { AssembledProduct } from '@/lib/contexts/productsContext';
 import { CartItemFactory } from '@/lib/factories/CartItemFactory';
 import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
 import {
@@ -19,6 +18,7 @@ import {
   ProductVariant,
 } from '@/lib/models';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
+import { AssembledProduct } from '@/lib/types/products';
 import {
   Backdrop,
   Box,

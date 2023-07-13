@@ -1,32 +1,32 @@
-export type BaseObject = {
+export interface BaseObject {
   id?: string;
-};
+}
 
-export type ProductTypeObject = BaseObject & {
+export interface ProductTypeObject extends BaseObject {
   name: string;
   description: string;
   image: string;
   isActive: boolean;
-};
+}
 
-export type StorageProductTypeObject = ProductTypeObject & {
+export interface StorageProductTypeObject extends ProductTypeObject {
   productCount: number;
   imageURL: string;
-};
+}
 
-export type ProductTypeWithCount = ProductTypeObject & {
+export interface ProductTypeWithCount extends ProductTypeObject {
   count: number;
-};
+}
 
-export type ProductVariant = {
+export interface ProductVariant {
   id: string;
   material: string;
   size: string;
   price: number;
   isActive: boolean;
-};
+}
 
-export type ProductObject = BaseObject & {
+export interface ProductObject extends BaseObject {
   id: string;
   productType_id: string;
   name: string;
@@ -38,22 +38,22 @@ export type ProductObject = BaseObject & {
   preservation: string;
   images: string[];
   isActive: boolean;
-};
+}
 
-export type ProductObjectWithURLs = ProductObject & {
+export interface ProductObjectWithURLs extends ProductObject {
   imageUrls: PathWithUrl[];
-};
+}
 
-export type StorageProductObject = ProductObject & {
+export interface StorageProductObject extends ProductObject {
   imageUrls: PathWithUrl[];
-};
+}
 
-export type BatchDiscount = {
+export interface BatchDiscount {
   date: Date;
   percent: number;
-};
+}
 
-export type BatchObject = BaseObject & {
+export interface BatchObject extends BaseObject {
   id: string;
   totalQuantity: number;
   soldQuantity: number;
@@ -62,18 +62,25 @@ export type BatchObject = BaseObject & {
   discount: BatchDiscount;
   variant_id: string;
   product_id: string;
-};
+}
 
-export type BatchObjectWithDiscount = BatchObject & { discounted: boolean };
+export interface BatchObjectWithDiscount extends BatchObject {
+  discounted: boolean;
+}
 
-export type StorageBatchObject = BatchObject & {
+export interface BatchObjectWithPrice extends BatchObjectWithDiscount {
+  price: number;
+  discountAmount: number;
+}
+
+export interface StorageBatchObject extends BatchObject {
   productType_id: string;
   material: string;
   size: string;
   price: number;
-};
+}
 
-export type BillObject = BaseObject & {
+export interface BillObject extends BaseObject {
   id?: string;
   paymentTime?: Date;
   originalPrice?: number;
@@ -87,9 +94,9 @@ export type BillObject = BaseObject & {
   sale_id: string;
   user_id?: string;
   created_at?: Date;
-};
+}
 
-export type BillDetailObject = BaseObject & {
+export interface BillDetailObject extends BaseObject {
   id?: string;
   amount?: number;
   price?: number;
@@ -97,9 +104,9 @@ export type BillDetailObject = BaseObject & {
   discountAmount?: number;
   batch_id?: string;
   bill_id?: string;
-};
+}
 
-export type DeliveryObject = BaseObject & {
+export interface DeliveryObject extends BaseObject {
   id?: string;
   name?: string;
   tel?: string;
@@ -113,37 +120,37 @@ export type DeliveryObject = BaseObject & {
   state?: 'fail' | 'success' | 'inProcress' | 'inTransit';
   shipperNote?: string;
   bill_id?: string;
-};
+}
 
-export type FeedbackObject = BaseObject & {
+export interface FeedbackObject extends BaseObject {
   id: string;
   rating: number;
   comment: string;
   product_id: string;
   user_id: string;
-};
+}
 
-export type PaymentObject = BaseObject & {
+export interface PaymentObject extends BaseObject {
   id?: string;
   name?: string;
   image?: string;
   isActive?: boolean;
-};
+}
 
-export type ReferenceObject = BaseObject & {
+export interface ReferenceObject extends BaseObject {
   id: string;
   name: string;
   values: any[];
-};
+}
 
-export type Role = BaseObject & {
+export interface Role extends BaseObject {
   id: string;
   name: string;
   isActive: true;
   right_Ids: string[];
-};
+}
 
-export type SaleObject = BaseObject & {
+export interface SaleObject extends BaseObject {
   id: string;
   name: string;
   code: string;
@@ -154,9 +161,9 @@ export type SaleObject = BaseObject & {
   end_at: Date;
   image: string;
   isActive: boolean;
-};
+}
 
-export type StaffObject = BaseObject & {
+export interface StaffObject extends BaseObject {
   id: string;
   mail?: string;
   password?: string;
@@ -166,9 +173,9 @@ export type StaffObject = BaseObject & {
   isActive?: boolean;
   role_id: string;
   addresses: string[];
-};
+}
 
-export type UserObject = BaseObject & {
+export interface UserObject extends BaseObject {
   id?: string;
   mail?: string;
   password?: string;
@@ -180,53 +187,53 @@ export type UserObject = BaseObject & {
   role_id?: string;
   addresses?: string[];
   accountType?: 'google' | 'email_n_password';
-};
+}
 
-export type Nameable = {
+export interface Nameable {
   name?: string;
-};
+}
 
-export type IsActivable = {
+export interface IsActivable {
   isActive?: boolean;
-};
+}
 
-export type Identifiable = {
+export interface Identifiable {
   id?: string;
-};
+}
 
-export type Countable = {
+export interface Countable {
   count?: number;
-};
+}
 
-export type Contact = {
+export interface Contact {
   name: string;
   email: string;
   phone?: string;
   title: string;
   content: string;
-};
+}
 
-export type PathWithUrl = {
+export interface PathWithUrl {
   path?: string;
   url: string;
-};
-export type CustomBill = BillObject & {
+}
+export interface CustomBill extends BillObject {
   customerName?: string;
   customerTel?: string;
   customerAddress?: string;
   deliveryPrice?: number;
   salePercent?: number;
-};
-export type AssembledBillDetail = BillDetailObject & {
+}
+export interface AssembledBillDetail extends BillDetailObject {
   productName?: string;
   productTypeName?: string;
   material?: string;
   size?: string;
-};
+}
 
-export type SuperDetail_BillObject = BillObject & {
+export interface SuperDetail_BillObject extends BillObject {
   paymentObject?: PaymentObject;
   userObject?: UserObject;
   saleObject?: SaleObject;
   deliveryObject?: DeliveryObject;
-};
+}

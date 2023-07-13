@@ -1,5 +1,5 @@
-import { AssembledProduct } from '../contexts/productsContext';
 import { BatchObjectWithDiscount, ProductVariant, UserObject } from '../models';
+import { AssembledProduct } from './products';
 
 export type CommentUser = {
   id: string;

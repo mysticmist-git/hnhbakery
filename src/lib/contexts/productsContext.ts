@@ -1,10 +1,6 @@
 import { createContext } from 'react';
-import {
-  BatchObject,
-  BatchObjectWithDiscount,
-  ProductObject,
-  ProductTypeObject,
-} from '../models';
+import { BatchObject, ProductObject } from '../models';
+import { AssembledProduct, ProductForProductsPage } from '../types/products';
 
 export type ProductItem = ProductObject & {
   totalSoldQuantity: number;
@@ -29,7 +25,7 @@ export interface ProductsContextType {
   handleSetViewState: any;
   SortList: any;
   handleSetSortList: any;
-  ProductList: AssembledProduct[];
+  ProductList: ProductForProductsPage[];
   searchText: string;
 }
 
@@ -49,11 +45,3 @@ export const initProductsContext: ProductsContextType = {
 const ProductsContext = createContext<ProductsContextType>(initProductsContext);
 
 export default ProductsContext; //#endregion
-
-export type AssembledProduct = ProductObject & {
-  type: ProductTypeObject;
-  batches: BatchObjectWithDiscount[];
-  totalSoldQuantity: number;
-  href: string;
-  hasDiscounted: boolean;
-};

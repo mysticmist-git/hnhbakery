@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { BatchObject } from '../models';
-import { AssembledProduct } from './productsContext';
+import { AssembledProduct } from '../types/products';
 export interface ExtendedBatchObject extends BatchObject {
   discountPrice: number;
 }

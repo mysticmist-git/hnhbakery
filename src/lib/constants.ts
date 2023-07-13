@@ -33,8 +33,14 @@ export const LOCAL_CART_KEY: string = 'cart';
 export const DETAIL_PATH = '/product-detail';
 
 export const ROUTES = {
+  HOME: '/',
+  SEARCH: '/search',
   PRODUCTS: '/products',
+  ABOUT: '/about',
+  CONTACT: '/contact',
   PRODUCT_DETAIL: '/product-detail',
+  MANAGER: '/manager',
+  CART: '/cart',
 } as const;
 
 type ObjectValues<T> = T[keyof T];
