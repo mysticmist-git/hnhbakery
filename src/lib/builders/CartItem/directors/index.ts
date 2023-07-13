@@ -1,2 +1,2 @@
-export { default as AssembledCartItemDirector } from './AssembledCartItemDirector';
-export type { default as AssembledCartItemInterface } from './AssembledCartItemInterface';
+export type { default as AssembledCartItemDirector } from './AssembledCartItemInterface';
+export { default as AssembledCartItemNormalDirector } from './AssembledCartItemNormalDirector';

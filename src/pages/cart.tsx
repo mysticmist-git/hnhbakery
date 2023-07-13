@@ -5,7 +5,8 @@ import { CustomButton } from '@/components/buttons';
 import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
 import ProductTable from '@/components/cart/ProductTable';
 import { AssembledCartItemBuilder } from '@/lib/builders/CartItem/builders';
-import { AssembledCartItemDirector } from '@/lib/builders/CartItem/directors';
+import AssembledCartItemDirector from '@/lib/builders/CartItem/directors/AssembledCartItemInterface';
+import AssembledCartItemNormalDirector from '@/lib/builders/CartItem/directors/AssembledCartItemNormalDirector';
 import { ROUTES } from '@/lib/constants';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useLocalStorageValue } from '@react-hookz/web';
@@ -65,21 +66,21 @@ function Cart() {
   useEffect(() => {
     async function assembleItems() {
       const builder = new AssembledCartItemBuilder();
-      const director = new AssembledCartItemDirector(builder);
-
-      console.log(cart);
+      const director: AssembledCartItemDirector =
+        new AssembledCartItemNormalDirector(builder);
 
       const items = await Promise.all(
         cart?.map(async (item) => {
           builder.reset(item);
 
-          const assembledItem = await director.build();
+          director.directBuild();
+
+          const assembledItem = builder.build();
 
           return assembledItem;
         }) ?? []
       );
 
-      console.log(items);
       setAssembledCartItems(() => items);
     }
 
@@ -95,9 +96,6 @@ function Cart() {
   }
 
   //#endregion
-
-  console.log(cart);
-  console.log(assembledCartItems);
 
   //#region useMemos
 

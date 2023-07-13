@@ -96,7 +96,6 @@ class AssembledCartItemBuilder {
   }
 
   build(): AssembledCartItem {
-    console.log(this._item);
     return this._item;
   }
 }

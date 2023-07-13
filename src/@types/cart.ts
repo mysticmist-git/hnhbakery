@@ -78,7 +78,8 @@ export class AssembledCartItem extends CartItem {
     super(
       cartItem?.userId ?? '',
       cartItem?.batchId ?? '',
-      cartItem?.quantity ?? 0
+      cartItem?.quantity ?? 0,
+      cartItem?.id ?? ''
     );
   }
 

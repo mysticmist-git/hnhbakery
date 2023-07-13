@@ -1,7 +1,7 @@
 import { AssembledCartItem } from '@/@types/cart';
 
 interface AssembledCartItemDirector {
-  build(): AssembledCartItem;
+  directBuild(): void;
 }
 
 export default AssembledCartItemDirector;

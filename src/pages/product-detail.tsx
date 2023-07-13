@@ -1,4 +1,4 @@
-import { CartItem, ICartItem } from '@/@types/cart';
+import { CartItem } from '@/@types/cart';
 import banh1 from '@/assets/Carousel/1.jpg';
 import banh2 from '@/assets/Carousel/2.jpg';
 import banh3 from '@/assets/Carousel/3.jpg';
@@ -293,13 +293,15 @@ function ProductDetail({
 
     const factory = new CartItemFactory();
 
-    const cartItem: ICartItem = factory.create(
+    const cartItem: CartItem = factory.create(
       user?.uid ?? '',
       selectedBatch.id,
       quantity
     );
 
-    setCart((prev) => [...prev, cartItem]);
+    setCart((prev) => {
+      return [...prev, cartItem];
+    });
 
     handleSnackbarAlert('success', 'Đã thêm sản phẩm vào giỏ hàng');
 
