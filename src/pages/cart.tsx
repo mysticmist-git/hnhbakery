@@ -85,13 +85,16 @@ function Cart() {
       try {
         let filteredCart: CartItem[] = cart;
 
-        if (firstLoad) filteredCart = await filterExpired(cart);
+        if (firstLoad) {
+          filteredCart = await filterExpired(cart);
+          setCart(filteredCart);
+          setFirstLoad(false);
+          return;
+        }
+
         const assembledCartItem = await assembleItems(filteredCart);
 
         setAssembledCartItems(assembledCartItem);
-
-        if (firstLoad) setCart(filteredCart);
-        setFirstLoad(false);
       } catch (error) {
         console.log(error);
       }
