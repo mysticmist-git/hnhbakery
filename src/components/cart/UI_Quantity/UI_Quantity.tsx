@@ -8,10 +8,10 @@ export default function UI_Quantity({
   onChange,
   justifyContent = 'flex-start',
 }: {
-  value: number;
-  max?: number;
-  min?: number;
-  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  value?: number;
+  onChange?: (value: number) => void;
   justifyContent: any;
 }) {
   const theme = useTheme();

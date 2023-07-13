@@ -8,6 +8,7 @@ import { AssembledCartItemBuilder } from '@/lib/builders/CartItem/builders';
 import AssembledCartItemDirector from '@/lib/builders/CartItem/directors/AssembledCartItemInterface';
 import AssembledCartItemNormalDirector from '@/lib/builders/CartItem/directors/AssembledCartItemNormalDirector';
 import { ROUTES } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useRouter } from 'next/router';
@@ -19,6 +20,7 @@ function Cart() {
 
   const theme = useTheme();
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
 
@@ -42,14 +44,23 @@ function Cart() {
       },
     }
   );
+
+  const { value: note, set: setNote } = useLocalStorageValue<string>('note', {
+    defaultValue: '',
+    initializeWithValue: false,
+  });
+
   const [assembledCartItems, setAssembledCartItems] = useState<
     AssembledCartItem[]
   >([]);
-  const [note, setNote] = useState<string>('');
 
   //#endregion
 
   //#region Handlers
+
+  function handleCartItemChange(items: AssembledCartItem[]) {
+    setAssembledCartItems(items);
+  }
 
   function handleContinueToSurf() {
     router.push(ROUTES.PRODUCTS);
@@ -57,6 +68,11 @@ function Cart() {
 
   function handlePayment() {
     alert('paid');
+  }
+
+  function handleSaveCart() {
+    setCart(assembledCartItems.map((item) => item.getRawItem()));
+    handleSnackbarAlert('success', 'Đã cập nhật giỏ hàng');
   }
 
   //#endregion
@@ -87,15 +103,6 @@ function Cart() {
 
   //#endregion
 
-  //#region Handlers
-
-  function handleCartItemChange(items: AssembledCartItem[]) {
-    setAssembledCartItems(() => items);
-    setCart(() => items.map((item) => item.getRawItem()));
-  }
-
-  //#endregion
-
   //#region useMemos
 
   const totalPrice = useMemo(() => {
@@ -113,7 +120,7 @@ function Cart() {
     }, 0);
 
     return price;
-  }, [cart]);
+  }, [assembledCartItems]);
 
   //#endregion
 
@@ -215,6 +222,22 @@ function Cart() {
               {(cart?.length ?? 0) > 0 && (
                 <>
                   <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'end',
+                      }}
+                    >
+                      <CustomButton onClick={handleSaveCart}>
+                        <Typography
+                          sx={{ px: 4 }}
+                          variant="button"
+                          color={theme.palette.common.white}
+                        >
+                          Lưu giỏ hàng
+                        </Typography>
+                      </CustomButton>
+                    </Box>
                     <ProductTable
                       items={assembledCartItems}
                       onChange={handleCartItemChange}

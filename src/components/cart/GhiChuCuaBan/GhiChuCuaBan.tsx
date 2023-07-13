@@ -1,13 +1,29 @@
 import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
 import { Box, Typography, alpha, useTheme } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 type GhiChuCuaBanProps = {
-  note: string;
-  onChange: (note: string) => void;
+  note?: string;
+  onChange?: (note: string) => void;
 };
 
-function GhiChuCuaBan({ note, onChange }: GhiChuCuaBanProps) {
+function GhiChuCuaBan({ note: paramNote, onChange }: GhiChuCuaBanProps) {
   const theme = useTheme();
+
+  const [note, setNote] = useState<string>('');
+
+  useEffect(() => {
+    if (paramNote !== undefined) {
+      setNote(paramNote);
+    }
+  }, [paramNote]);
+
+  function handleNoteChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setNote(e.target.value);
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  }
 
   return (
     <Box
@@ -53,7 +69,7 @@ function GhiChuCuaBan({ note, onChange }: GhiChuCuaBanProps) {
       >
         <CustomTextarea
           value={note}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleNoteChange}
           minRows={3}
           style={{ minHeight: '40px' }}
           placeholder="Ghi chú cho đầu bếp bên mình"
