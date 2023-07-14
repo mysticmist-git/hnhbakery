@@ -1,11 +1,9 @@
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import CheckboxButtonGroup from '@/components/Inputs/MultiValue/CheckboxButtonGroup';
 import { CustomButton } from '@/components/buttons';
-import { getDocFromFirestore } from '@/lib/firestore';
-import { DataManagerErrorCode } from '@/lib/strategies/DataManagerStrategy';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatPrice } from '@/lib/utils';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 import { ProductObject, ProductVariant } from '../../../lib/models';
 import MyDivider from '../Divider/Divider';
@@ -75,14 +73,24 @@ function ProductDetailInfo({
     return max;
   }, [batch]);
 
-  const [itemPrice, totalPrice] = useMemo(() => {
-    if (!batch || !variant) return [0, 0];
+  const [itemPrice, itemDiscountPrice, totalPrice, discountTotalPrice] =
+    useMemo(() => {
+      if (!batch || !variant) return [0, 0, 0, 0];
 
-    const itemPrice = variant.price;
-    const totalPrice = itemPrice * quantity;
+      const itemPrice = variant.price;
 
-    return [itemPrice, totalPrice];
-  }, [batch, quantity]);
+      let itemDiscountPrice = 0;
+
+      if (Date.now() > new Date(batch.discount.date).getTime()) {
+        itemDiscountPrice =
+          (variant.price * (100 - batch.discount.percent)) / 100;
+      }
+
+      const totalPrice = itemPrice * quantity;
+      const discountTotalPrice = itemDiscountPrice * quantity;
+
+      return [itemPrice, itemDiscountPrice, totalPrice, discountTotalPrice];
+    }, [batch, quantity]);
 
   return (
     <Grid
@@ -429,7 +437,28 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography>{formatPrice(itemPrice)}</Typography>
+                  <Stack direction={'row'} gap={1}>
+                    <Typography
+                      sx={
+                        itemDiscountPrice > 0
+                          ? {
+                              textDecoration: 'line-through',
+                            }
+                          : {}
+                      }
+                    >
+                      {formatPrice(itemPrice)}
+                    </Typography>
+                    {itemDiscountPrice > 0 && (
+                      <Typography
+                        sx={{
+                          color: theme.palette.secondary.main,
+                        }}
+                      >
+                        {formatPrice(itemDiscountPrice)}
+                      </Typography>
+                    )}
+                  </Stack>
                 </Grid>
               </Grid>
             </Grid>
@@ -450,7 +479,7 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography>{formatPrice(totalPrice)}</Typography>
+                  <Typography>{formatPrice(discountTotalPrice)}</Typography>
                 </Grid>
               </Grid>
             </Grid>
