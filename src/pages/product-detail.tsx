@@ -12,7 +12,6 @@ import { useSnackbarService } from '@/lib/contexts';
 import { CartItemFactory } from '@/lib/factories/CartItemFactory';
 import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
 import {
-  BatchObject,
   BatchObjectWithDiscount,
   ProductObject,
   ProductVariant,
@@ -27,6 +26,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { isTimeView } from '@mui/x-date-pickers/internals/utils/time-utils';
+import { useLocalStorageValue } from '@react-hookz/web';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -188,7 +189,24 @@ function ProductDetail({
     useState<BatchObjectWithDiscount | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsLoading] = useState<boolean>(false);
-  const [cart, setCart] = useLocalStorage<CartItem[]>('cart', []);
+  const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
+    'cart',
+    {
+      defaultValue: [],
+      initializeWithValue: false,
+      parse(str, fallback) {
+        if (!str) return fallback;
+
+        const value: any[] = JSON.parse(str);
+        const items = value.map(
+          (item) =>
+            new CartItem(item._userId, item._batchId, item._quantity, item._id)
+        );
+
+        return items;
+      },
+    }
+  );
 
   // #endregion
 
@@ -294,14 +312,31 @@ function ProductDetail({
 
     const factory = new CartItemFactory();
 
-    const cartItem: CartItem = factory.create(
-      user?.uid ?? '',
-      selectedBatch.id,
-      quantity
+    if (!cart) {
+      handleSnackbarAlert('error', 'Lỗi khi tải giỏ hàng');
+      return;
+    }
+
+    const clonedCart: CartItem[] = JSON.parse(JSON.stringify(cart));
+
+    const duplicateItem = clonedCart.find(
+      (item) => item.batchId === selectedBatch.id
     );
 
+    if (duplicateItem) {
+      duplicateItem.quantity = duplicateItem.quantity + quantity;
+    } else {
+      const cartItem: CartItem = factory.create(
+        user?.uid ?? '',
+        selectedBatch.id,
+        quantity
+      );
+
+      clonedCart.push(cartItem);
+    }
+
     setCart((prev) => {
-      return [...prev, cartItem];
+      return [...clonedCart];
     });
 
     handleSnackbarAlert('success', 'Đã thêm sản phẩm vào giỏ hàng');

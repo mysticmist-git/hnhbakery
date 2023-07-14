@@ -92,6 +92,8 @@ function Cart() {
           return;
         }
 
+        // TODO: check out of stock
+
         const assembledCartItem = await assembleItems(filteredCart);
 
         setAssembledCartItems(assembledCartItem);
