@@ -101,6 +101,7 @@ const similiarProducts = [
 // #endregion
 
 //#region Giả dữ liệu
+
 const initProduct = {
   id: 1,
   name: 'Bánh Croissant',

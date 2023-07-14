@@ -26,7 +26,7 @@ export interface ProductForProductsPage
     ProductVariant,
     BatchObject {
   discounted: boolean;
-  discountPrice: number;
+  discountPrice: number; // Hiẻn thị giá đã giảm
   image: string;
   href: string;
   totalSoldQuantity: number;

@@ -5,7 +5,7 @@ import { Button, List, ListItem, ListItemText, styled } from '@mui/material';
 import { where } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useState } from 'react';
-import VariantItem from '../VariantItem';
+import VariantItem from '../VariantItem/VariantItem';
 
 type VariantManagerProps = {
   variants: ProductVariant[];
@@ -15,12 +15,14 @@ type VariantManagerProps = {
 };
 
 /**
- * Help managing variants of a product.
+ * Help mannaging variants of a product.
  * This only work with controlled states.
  * @param props Props
  * @returns
  */
 function VariantManager(props: VariantManagerProps) {
+  console.log(props.variants);
+
   //#region States
 
   const [sizes, setSizes] = useState<string[]>([]);

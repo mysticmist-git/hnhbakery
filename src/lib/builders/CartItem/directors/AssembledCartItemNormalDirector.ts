@@ -1,5 +1,5 @@
+import { AssembledCartItemDirector } from '.';
 import AssembledCartItemBuilder from '../builders/AssembledCartItemBuilder';
-import AssembledCartItemDirector from './AssembledCartItemInterface';
 
 class AssembledCartItemNormalDirector implements AssembledCartItemDirector {
   private _builder: AssembledCartItemBuilder;
@@ -7,21 +7,19 @@ class AssembledCartItemNormalDirector implements AssembledCartItemDirector {
   constructor(builder: AssembledCartItemBuilder) {
     this._builder = builder;
   }
-
   setBuilder(builder: AssembledCartItemBuilder): void {
     this._builder = builder;
   }
 
-  async directBuild(): Promise<void> {
-    await (
-      await (
-        await (await this._builder.fetchBatch()).checkDiscount()
-      ).fetchProduct()
-    ).fetchVariant();
+  get builder(): AssembledCartItemBuilder {
+    return this._builder;
   }
 
-  public get builder(): AssembledCartItemBuilder {
-    return this._builder;
+  async directBuild(): Promise<void> {
+    let builder = await this._builder.fetchBatch();
+    builder = await builder?.fetchProduct();
+    builder = await builder?.fetchVariant();
+    builder = await builder?.checkDiscount();
   }
 }
 

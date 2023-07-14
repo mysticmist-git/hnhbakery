@@ -1,11 +1,11 @@
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import CheckboxButtonGroup from '@/components/Inputs/MultiValue/CheckboxButtonGroup';
 import { CustomButton } from '@/components/buttons';
-import { DataManagerErrorCode } from '@/lib/strategies/DataManagerStrategy';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatPrice } from '@/lib/utils';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
+import { ProductObject, ProductVariant } from '../../../lib/models';
 import MyDivider from '../Divider/Divider';
 import ProductCarousel from '../ProductCarousel';
 import ProductRating from '../ProductRating';
@@ -24,16 +24,39 @@ function ProductDetailInfo({
 }: ProductDetailInfoProps) {
   const theme = useTheme();
 
-  const price: string = useMemo(() => {
-    if (!product) return formatPrice(0);
+  const [minPrice, maxPrice, text]: [
+    minPrice: number,
+    maxPrice: number,
+    text: string
+  ] = useMemo(() => {
+    if (!product) return [0, 0, formatPrice(0)];
 
     const prices = product.variants.map((v) => v.price);
 
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    const variantsWithDiscountPrice = create(product.batches, product);
 
-    if (min === max) return formatPrice(min);
-    else return `${formatPrice(min)} - ${formatPrice(max)}`;
+    const min = variantsWithDiscountPrice.reduce(
+      (min, v) =>
+        Math.min(
+          min,
+          Math.min(v.price, v.discounted ? v.discountPrice : v.price)
+        ),
+      Number.MAX_VALUE
+    );
+
+    let max = variantsWithDiscountPrice.reduce((max, v) => {
+      return Math.max(
+        max,
+        Math.min(v.price, v.discounted ? v.discountPrice : v.price)
+      );
+    }, Number.MIN_VALUE);
+
+    let text = '';
+
+    if (min === max) text = formatPrice(min);
+    else text = `${formatPrice(min)} - ${formatPrice(max)}`;
+
+    return [min, max, text];
   }, [product.variants]);
 
   const isProductAvailable: boolean = useMemo(() => {
@@ -50,14 +73,24 @@ function ProductDetailInfo({
     return max;
   }, [batch]);
 
-  const [itemPrice, totalPrice] = useMemo(() => {
-    if (!batch || !variant) return [0, 0];
+  const [itemPrice, itemDiscountPrice, totalPrice, discountTotalPrice] =
+    useMemo(() => {
+      if (!batch || !variant) return [0, 0, 0, 0];
 
-    const itemPrice = variant.price;
-    const totalPrice = itemPrice * quantity;
+      const itemPrice = variant.price;
 
-    return [itemPrice, totalPrice];
-  }, [batch, quantity]);
+      let itemDiscountPrice = 0;
+
+      if (Date.now() > new Date(batch.discount.date).getTime()) {
+        itemDiscountPrice =
+          (variant.price * (100 - batch.discount.percent)) / 100;
+      }
+
+      const totalPrice = itemPrice * quantity;
+      const discountTotalPrice = itemDiscountPrice * quantity;
+
+      return [itemPrice, itemDiscountPrice, totalPrice, discountTotalPrice];
+    }, [batch, quantity]);
 
   return (
     <Grid
@@ -117,7 +150,7 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{price}</Typography>
+                  <Typography variant="body1">{text}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -347,8 +380,6 @@ function ProductDetailInfo({
                           }
                         );
 
-                        console.log(label);
-
                         return label;
                       }
                       // TODO: fix this formating
@@ -406,7 +437,28 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography>{formatPrice(itemPrice)}</Typography>
+                  <Stack direction={'row'} gap={1}>
+                    <Typography
+                      sx={
+                        itemDiscountPrice > 0
+                          ? {
+                              textDecoration: 'line-through',
+                            }
+                          : {}
+                      }
+                    >
+                      {formatPrice(itemPrice)}
+                    </Typography>
+                    {itemDiscountPrice > 0 && (
+                      <Typography
+                        sx={{
+                          color: theme.palette.secondary.main,
+                        }}
+                      >
+                        {formatPrice(itemDiscountPrice)}
+                      </Typography>
+                    )}
+                  </Stack>
                 </Grid>
               </Grid>
             </Grid>
@@ -427,7 +479,11 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography>{formatPrice(totalPrice)}</Typography>
+                  <Typography>
+                    {formatPrice(
+                      discountTotalPrice > 0 ? discountTotalPrice : totalPrice
+                    )}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -466,3 +522,42 @@ function ProductDetailInfo({
 }
 
 export default ProductDetailInfo;
+
+interface VariantWithDiscountPrice extends ProductVariant {
+  discounted: boolean;
+  discountPercent: number;
+  discountPrice: number;
+}
+
+function create(
+  batches: import('../../../lib/models').BatchObjectWithDiscount[],
+  product: ProductObject
+) {
+  const result: VariantWithDiscountPrice[] = batches.map((b) => {
+    const variant = product.variants.find((v) => v.id === b.variant_id);
+
+    if (!variant) {
+      throw new Error('variant not found');
+    }
+
+    const discounted = Date.now() > new Date(b.discount.date).getTime();
+
+    console.log(discounted);
+
+    const discountPercent = b.discount.percent;
+    let discountPrice = 0;
+
+    if (discounted) {
+      discountPrice = (variant.price * (100 - b.discount.percent)) / 100;
+    }
+
+    return {
+      ...variant,
+      discounted,
+      discountPercent: discountPercent,
+      discountPrice: discountPrice,
+    };
+  });
+
+  return result;
+}
