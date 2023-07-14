@@ -24,16 +24,23 @@ function ProductDetailInfo({
 }: ProductDetailInfoProps) {
   const theme = useTheme();
 
-  const price: string = useMemo(() => {
-    if (!product) return formatPrice(0);
+  const [minPrice, maxPrice, text]: [
+    minPrice: number,
+    maxPrice: number,
+    text: string
+  ] = useMemo(() => {
+    if (!product) return [0, 0, formatPrice(0)];
 
     const prices = product.variants.map((v) => v.price);
 
     const min = Math.min(...prices);
     const max = Math.max(...prices);
+    let text = '';
 
-    if (min === max) return formatPrice(min);
-    else return `${formatPrice(min)} - ${formatPrice(max)}`;
+    if (min === max) text = formatPrice(min);
+    else text = `${formatPrice(min)} - ${formatPrice(max)}`;
+
+    return [min, max, text];
   }, [product.variants]);
 
   const isProductAvailable: boolean = useMemo(() => {
@@ -117,7 +124,7 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{price}</Typography>
+                  <Typography variant="body1">{text}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -346,8 +353,6 @@ function ProductDetailInfo({
                             year: 'numeric',
                           }
                         );
-
-                        console.log(label);
 
                         return label;
                       }

@@ -199,37 +199,36 @@ function CakeCard({
                   </Grid>
                 </Grid>
               </Grid>
-              {discounted && (
-                <Grid item>
-                  <Grid
-                    container
-                    justifyContent={'flex-start'}
-                    alignItems={'center'}
-                    direction={'row'}
-                    spacing={1}
-                  >
-                    <Grid item sx={{ visibility: 'hidden' }}>
-                      <Typography
-                        variant="body2"
-                        color={theme.palette.text.secondary}
-                      >
-                        Giá:
-                      </Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography
-                        variant="body2"
-                        color={theme.palette.secondary.main}
-                        sx={{
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        {formatPrice(discountPrice)}
-                      </Typography>
-                    </Grid>
+              <Grid item>
+                <Grid
+                  container
+                  justifyContent={'flex-start'}
+                  alignItems={'center'}
+                  direction={'row'}
+                  spacing={1}
+                >
+                  <Grid item sx={{ visibility: 'hidden' }}>
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.text.secondary}
+                    >
+                      Giá:
+                    </Typography>
+                  </Grid>
+                  {/* TODO: HUY - Fix this */}
+                  <Grid item sx={!discounted ? { visibility: 'hidden' } : {}}>
+                    <Typography
+                      variant="body2"
+                      color={theme.palette.secondary.main}
+                      sx={{
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      {formatPrice(discountPrice)}
+                    </Typography>
                   </Grid>
                 </Grid>
-              )}
+              </Grid>
             </Grid>
           </Grid>
           <Grid item xs={isList ? 'auto' : 'auto'}>
