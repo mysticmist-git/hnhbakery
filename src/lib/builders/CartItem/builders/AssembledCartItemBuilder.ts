@@ -1,6 +1,7 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
+  getBatch,
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore';
@@ -21,10 +22,7 @@ class AssembledCartItemBuilder {
     if (!this._item) throw new Error('Item not found');
 
     try {
-      const batch = await getDocFromFirestore<BatchObject>(
-        COLLECTION_NAME.BATCHES,
-        this._item.batchId
-      );
+      const batch = await getBatch(this._item.batchId);
       this._item.batch = batch;
     } catch (error) {
       console.log(error);
@@ -41,14 +39,12 @@ class AssembledCartItemBuilder {
 
     if (!this._item.batch) throw new Error('Batch not found');
 
-    if (
-      new Date(this._item.batch.discount.date).getTime() < new Date().getTime()
-    ) {
+    if (new Date(this._item.batch.discount.date).getTime() < Date.now()) {
       this._item.discounted = true;
 
       if (this._item.variant) {
         this._item.discountAmount =
-          this._item.batch.discount.percent * this._item.variant.price;
+          (this._item.batch.discount.percent / 100) * this._item.variant.price;
       }
     }
 

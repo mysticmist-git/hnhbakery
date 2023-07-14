@@ -61,6 +61,8 @@ function ProductTable({ items, onChange }: ProductTableProps) {
     );
   }
 
+  console.log(items);
+
   return (
     <>
       <TableContainer
@@ -161,6 +163,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                 <TableCell align="center">
                   <UI_Price
                     price={item.variant?.price}
+                    discounted={item.discounted}
                     discountAmount={item.discountAmount}
                   />
                 </TableCell>
@@ -272,6 +275,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                     <Grid item xs={12}>
                       <UI_Price
                         price={item.variant?.price}
+                        discounted={item.discounted}
                         discountAmount={item.discountAmount}
                       />
                     </Grid>

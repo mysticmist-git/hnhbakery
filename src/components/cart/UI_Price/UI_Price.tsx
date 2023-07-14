@@ -1,39 +1,37 @@
 import { formatPrice } from '@/lib/utils';
-import { Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 
 export default function UI_Price({
   price = 0,
+  discounted,
   discountAmount = 0,
 }: {
   price?: number;
+  discounted: boolean;
   discountAmount?: number;
 }) {
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
-  const hasDiscount = useMemo(() => {
-    return Boolean(discountAmount) && discountAmount > 0;
-  }, []);
-
   return (
-    <>
+    <Stack gap={1} direction="row" justifyContent={'center'}>
       <Typography
         variant={'button'}
         color={theme.palette.common.black}
         sx={{
-          fontWeight: hasDiscount ? 'none' : 'bold',
-          textDecoration: hasDiscount ? 'line-through' : 'none',
-          opacity: hasDiscount ? 0.5 : 1,
+          fontWeight: discounted ? 'none' : 'bold',
+          textDecoration: discounted ? 'line-through' : 'none',
+          opacity: discounted ? 0.5 : 1,
         }}
       >
         {formatPrice(price) + (isMd ? '' : ' /sản phẩm')}
       </Typography>
-      {hasDiscount && (
+      {discounted && (
         <Typography variant={'button'} color={theme.palette.common.black}>
           {formatPrice(price - discountAmount) + (isMd ? '' : ' /sản phẩm')}
         </Typography>
       )}
-    </>
+    </Stack>
   );
 }
