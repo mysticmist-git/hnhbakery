@@ -1,4 +1,5 @@
 import { AssembledCartItem } from '@/@types/cart';
+import { formatDateString } from '@/lib/utils';
 import {
   Box,
   Grid,
@@ -157,6 +158,14 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                         size={item.variant?.size}
                         material={item.variant?.material}
                       />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography
+                        variant={'button'}
+                        color={theme.palette.text.secondary}
+                      >
+                        {formatDateString(item.batch?.EXP ?? new Date())}
+                      </Typography>
                     </Grid>
                   </Grid>
                 </TableCell>
