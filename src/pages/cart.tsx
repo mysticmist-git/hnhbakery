@@ -52,12 +52,13 @@ function Cart() {
   >([]);
 
   const [firstLoad, setFirstLoad] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   //#endregion
 
   //#region Handlers
 
-  function handleCartItemChange(items: AssembledCartItem[]) {
+  function handleAssembledCartItemChange(items: AssembledCartItem[]) {
     setAssembledCartItems(items);
   }
 
@@ -102,7 +103,8 @@ function Cart() {
       }
     }
 
-    execute();
+    if (!isDeleting) execute();
+    setIsDeleting(false);
   }, [cart]);
 
   //#endregion
@@ -244,7 +246,7 @@ function Cart() {
                     </Box>
                     <ProductTable
                       items={assembledCartItems}
-                      onChange={handleCartItemChange}
+                      onChange={handleAssembledCartItemChange}
                     />
                   </Grid>
 
