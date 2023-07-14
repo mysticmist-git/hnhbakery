@@ -756,6 +756,21 @@ export async function getTotalSoldOfProduct(id: string): Promise<number> {
 
 //#region Batch
 
+async function getBatch(id: string): Promise<BatchObject> {
+  const batch = await getDocFromFirestore<BatchObject>(
+    COLLECTION_NAME.BATCHES,
+    id
+  );
+
+  return {
+    ...batch,
+    discount: {
+      ...batch.discount,
+      date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
+    },
+  };
+}
+
 export const getBatches = async (): Promise<BatchObject[]> => {
   let batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
 
