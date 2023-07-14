@@ -91,3 +91,10 @@ export function formatDateString(value: Date): string {
     minute: '2-digit',
   });
 }
+
+export function validateEmail(mail: string) {
+  if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
+    return true;
+  }
+  return false;
+}
