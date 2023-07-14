@@ -499,6 +499,45 @@ export const fetchProductsForStoragePage = async (): Promise<
   return storageProducts;
 };
 
+export async function fetchBatchForStoragePage(batch: BatchObject) {
+  let product: ProductObject | null = null;
+
+  try {
+    product = await getDocFromFirestore<ProductObject>(
+      COLLECTION_NAME.PRODUCTS,
+      batch.product_id
+    );
+  } catch (error) {
+    console.log(error);
+    product = null;
+  }
+
+  let productType: ProductTypeObject | null = null;
+
+  if (product) {
+    try {
+      productType = await getDocFromFirestore<ProductTypeObject>(
+        COLLECTION_NAME.PRODUCT_TYPES,
+        product.productType_id
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const variant = product?.variants.find(
+    (variant) => variant.id === batch.variant_id
+  );
+
+  return {
+    ...batch,
+    productType_id: productType?.id ?? '',
+    material: variant?.material ?? '',
+    size: variant?.size ?? '',
+    price: variant?.price ?? 0,
+  } as StorageBatchObject;
+}
+
 export const fetchBatchesForStoragePage = async (): Promise<
   StorageBatchObject[]
 > => {
@@ -506,42 +545,7 @@ export const fetchBatchesForStoragePage = async (): Promise<
 
   const storageBatches = await Promise.all(
     batches.map(async (batch) => {
-      let product: ProductObject | null = null;
-
-      try {
-        product = await getDocFromFirestore<ProductObject>(
-          COLLECTION_NAME.PRODUCTS,
-          batch.product_id
-        );
-      } catch (error) {
-        console.log(error);
-        product = null;
-      }
-
-      let productType: ProductTypeObject | null = null;
-
-      if (product) {
-        try {
-          productType = await getDocFromFirestore<ProductTypeObject>(
-            COLLECTION_NAME.PRODUCT_TYPES,
-            product.productType_id
-          );
-        } catch (error) {
-          console.log(error);
-        }
-      }
-
-      const variant = product?.variants.find(
-        (variant) => variant.id === batch.variant_id
-      );
-
-      return {
-        ...batch,
-        productType_id: productType?.id ?? '',
-        material: variant?.material ?? '',
-        size: variant?.size ?? '',
-        price: variant?.price ?? 0,
-      } as StorageBatchObject;
+      return await fetchBatchForStoragePage(batch);
     })
   );
 
