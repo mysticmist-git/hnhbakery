@@ -16,9 +16,11 @@ import { CustomLinearProgres } from '../../../pages/manager/orders';
 export function BillTable({
   billsData,
   handleViewBill,
+  handleViewBillModalState,
 }: {
   billsData: SuperDetail_BillObject[];
   handleViewBill: any;
+  handleViewBillModalState: any;
 }) {
   const theme = useTheme();
 
@@ -146,6 +148,12 @@ export function BillTable({
               color="secondary"
               size="small"
               disabled={params.row.state === 1}
+              onClick={() => {
+                handleViewBillModalState(
+                  params.row.state,
+                  params.row.deliveryObject
+                );
+              }}
             >
               Hủy
             </Button>
@@ -158,7 +166,7 @@ export function BillTable({
   const [rows, setRows] = useState<SuperDetail_BillObject[]>(billsData);
 
   useEffect(() => {
-    setRows(billsData);
+    setRows(() => billsData);
   }, [billsData]);
 
   return (

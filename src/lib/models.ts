@@ -98,12 +98,12 @@ export interface BillObject extends BaseObject {
 
 export interface BillDetailObject extends BaseObject {
   id?: string;
-  amount?: number;
-  price?: number;
-  discount?: number;
-  discountAmount?: number;
-  batch_id?: string;
-  bill_id?: string;
+  amount: number;
+  price: number;
+  discount: number;
+  discountAmount: number;
+  batch_id: string;
+  bill_id: string;
 }
 
 export interface DeliveryObject extends BaseObject {
@@ -224,16 +224,15 @@ export interface CustomBill extends BillObject {
   deliveryPrice?: number;
   salePercent?: number;
 }
-export interface AssembledBillDetail extends BillDetailObject {
-  productName?: string;
-  productTypeName?: string;
-  material?: string;
-  size?: string;
-}
+export type AssembledBillDetail = BillDetailObject & {
+  batchObject?: BatchObject;
+  productObject?: ProductObject;
+};
 
 export interface SuperDetail_BillObject extends BillObject {
   paymentObject?: PaymentObject;
   userObject?: UserObject;
   saleObject?: SaleObject;
   deliveryObject?: DeliveryObject;
+  billDetailObjects?: AssembledBillDetail[];
 }

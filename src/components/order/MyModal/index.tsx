@@ -1,9 +1,18 @@
 import { CustomButton, CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { updateDocToFirestore } from '@/lib/firestore';
+import {
+  getBatch,
+  getCollectionWithQuery,
+  getDocFromFirestore,
+  updateDocToFirestore,
+} from '@/lib/firestore';
 import {
   AssembledBillDetail,
+  BatchObject,
+  BillDetailObject,
   CustomBill,
+  DeliveryObject,
+  ProductObject,
   SuperDetail_BillObject,
 } from '@/lib/models';
 import CloseIcon from '@mui/icons-material/Close';
@@ -27,6 +36,11 @@ import { deliveryStatusParse } from '@/lib/manage/manage';
 import { Outlined_TextField } from './Outlined_TextField';
 import { ThongTin_Content } from './ThongTin_Content';
 import { SaleDelivery_Content } from './SaleDelivery_Content';
+import { where } from 'firebase/firestore';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { isVNPhoneNumber, validateEmail } from '@/lib/utils';
+import { get } from 'http';
+import { SanPham_Content } from './SanPham_Content';
 
 type EditType = {
   name?: string;
@@ -46,14 +60,6 @@ function ResetEditContent(bill: SuperDetail_BillObject | null) {
     date: bill?.deliveryObject?.date ?? new Date(),
     time: bill?.deliveryObject?.time ?? 'Trống',
   };
-}
-
-function SanPham_Content(props: any) {
-  return (
-    <>
-      <Box>Huy</Box>
-    </>
-  );
 }
 
 const MyModal = ({
@@ -102,66 +108,12 @@ const MyModal = ({
     bill
   );
 
-  const [billState, setBillState] = useState<number>(modalBill?.state ?? 0);
-  const handleBillStateChange = (state: number) => {
-    setBillState(() => state);
-  };
-
-  //#region UseEffects
-
-  // useEffect(() => {
-  //   const getData = async (bill: CustomBill) => {
-  //     const billDetails = await getCollectionWithQuery<BillDetailObject>(
-  //       'bill_details',
-  //       where('bill_id', '==', bill.id)
-  //     );
-
-  //     const assembledBillDetails = await Promise.all(
-  //       billDetails.map(async (detail) => {
-  //         const batch = (await getDocFromFirestore(
-  //           'batches',
-  //           detail.batch_id!
-  //         )) as BatchObject;
-
-  //         const product = (await getDocFromFirestore(
-  //           'products',
-  //           batch.product_id
-  //         )) as ProductObject;
-
-  //         const productType = (await getDocFromFirestore(
-  //           'productTypes',
-  //           product.productType_id
-  //         )) as ProductTypeObject;
-
-  //         return {
-  //           ...detail,
-  //           productName: product.name,
-  //           productTypeName: productType.name,
-  //           material: batch.material,
-  //           size: batch.size,
-  //         };
-  //       })
-  //     );
-
-  //     setBillDetails(() => assembledBillDetails);
-  //   };
-
-  //   if (!bill) {
-  //     handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
-  //     handleClose();
-  //     return;
-  //   }
-
-  //   setBillState(() => bill.state ?? 0);
-  //   getData(bill);
-  // }, [bill]);
-
-  //#endregion
-
   //#region Modal Chi tiết
   const clearData = () => {
     setModalBill(() => null);
-    setBillState(() => 0);
+    // setBillState(() => 0);
+    setEditMode(() => false);
+    setEditContent(() => null);
   };
   const localHandleClose = () => {
     // Clear data
@@ -170,7 +122,7 @@ const MyModal = ({
   };
 
   const [editMode, setEditMode] = useState(false);
-  const [editContent, setEditContent] = useState<EditType>(
+  const [editContent, setEditContent] = useState<EditType | null>(
     ResetEditContent(bill)
   );
   const handleCancelEdit = () => {
@@ -180,22 +132,67 @@ const MyModal = ({
   };
 
   const handleSaveEdit = () => {
-    setEditMode(false);
-    // Hỏi Hên Hàm update
-    // const data = {
-    //   ...bill,
-    //   state: billState,
-    // } as CustomBill;
-    // updateDocToFirestore(data, 'bills');
-    // handleSnackbarAlert('success', 'Đã cập nhật đơn hàng');
-    // handleBillDataChange(data);
+    if (editContent?.email && !validateEmail(editContent?.email)) {
+      handleSnackbarAlert('warning', 'Email thay đổi không hợp lệ.');
+      return;
+    }
+    if (editContent?.tel && !isVNPhoneNumber(editContent?.tel)) {
+      handleSnackbarAlert('warning', 'Số điện thoại thay đổi không hợp lệ.');
+      return;
+    }
+    const data = {
+      ...bill?.deliveryObject,
+      ...editContent,
+    } as DeliveryObject;
+    updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
     handleSnackbarAlert('success', 'Thay đổi thành công!');
+    setEditMode(false);
+    handleBillDataChange({
+      ...bill!,
+      deliveryObject: data!,
+    });
   };
   //#endregion
 
   useEffect(() => {
+    const getData = async (bill: SuperDetail_BillObject) => {
+      const billDetails = await getCollectionWithQuery<BillDetailObject>(
+        COLLECTION_NAME.BILL_DETAILS,
+        where('bill_id', '==', bill.id)
+      );
+
+      const assembledBillDetails = await Promise.all(
+        billDetails.map(async (detail) => {
+          const batch = await getBatch(detail.batch_id);
+          const product = (await getDocFromFirestore(
+            COLLECTION_NAME.PRODUCTS,
+            batch.product_id
+          )) as ProductObject;
+          return {
+            ...detail,
+            batchObject: batch,
+            productObject: product,
+          } as AssembledBillDetail;
+        })
+      );
+
+      setModalBill(() => {
+        return {
+          ...bill,
+          billDetailObjects: assembledBillDetails,
+        };
+      });
+    };
+
+    if (!bill) {
+      // handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
+      handleClose();
+      return;
+    }
     setModalBill(() => bill);
     setEditContent(() => ResetEditContent(bill));
+
+    getData(bill);
   }, [bill]);
 
   return (
@@ -373,7 +370,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Tên"
-                          value={editContent.name}
+                          value={editContent?.name}
                           onChange={(event: any) => {
                             setEditContent({
                               ...editContent,
@@ -394,7 +391,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Số điện thoại"
-                          value={editContent.tel}
+                          value={editContent?.tel}
                           onChange={(event: any) => {
                             setEditContent({
                               ...editContent,
@@ -416,7 +413,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Email"
-                          value={editContent.email}
+                          value={editContent?.email}
                           onChange={(event: any) => {
                             setEditContent({
                               ...editContent,
@@ -438,7 +435,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Địa chỉ giao hàng"
-                          value={editContent.address}
+                          value={editContent?.address}
                           onChange={(event: any) => {
                             setEditContent({
                               ...editContent,
@@ -446,9 +443,9 @@ const MyModal = ({
                             });
                           }}
                           InputProps={{
-                            readOnly: !editMode,
+                            readOnly: true,
                             style: {
-                              pointerEvents: editMode ? 'auto' : 'none',
+                              pointerEvents: 'none',
                               borderRadius: '8px',
                             },
                           }}
@@ -466,7 +463,7 @@ const MyModal = ({
                           sx={{
                             width: '100%',
                           }}
-                          value={dayjs(editContent.date)}
+                          value={dayjs(editContent?.date)}
                           onChange={(day: any) => {
                             setEditContent({
                               ...editContent,
@@ -497,7 +494,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Giờ muốn nhận"
-                          value={editContent.time}
+                          value={editContent?.time}
                           onChange={(event: any) => {
                             setEditContent({
                               ...editContent,
@@ -556,6 +553,7 @@ const MyModal = ({
                 </Box>
               </Grid>
 
+              {/* Danh sách sản phẩm */}
               <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
                 <Box sx={StyleCuaCaiBox}>
                   <Box
@@ -577,7 +575,10 @@ const MyModal = ({
                       Danh sách sản phẩm
                     </Typography>
                   </Box>
-                  <SanPham_Content />
+                  <SanPham_Content
+                    textStyle={textStyle}
+                    modalBill={modalBill}
+                  />
                 </Box>
               </Grid>
             </Grid>

@@ -13,7 +13,7 @@ export const COLLECTION_NAME = {
   BRANDS: 'brands',
   PRODUCT_DETAILS: 'productDetails',
   FEEDBACKS: 'feedbacks',
-  BILL_DETAILS: 'billDetails',
+  BILL_DETAILS: 'bill_details',
   DELIVERIES: 'deliveries',
   CARTS: 'carts',
   BILLS: 'bills',

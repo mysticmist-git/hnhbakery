@@ -325,6 +325,14 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             disableColumnMenu: true,
           },
           {
+            field: 'id',
+            headerName: 'Mã lô',
+            align: 'center',
+            headerAlign: 'center',
+            sortable: false,
+            disableColumnMenu: true,
+          },
+          {
             field: 'product_id',
             headerName: 'Sản phẩm',
             align: 'left',
@@ -465,6 +473,9 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
   return (
     <DataGrid
       rows={props.mainDocs ?? []}
+      columnVisibilityModel={{
+        id: false,
+      }}
       loading={props.mainDocs === null}
       columns={columns}
       localeText={{
