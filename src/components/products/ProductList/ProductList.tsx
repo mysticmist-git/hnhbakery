@@ -30,12 +30,14 @@ function ProductList(props: any) {
   const displayProducts: ProductForProductsPage[] = useMemo(() => {
     const filteredProducts = filterProductList(context.ProductList);
     const sortedProducts = sortProductList(filteredProducts);
-    const searchResultProductList = searchProductList(
+    let searchResultProductList = searchProductList(
       sortedProducts,
       context.searchText
     );
 
-    return searchResultProductList;
+    searchResultProductList = minimizeProductPrices(searchResultProductList);
+
+    return minimizeProductPrices(searchResultProductList);
   }, [
     context.ProductList,
     context.SortList,
@@ -361,3 +363,27 @@ function ProductList(props: any) {
 }
 
 export default ProductList;
+
+function minimizeProductPrices(
+  products: ProductForProductsPage[]
+): ProductForProductsPage[] {
+  let minPriceProducts: any = {};
+
+  products.forEach((product) => {
+    let price =
+      product.discountPrice !== 0 ? product.discountPrice : product.price;
+
+    if (
+      !minPriceProducts[product.product_id] ||
+      price < minPriceProducts[product.product_id].price
+    ) {
+      minPriceProducts[product.product_id] = product;
+      minPriceProducts[product.product_id].price = price;
+    }
+  });
+
+  // Extract products from the object to form the result array
+  let result = Object.values(minPriceProducts);
+
+  return result as ProductForProductsPage[];
+}

@@ -479,7 +479,11 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography>{formatPrice(discountTotalPrice)}</Typography>
+                  <Typography>
+                    {formatPrice(
+                      discountTotalPrice > 0 ? discountTotalPrice : totalPrice
+                    )}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>

@@ -15,6 +15,7 @@ import {
   ProductVariant,
 } from './models';
 import { AssembledProduct, ProductForProductsPage } from './types/products';
+import { filterDuplicatesById } from './utils';
 
 export function valueComparer(a: number, b: number) {
   console.log(a, b);
@@ -80,7 +81,7 @@ async function createProductsOnProductsPage(
     return result;
   });
 
-  const result = await Promise.all(promises);
+  let result = await Promise.all(promises);
 
   return result;
 }
