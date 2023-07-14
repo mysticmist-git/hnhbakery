@@ -1,11 +1,13 @@
 import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
 import CheckboxButtonGroup from '@/components/Inputs/MultiValue/CheckboxButtonGroup';
 import { CustomButton } from '@/components/buttons';
+import { getDocFromFirestore } from '@/lib/firestore';
 import { DataManagerErrorCode } from '@/lib/strategies/DataManagerStrategy';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
+import { ProductObject, ProductVariant } from '../../../lib/models';
 import MyDivider from '../Divider/Divider';
 import ProductCarousel from '../ProductCarousel';
 import ProductRating from '../ProductRating';
@@ -33,8 +35,24 @@ function ProductDetailInfo({
 
     const prices = product.variants.map((v) => v.price);
 
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    const variantsWithDiscountPrice = create(product.batches, product);
+
+    const min = variantsWithDiscountPrice.reduce(
+      (min, v) =>
+        Math.min(
+          min,
+          Math.min(v.price, v.discounted ? v.discountPrice : v.price)
+        ),
+      Number.MAX_VALUE
+    );
+
+    let max = variantsWithDiscountPrice.reduce((max, v) => {
+      return Math.max(
+        max,
+        Math.min(v.price, v.discounted ? v.discountPrice : v.price)
+      );
+    }, Number.MIN_VALUE);
+
     let text = '';
 
     if (min === max) text = formatPrice(min);
@@ -471,3 +489,42 @@ function ProductDetailInfo({
 }
 
 export default ProductDetailInfo;
+
+interface VariantWithDiscountPrice extends ProductVariant {
+  discounted: boolean;
+  discountPercent: number;
+  discountPrice: number;
+}
+
+function create(
+  batches: import('../../../lib/models').BatchObjectWithDiscount[],
+  product: ProductObject
+) {
+  const result: VariantWithDiscountPrice[] = batches.map((b) => {
+    const variant = product.variants.find((v) => v.id === b.variant_id);
+
+    if (!variant) {
+      throw new Error('variant not found');
+    }
+
+    const discounted = Date.now() > new Date(b.discount.date).getTime();
+
+    console.log(discounted);
+
+    const discountPercent = b.discount.percent;
+    let discountPrice = 0;
+
+    if (discounted) {
+      discountPrice = (variant.price * (100 - b.discount.percent)) / 100;
+    }
+
+    return {
+      ...variant,
+      discounted,
+      discountPercent: discountPercent,
+      discountPrice: discountPrice,
+    };
+  });
+
+  return result;
+}
