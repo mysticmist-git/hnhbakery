@@ -1,16 +1,11 @@
-import bfriday from '@/assets/blackfriday.jpg';
+import { AssembledCartItem, CartItem } from '@/@types/cart';
 import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
-import { db } from '@/firebase/config';
+import { auth, db } from '@/firebase/config';
+import { assembleItems, filterExpired } from '@/lib/cart';
 import { useSnackbarService } from '@/lib/contexts';
-import {
-  AppContext,
-  AppContextType,
-  AppDispatchAction,
-} from '@/lib/contexts/appContext';
-import { DisplayCartItem, saveCart } from '@/lib/contexts/cartContext';
 import { Ref } from '@/lib/contexts/payment';
 import {
   PaymentContext,
@@ -31,6 +26,7 @@ import {
 } from '@/lib/models';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
+import { useLocalStorageValue } from '@react-hookz/web';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {
   Timestamp,
@@ -43,6 +39,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { CaiKhungCoTitle } from '../components/layouts/CaiKhungCoTitle';
 import FormGiaoHang from '../components/payment/FormGiaoHang';
 
@@ -78,26 +75,76 @@ const MocGioGiaoHang = [
   },
 ];
 
-const Payment = ({ salesJSON }: { salesJSON: string }) => {
+const Payment = ({
+  cartItemsJSON,
+  salesJSON,
+}: {
+  cartItemsJSON: string;
+  salesJSON: string;
+}) => {
+  // #region States
+
+  const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
+    'cart',
+    {
+      defaultValue: [],
+      initializeWithValue: false,
+      parse(str, fallback) {
+        if (!str) return fallback;
+
+        const value: any[] = JSON.parse(str);
+        const items = value.map(
+          (item) =>
+            new CartItem(item._userId, item._batchId, item._quantity, item._id)
+        );
+
+        return items;
+      },
+    }
+  );
+  const { value: cartNote, set: setCartNote } = useLocalStorageValue<string>(
+    'note',
+    {
+      defaultValue: '',
+      initializeWithValue: false,
+    }
+  );
+  const [assembledCartItems, setAssembledCartItems] = useState<
+    AssembledCartItem[]
+  >([]);
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [user, loading, error] = useAuthState(auth);
+
+  const [phiVanChuyen, setPhiVanChuyen] = useState(0);
+  const [khuyenMai, setKhuyenMai] = useState(0);
+  const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
+  const [tongBill, setTongBill] = useState(0);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // #endregion
+
   //#region Hooks
 
   const theme = useTheme();
-  const { state, dispatch } = useContext<AppContextType>(AppContext);
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
-  const auth = getAuth();
 
   //#endregion
 
   // #region useMemos
 
   const tamTinh = useMemo(() => {
-    return state.productBill.reduce((acc, row) => {
-      if (row.discountPrice && row.discountPrice > 0)
-        return acc + row.quantity * row.discountPrice;
-      else return acc + row.quantity * row.price;
+    return assembledCartItems.reduce((acc, row) => {
+      if (row.discounted)
+        return (
+          acc +
+          row.quantity *
+            (row.variant?.price ? row.variant?.price - row.discountAmount : 0)
+        );
+      else return acc + row.quantity * (row.variant?.price ?? 0);
     }, 0);
-  }, [state.productBill]);
+  }, [assembledCartItems]);
 
   const sales = useMemo(() => {
     if (!salesJSON || salesJSON === '') return null;
@@ -108,16 +155,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   //  #endregion
 
-  // #region States
-
-  const [phiVanChuyen, setPhiVanChuyen] = useState(0);
-  const [khuyenMai, setKhuyenMai] = useState(0);
-  const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
-  const [tongBill, setTongBill] = useState(0);
-  const [userId, setUserId] = useState('');
-
-  // #endregion
-
   // #region refs
 
   const formGiaoHangRef = useRef<Ref>(null);
@@ -127,11 +164,29 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   // #region useEffects
 
   useEffect(() => {
-    if (!state.productBill || state.productBill.length <= 0) {
-      handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
-      router.push('/cart');
+    async function execute() {
+      if (!cart) return;
+
+      try {
+        let filteredCart: CartItem[] = cart;
+
+        if (firstLoad) {
+          filteredCart = await filterExpired(cart);
+          setCart(filteredCart);
+          setFirstLoad(false);
+          return;
+        }
+
+        const assembledCartItem = await assembleItems(filteredCart);
+
+        setAssembledCartItems(assembledCartItem);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }, []);
+
+    execute();
+  }, [cart]);
 
   useEffect(() => {
     handleTongBill();
@@ -144,7 +199,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const TimKiemMaSale = () => {};
 
   const mapProductBillToBillDetailObject = (
-    productBill: DisplayCartItem[],
+    productBill: AssembledCartItem[],
     billId: string
   ) => {
     return productBill.map((item) => {
@@ -160,10 +215,10 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       totalPrice: tamTinh - khuyenMai,
       originalPrice: tamTinh,
       saleAmount: khuyenMai,
-      note: state.cartNote,
+      note: cartNote,
       state: 0,
       payment_id: paymentId,
-      user_id: userId,
+      user_id: user?.uid ?? '',
       created_at: new Date(),
     } as BillObject;
 
@@ -200,36 +255,36 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   };
 
   const createBillDetailData = (
-    productBill: DisplayCartItem,
+    cartItem: AssembledCartItem,
     billId: string
   ): BillDetailObject => {
     const billDetailData: BillDetailObject = {
-      amount: productBill.quantity,
-      price: productBill.price,
-      discount: productBill.discountPercent,
-      discountAmount: productBill.discountPrice,
-      batch_id: productBill.batchId,
+      amount: cartItem.quantity,
+      price: cartItem.variant?.price,
+      discount: cartItem.batch?.discount.percent,
+      discountAmount: cartItem.discountAmount,
+      batch_id: cartItem.batchId,
       bill_id: billId,
     } as BillDetailObject;
 
     return billDetailData;
   };
 
-  const clearCacheData = async () => {
-    dispatch({
-      type: AppDispatchAction.SET_PRODUCT_BILL,
-      payload: [],
-    });
+  // const clearCacheData = async () => {
+  //   dispatch({
+  //     type: AppDispatchAction.SET_PRODUCT_BILL,
+  //     payload: [],
+  //   });
 
-    dispatch({
-      type: AppDispatchAction.SET_CART_NOTE,
-      payload: '',
-    });
+  //   dispatch({
+  //     type: AppDispatchAction.SET_CART_NOTE,
+  //     payload: '',
+  //   });
 
-    const result = await saveCart([]);
+  //   const result = await saveCart([]);
 
-    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  };
+  //   handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  // };
 
   // #endregion
 
@@ -294,7 +349,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     const deliveryRef = await addDocToFirestore(deliveryData, 'deliveries');
 
     const billDetails = mapProductBillToBillDetailObject(
-      state.productBill,
+      assembledCartItems,
       billRef.id
     );
 
@@ -362,7 +417,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       );
 
       console.log('Clearing cache...');
-      clearCacheData();
+      // clearCacheData();
 
       // Update bill to localStorage (in case use is not logged it)
       console.log('Saving bills to local storage...');
@@ -390,28 +445,12 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     }
   };
 
-  const handleSaveCart = async () => {
-    const result = await saveCart(state.productBill);
+  // const handleSaveCart = async () => {
+  //   const result = await saveCart(state.productBill);
 
-    handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  };
+  //   handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
+  // };
   // #endregion
-
-  // #region useEffects
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // #endregion
-
-  const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
     const result = validateForm();
@@ -421,11 +460,11 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       return;
     }
 
-    setOpen(true);
+    setDialogOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setDialogOpen(false);
   };
 
   //#region Methods
@@ -590,7 +629,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
                   title={'Danh sách sản phẩm'}
                   fluidContent={true}
                 >
-                  <DanhSachSanPham Products={state.productBill} />
+                  <DanhSachSanPham Products={assembledCartItems} />
                 </CaiKhungCoTitle>
               </Grid>
 
@@ -622,7 +661,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
             </Grid>
           </Box>
           <DialogHinhThucThanhToan
-            open={open}
+            open={dialogOpen}
             handleClose={handleClose}
             handlePayment={handleProceedPayment}
           />

@@ -33,7 +33,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useLocalStorage } from 'usehooks-ts';
 
 const comments = {
   ratingAverage: 4.5,

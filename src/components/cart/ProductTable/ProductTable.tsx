@@ -62,8 +62,6 @@ function ProductTable({ items, onChange }: ProductTableProps) {
     );
   }
 
-  console.log(items);
-
   return (
     <>
       <TableContainer

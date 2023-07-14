@@ -14,8 +14,6 @@ export default function UI_Quantity({
   onChange?: (value: number) => void;
   justifyContent: any;
 }) {
-  const theme = useTheme();
-
   return (
     <>
       <NumberInputWithButtons

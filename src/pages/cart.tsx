@@ -4,9 +4,10 @@ import ImageBackground from '@/components/Imagebackground';
 import { CustomButton } from '@/components/buttons';
 import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
 import ProductTable from '@/components/cart/ProductTable';
-import { assembleItems, filterExpired } from '@/lib/cart';
 import { ROUTES } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
+import useCartItems from '@/lib/hooks/useCartItems';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useRouter } from 'next/router';
@@ -23,43 +24,32 @@ function Cart() {
 
   //#region State
 
-  const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
-    'cart',
-    {
-      defaultValue: [],
-      initializeWithValue: false,
-      parse(str, fallback) {
-        if (!str) return fallback;
+  const [cart, setCart] = useCartItems();
+  const [assembled, reloadAssembledCart] = useAssembledCartItems();
+  const [firstTime, setFirstTime] = useState(true);
 
-        const value: any[] = JSON.parse(str);
-        const items = value.map(
-          (item) =>
-            new CartItem(item._userId, item._batchId, item._quantity, item._id)
-        );
-
-        return items;
-      },
+  useEffect(() => {
+    if (cart && firstTime) {
+      reloadAssembledCart(cart);
+      setFirstTime(false);
+      return;
     }
-  );
+
+    console.log(assembled);
+  }, [cart]);
 
   const { value: note, set: setNote } = useLocalStorageValue<string>('note', {
     defaultValue: '',
     initializeWithValue: false,
   });
 
-  const [assembledCartItems, setAssembledCartItems] = useState<
-    AssembledCartItem[]
-  >([]);
-
-  const [firstLoad, setFirstLoad] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
-
   //#endregion
 
   //#region Handlers
 
   function handleAssembledCartItemChange(items: AssembledCartItem[]) {
-    setAssembledCartItems(items);
+    reloadAssembledCart(items);
+    setCart(items.map((item) => item.getRawItem()));
   }
 
   function handleContinueToSurf() {
@@ -67,52 +57,20 @@ function Cart() {
   }
 
   function handlePayment() {
-    alert('paid');
+    router.push(ROUTES.PAYMENT);
   }
 
   function handleSaveCart() {
-    setCart(assembledCartItems.map((item) => item.getRawItem()));
+    setCart(assembled.map((item) => item.getRawItem()));
     handleSnackbarAlert('success', 'Đã cập nhật giỏ hàng');
   }
-
-  //#endregion
-
-  //#region useEffect
-
-  useEffect(() => {
-    async function execute() {
-      if (!cart) return;
-
-      try {
-        let filteredCart: CartItem[] = cart;
-
-        if (firstLoad) {
-          filteredCart = await filterExpired(cart);
-          setCart(filteredCart);
-          setFirstLoad(false);
-          return;
-        }
-
-        // TODO: check out of stock
-
-        const assembledCartItem = await assembleItems(filteredCart);
-
-        setAssembledCartItems(assembledCartItem);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    if (!isDeleting) execute();
-    setIsDeleting(false);
-  }, [cart]);
 
   //#endregion
 
   //#region useMemos
 
   const totalPrice = useMemo(() => {
-    const price = assembledCartItems.reduce((acc, item) => {
+    const price = assembled.reduce((acc, item) => {
       let price = item.variant?.price ?? 0;
       let discountAmount = 0;
 
@@ -126,7 +84,7 @@ function Cart() {
     }, 0);
 
     return price;
-  }, [assembledCartItems]);
+  }, [assembled]);
 
   //#endregion
 
@@ -245,7 +203,7 @@ function Cart() {
                       </CustomButton>
                     </Box>
                     <ProductTable
-                      items={assembledCartItems}
+                      items={assembled}
                       onChange={handleAssembledCartItemChange}
                     />
                   </Grid>
