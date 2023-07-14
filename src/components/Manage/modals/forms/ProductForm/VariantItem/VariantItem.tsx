@@ -65,6 +65,10 @@ function VariantItem(props: VariantItemProps) {
     setEditedVariant((prevVariant) => ({ ...prevVariant, [name]: value }));
   }
 
+  function handlePriceChange(value: number) {
+    setEditedVariant((prev) => ({ ...prev, price: value }));
+  }
+
   function handleSizeChange(size: string) {
     if (size)
       setEditedVariant((prevVariant) => ({ ...prevVariant, size: size }));
@@ -113,7 +117,9 @@ function VariantItem(props: VariantItemProps) {
               name="price"
               type="number"
               value={editedVariant.price}
-              onChange={handleInputChange}
+              onChange={(e) =>
+                handlePriceChange(Number.parseInt(e.target.value))
+              }
             />
           </Stack>
           <Stack direction="row" spacing={1} marginLeft={2}>
