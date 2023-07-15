@@ -1,10 +1,8 @@
-import { CustomButton } from '@/components/buttons';
 import MyModal from '@/components/order/MyModal';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import {
   BillObject,
-  CustomBill,
   DeliveryObject,
   PaymentObject,
   SaleObject,
@@ -13,32 +11,16 @@ import {
 } from '@/lib/models';
 import {
   Box,
-  Card,
-  Container,
   Divider,
   Grid,
   LinearProgress,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
   styled,
   useTheme,
 } from '@mui/material';
-import { GridActionsCellItem, GridApi } from '@mui/x-data-grid';
-import { documentId, where } from 'firebase/firestore';
-import { type } from 'os';
+
 import React, { useEffect, useMemo, useState } from 'react';
-import stringHash from 'string-hash';
 import { BillTable } from '../../components/order/MyTable/BillTable';
-import { billStatusParse } from '@/lib/manage/manage';
 import { ModalState } from '../../components/order/MyModal/ModalState';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
@@ -116,6 +98,17 @@ const Order = ({ finalBills }: { finalBills: string }) => {
 
           <Grid item xs={12}>
             <Divider />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontStyle: 'italic' }}
+            >
+              *Tìm kiếm theo hóa đơn, giao hàng, người mua hàng, người nhận
+              hàng, khuyến mãi...
+            </Typography>
           </Grid>
 
           <Grid item xs={12}>

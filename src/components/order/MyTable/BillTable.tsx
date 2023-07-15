@@ -187,7 +187,7 @@ export function BillTable({
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.userObject?.name ?? '';
+        return params.row.userObject?.name ?? 'GUEST';
       },
     },
     {
