@@ -33,7 +33,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useLocalStorage } from 'usehooks-ts';
 
 const comments = {
   ratingAverage: 4.5,
@@ -317,11 +316,16 @@ function ProductDetail({
       return;
     }
 
-    const clonedCart: CartItem[] = JSON.parse(JSON.stringify(cart));
+    const clonedCart: CartItem[] = cart.map((item) => item.clone());
+
+    console.log(clonedCart);
+    console.log(selectedBatch.id);
 
     const duplicateItem = clonedCart.find(
       (item) => item.batchId === selectedBatch.id
     );
+
+    console.log(duplicateItem);
 
     if (duplicateItem) {
       duplicateItem.quantity = duplicateItem.quantity + quantity;
@@ -335,9 +339,7 @@ function ProductDetail({
       clonedCart.push(cartItem);
     }
 
-    setCart((prev) => {
-      return [...clonedCart];
-    });
+    setCart(clonedCart);
 
     handleSnackbarAlert('success', 'Đã thêm sản phẩm vào giỏ hàng');
 

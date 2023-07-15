@@ -1,4 +1,5 @@
 import { CustomButton } from '@/components/buttons';
+import useNumberCounter from '@/lib/hooks/useNumberCounter';
 import {
   Grid,
   InputAdornment,
@@ -55,62 +56,30 @@ export default function NumberInputWithButtons({
     [size]
   );
 
-  const [value, setValue] = useState(min);
-  const theme = useTheme();
-
-  function handleAddClick() {
-    if (value < max) {
-      const newValue = value + 1;
-      setValue(newValue);
-      if (onChange) {
-        onChange(newValue);
-      }
-    }
-  }
-
-  function handleMinusClick() {
-    if (value > min) {
-      const newValue = value - 1;
-      setValue(newValue);
-      if (onChange) {
-        onChange(newValue);
-      }
-    }
-  }
-
-  function handleOnBlur() {
-    if (value < min) {
-      setValue(min);
-      if (onChange) {
-        onChange(min);
-      }
-    } else if (value > max) {
-      setValue(max);
-      if (onChange) {
-        onChange(max);
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (max < value) {
-      setValue(() => max);
-
-      if (onChange) {
-        onChange(max);
-      }
-    }
-  }, [max]);
-
-  useEffect(() => {
-    if (paramValue !== undefined) setValue(paramValue);
-  }, [paramValue]);
-
   const buttonStyle = {
     py: style.button_py,
     px: style.button_px,
     borderRadius: '8px',
   };
+
+  const theme = useTheme();
+  const [value, setValue, increaseValue, decreaseValue] = useNumberCounter(
+    paramValue ?? 0,
+    min,
+    max
+  );
+
+  useEffect(() => {
+    if (onChange) onChange(value);
+  }, [value]);
+
+  function handleOnBlur() {
+    if (value < min) {
+      setValue(min);
+    } else if (value > max) {
+      setValue(max);
+    }
+  }
 
   return (
     <Grid
@@ -121,7 +90,7 @@ export default function NumberInputWithButtons({
       alignItems={'center'}
       width={'auto'}
     >
-      <Button onClick={handleMinusClick} style={buttonStyle}>
+      <Button onClick={decreaseValue} style={buttonStyle}>
         -
       </Button>
       <Grid item>
@@ -200,7 +169,7 @@ export default function NumberInputWithButtons({
           }}
         />
       </Grid>
-      <Button onClick={handleAddClick} style={buttonStyle}>
+      <Button onClick={increaseValue} style={buttonStyle}>
         +
       </Button>
     </Grid>

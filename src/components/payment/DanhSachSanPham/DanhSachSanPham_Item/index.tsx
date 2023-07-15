@@ -1,4 +1,5 @@
-import { DisplayCartItem } from '@/lib/contexts/cartContext';
+import { AssembledCartItem } from '@/@types/cart';
+import { assembleItems } from '@/lib/cart';
 import { formatPrice } from '@/lib/utils';
 import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
@@ -6,20 +7,8 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 export function DanhSachSanPham_Item(props: any) {
-  const { item }: { item: DisplayCartItem } = props;
-  const {
-    id,
-    name,
-    image,
-    size,
-    material,
-    quantity,
-    MFG,
-    EXP,
-    price,
-    discountPrice,
-    discountPercent,
-  } = item;
+  const { item }: { item: AssembledCartItem } = props;
+
   const theme = useTheme();
   const [isHover, setIsHover] = useState(false);
 
@@ -36,13 +25,14 @@ export function DanhSachSanPham_Item(props: any) {
   };
 
   const totalPrice = useMemo(() => {
-    const appliedPrice =
-      discountPrice && discountPrice > 0 ? discountPrice : price;
+    let price =
+      item.variant?.price ?? (item.discounted ? item.discountAmount : 0);
 
-    return appliedPrice * quantity;
-  }, [quantity, discountPrice, price]);
+    return price * item.quantity;
+  }, [item.quantity]);
 
   const [isLoading, setIsLoading] = useState(true);
+
   const handleImageLoad = () => {
     setIsLoading(false);
   };
@@ -81,8 +71,8 @@ export function DanhSachSanPham_Item(props: any) {
             ) : null}
             <Box
               component={Image}
-              src={image}
-              alt={name}
+              src={item.image}
+              alt={`${item.product?.name} image`}
               loading="lazy"
               fill={true}
               sx={isHover ? style.hover : style.normal}
@@ -118,7 +108,7 @@ export function DanhSachSanPham_Item(props: any) {
                   Tên sản phẩm:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {name}
+                  {item.product?.name ?? ''}
                 </Typography>
               </Box>
             </Grid>
@@ -139,7 +129,7 @@ export function DanhSachSanPham_Item(props: any) {
                   Kích cỡ:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {size}
+                  {item.variant?.size ?? ''}
                 </Typography>
               </Box>
             </Grid>
@@ -160,7 +150,7 @@ export function DanhSachSanPham_Item(props: any) {
                   Vật liệu:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {material}
+                  {item.product?.name ?? ''}
                 </Typography>
               </Box>
             </Grid>
@@ -181,7 +171,7 @@ export function DanhSachSanPham_Item(props: any) {
                   Số lượng:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {quantity}
+                  {item.variant?.material ?? ''}
                 </Typography>
               </Box>
             </Grid>
@@ -202,13 +192,16 @@ export function DanhSachSanPham_Item(props: any) {
                   Sản xuất:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {new Date(MFG).toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                  })}
+                  {new Date(item.batch?.MFG ?? new Date()).toLocaleDateString(
+                    'vi-VN',
+                    {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    }
+                  )}
                 </Typography>
               </Box>
             </Grid>
@@ -235,13 +228,16 @@ export function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {new Date(EXP).toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                  })}
+                  {new Date(item.batch?.EXP ?? new Date()).toLocaleDateString(
+                    'vi-VN',
+                    {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    }
+                  )}
                 </Typography>
               </Box>
             </Grid>
@@ -273,16 +269,13 @@ export function DanhSachSanPham_Item(props: any) {
                     variant="body2"
                     color={theme.palette.text.secondary}
                     sx={{
-                      textDecoration:
-                        discountPrice && discountPrice > 0
-                          ? 'line-through'
-                          : 'none',
+                      textDecoration: item.discounted ? 'line-through' : 'none',
                       lineHeight: theme.typography.button.lineHeight,
                     }}
                   >
-                    {formatPrice(price)}
+                    {formatPrice(item.variant?.price ?? 0)}
                   </Typography>
-                  {discountPrice && discountPrice > 0 && (
+                  {item.discounted && (
                     <Typography
                       variant="body2"
                       align="right"
@@ -292,9 +285,11 @@ export function DanhSachSanPham_Item(props: any) {
                       }}
                     >
                       {'(-' +
-                        discountPercent! +
+                        item.batch?.discount.percent +
                         '%) ' +
-                        formatPrice(discountPrice)}
+                        formatPrice(
+                          item.variant?.price ?? 0 - item.discountAmount
+                        )}
                     </Typography>
                   )}
                 </Box>
