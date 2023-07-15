@@ -193,7 +193,9 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       );
 
       console.log('Clearing cache...');
-      // clearCacheData();
+      // Deelte localStorage cart
+      setCart([]);
+      setCartNote('');
 
       // Update bill to localStorage (in case use is not logged it)
       console.log('Saving bills to local storage...');
