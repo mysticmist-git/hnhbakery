@@ -50,8 +50,6 @@ export type Routes = ObjectValues<typeof ROUTES>;
 
 export const NOTE_KEY = 'note';
 
-export const BILL_KEY = 'BILL_KEY';
-
 export const MocGioGiaoHang = [
   {
     value: 'Buổi sáng (07:30 - 11:30)',
@@ -79,3 +77,5 @@ export const MocGioGiaoHang = [
     description: 'Chọn mốc thời gian',
   },
 ];
+
+export const PLACEHOLDER_DELIVERY_PRICE = 100000;

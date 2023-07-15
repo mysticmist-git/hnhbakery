@@ -1,8 +1,9 @@
 import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
-import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
+import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
 import { auth, db } from '@/firebase/config';
+import { COLLECTION_NAME, PLACEHOLDER_DELIVERY_PRICE } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { addDocToFirestore, addDocsToFirestore } from '@/lib/firestore';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
@@ -16,7 +17,6 @@ import {
   calculateTotalBillPrice,
   createDeliveryData,
   mapProductBillToBillDetailObject,
-  saveBillToLocalStorage,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/payment';
@@ -27,6 +27,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useLocalStorage } from 'usehooks-ts';
 import { CaiKhungCoTitle } from '../components/layouts/CaiKhungCoTitle';
 import FormGiaoHang from '../components/payment/FormGiaoHang/FormGiaoHang';
 
@@ -133,14 +134,18 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     deliveryData: DeliveryObject;
   }> => {
     const billData = createBillData(paymentId, chosenSale);
-    const billRef = await addDocToFirestore(billData, 'bills');
+    const billRef = await addDocToFirestore(billData, COLLECTION_NAME.BILLS);
 
     const deliveryData = createDeliveryData(
       deliveryForm,
       billRef.id,
-      1231232343
+      PLACEHOLDER_DELIVERY_PRICE
     );
-    const deliveryRef = await addDocToFirestore(deliveryData, 'deliveries');
+
+    const deliveryRef = await addDocToFirestore(
+      deliveryData,
+      COLLECTION_NAME.DELIVERIES
+    );
 
     const billDetails = mapProductBillToBillDetailObject(
       assembledCartItems,
@@ -150,12 +155,15 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     // Make a firestore batch commit
     const billDetailRefs = await addDocsToFirestore(
       billDetails,
-      'bill_details'
+      COLLECTION_NAME.BILL_DETAILS
     );
 
     // Update batch soldQuantity
     billDetails.forEach(async (item) => {
-      const batchRef = doc(collection(db, 'batches'), item.batch_id);
+      const batchRef = doc(
+        collection(db, COLLECTION_NAME.BATCHES),
+        item.batch_id
+      );
 
       await updateDoc(batchRef, {
         soldQuantity: increment(item.amount ?? 0),
@@ -189,7 +197,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
       // Update bill to localStorage (in case use is not logged it)
       console.log('Saving bills to local storage...');
-      saveBillToLocalStorage(id ?? '');
 
       const reqData = {
         billId: billData.id as string,

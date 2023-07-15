@@ -1,6 +1,5 @@
 import { AssembledCartItem } from '@/@types/cart';
 import ProductRating from '@/components/product-detail/ProductRating';
-import { BILL_KEY } from './constants';
 import { DeliveryForm } from './hooks/useDeliveryForm';
 import { BillDetailObject, DeliveryObject } from './models';
 import { FormValidationResult } from './types/payment';
@@ -67,34 +66,6 @@ export const sendPaymentRequestToVNPay = async (reqData: {
     }
   } catch (error) {
     console.log(error);
-  }
-};
-
-export const saveBillToLocalStorage = (billId: string) => {
-  if (!billId || billId === '') return;
-
-  const currentBills = localStorage.getItem(BILL_KEY);
-
-  const saveUpdatedBillsToLocalStorage = (billIds: string[]) => {
-    if (!billIds) return;
-
-    const json = JSON.stringify(billIds);
-
-    localStorage.setItem(BILL_KEY, JSON.stringify(json));
-  };
-
-  if (currentBills) {
-    const parsedCurrentBills: string[] = JSON.parse(currentBills) as string[];
-
-    const isBillAlreadyExisted = parsedCurrentBills.includes(billId);
-
-    if (isBillAlreadyExisted) return;
-
-    const updatedBills = [...parsedCurrentBills, billId];
-
-    saveUpdatedBillsToLocalStorage(updatedBills);
-  } else {
-    saveUpdatedBillsToLocalStorage([billId]);
   }
 };
 

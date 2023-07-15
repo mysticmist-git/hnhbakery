@@ -1,13 +1,13 @@
 import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
 import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
 
-import { MocGioGiaoHang } from '@/lib/constants';
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import { Grid, Typography, alpha, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import ChooseTime from '../ChooseTime/ChooseTime';
 
 type FormGiaoHangProps = {
@@ -17,6 +17,8 @@ type FormGiaoHangProps = {
 
 function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const theme = useTheme();
+
+  const [email, setEmail] = useLocalStorage('email', '');
 
   return (
     <>
@@ -77,7 +79,14 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
               <Grid item xs={12} sm={8}>
                 <CustomTextField
                   value={form.email}
-                  onChange={(e: any) => setForm('EMAIL', e.target.value)}
+                  onChange={(e: any) => {
+                    setForm('EMAIL', e.target.value);
+
+                    // TODO: This is some disgusting ugly workaround
+                    // I'm just using local storage there
+                    // I'm sorry
+                    setEmail(e.target.value);
+                  }}
                   placeholder="Email"
                   fullWidth
                   required

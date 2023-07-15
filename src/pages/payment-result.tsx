@@ -6,6 +6,7 @@ import { updateBillState } from '@/lib/firestore';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import { memo, useEffect, useMemo, useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 
 const MSG_ERROR_UPDATE_BILL =
   'Đã có lỗi xảy ra trong quá trình cập nhật trạng thái đơn hàng';
@@ -49,7 +50,8 @@ const PaymentResult = () => {
 
   const [isSuccess, setIsSuccess] = useState<boolean>(true);
   const [responseMessage, setResponseMessage] = useState<string>('');
-  const [billId, setBillId] = useState<string>('');
+
+  const [email, setEmail] = useLocalStorage<string>('email', '');
 
   const router = useRouter();
 
@@ -61,14 +63,11 @@ const PaymentResult = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user: 'hennv000@gmail.com',
-          pass: `!Password!123456`,
-          from: 'hennv000gmail.com',
-          to: 'hennv404@gmail.com',
+          to: email,
           subject: '[HNH-BAKERY - Thanh toán hóa đơn thanh công]',
           text:
             'Cảm ơn vi đã tin tưởng sử dụng sản phẩm của HnH Bakery. Đây là mã hóa đơn của bạn: ' +
-            billId,
+            responseBillId,
         }),
       });
 
@@ -116,14 +115,10 @@ const PaymentResult = () => {
         if (!updateResult) handlerSnackbarAlert('error', MSG_ERROR_UPDATE_BILL);
       }
 
-      setBillId(() => responseBillId as string);
       const responseMessage = resolveResponseCode(responseCode as string);
       setResponseMessage(() => responseMessage);
 
-      console.log('Reach A');
-
       if (['00', '07'].includes(responseCode as string)) {
-        console.log('Reach B');
         sendBillToMail();
       }
     };
@@ -196,7 +191,7 @@ const PaymentResult = () => {
                     variant="body1"
                     color={theme.palette.common.black}
                   >
-                    {billId}
+                    {responseBillId}
                   </Typography>
                 </Grid>
               </Grid>
