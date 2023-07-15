@@ -1,14 +1,27 @@
-import { formatPrice } from '@/lib/utils';
-import { Box, Checkbox, Grid, Typography, useTheme } from '@mui/material';
+import { storage } from '@/firebase/config';
+import { formatDateString, formatPrice } from '@/lib/utils';
+import {
+  Box,
+  Checkbox,
+  Grid,
+  Skeleton,
+  Typography,
+  useTheme,
+} from '@mui/material';
+import { ref } from 'firebase/storage';
 import Image from 'next/image';
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
+import { useDownloadURL } from 'react-firebase-hooks/storage';
 
-export default function RenderSaleItem(props: any) {
+function RenderSaleItem(props: any) {
   const theme = useTheme();
   const { sale, chosenSale, handleChooseSale } = props;
-  const { id, name, code, image, percent, maxSalePrice, end_at } = sale;
-
+  const { id, name, code, image, percent, maxSalePrice, end_at } =
+    useMemo(() => {
+      return sale;
+    }, [sale]);
   const [isHover, setIsHover] = useState(false);
+  const [downloadURL, loading, error] = useDownloadURL(ref(storage, image));
 
   const style = {
     normal: {
@@ -45,14 +58,24 @@ export default function RenderSaleItem(props: any) {
                 borderRadius: '8px',
               }}
             >
-              <Box
-                component={Image}
-                src={image}
-                alt={name}
-                loading="lazy"
-                fill={true}
-                sx={isHover ? style.hover : style.normal}
-              />
+              {!loading && (
+                <Box
+                  component={Image}
+                  src={downloadURL ?? ''}
+                  alt={name}
+                  loading="lazy"
+                  fill={true}
+                  sx={isHover ? style.hover : style.normal}
+                />
+              )}
+              {loading && (
+                <Skeleton
+                  variant="rectangular"
+                  animation="wave"
+                  width={'100%'}
+                  height={'100%'}
+                />
+              )}
             </Box>
           </Grid>
           <Grid item xs={true}>
@@ -94,14 +117,7 @@ export default function RenderSaleItem(props: any) {
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {'Hạn sử dụng: ' +
-                    new Date(end_at).toLocaleString('vi-VN', {
-                      year: 'numeric',
-                      month: 'numeric',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    })}
+                  {'Hạn sử dụng: ' + formatDateString(new Date(end_at))}
                 </Typography>
               </Grid>
             </Grid>
@@ -121,3 +137,5 @@ export default function RenderSaleItem(props: any) {
     </>
   );
 }
+
+export default memo(RenderSaleItem);

@@ -151,7 +151,7 @@ export interface Role extends BaseObject {
 }
 
 export interface SaleObject extends BaseObject {
-  id: string;
+  id?: string;
   name: string;
   code: string;
   percent: number;

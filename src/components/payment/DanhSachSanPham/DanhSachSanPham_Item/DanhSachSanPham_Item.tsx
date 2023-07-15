@@ -1,12 +1,11 @@
 import { AssembledCartItem } from '@/@types/cart';
-import { assembleItems } from '@/lib/cart';
-import { formatPrice } from '@/lib/utils';
+import { formatDateString, formatPrice } from '@/lib/utils';
 import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
-export function DanhSachSanPham_Item(props: any) {
+function DanhSachSanPham_Item(props: any) {
   const { item }: { item: AssembledCartItem } = props;
 
   const theme = useTheme();
@@ -25,8 +24,7 @@ export function DanhSachSanPham_Item(props: any) {
   };
 
   const totalPrice = useMemo(() => {
-    let price =
-      item.variant?.price ?? (item.discounted ? item.discountAmount : 0);
+    let price = (item.variant?.price ?? 0) - item.discountAmount;
 
     return price * item.quantity;
   }, [item.quantity]);
@@ -171,7 +169,7 @@ export function DanhSachSanPham_Item(props: any) {
                   Số lượng:{' '}
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {item.variant?.material ?? ''}
+                  {item.quantity}
                 </Typography>
               </Box>
             </Grid>
@@ -191,17 +189,14 @@ export function DanhSachSanPham_Item(props: any) {
                 >
                   Sản xuất:{' '}
                 </Typography>
-                <Typography variant="body2" color={theme.palette.common.black}>
-                  {new Date(item.batch?.MFG ?? new Date()).toLocaleDateString(
-                    'vi-VN',
-                    {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    }
-                  )}
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.black}
+                  sx={{
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {formatDateString(item.batch?.MFG ?? new Date())}
                 </Typography>
               </Box>
             </Grid>
@@ -228,16 +223,7 @@ export function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {new Date(item.batch?.EXP ?? new Date()).toLocaleDateString(
-                    'vi-VN',
-                    {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    }
-                  )}
+                  {formatDateString(item.batch?.EXP ?? new Date())}
                 </Typography>
               </Box>
             </Grid>
@@ -288,7 +274,7 @@ export function DanhSachSanPham_Item(props: any) {
                         item.batch?.discount.percent +
                         '%) ' +
                         formatPrice(
-                          item.variant?.price ?? 0 - item.discountAmount
+                          (item.variant?.price ?? 0) - item.discountAmount
                         )}
                     </Typography>
                   )}
@@ -333,3 +319,5 @@ export function DanhSachSanPham_Item(props: any) {
     </>
   );
 }
+
+export default DanhSachSanPham_Item;

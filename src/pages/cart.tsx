@@ -8,6 +8,7 @@ import { ROUTES } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
+import useCartNote from '@/lib/hooks/useCartNote';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useRouter } from 'next/router';
@@ -34,14 +35,9 @@ function Cart() {
       setFirstTime(false);
       return;
     }
-
-    console.log(assembled);
   }, [cart]);
 
-  const { value: note, set: setNote } = useLocalStorageValue<string>('note', {
-    defaultValue: '',
-    initializeWithValue: false,
-  });
+  const [note, setNote] = useCartNote();
 
   //#endregion
 
