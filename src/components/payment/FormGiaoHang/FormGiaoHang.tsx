@@ -187,7 +187,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                           required
                           thoiGianGiao={form.deliveryTime}
                           handleSetThoiGianGiao={(value: string) =>
-                            setForm('DELIVERY_DATE', value)
+                            setForm('DELIVERY_TIME', value)
                           }
                           fullWidth
                           select
