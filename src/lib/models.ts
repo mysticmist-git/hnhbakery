@@ -117,8 +117,8 @@ export interface DeliveryObject extends BaseObject {
   time?: string;
   startAt?: Date;
   endAt?: Date;
-  state?: 'fail' | 'success' | 'inProcress' | 'inTransit';
-  shipperNote?: string;
+  state?: 'cancel' | 'fail' | 'success' | 'inProcress' | 'inTransit';
+  shipperNote?: string; // là cancel reason hồi xưa
   bill_id?: string;
 }
 
