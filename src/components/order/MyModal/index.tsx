@@ -131,7 +131,7 @@ const MyModal = ({
     handleSnackbarAlert('info', 'Đã hủy thay đổi.');
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editContent?.email && !validateEmail(editContent?.email)) {
       handleSnackbarAlert('warning', 'Email thay đổi không hợp lệ.');
       return;
@@ -144,7 +144,7 @@ const MyModal = ({
       ...bill?.deliveryObject,
       ...editContent,
     } as DeliveryObject;
-    updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
+    await updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
     handleSnackbarAlert('success', 'Thay đổi thành công!');
     setEditMode(false);
     handleBillDataChange({
@@ -324,34 +324,39 @@ const MyModal = ({
                       Người nhận
                     </Typography>
 
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 0.5,
-                      }}
-                    >
-                      {!editMode && (
-                        <CustomIconButton onClick={() => setEditMode(true)}>
-                          <EditRoundedIcon fontSize="small" color="primary" />
-                        </CustomIconButton>
-                      )}
-                      {editMode && (
-                        <>
-                          <CustomIconButton onClick={handleSaveEdit}>
-                            <SaveAsRoundedIcon
-                              fontSize="small"
-                              color="primary"
-                            />
+                    {modalBill?.deliveryObject?.state === 'fail' ||
+                    modalBill?.deliveryObject?.state === 'inProcress' ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.5,
+                        }}
+                      >
+                        {!editMode && (
+                          <CustomIconButton onClick={() => setEditMode(true)}>
+                            <EditRoundedIcon fontSize="small" color="primary" />
                           </CustomIconButton>
-                          <CustomIconButton onClick={handleCancelEdit}>
-                            <CloseIcon fontSize="small" color="primary" />
-                          </CustomIconButton>
-                        </>
-                      )}
-                    </Box>
+                        )}
+                        {editMode && (
+                          <>
+                            <CustomIconButton onClick={handleSaveEdit}>
+                              <SaveAsRoundedIcon
+                                fontSize="small"
+                                color="primary"
+                              />
+                            </CustomIconButton>
+                            <CustomIconButton onClick={handleCancelEdit}>
+                              <CloseIcon fontSize="small" color="primary" />
+                            </CustomIconButton>
+                          </>
+                        )}
+                      </Box>
+                    ) : (
+                      <></>
+                    )}
                   </Box>
 
                   <Box

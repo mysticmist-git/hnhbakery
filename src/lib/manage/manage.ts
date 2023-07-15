@@ -212,7 +212,7 @@ export const validateCollectionNameParams = (
 export function billStatusParse(state: number | undefined) {
   switch (state) {
     case -1:
-      return 'Hủy';
+      return 'Đã hủy';
     case 0:
       return 'Chưa thanh toán';
     case 1:
@@ -224,6 +224,8 @@ export function billStatusParse(state: number | undefined) {
 
 export function deliveryStatusParse(state: string | undefined) {
   switch (state) {
+    case 'cancel':
+      return 'Đã hủy';
     case 'fail':
       return 'Giao hàng thất bại';
     case 'success':

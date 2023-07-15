@@ -52,7 +52,7 @@ export function BillTable({
     },
     {
       field: 'totalPrice',
-      headerName: 'Thành tiền',
+      headerName: 'Tổng tiền',
       flex: 1,
       align: 'center',
       headerAlign: 'center',
@@ -138,6 +138,8 @@ export function BillTable({
               size="small"
               color="secondary"
               onClick={() => {
+                console.log(params.row);
+
                 handleViewBill(params.row);
               }}
             >
@@ -147,18 +149,87 @@ export function BillTable({
               variant="contained"
               color="secondary"
               size="small"
-              disabled={params.row.state === 1}
+              disabled={params.row.state === 1 || params.row.state === -1}
               onClick={() => {
-                handleViewBillModalState(
-                  params.row.state,
-                  params.row.deliveryObject
-                );
+                handleViewBillModalState(params.row);
               }}
             >
               Hủy
             </Button>
           </Box>
         );
+      },
+    },
+    {
+      field: 'payment_id',
+      headerName: 'Mã HTTT',
+      align: 'left',
+      headerAlign: 'center',
+    },
+    {
+      field: 'payment_name',
+      headerName: 'Tên HTTT',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.paymentObject?.name ?? '';
+      },
+    },
+    {
+      field: 'user_id',
+      headerName: 'Mã khách hàng',
+      align: 'left',
+      headerAlign: 'center',
+    },
+    {
+      field: 'user_name',
+      headerName: 'Tên khách hàng',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.userObject?.name ?? '';
+      },
+    },
+    {
+      field: 'sale_id',
+      headerName: 'Mã khuyến mãi',
+      align: 'left',
+      headerAlign: 'center',
+    },
+    {
+      field: 'sale_name',
+      headerName: 'Tên khuyến mãi',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.saleObject?.name ?? '';
+      },
+    },
+    {
+      field: 'delivery_id',
+      headerName: 'Mã giao hàng',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.deliveryObject?.id ?? '';
+      },
+    },
+    {
+      field: 'delivery_name',
+      headerName: 'Tên người nhận',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.deliveryObject?.name ?? '';
+      },
+    },
+    {
+      field: 'delivery_tel',
+      headerName: 'SDT người nhận',
+      align: 'left',
+      headerAlign: 'center',
+      valueGetter(params) {
+        return params.row.deliveryObject?.tel ?? '';
       },
     },
   ];
@@ -175,6 +246,17 @@ export function BillTable({
         rows={rows}
         rowHeight={64}
         loading={false}
+        columnVisibilityModel={{
+          payment_id: false,
+          payment_name: false,
+          user_id: false,
+          user_name: false,
+          sale_id: false,
+          sale_name: false,
+          delivery_id: false,
+          delivery_name: false,
+          delivery_tel: false,
+        }}
         columns={columns}
         localeText={{
           toolbarFilters: 'Bộ lọc',
