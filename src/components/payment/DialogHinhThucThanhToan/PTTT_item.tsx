@@ -33,9 +33,11 @@ function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
 
   const [isHover, setIsHover] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const handleImageLoad = () => {
     setIsLoading(false);
   };
+
   return (
     <Box
       component={Button}
@@ -103,13 +105,15 @@ export default function DialogHinhThucThanhToan({
 
   // #region States
 
-  const [PTTTs, setPTTTs] = useState<PaymentObject>([]);
+  const [PTTTs, setPTTTs] = useState<PaymentObject[]>([]);
 
   // #endregion
 
   useEffect(() => {
     const getPayments = async () => {
-      const payments = await getCollection<PaymentObject>(COLLECTION_NAME.PAYMENTS);
+      const payments = await getCollection<PaymentObject>(
+        COLLECTION_NAME.PAYMENTS
+      );
 
       for (const pttt of payments) {
         if (pttt.name === 'VNPay') {

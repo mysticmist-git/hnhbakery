@@ -1,5 +1,6 @@
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
 import CustomButton from '@/components/buttons/CustomButton';
+import { MocGioGiaoHang } from '@/lib/constants';
 import {
   Dialog,
   DialogActions,
@@ -17,7 +18,7 @@ import { useState } from 'react';
 const ChooseTime = (props: any) => {
   const theme = useTheme();
 
-  const { thoiGianGiao, handleSetThoiGianGiao, options } = props;
+  const { thoiGianGiao, handleSetThoiGianGiao } = props;
 
   // const [thoiGianGiao, setSelectedOption] = useState(options[0].value);
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ const ChooseTime = (props: any) => {
   );
 
   const handleSetSelectedOption = (event: any) => {
-    if (event.target.value != options[options.length - 1].value) {
+    if (event.target.value != MocGioGiaoHang[MocGioGiaoHang.length - 1].value) {
       // setSelectedOption(event.target.value);
       handleSetThoiGianGiao(event.target.value);
     }
@@ -50,11 +51,12 @@ const ChooseTime = (props: any) => {
     } else if (reason == 'Xác nhận') {
       setOpen(false);
       realTime = customTime;
-      options[options.length - 1].value = realTime;
-      options[options.length - 1].label = realTime;
-      options[options.length - 1].description = 'Thời gian cụ thể';
+      MocGioGiaoHang[MocGioGiaoHang.length - 1].value = realTime;
+      MocGioGiaoHang[MocGioGiaoHang.length - 1].label = realTime;
+      MocGioGiaoHang[MocGioGiaoHang.length - 1].description =
+        'Thời gian cụ thể';
       // setSelectedOption(options[options.length - 1].value);
-      handleSetThoiGianGiao(options[options.length - 1].value);
+      handleSetThoiGianGiao(MocGioGiaoHang[MocGioGiaoHang.length - 1].value);
     }
   };
 
@@ -100,12 +102,12 @@ const ChooseTime = (props: any) => {
           },
         }}
       >
-        {options.map((option: any) => (
+        {MocGioGiaoHang.map((option: any) => (
           <MenuItem
             key={option.value}
             value={option.value}
             onClick={
-              option.value == options[options.length - 1].value
+              option.value == MocGioGiaoHang[MocGioGiaoHang.length - 1].value
                 ? handleDialogOpen
                 : () => {}
             }

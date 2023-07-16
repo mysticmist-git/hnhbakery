@@ -1,3 +1,4 @@
+import { SearchContext } from '@/lib/contexts/search';
 import { formatPrice } from '@/lib/utils';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -10,7 +11,6 @@ import {
 } from '@mui/material';
 import React, { memo, useContext } from 'react';
 import { Product, ProductContent } from '..';
-import { SearchContext } from '../../../pages/search';
 
 //#endregion
 //#region Danh sách sản phẩm

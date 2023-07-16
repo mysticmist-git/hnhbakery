@@ -321,9 +321,6 @@ export function getDocFromDocumentSnapshot<T extends BaseObject>(
   // Null check
   if (!docSnapshot) throw new Error('DocSnapshot is null');
 
-  console.log(docSnapshot);
-  console.log(docSnapshot.data());
-
   // Get doc
   const data = docSnapshot.data();
 
@@ -623,7 +620,6 @@ export async function fetchAvailableBatches(): Promise<BatchObject[]> {
       (batch) => batch.soldQuantity < batch.totalQuantity
     );
 
-    console.log(batches);
     return batches;
   } catch (error) {
     console.log('Error at fetchAvailableBatches:', error);

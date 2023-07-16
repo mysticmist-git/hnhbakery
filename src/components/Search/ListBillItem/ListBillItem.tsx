@@ -1,10 +1,10 @@
+import { SearchContext } from '@/lib/contexts/search';
 import { Grid, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
-import { SearchContext } from '../../../pages/search';
-import { CustomAccordionItem } from '../../accordions/CustomAccordionItem';
-import ChiTietHoaDon from '../ChiTietHoaDon';
-import ThongTinGiaoHang from '../ThongTinGiaoHang';
-import ThongTinKhuyenMai from '../ThongTinKhuyenMai';
+import { CustomAccordionItem } from '../../accordions/CustomAccordionItem/CustomAccordionItem';
+import ChiTietHoaDon from '../ChiTietHoaDon/ChiTietHoaDon';
+import ThongTinGiaoHang from '../ThongTinGiaoHang/ThongTinGiaoHang';
+import ThongTinKhuyenMai from '../ThongTinKhuyenMai/ThongTinKhuyenMai';
 
 const ListBillItem = memo((props: any) => {
   const theme = useTheme();
@@ -24,11 +24,11 @@ const ListBillItem = memo((props: any) => {
           children={ChiTietHoaDon}
           defaultExpanded={true}
         />
-        <CustomAccordionItem
+        {/* <CustomAccordionItem
           heading={'Thông tin giao hàng'}
           children={ThongTinGiaoHang}
           defaultExpanded={true}
-        />
+        /> */}
         <CustomAccordionItem
           heading={'Thông tin khuyến mãi'}
           children={ThongTinKhuyenMai}

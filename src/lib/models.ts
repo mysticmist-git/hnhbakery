@@ -82,18 +82,18 @@ export interface StorageBatchObject extends BatchObject {
 
 export interface BillObject extends BaseObject {
   id?: string;
-  paymentTime?: Date;
-  originalPrice?: number;
-  totalPrice?: number;
-  note?: string;
-  state?: 1 | 0 | -1;
+  paymentTime: Date;
+  originalPrice: number;
+  totalPrice: number;
+  note: string;
+  state: 1 | 0 | -1;
   // rating?: 1 | 2 | 3 | 4 | 5;
   // comment?: string;
-  payment_id?: string;
-  saleAmount?: number;
+  payment_id: string;
+  saleAmount: number;
   sale_id: string;
-  user_id?: string;
-  created_at?: Date;
+  user_id: string;
+  created_at: Date;
 }
 
 export interface BillDetailObject extends BaseObject {
@@ -133,9 +133,9 @@ export interface FeedbackObject extends BaseObject {
 
 export interface PaymentObject extends BaseObject {
   id?: string;
-  name?: string;
-  image?: string;
-  isActive?: boolean;
+  name: string;
+  image: string;
+  isActive: boolean;
 }
 
 export interface ReferenceObject extends BaseObject {
@@ -152,7 +152,7 @@ export interface Role extends BaseObject {
 }
 
 export interface SaleObject extends BaseObject {
-  id: string;
+  id?: string;
   name: string;
   code: string;
   percent: number;
@@ -225,6 +225,7 @@ export interface CustomBill extends BillObject {
   deliveryPrice?: number;
   salePercent?: number;
 }
+
 export type AssembledBillDetail = BillDetailObject & {
   batchObject?: BatchObject;
   productObject?: ProductObject;

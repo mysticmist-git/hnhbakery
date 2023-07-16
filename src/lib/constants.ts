@@ -47,3 +47,35 @@ export const ROUTES = {
 type ObjectValues<T> = T[keyof T];
 
 export type Routes = ObjectValues<typeof ROUTES>;
+
+export const NOTE_KEY = 'note';
+
+export const MocGioGiaoHang = [
+  {
+    value: 'Buổi sáng (07:30 - 11:30)',
+    label: 'Buổi sáng',
+    description: '(07:30 - 11:30)',
+  },
+  {
+    value: 'Buổi trưa (11:30 - 13:00)',
+    label: 'Buổi trưa',
+    description: '(11:30 - 13:00)',
+  },
+  {
+    value: 'Buổi chiều (13:00 - 17:00)',
+    label: 'Buổi chiều',
+    description: '(13:00 - 17:00)',
+  },
+  {
+    value: 'Buổi tối (17:00 - 21:00)',
+    label: 'Buổi tối',
+    description: '(17:00 - 21:00)',
+  },
+  {
+    value: 'Cụ thể',
+    label: 'Cụ thể',
+    description: 'Chọn mốc thời gian',
+  },
+];
+
+export const PLACEHOLDER_DELIVERY_PRICE = 100000;
