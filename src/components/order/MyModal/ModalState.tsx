@@ -35,7 +35,7 @@ export function ModalState({
   handleBillDataChange: (newBill: SuperDetail_BillObject) => void;
 }) {
   const clearData = () => {
-    setBillState(() => 0);
+    setBillState(() => null);
   };
 
   const localHandleClose = () => {
@@ -131,7 +131,7 @@ export function ModalState({
             {isCancel && (
               <Button
                 variant="contained"
-                color="secondary"
+                color="error"
                 onClick={async () => {
                   const data = {
                     id: billState?.id,

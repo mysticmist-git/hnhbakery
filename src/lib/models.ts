@@ -135,6 +135,7 @@ export interface FeedbackObject extends BaseObject {
   id: string;
   rating: number;
   comment: string;
+  time?: Date;
   product_id: string;
   user_id: string;
 }
@@ -270,4 +271,9 @@ export interface SuperDetail_BillObject extends BillObject {
   saleObject?: SaleObject;
   deliveryObject?: DeliveryObject;
   billDetailObjects?: AssembledBillDetail[];
+}
+
+export interface SuperDetail_UserObject extends UserObject {
+  billObjects?: SuperDetail_BillObject[];
+  feedbackObjects?: FeedbackObject[];
 }
