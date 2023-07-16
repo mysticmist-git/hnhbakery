@@ -1,13 +1,10 @@
-import { auth } from '@/firebase/config';
+import DoiMKTextField from '@/components/Search/DoiMKTextField';
 import { UserObject } from '@/lib/models';
 import { Google } from '@mui/icons-material';
 import { Box, Grid, TextField, Typography, useTheme } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { UserProfile } from 'firebase/auth';
-import { Timestamp } from 'firebase/firestore';
-import React, { memo, useRef } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import React, { memo } from 'react';
 import AddressList from '../AddressList';
 import TelTextField from '../TelTextField/TelTextField';
 

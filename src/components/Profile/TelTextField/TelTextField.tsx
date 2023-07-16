@@ -21,7 +21,7 @@ export default function TelTextField(props: any) {
     }
   }, [userData.tel]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (telRef.current) {
       if (!isVNPhoneNumber(telRef.current.value)) {
         handleSnackbarAlert('warning', 'Số điện thoại không hợp lệ');
@@ -30,7 +30,8 @@ export default function TelTextField(props: any) {
       if (telRef.current.value !== userData.tel) {
         handleSnackbarAlert('success', 'Thay đổi số điện thoại thành công!');
         // Hên: cập nhật thay đổi dô db phụ nha bà!
-        onUpdateUserData('tel', telRef.current.value);
+        console.log(telRef.current.value);
+        await onUpdateUserData('tel', telRef.current.value);
       }
       if (telRef.current.value === userData.tel) {
         handleSnackbarAlert('info', 'Không thay đổi!');

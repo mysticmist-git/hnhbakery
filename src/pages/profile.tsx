@@ -54,14 +54,15 @@ const Profile = () => {
 
   // #endregion
 
-  const handleUpdateUserData = (
+  const handleUpdateUserData = async (
     field: keyof UserObject,
     value: UserObject[keyof UserObject]
   ) => {
-    updateDocToFirestore(
-      { ...userData, [field]: value },
-      COLLECTION_NAME.USERS
-    );
+    const updateData = { ...userData, [field]: value };
+
+    console.log(updateData);
+
+    await updateDocToFirestore(updateData, COLLECTION_NAME.USERS);
   };
 
   return (
