@@ -11,7 +11,7 @@ export default function TelTextField(props: any) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
 
-  const { textStyle, userData } = props;
+  const { textStyle, userData, onUpdateUserData } = props;
   const telRef = useRef<HTMLInputElement>(null);
   const [editState, setEditState] = useState(false);
 
@@ -30,6 +30,7 @@ export default function TelTextField(props: any) {
       if (telRef.current.value !== userData.tel) {
         handleSnackbarAlert('success', 'Thay đổi số điện thoại thành công!');
         // Hên: cập nhật thay đổi dô db phụ nha bà!
+        onUpdateUserData('tel', telRef.current.value);
       }
       if (telRef.current.value === userData.tel) {
         handleSnackbarAlert('info', 'Không thay đổi!');

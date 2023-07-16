@@ -7,7 +7,7 @@ const LeftProfileBasicInformation = ({
   avatarSrc,
   name,
   phone,
-  email,
+  mail: email,
   address,
 }: LeftProfileBasicInfoProps) => {
   // #region Hooks

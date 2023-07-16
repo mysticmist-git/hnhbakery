@@ -1,6 +1,7 @@
 import { CustomButton, CustomIconButton } from '@/components/buttons';
 import { CustomDialog } from '@/components/dialogs';
 import { useSnackbarService } from '@/lib/contexts';
+import { UserObject } from '@/lib/models';
 import {
   EditRounded,
   Google,
@@ -17,9 +18,11 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import { UserProfile } from 'firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 import React, { memo, useRef, useState } from 'react';
 import AddressList from '../AddressList';
-import TelTextField from '../TelTextField';
+import TelTextField from '../TelTextField/TelTextField';
 
 function DoiMatKhau_Dialog(props: any) {
   const theme = useTheme();
@@ -32,9 +35,11 @@ function DoiMatKhau_Dialog(props: any) {
     checkMKCu,
     setCheckMKCu,
     userData,
+    onUpdateUserData,
   } = props;
 
   const handleSnackbarAlert = useSnackbarService();
+
   const handleXacNhan = () => {
     // cài đặt xóa địa chỉ trong db
     if (mkcuRef?.current?.value !== userData?.password) {
@@ -51,8 +56,9 @@ function DoiMatKhau_Dialog(props: any) {
     }
 
     // Hên: cài đặt thay đổi mật khẩu
+    props.onUpdateUserData('password', mkmoiRef?.current?.value);
 
-    handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
+    handleSnackbarAlert('success', 'Đổi mật khẩu thành công!');
     handleClose();
   };
 
@@ -212,7 +218,7 @@ function DoiMatKhau_Dialog(props: any) {
 
 function DoiMKTextField(props: any) {
   const theme = useTheme();
-  const { textStyle, userData } = props;
+  const { textStyle, userData, onUpdateUserData } = props;
   const [openDoiMauKhau, setOpenDoiMauKhau] = useState(false);
   const handleCloseDoiMatKhau = () => {
     setOpenDoiMauKhau(false);
@@ -264,12 +270,22 @@ function DoiMKTextField(props: any) {
         setSameMKMoi={setSameMKMoi}
         checkMKCu={checkMKCu}
         setCheckMKCu={setCheckMKCu}
+        onUpdateUserData={onUpdateUserData}
       />
     </>
   );
 }
 
-const RightProfileColumn = (props: any) => {
+interface RightProfileColumnProps {
+  userData?: UserObject;
+  onUpdateUserData: (
+    field: keyof UserObject,
+    value: UserObject[keyof UserObject]
+  ) => void;
+  [key: string]: any;
+}
+
+const RightProfileColumn = (props: RightProfileColumnProps) => {
   const theme = useTheme();
   const textStyle = {
     fontSize: theme.typography.body2.fontSize,
@@ -277,7 +293,7 @@ const RightProfileColumn = (props: any) => {
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const { userData } = props;
+  const { userData, onUpdateUserData } = props;
 
   return (
     <Grid
@@ -320,7 +336,7 @@ const RightProfileColumn = (props: any) => {
                 disabled
                 variant="outlined"
                 defaultValue={'Họ và tên nhé'}
-                value={userData.name ?? ''}
+                value={userData?.name ?? ''}
                 fullWidth
                 InputProps={{
                   style: {
@@ -343,7 +359,7 @@ const RightProfileColumn = (props: any) => {
                 sx={{
                   width: '100%',
                 }}
-                value={dayjs(userData.birthday ?? '')}
+                value={dayjs(userData?.birthday ?? new Date())}
                 format="DD/MM/YYYY"
                 slotProps={{
                   textField: {
@@ -396,7 +412,7 @@ const RightProfileColumn = (props: any) => {
                 label="Email"
                 disabled
                 variant="outlined"
-                value={userData.email ?? 'Trống'}
+                value={userData?.mail ?? 'Trống'}
                 fullWidth
                 InputProps={{
                   style: {
@@ -412,10 +428,14 @@ const RightProfileColumn = (props: any) => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TelTextField textStyle={textStyle} userData={userData} />
+              <TelTextField
+                textStyle={textStyle}
+                userData={userData}
+                onUpdateUserData={onUpdateUserData}
+              />
             </Grid>
             <Grid item xs={12}>
-              {userData.accountType === 'google' && (
+              {userData?.accountType === 'google' && (
                 <Box
                   sx={{
                     borderRadius: '8px',
@@ -440,8 +460,12 @@ const RightProfileColumn = (props: any) => {
                   </Typography>
                 </Box>
               )}
-              {userData.accountType === 'email_n_password' && (
-                <DoiMKTextField textStyle={textStyle} userData={userData} />
+              {userData?.accountType === 'email_n_password' && (
+                <DoiMKTextField
+                  textStyle={textStyle}
+                  userData={userData}
+                  onUpdateUserData={onUpdateUserData}
+                />
               )}
             </Grid>
           </Grid>

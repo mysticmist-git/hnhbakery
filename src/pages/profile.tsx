@@ -1,77 +1,66 @@
 import avatar from '@/assets/Logo.png';
 import ImageBackground from '@/components/Imagebackground';
-import { LeftProfileColumn } from '@/components/profile';
-import RightProfileColumn from '@/components/profile/RightProfileColumn';
-import { db } from '@/firebase/config';
-import { UserObject } from '@/lib/models';
-import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
+import { LeftProfileColumn } from '@/components/Profile';
+import RightProfileColumn from '@/components/Profile/RightProfileColumn/RightProfileColumn';
+import { auth, db } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { updateDocToFirestore } from '@/lib/firestore';
+import useUserData from '@/lib/hooks/userUserData';
+import { UserObject, userConverter } from '@/lib/models';
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  Link,
+  Skeleton,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { Timestamp, doc, getDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore';
+import { useRouter } from 'next/router';
 import React, { memo, useEffect, useMemo, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
 
 const Profile = () => {
+  const router = useRouter();
+
   // #region states
 
-  const [userData, setUserData] = useState<UserObject>({} as UserObject);
-  const [avatarSrc, setAvatarSrc] = useState('');
-  const [userId, setUserId] = useState('');
+  const [user, userLoading, userError] = useAuthState(auth);
+
+  if (!user) {
+    router.push('/');
+  }
+
+  const { userData, userDataLoading, userDataError } = useUserData(
+    user?.uid ?? '1'
+  );
 
   // #endregion
 
   // #region Hooks
 
   const theme = useTheme();
-  const auth = getAuth();
 
   // #endregion
 
-  // #region useEffects
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        setAvatarSrc(user.photoURL ?? '');
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      if (!userId || userId === '') return null;
-
-      // Get users
-      const userDoc = await getDoc(doc(db, 'users', userId));
-
-      var userData = {
-        id: userDoc.id,
-        ...userDoc.data(),
-        birthday: userDoc.data()?.birthday
-          ? new Date(
-              (userDoc.data()?.birthday as Timestamp).seconds * 1000 +
-                7 * 60 * 60 * 1000
-            )
-          : new Date(),
-        lastLogin: userDoc.data()?.lastLogin
-          ? new Date(
-              (userDoc.data()?.lastLogin as Timestamp).seconds * 1000 +
-                7 * 60 * 60 * 1000
-            )
-          : new Date(),
-        addresses: userDoc.data()?.addresses ?? [],
-      } as UserObject;
-
-      console.log(userData);
-
-      setUserData(() => userData);
-    };
-
-    getUser();
-  }, [userId]);
-
-  // #endregion
+  const handleUpdateUserData = (
+    field: keyof UserObject,
+    value: UserObject[keyof UserObject]
+  ) => {
+    updateDocToFirestore(
+      { ...userData, [field]: value },
+      COLLECTION_NAME.USERS
+    );
+  };
 
   return (
     <>
@@ -118,29 +107,56 @@ const Profile = () => {
           alignItems={'flex-start'}
         >
           <Grid item xs={12} sm={4} md={3}>
-            <Box
-              sx={{
-                backgroundColor: theme.palette.common.white,
-                borderRadius: '16px',
-                overflow: 'hidden',
-                boxShadow: 3,
-                p: 2,
-              }}
-            >
-              <LeftProfileColumn
-                LeftProfileBasicInfo={{
-                  avatarSrc: avatarSrc,
-                  // address: userData.addresses ?? 'Không',
-                  address: 'Không',
-                  email: userData.mail ?? 'Không',
-                  name: userData.name ?? 'Không',
-                  phone: userData.tel ?? 'Không',
+            {userLoading ? (
+              <Skeleton animation="wave" width={'100%'} variant="rounded">
+                <Box
+                  sx={{
+                    backgroundColor: theme.palette.common.white,
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    boxShadow: 3,
+                    p: 2,
+                  }}
+                >
+                  <LeftProfileColumn
+                    image={''}
+                    userId={''}
+                    onUpdateUserData={handleUpdateUserData}
+                  />
+                </Box>
+              </Skeleton>
+            ) : (
+              <Box
+                sx={{
+                  backgroundColor: theme.palette.common.white,
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  p: 2,
                 }}
-              />
-            </Box>
+              >
+                <LeftProfileColumn
+                  image={userData?.image ?? ''}
+                  userId={userData?.id ?? ''}
+                  onUpdateUserData={handleUpdateUserData}
+                />
+              </Box>
+            )}
           </Grid>
           <Grid item xs={12} sm={8} md={9}>
-            <RightProfileColumn userData={userData} />
+            {userLoading ? (
+              <Skeleton
+                animation="wave"
+                width={'100%'}
+                height={520}
+                variant="rounded"
+              />
+            ) : (
+              <RightProfileColumn
+                userData={userData}
+                onUpdateUserData={handleUpdateUserData}
+              />
+            )}
           </Grid>
         </Grid>
       </Box>
@@ -148,4 +164,4 @@ const Profile = () => {
   );
 };
 
-export default memo(Profile);
+export default Profile;

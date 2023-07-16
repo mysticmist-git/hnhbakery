@@ -1,3 +1,12 @@
+import {
+  DocumentData,
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+  Timestamp,
+  WithFieldValue,
+} from 'firebase/firestore';
+
 export interface BaseObject {
   id?: string;
 }
@@ -175,18 +184,43 @@ export interface StaffObject extends BaseObject {
   addresses: string[];
 }
 
+export const userConverter: FirestoreDataConverter<UserObject> = {
+  toFirestore: function (
+    modelObject: WithFieldValue<UserObject>
+  ): DocumentData {
+    delete modelObject.id;
+
+    return {
+      ...modelObject,
+    };
+  },
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options?: SnapshotOptions | undefined
+  ): UserObject {
+
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+      birthday: data.birthday instanceof Timestamp ? data.birthday.toDate() : data.birthday,
+    } as UserObject;
+  },
+};
+
 export interface UserObject extends BaseObject {
   id?: string;
-  mail?: string;
-  password?: string;
-  name?: string;
-  birthday?: Date;
-  tel?: string;
-  image?: string;
-  isActive?: boolean;
-  role_id?: string;
-  addresses?: string[];
-  accountType?: 'google' | 'email_n_password';
+  mail: string;
+  password: string;
+  name: string;
+  birthday: Date;
+  tel: string;
+  image: string;
+  isActive: boolean;
+  role_id: string;
+  addresses: string[];
+  accountType: 'google' | 'email_n_password' | 'none';
 }
 
 export interface Nameable {

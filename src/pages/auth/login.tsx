@@ -20,6 +20,7 @@ import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/system';
+import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
@@ -71,13 +72,13 @@ const Login = () => {
 
   const getSigninInfo = (): SignInInfo => {
     return {
-      email: emailRef.current?.value || '',
+      mail: emailRef.current?.value || '',
       password: passwordRef.current?.value || '',
     };
   };
 
   const validateSigninInfo = (props: SignInInfo) => {
-    if (props.email === '' || props.password === '') {
+    if (props.mail === '' || props.password === '') {
       handleSnackbarAlert('error', 'Vui lòng nhập đầy đủ thông tin');
       return false;
     }
@@ -94,15 +95,33 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        signinInfo.email,
+        signinInfo.mail,
         signinInfo.password
       );
 
       handleSnackbarAlert('success', 'Đăng nhập thành công');
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      handleSnackbarAlert('error', `Lỗi: ${error}`);
+      let msg = '';
+      switch (error.code) {
+        case 'auth/invalid-email':
+          msg = 'Email không phù hợp';
+          break;
+        case 'auth/wrong-password':
+          msg = 'Sai mật khẩu';
+          break;
+        case 'auth/user-not-found':
+          msg = 'Tài khoản không tồn tại';
+          break;
+        case 'auth/too-many-requests':
+          msg = 'Tài khoản tạm thời bị khóa đăng nhập sai nhiều lần';
+          break;
+        default:
+          msg = error.message;
+          break;
+      }
+      handleSnackbarAlert('error', `${msg}`);
     }
   };
 
@@ -306,7 +325,7 @@ const Login = () => {
                           </Grid>
                           <Grid item xs={5} textAlign={'right'}>
                             <NextLink
-                              href="/forgot-password"
+                              href="/auth/forgot-password"
                               passHref
                               legacyBehavior
                             >

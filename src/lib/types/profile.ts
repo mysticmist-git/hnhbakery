@@ -1,11 +1,12 @@
-interface LeftProfileBasicInfoProps {
-  avatarSrc: string;
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
+import { UserObject } from '../models';
+
+export interface LeftProfileColumnProps {
+  image: string;
+  userId: string;
+  onUpdateUserData?: (
+    field: keyof UserObject,
+    value: UserObject[keyof UserObject]
+  ) => void;
 }
 
-interface LeftProfileColumnProps {
-  LeftProfileBasicInfo: LeftProfileBasicInfoProps;
-}
+type field = keyof UserObject;

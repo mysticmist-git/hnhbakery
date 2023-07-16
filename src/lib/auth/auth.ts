@@ -28,6 +28,11 @@ export const addUserWithGoogleLogin = (userCredential: UserCredential) => {
       mail: user.email ?? '',
       accountType: 'google',
       role_id: 'customer',
+      addresses: [],
+      birthday: new Date(1990, 1, 1),
+      image: '',
+      isActive: true,
+      password: '',
     };
 
     setDoc(doc(db, 'users', user.uid), userData);
