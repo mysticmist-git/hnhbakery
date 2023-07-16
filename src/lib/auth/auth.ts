@@ -4,7 +4,7 @@ import { Timestamp, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import router from 'next/router';
 import { getDocFromFirestore } from '../firestore';
 import { UserObject } from '../models';
-import { SignupUser } from '../types/auth';
+import { SignInInfo, SignupUser } from '../types/auth';
 
 export const addUserWithEmailAndPassword = (
   id: string,
@@ -61,4 +61,27 @@ export const handleLoginWithGoogle = async () => {
   } catch (error) {
     console.log(error);
   }
+};
+export const validateSigninInfo = ({
+  mail,
+  password,
+}: SignInInfo): { valid: boolean; msg: string } => {
+  if (!mail || mail.length <= 0) {
+    return {
+      valid: false,
+      msg: 'Vui lòng nhập email',
+    };
+  }
+
+  if (!password || password.length <= 0) {
+    return {
+      valid: false,
+      msg: 'Vui lòng nhập mật khẩu',
+    };
+  }
+
+  return {
+    valid: true,
+    msg: 'Hợp lệ',
+  };
 };

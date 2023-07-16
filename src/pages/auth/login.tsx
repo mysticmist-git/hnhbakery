@@ -6,7 +6,7 @@ import {
   CustomTextFieldPassword,
 } from '@/components/Inputs/textFields';
 import { auth } from '@/firebase/config';
-import { handleLoginWithGoogle } from '@/lib/auth/auth';
+import { handleLoginWithGoogle, validateSigninInfo } from '@/lib/auth/auth';
 import { authMessages } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { SignInInfo } from '@/lib/types/auth';
@@ -26,6 +26,7 @@ import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo, useRef } from 'react';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 
 //#region Top
 
@@ -54,49 +55,28 @@ const Copyright = (props: any) => {
 //#endregion
 
 const Login = () => {
-  //#region Hooks
-
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
-  //#endregion
-
-  // #region UseRefs
-
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-
-  // #endregion
-
-  //#region Handlers
-
-  const getSigninInfo = (): SignInInfo => {
-    return {
-      mail: emailRef.current?.value || '',
-      password: passwordRef.current?.value || '',
-    };
-  };
-
-  const validateSigninInfo = (props: SignInInfo) => {
-    if (props.mail === '' || props.password === '') {
-      handleSnackbarAlert('error', 'Vui lòng nhập đầy đủ thông tin');
-      return false;
-    }
-    return true;
-  };
+  const [mail, setMail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    const signinInfo = getSigninInfo();
+    const { valid, msg } = validateSigninInfo({
+      mail: mail,
+      password,
+    });
 
-    if (!validateSigninInfo(signinInfo)) {
+    if (!valid) {
+      handleSnackbarAlert('error', msg);
       return;
     }
 
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        signinInfo.mail,
-        signinInfo.password
+        mail,
+        password
       );
 
       handleSnackbarAlert('success', 'Đăng nhập thành công');
@@ -273,7 +253,10 @@ const Login = () => {
                     >
                       <Grid item xs={12}>
                         <CustomTextField
-                          ref={emailRef}
+                          value={mail}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setMail(e.target.value)
+                          }
                           required
                           fullWidth
                           id="email"
@@ -285,7 +268,10 @@ const Login = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <CustomTextFieldPassword
-                          ref={passwordRef}
+                          value={password}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setPassword(e.target.value)
+                          }
                           required
                           fullWidth
                           name="password"

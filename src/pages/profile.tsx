@@ -36,9 +36,11 @@ const Profile = () => {
 
   const [user, userLoading, userError] = useAuthState(auth);
 
-  if (!user) {
-    router.push('/');
-  }
+  useEffect(() => {
+    if (!user && !userLoading) {
+      router.push('/');
+    }
+  }, [router, user, userLoading]);
 
   const { userData, userDataLoading, userDataError } = useUserData(
     user?.uid ?? '1'
@@ -92,23 +94,31 @@ const Profile = () => {
           </Grid>
         </Grid>
       </ImageBackground>
-      <Box
-        sx={{
-          pt: 6,
-          pb: 12,
-          px: { xs: 2, sm: 2, md: 4, lg: 8 },
-          overflow: 'visible',
-        }}
-      >
-        <Grid
-          container
-          spacing={2}
-          justifyContent={'center'}
-          alignItems={'flex-start'}
+
+      {!user ? undefined : (
+        <Box
+          sx={{
+            pt: 6,
+            pb: 12,
+            px: { xs: 2, sm: 2, md: 4, lg: 8 },
+            overflow: 'visible',
+          }}
         >
-          <Grid item xs={12} sm={4} md={3}>
-            {userLoading ? (
-              <Skeleton animation="wave" width={'100%'} variant="rounded">
+          <Grid
+            container
+            spacing={2}
+            justifyContent={'center'}
+            alignItems={'flex-start'}
+          >
+            <Grid item xs={12} sm={4} md={3}>
+              {userLoading ? (
+                <Skeleton
+                  animation="wave"
+                  width={'100%'}
+                  height={320}
+                  variant="rounded"
+                />
+              ) : (
                 <Box
                   sx={{
                     backgroundColor: theme.palette.common.white,
@@ -119,47 +129,32 @@ const Profile = () => {
                   }}
                 >
                   <LeftProfileColumn
-                    image={''}
-                    userId={''}
+                    image={userData?.image ?? ''}
+                    userId={userData?.id ?? ''}
                     onUpdateUserData={handleUpdateUserData}
                   />
                 </Box>
-              </Skeleton>
-            ) : (
-              <Box
-                sx={{
-                  backgroundColor: theme.palette.common.white,
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  boxShadow: 3,
-                  p: 2,
-                }}
-              >
-                <LeftProfileColumn
-                  image={userData?.image ?? ''}
-                  userId={userData?.id ?? ''}
+              )}
+            </Grid>
+            <Grid item xs={12} sm={8} md={9}>
+              {userLoading ? (
+                <Skeleton
+                  animation="wave"
+                  width={'100%'}
+                  height={520}
+                  variant="rounded"
+                />
+              ) : (
+                <RightProfileColumn
+                  user={user}
+                  userData={userData}
                   onUpdateUserData={handleUpdateUserData}
                 />
-              </Box>
-            )}
+              )}
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={8} md={9}>
-            {userLoading ? (
-              <Skeleton
-                animation="wave"
-                width={'100%'}
-                height={520}
-                variant="rounded"
-              />
-            ) : (
-              <RightProfileColumn
-                userData={userData}
-                onUpdateUserData={handleUpdateUserData}
-              />
-            )}
-          </Grid>
-        </Grid>
-      </Box>
+        </Box>
+      )}
     </>
   );
 };

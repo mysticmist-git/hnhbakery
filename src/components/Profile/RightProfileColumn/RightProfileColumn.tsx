@@ -1,280 +1,16 @@
-import { CustomButton, CustomIconButton } from '@/components/buttons';
-import { CustomDialog } from '@/components/dialogs';
-import { useSnackbarService } from '@/lib/contexts';
+import DoiMKTextField from '@/components/Search/DoiMKTextField';
+import { auth } from '@/firebase/config';
 import { UserObject } from '@/lib/models';
-import {
-  EditRounded,
-  Google,
-  Visibility,
-  VisibilityOff,
-} from '@mui/icons-material';
-import {
-  Box,
-  Grid,
-  InputAdornment,
-  TextField,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Google } from '@mui/icons-material';
+import { Box, Grid, TextField, Typography, useTheme } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { UserProfile } from 'firebase/auth';
 import { Timestamp } from 'firebase/firestore';
-import React, { memo, useRef, useState } from 'react';
+import React, { memo, useRef } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import AddressList from '../AddressList';
 import TelTextField from '../TelTextField/TelTextField';
-
-function DoiMatKhau_Dialog(props: any) {
-  const theme = useTheme();
-  const {
-    handleClose,
-    open,
-    textStyle,
-    sameMKMoi,
-    setSameMKMoi,
-    checkMKCu,
-    setCheckMKCu,
-    userData,
-    onUpdateUserData,
-  } = props;
-
-  const handleSnackbarAlert = useSnackbarService();
-
-  const handleXacNhan = () => {
-    // cài đặt xóa địa chỉ trong db
-    if (mkcuRef?.current?.value !== userData?.password) {
-      setCheckMKCu('Mật khẩu không chính xác!');
-      return;
-    } else {
-      setCheckMKCu('');
-    }
-    if (mkmoiRef?.current?.value !== mkmoilaiRef?.current?.value) {
-      setSameMKMoi('Nhập lại mật khẩu chưa trùng khớp!');
-      return;
-    } else {
-      setSameMKMoi('');
-    }
-
-    // Hên: cài đặt thay đổi mật khẩu
-    props.onUpdateUserData('password', mkmoiRef?.current?.value);
-
-    handleSnackbarAlert('success', 'Đổi mật khẩu thành công!');
-    handleClose();
-  };
-
-  const [showMKCu, setShowMKCu] = React.useState(false);
-  const handleClickShowMKCu = () => setShowMKCu((show) => !show);
-
-  const [showMKMoi, setShowMKMoi] = React.useState(false);
-  const handleClickShowMKMoi = () => setShowMKMoi((show) => !show);
-
-  const [showMKMoiLai, setShowMKMoiLai] = React.useState(false);
-  const handleClickShowMKMoiLai = () => setShowMKMoiLai((show) => !show);
-
-  const mkcuRef = useRef<HTMLInputElement>(null);
-  const mkmoiRef = useRef<HTMLInputElement>(null);
-  const mkmoilaiRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <>
-      <CustomDialog
-        title="Đổi mật khẩu"
-        open={open}
-        handleClose={handleClose}
-        width={{ md: '35vw', xs: '65vw' }}
-      >
-        <Grid
-          container
-          direction="row"
-          justifyContent="center"
-          alignItems="center"
-          spacing={2}
-          sx={{
-            pt: 2,
-          }}
-        >
-          <Grid item xs={12}>
-            <TextField
-              label="Mật khẩu cũ"
-              inputRef={mkcuRef}
-              variant="outlined"
-              helperText={checkMKCu}
-              FormHelperTextProps={{
-                sx: {
-                  color: theme.palette.error.main,
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                },
-              }}
-              fullWidth
-              InputProps={{
-                style: {
-                  borderRadius: '8px',
-                },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <CustomIconButton onClick={handleClickShowMKCu} edge="end">
-                      {showMKCu ? <VisibilityOff /> : <Visibility />}
-                    </CustomIconButton>
-                  </InputAdornment>
-                ),
-              }}
-              inputProps={{
-                sx: {
-                  ...textStyle,
-                },
-              }}
-              type={showMKCu ? 'text' : 'password'}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Mật khẩu mới"
-              inputRef={mkmoiRef}
-              variant="outlined"
-              fullWidth
-              InputProps={{
-                style: {
-                  borderRadius: '8px',
-                },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <CustomIconButton onClick={handleClickShowMKMoi} edge="end">
-                      {showMKMoi ? <VisibilityOff /> : <Visibility />}
-                    </CustomIconButton>
-                  </InputAdornment>
-                ),
-              }}
-              inputProps={{
-                sx: {
-                  ...textStyle,
-                },
-              }}
-              type={showMKMoi ? 'text' : 'password'}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Nhập lại mật khẩu mới"
-              helperText={sameMKMoi}
-              FormHelperTextProps={{
-                sx: {
-                  color: theme.palette.error.main,
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                },
-              }}
-              variant="outlined"
-              inputRef={mkmoilaiRef}
-              fullWidth
-              InputProps={{
-                style: {
-                  borderRadius: '8px',
-                },
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <CustomIconButton
-                      onClick={handleClickShowMKMoiLai}
-                      edge="end"
-                    >
-                      {showMKMoiLai ? <VisibilityOff /> : <Visibility />}
-                    </CustomIconButton>
-                  </InputAdornment>
-                ),
-              }}
-              inputProps={{
-                sx: {
-                  ...textStyle,
-                },
-              }}
-              type={showMKMoiLai ? 'text' : 'password'}
-            />
-          </Grid>
-
-          <Grid item xs={'auto'}>
-            <CustomButton
-              onClick={handleClose}
-              sx={{ bgcolor: theme.palette.text.secondary }}
-            >
-              <Typography variant="button" color={theme.palette.common.white}>
-                Hủy
-              </Typography>
-            </CustomButton>
-          </Grid>
-          <Grid item xs={'auto'}>
-            <CustomButton onClick={handleXacNhan}>
-              <Typography variant="button" color={theme.palette.common.white}>
-                Xác nhận
-              </Typography>
-            </CustomButton>
-          </Grid>
-        </Grid>
-      </CustomDialog>
-    </>
-  );
-}
-
-function DoiMKTextField(props: any) {
-  const theme = useTheme();
-  const { textStyle, userData, onUpdateUserData } = props;
-  const [openDoiMauKhau, setOpenDoiMauKhau] = useState(false);
-  const handleCloseDoiMatKhau = () => {
-    setOpenDoiMauKhau(false);
-    setSameMKMoi('');
-    setCheckMKCu('');
-  };
-
-  const [sameMKMoi, setSameMKMoi] = useState('');
-  const [checkMKCu, setCheckMKCu] = useState('');
-
-  return (
-    <>
-      <TextField
-        label="Mật khẩu"
-        disabled
-        variant="outlined"
-        value={userData.password ? userData.password : ''}
-        fullWidth
-        InputProps={{
-          style: {
-            borderRadius: '8px',
-          },
-          endAdornment: (
-            <InputAdornment position="end">
-              <CustomIconButton
-                onClick={() => setOpenDoiMauKhau(true)}
-                sx={{
-                  color: theme.palette.common.black,
-                }}
-              >
-                <EditRounded fontSize="small" />
-              </CustomIconButton>
-            </InputAdornment>
-          ),
-        }}
-        inputProps={{
-          sx: {
-            ...textStyle,
-          },
-        }}
-        type="password"
-      />
-      <DoiMatKhau_Dialog
-        open={openDoiMauKhau}
-        handleClose={handleCloseDoiMatKhau}
-        textStyle={textStyle}
-        userData={userData}
-        sameMKMoi={sameMKMoi}
-        setSameMKMoi={setSameMKMoi}
-        checkMKCu={checkMKCu}
-        setCheckMKCu={setCheckMKCu}
-        onUpdateUserData={onUpdateUserData}
-      />
-    </>
-  );
-}
 
 interface RightProfileColumnProps {
   userData?: UserObject;
@@ -293,7 +29,7 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const { userData, onUpdateUserData } = props;
+  const { user, userData, onUpdateUserData } = props;
 
   return (
     <Grid
@@ -465,6 +201,7 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
                   textStyle={textStyle}
                   userData={userData}
                   onUpdateUserData={onUpdateUserData}
+                  user={user}
                 />
               )}
             </Grid>
