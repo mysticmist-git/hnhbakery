@@ -1,7 +1,7 @@
 import avatar from '@/assets/Logo.png';
 import ImageBackground from '@/components/Imagebackground';
-import { LeftProfileColumn } from '@/components/profile';
-import RightProfileColumn from '@/components/profile/RightProfileColumn';
+import { LeftProfileColumn } from '@/components/Profile/index';
+import { RightProfileColumn } from '@/components/Profile/index';
 import { db } from '@/firebase/config';
 import { UserObject } from '@/lib/models';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
@@ -37,6 +37,8 @@ const Profile = () => {
 
     return () => unsubscribe();
   }, []);
+
+  console.log(avatarSrc);
 
   useEffect(() => {
     const getUser = async () => {

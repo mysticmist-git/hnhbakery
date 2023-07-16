@@ -46,6 +46,7 @@ const Order = ({ finalBills }: { finalBills: string }) => {
   };
 
   //#endregion
+
   const handleBillDataChange = (value: SuperDetail_BillObject) => {
     setBillsData(() => {
       return billsData.map((bill) => {
@@ -156,8 +157,8 @@ export const getServerSideProps = async () => {
       COLLECTION_NAME.DELIVERIES
     );
 
-    const finalBills: SuperDetail_BillObject[] = bills.map(
-      (bill: BillObject) => {
+    const finalBills: SuperDetail_BillObject[] = bills
+      .map((bill: BillObject) => {
         const finalBill: SuperDetail_BillObject = {
           ...bill,
           paymentObject: payments.find((payment: PaymentObject) => {
@@ -177,8 +178,13 @@ export const getServerSideProps = async () => {
         return {
           ...finalBill,
         };
-      }
-    );
+      })
+      .sort((a, b) => {
+        return (
+          new Date(b.created_at ?? '').getTime() -
+          new Date(a.created_at ?? '').getTime()
+        );
+      });
 
     return {
       props: {
@@ -190,7 +196,7 @@ export const getServerSideProps = async () => {
 
     return {
       props: {
-        finalBills: [],
+        finalBills: '',
       },
     };
   }

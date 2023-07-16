@@ -59,7 +59,10 @@ export function isVNPhoneNumber(number: string) {
   return /([\+84|84|0]+(3|5|7|8|9|1[2|6|8|9]))+([0-9]{8})\b/.test(number);
 }
 
-export function formatPrice(price: number): string {
+export function formatPrice(price: number | undefined): string {
+  if (!price) {
+    return '0 đồng';
+  }
   const formatter = new Intl.NumberFormat('vi-VN');
   return formatter.format(price) + ' đồng';
 }
@@ -82,14 +85,25 @@ export const filterDuplicatesById = <T extends { id: string }>(data: T[]) => {
   return uniqueData;
 };
 
-export function formatDateString(value: Date): string {
-  return new Date(value).toLocaleString('vi-VI', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+export function formatDateString(value: Date | undefined, format = ''): string {
+  if (!value) {
+    return 'Trống';
+  }
+  if (format == 'DD/MM/YYYY') {
+    return new Date(value).toLocaleString('vi-VI', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  } else {
+    return new Date(value).toLocaleString('vi-VI', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 }
 
 export function validateEmail(mail: string) {

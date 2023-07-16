@@ -4,6 +4,6 @@ export { default as BasicInfoHeadingTypography } from './BasicInfoHeadingTypogra
 export { default as CheckboxList } from './CheckboxList';
 export { default as LeftProfileBasicInformation } from './LeftProfileBasicInformation';
 export { default as LeftProfileColumn } from './LeftProfileColumn';
-export { default as RightProfilelColumn } from './RightProfileColumn';
+export { default as RightProfileColumn } from './RightProfileColumn';
 export { default as TelTextField } from './TelTextField';
 export { default as XacNhanXoa_Dialog } from './XacNhanXoa_Dialog';
