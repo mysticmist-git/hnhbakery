@@ -1,4 +1,3 @@
-import DoiMKTextField from '@/components/Search/DoiMKTextField';
 import { auth } from '@/firebase/config';
 import { UserObject } from '@/lib/models';
 import { Google } from '@mui/icons-material';

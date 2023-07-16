@@ -16,5 +16,4 @@ const CustomIconButton = (props: any) => {
     </IconButton>
   );
 };
-
 export default memo(CustomIconButton);

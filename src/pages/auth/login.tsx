@@ -26,7 +26,10 @@ import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo, useRef } from 'react';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import {
+  useAuthState,
+  useSignInWithEmailAndPassword,
+} from 'react-firebase-hooks/auth';
 
 //#region Top
 
@@ -58,6 +61,10 @@ const Login = () => {
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
+  const [user, loading, error] = useAuthState(auth);
+
+  if (!loading && user) router.push('/');
+
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
@@ -80,7 +87,6 @@ const Login = () => {
       );
 
       handleSnackbarAlert('success', 'Đăng nhập thành công');
-      router.push('/');
     } catch (error: any) {
       console.log(error);
       let msg = '';

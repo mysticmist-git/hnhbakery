@@ -199,13 +199,15 @@ export const userConverter: FirestoreDataConverter<UserObject> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): UserObject {
-
     const data = snapshot.data(options)!;
 
     return {
       ...data,
       id: snapshot.id,
-      birthday: data.birthday instanceof Timestamp ? data.birthday.toDate() : data.birthday,
+      birthday:
+        data.birthday instanceof Timestamp
+          ? data.birthday.toDate()
+          : data.birthday,
     } as UserObject;
   },
 };
@@ -213,7 +215,6 @@ export const userConverter: FirestoreDataConverter<UserObject> = {
 export interface UserObject extends BaseObject {
   id?: string;
   mail: string;
-  password: string;
   name: string;
   birthday: Date;
   tel: string;

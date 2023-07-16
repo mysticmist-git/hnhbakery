@@ -32,7 +32,6 @@ export const addUserWithGoogleLogin = (userCredential: UserCredential) => {
       birthday: new Date(1990, 1, 1),
       image: '',
       isActive: true,
-      password: '',
     };
 
     setDoc(doc(db, 'users', user.uid), userData);
@@ -55,9 +54,6 @@ export const handleLoginWithGoogle = async () => {
     } catch (error) {
       addUserWithGoogleLogin(userCredential);
     }
-
-    // Redirect to home page after successful login
-    router.push('/');
   } catch (error) {
     console.log(error);
   }
