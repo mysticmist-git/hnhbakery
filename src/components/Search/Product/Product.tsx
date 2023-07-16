@@ -1,12 +1,27 @@
 import { CustomButton } from '@/components/buttons';
+import { storage } from '@/firebase/config';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
+import { ref } from 'firebase/storage';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import React, { memo } from 'react';
+import { useDownloadURL } from 'react-firebase-hooks/storage';
 
 const Product = memo((props: any) => {
   const theme = useTheme();
   const item = props.item;
+
+  const [url, loading, error] = useDownloadURL(
+    ref(storage, item.productDetail.image)
+  );
+
+  const router = useRouter();
+
+  const handleViewDetail = () => {
+    router.push(item.productDetail.href);
+  };
+
   return (
     <>
       <Grid item xs={12}>
@@ -32,8 +47,9 @@ const Product = memo((props: any) => {
                 fill={true}
                 component={Image}
                 loading="lazy"
-                alt=""
-                src={item.productDetail.image}
+                alt={item.productDetail.name}
+                src={url ?? ''}
+                onClick={handleViewDetail}
                 sx={{
                   objectFit: 'cover',
                   cursor: 'pointer',
@@ -174,7 +190,7 @@ const Product = memo((props: any) => {
               </Grid>
 
               <Grid item xs={12}>
-                <CustomButton>
+                <CustomButton onClick={handleViewDetail}>
                   <Typography
                     variant="button"
                     color={theme.palette.common.white}
