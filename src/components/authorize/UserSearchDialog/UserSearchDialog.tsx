@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import { Permission, UserGroup, UserObject } from '@/lib/models';
+import { PermissionObject, UserGroup, UserObject } from '@/lib/models';
 import {
   Button,
   Checkbox,

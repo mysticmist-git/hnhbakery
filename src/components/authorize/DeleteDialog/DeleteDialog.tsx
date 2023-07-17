@@ -8,21 +8,25 @@ import {
 import React from 'react';
 
 interface DeleteDialog {
+  title: string;
+  confirmString: string;
   deleteTarget: any | null;
   handleCancelDelete: () => void;
-  handleConfirmDelete: () => Promise<void>;
+  handleConfirmDelete: (deleteObjet: any) => Promise<void>;
 }
 
 const DeleteDialog: React.FC<DeleteDialog> = ({
+  title,
+  confirmString,
   deleteTarget,
   handleCancelDelete,
   handleConfirmDelete,
 }) => {
   return (
     <Dialog open={deleteTarget !== null} onClose={handleCancelDelete}>
-      <DialogTitle>Xóa quyền</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <p>Bạn có chắc chắn muốn xóa quyền này?</p>
+        <p>{confirmString}</p>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancelDelete} color="secondary">

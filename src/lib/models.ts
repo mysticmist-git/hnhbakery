@@ -287,7 +287,7 @@ export interface UserGroup extends BaseObject {
   isActive: boolean;
 }
 
-export interface Permission extends BaseObject {
+export interface PermissionObject extends BaseObject {
   id?: string;
   name: string;
   code: string;
@@ -312,9 +312,9 @@ export const userGroupConverter: FirestoreDataConverter<UserGroup> = {
   },
 };
 
-export const permissionConverter: FirestoreDataConverter<Permission> = {
+export const permissionConverter: FirestoreDataConverter<PermissionObject> = {
   toFirestore: function (
-    modelObject: WithFieldValue<Permission>
+    modelObject: WithFieldValue<PermissionObject>
   ): DocumentData {
     delete modelObject.id;
 
@@ -325,12 +325,12 @@ export const permissionConverter: FirestoreDataConverter<Permission> = {
   fromFirestore: function (
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
-  ): Permission {
+  ): PermissionObject {
     const data = snapshot.data(options)!;
 
     return {
       ...data,
       id: snapshot.id,
-    } as Permission;
+    } as PermissionObject;
   },
 };

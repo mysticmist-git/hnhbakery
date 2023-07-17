@@ -1,4 +1,5 @@
 import { db } from '@/firebase/config';
+import { AuthorizeContext, AuthorizeContextType } from '@/lib/authorize';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { UserGroup, UserObject } from '@/lib/models';
@@ -10,6 +11,8 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Divider,
+  Stack,
   Typography,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -20,24 +23,28 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import React, { Key, useMemo, useState } from 'react';
+import React, { Key, useContext, useMemo, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 import UserSearchDialog from '../UserSearchDialog';
+import ViewUserGroupDialog from '../ViewUserGroupDialog.tsx/ViewUserGroupDialog';
 
 function UserGroupItem({
   key,
   group,
   users,
   allUsers,
+  handleDeleteGroup,
 }: {
   key: Key;
   group: UserGroup;
   users: UserObject[];
   allUsers: UserObject[];
+  handleDeleteGroup: (group: UserGroup) => void;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
   const [deleteUser, setDeleteUser] = useState<UserObject | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
 
   const handleSnackbarAlert = useSnackbarService();
 
@@ -146,6 +153,10 @@ function UserGroupItem({
     setOpen(false);
   };
 
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+  };
+
   const handleAddUsers = async () => {
     // Firestore reference to the user group
     const userGroupRef = doc(
@@ -181,6 +192,14 @@ function UserGroupItem({
     return allUsers.filter((user) => !group.users.includes(user.id!));
   }, [group.users]);
 
+  const handleViewUserGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
+    setViewDialogOpen(true);
+  };
+
+  const { permissions } = useContext<AuthorizeContextType>(AuthorizeContext);
+
   return (
     <>
       <Accordion key={key}>
@@ -189,7 +208,34 @@ function UserGroupItem({
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography>{group.name}</Typography>
+          <Typography width={'20%'}>{group.name}</Typography>
+          <Stack
+            direction="row"
+            justifyContent={'end'}
+            width={'80%'}
+            gap={1}
+            pr={1}
+          >
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={handleViewUserGroup}
+            >
+              Chi tiết
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteGroup(group);
+              }}
+            >
+              Xóa
+            </Button>
+          </Stack>
         </AccordionSummary>
         <AccordionDetails>
           <Button
@@ -200,16 +246,31 @@ function UserGroupItem({
             Thêm người dùng
           </Button>
 
+          <Divider sx={{ my: 1 }} />
+
           <Box p={2} m={1}>
-            <DataGrid
-              rows={users ?? []}
-              columns={columns}
-              pageSizeOptions={[5, 10]}
-            />
+            {users && users.length > 0 ? (
+              <DataGrid
+                rows={users ?? []}
+                columns={columns}
+                pageSizeOptions={[5, 10]}
+              />
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography>Chưa có người dùng</Typography>
+              </Box>
+            )}
           </Box>
         </AccordionDetails>
       </Accordion>
 
+      {/* Dialog Thêm người dùng */}
       <UserSearchDialog
         userOptions={availableToAddUsers}
         open={open}
@@ -219,11 +280,24 @@ function UserGroupItem({
         selectedUsers={selectedUsers}
       />
 
+      {/* Xóa người dùng khỏi nhóm Dialog */}
       <DeleteDialog
+        title={'Xóa người dùng'}
+        confirmString={'Bạn có chắc muốn xóa người dùng khỏi nhóm?'}
         deleteTarget={deleteUser}
         handleCancelDelete={handleCancelDelete}
         handleConfirmDelete={handleRemoveUser}
       />
+
+      {/* View user group info */}
+      {viewDialogOpen && (
+        <ViewUserGroupDialog
+          open={viewDialogOpen}
+          group={group}
+          handleDialogClose={handleViewDialogClose}
+          permissionOptions={permissions}
+        />
+      )}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { Permission } from '@/lib/models';
+import { PermissionObject } from '@/lib/models';
 import {
   Box,
   Button,
@@ -17,15 +17,14 @@ import React, { useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 
 interface PermissionTableProps {
-  permissions: Permission[];
+  permissions: PermissionObject[];
 }
 
 const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
   const [openDialog, setOpenDialog] = useState(false);
-  const [deletePermission, setDeletePermission] = useState<Permission | null>(
-    null
-  );
-  const [newPermission, setNewPermission] = useState<Permission>({
+  const [deletePermission, setDeletePermission] =
+    useState<PermissionObject | null>(null);
+  const [newPermission, setNewPermission] = useState<PermissionObject>({
     name: '',
     code: '',
     description: '',
@@ -69,11 +68,11 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     handleCloseDialog();
   };
 
-  const handleViewDetail = (permission: Permission) => {
+  const handleViewDetail = (permission: PermissionObject) => {
     // Implement the logic to view the details of the permission
   };
 
-  const handleRemovePermission = (permission: Permission) => {
+  const handleRemovePermission = (permission: PermissionObject) => {
     setDeletePermission(permission);
   };
 
@@ -199,6 +198,8 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
       </Dialog>
 
       <DeleteDialog
+        title="Xóa quyền"
+        confirmString="Bạn có chắc muốn xóa quyền?"
         deleteTarget={deletePermission}
         handleCancelDelete={handleCancelDelete}
         handleConfirmDelete={handleConfirmDelete}

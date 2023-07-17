@@ -2,24 +2,25 @@ import { default as NewUserGroupDialog } from '@/components/authorize/NewUserGro
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';
 import { db } from '@/firebase/config';
+import { AuthorizeContext } from '@/lib/authorize';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
-  Permission,
+  PermissionObject,
   UserGroup,
   UserObject,
   permissionConverter,
   userConverter,
   userGroupConverter,
 } from '@/lib/models';
-import { Button, Tab, Tabs } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Button, Divider, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/system';
 import { addDoc, collection } from 'firebase/firestore';
 import { useState } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 interface AuthorizeProps {
   userGroups: UserGroup[];
-  permissions: Permission[];
+  permissions: PermissionObject[];
 }
 
 const Authorize: React.FC<AuthorizeProps> = () => {
@@ -39,8 +40,8 @@ const Authorize: React.FC<AuthorizeProps> = () => {
     }
   );
 
-  const [group, setGroup] = useState<UserGroup | null>(null);
   const [newGroup, setNewGroup] = useState<UserGroup | null>(null);
+  const [viewGroup, setViewGroup] = useState<UserGroup | null>(null);
 
   const handleNewGroupOpen = () => {
     setNewGroup({
@@ -52,13 +53,42 @@ const Authorize: React.FC<AuthorizeProps> = () => {
     });
   };
 
-  const handleNewGroupChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (newGroup) {
-      setNewGroup({
-        ...newGroup,
-        [event.target.name]: event.target.value,
-      });
-    }
+  const handleViewGroup = (group: UserGroup) => {
+    setViewGroup(group);
+  };
+
+  const handleCloseViewGroup = () => setViewGroup(null);
+
+  const carriedHandleGroupChange = (
+    group: UserGroup | null,
+    setGroup: React.Dispatch<React.SetStateAction<UserGroup | null>>
+  ) => {
+    const handleGroupChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value, checked } = event.target;
+
+      if (group) {
+        if (name === 'permissions') {
+          if (checked) {
+            setGroup({
+              ...group,
+              permission: [...group.permission, value],
+            });
+          } else {
+            setGroup({
+              ...group,
+              permission: [...group.permission.filter((p) => p !== value)],
+            });
+          }
+        } else {
+          setGroup({
+            ...group,
+            [name]: value,
+          });
+        }
+      }
+    };
+
+    return handleGroupChange;
   };
 
   const handleNewGroupSubmit = async () => {
@@ -81,7 +111,7 @@ const Authorize: React.FC<AuthorizeProps> = () => {
 
   const permissionCollectionRef = collection(db, COLLECTION_NAME.PERMISSIONS);
 
-  const [permissions] = useCollectionData<Permission>(
+  const [permissions] = useCollectionData<PermissionObject>(
     permissionCollectionRef.withConverter(permissionConverter),
     {
       initialValue: [],
@@ -89,47 +119,74 @@ const Authorize: React.FC<AuthorizeProps> = () => {
   );
 
   return (
-    <Stack gap={1} my={2} pr={3}>
-      <Tabs
-        value={currentTab}
-        onChange={handleTabChange}
-        centered
-        textColor="secondary"
-        indicatorColor="secondary"
-      >
-        <Tab label="User Groups" color="secondary" />
-        <Tab label="Permissions" color="secondary" />
-      </Tabs>
+    <AuthorizeContext.Provider value={{ permissions: permissions ?? [] }}>
+      <Stack gap={1} my={2} pr={3}>
+        <Tabs
+          value={currentTab}
+          onChange={handleTabChange}
+          centered
+          textColor="secondary"
+          indicatorColor="secondary"
+        >
+          <Tab label="User Groups" color="secondary" />
+          <Tab label="Permissions" color="secondary" />
+        </Tabs>
 
-      {currentTab === 0 && (
-        <>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={handleNewGroupOpen}
-            sx={{
-              alignSelf: 'flex-end',
-            }}
-          >
-            Thêm nhóm người dùng
-          </Button>
+        {currentTab === 0 && (
+          <>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleNewGroupOpen}
+              sx={{
+                alignSelf: 'flex-end',
+              }}
+            >
+              Thêm nhóm người dùng
+            </Button>
 
-          <UserGroupAccordions
-            userGroups={userGroups ?? []}
-            users={users ?? []}
-          />
+            <Divider
+              sx={{
+                my: 1,
+              }}
+            />
 
-          <NewUserGroupDialog
-            newGroup={newGroup}
-            setNewGroup={setNewGroup}
-            handleNewGroupChange={handleNewGroupChange}
-            handleNewGroupSubmit={handleNewGroupSubmit}
-          />
-        </>
-      )}
+            {userGroups && userGroups.length > 0 ? (
+              <UserGroupAccordions
+                userGroups={userGroups ?? []}
+                users={users ?? []}
+              />
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography>Chưa có nhóm người dùng</Typography>
+              </Box>
+            )}
 
-      {currentTab === 1 && <PermissionTable permissions={permissions ?? []} />}
-    </Stack>
+            <NewUserGroupDialog
+              newGroup={newGroup}
+              handleDialogClose={() => setNewGroup(null)}
+              handleNewGroupChange={carriedHandleGroupChange(
+                newGroup,
+                setNewGroup
+              )}
+              handleNewGroupSubmit={handleNewGroupSubmit}
+              permissionOptions={permissions ?? []}
+            />
+          </>
+        )}
+
+        {currentTab === 1 && (
+          <PermissionTable permissions={permissions ?? []} />
+        )}
+      </Stack>
+    </AuthorizeContext.Provider>
   );
 };
 
