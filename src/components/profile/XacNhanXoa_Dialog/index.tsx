@@ -6,14 +6,8 @@ import React from 'react';
 
 export default function XacNhanXoa_Dialog(props: any) {
   const theme = useTheme();
-  const { handleClose, open } = props;
+  const { handleClose, open, handleXacNhan } = props;
 
-  const handleSnackbarAlert = useSnackbarService();
-  const handleXacNhan = () => {
-    // cài đặt xóa địa chỉ trong db
-    handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
-    handleClose();
-  };
   return (
     <>
       <CustomDialog
@@ -40,7 +34,7 @@ export default function XacNhanXoa_Dialog(props: any) {
             </CustomButton>
           </Grid>
           <Grid item xs={'auto'}>
-            <CustomButton onClick={handleXacNhan}>
+            <CustomButton onClick={() => handleXacNhan()}>
               <Typography variant="button" color={theme.palette.common.white}>
                 Xác nhận
               </Typography>

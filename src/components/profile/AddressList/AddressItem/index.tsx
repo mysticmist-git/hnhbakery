@@ -1,9 +1,12 @@
 import { CustomIconButton } from '@/components/buttons';
+import { db } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { InputAdornment, TextField, useTheme } from '@mui/material';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useRef } from 'react';
 
 export function AddressItem(props: any) {
@@ -26,15 +29,34 @@ export function AddressItem(props: any) {
     }
   }, [value]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (addressRef.current) {
       if (addressRef.current.value !== value) {
-        handleSnackbarAlert(
-          'success',
-          'Thay đổi địa chỉ ' + (index + 1) + ' thành công!'
-        );
-        // Hên: cập nhật thay đổi dô db phụ nha bà!
-        // Có userData
+        try {
+          const addressIndex = userData.addresses.indexOf(value);
+          const newAddresses = [...userData.addresses];
+          newAddresses[addressIndex] = addressRef.current!.value;
+
+          await updateDoc(
+            doc(collection(db, COLLECTION_NAME.USERS), userData.id),
+            {
+              addresses: newAddresses,
+            }
+          );
+
+          handleSnackbarAlert(
+            'success',
+            'Thay đổi địa chỉ ' + (index + 1) + ' thành công!'
+          );
+          // Hên: cập nhật thay đổi dô db phụ nha bà!
+          // Có userData
+        } catch (error) {
+          console.log(error);
+          handleSnackbarAlert(
+            'error',
+            'Thay đổi địa chỉ ' + (index + 1) + ' thất bại!'
+          );
+        }
       }
       if (addressRef.current.value === value) {
         handleSnackbarAlert(
@@ -70,7 +92,9 @@ export function AddressItem(props: any) {
             <InputAdornment position="end">
               {!editItem.editState && (
                 <CustomIconButton
-                  onClick={() => handleSetEditItem(true, index)}
+                  onClick={async () => {
+                    handleSetEditItem(true, index);
+                  }}
                   sx={{
                     color: theme.palette.common.black,
                   }}

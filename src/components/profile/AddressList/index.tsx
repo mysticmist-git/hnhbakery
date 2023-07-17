@@ -1,6 +1,13 @@
 import { CustomIconButton } from '@/components/buttons';
+import { db } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
+import { getDocFromFirestore, updateDocToFirestore } from '@/lib/firestore';
+import useUserData from '@/lib/hooks/userUserData';
+import { UserObject } from '@/lib/models';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import CheckboxList from '../CheckboxList';
 import XacNhanXoa_Dialog from '../XacNhanXoa_Dialog';
@@ -10,6 +17,7 @@ export default function AddressList(props: any) {
   const theme = useTheme();
 
   const [checked, setChecked] = React.useState(['']);
+
   const handleSetChecked = (value: string) => {
     const currentIndex = checked.indexOf(value);
     const newChecked = [...checked];
@@ -34,8 +42,30 @@ export default function AddressList(props: any) {
   };
 
   const [openXoaDiaChi, setOpenXoaDiaChi] = useState(false);
+
   const handleCloseXoaDiaChi = () => {
     setOpenXoaDiaChi(false);
+  };
+
+  const handleSnackbarAlert = useSnackbarService();
+
+  const handleXacNhan = async () => {
+    try {
+      await updateDoc(
+        doc(collection(db, COLLECTION_NAME.USERS), userData.id!),
+        {
+          addresses: [
+            ...userData.addresses.filter((a: string) => !checked.includes(a)),
+          ],
+        }
+      );
+
+      handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
+      handleCloseXoaDiaChi();
+    } catch (error) {
+      console.log(error);
+      handleSnackbarAlert('error', 'Xóa địa chỉ không thành công!');
+    }
   };
 
   return (
@@ -84,9 +114,11 @@ export default function AddressList(props: any) {
           />
         </Grid>
       </Grid>
+
       <XacNhanXoa_Dialog
         open={openXoaDiaChi}
         handleClose={handleCloseXoaDiaChi}
+        handleXacNhan={handleXacNhan}
       />
     </>
   );
