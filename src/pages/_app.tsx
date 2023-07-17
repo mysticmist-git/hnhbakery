@@ -41,6 +41,7 @@ const unauthorizedPaths: {
       '/manager/orders',
       '/manager/customers',
       '/manager/reports',
+      '/manager/authorize',
     ],
     fallback: '/',
   },
@@ -86,18 +87,18 @@ const MyApp = (props: AppProps) => {
   }, [user, loading]);
 
   useEffect(() => {
-    console.log(router.pathname);
     if (!userData) return;
+
     const role = userData.role_id;
 
     // Redirects user to a certain page if they are on an unauthorized path
-    const handleUnauthorizedPaths = (role: string) => {
+    function handleUnauthorizedPaths(role: string) {
       const rolePaths = unauthorizedPaths[role];
 
       if (rolePaths && rolePaths.routes.includes(router.pathname)) {
         router.push(rolePaths.fallback);
       }
-    };
+    }
 
     handleUnauthorizedPaths(role);
   }, [router.pathname, userData]);

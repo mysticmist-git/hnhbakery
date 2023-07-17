@@ -27,6 +27,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
+import { useRouter } from 'next/router';
 import { setUncaughtExceptionCaptureCallback } from 'process';
 import React, { useMemo, useState } from 'react';
 import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
@@ -37,7 +38,6 @@ interface AccountTableProps {
 }
 
 const defaultNewAccount: UserObject = {
-  id: '',
   accountType: 'email_n_password',
   birthday: new Date(1990, 1, 1),
   image: '',
@@ -157,6 +157,8 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
     setToDisableAccount(user);
   };
 
+  const router = useRouter();
+
   const handleConfirmDisable = async () => {
     if (toDisableAccount) {
       const userRef = doc(
@@ -166,6 +168,12 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
 
       try {
         await updateDoc(userRef, { isActive: false });
+
+        if (toDisableAccount.id === auth.currentUser?.uid) {
+          auth.signOut();
+          router.push('/');
+        }
+
         console.log('user disabled successfully');
       } catch (error) {
         console.log(error);
