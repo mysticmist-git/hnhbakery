@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { PermissionObject } from '@/lib/models';
+import { SystemUpdateAltRounded } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -12,31 +13,60 @@ import {
   TextField,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import React, { useState } from 'react';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
+import React, { useMemo, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 
 interface PermissionTableProps {
   permissions: PermissionObject[];
 }
 
+const newPermissionDefault = {
+  name: '',
+  code: '',
+  description: '',
+  isActive: true,
+};
+
 const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [deletePermission, setDeletePermission] =
     useState<PermissionObject | null>(null);
-  const [newPermission, setNewPermission] = useState<PermissionObject>({
-    name: '',
-    code: '',
-    description: '',
-    isActive: true,
-  });
+  const [newPermission, setNewPermission] =
+    useState<PermissionObject>(newPermissionDefault);
+
+  const [update, setUpdate] = useState<boolean>(false);
+  const [cache, setCache] = useState<PermissionObject | null>(null);
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
+    setNewPermission(newPermissionDefault);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+  };
+
+  const handleCloseCacheDialog = () => {
+    setOpenDialog(false);
+    setUpdate(false);
+  };
+
+  const hanleCachePermissionChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!cache) return;
+
+    setCache({
+      ...cache,
+      [event.target.name]: event.target.value,
+    });
   };
 
   const handleNewPermissionChange = (
@@ -68,8 +98,34 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     handleCloseDialog();
   };
 
+  const handleUpdatePermission = async () => {
+    // Implement the logic to add the new permission
+
+    if (!cache) return;
+
+    const permissionRef = doc(
+      collection(db, COLLECTION_NAME.PERMISSIONS),
+      cache?.id
+    );
+
+    const { id: string, ...data } = cache;
+
+    console.log(data);
+    console.log(cache);
+
+    try {
+      await updateDoc(permissionRef, { ...data });
+    } catch (error) {
+      console.log(error);
+    }
+
+    setCache(null);
+    handleCloseDialog();
+  };
+
   const handleViewDetail = (permission: PermissionObject) => {
-    // Implement the logic to view the details of the permission
+    setCache(permission);
+    handleOpenDialog();
   };
 
   const handleRemovePermission = (permission: PermissionObject) => {
@@ -95,6 +151,8 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     setDeletePermission(null);
   };
 
+  console.log(cache);
+
   const columns: GridColDef[] = [
     { field: 'code', headerName: 'Code', width: 150, flex: 1 },
     { field: 'name', headerName: 'Name', width: 200, flex: 1 },
@@ -113,6 +171,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
               color="secondary"
               onClick={() => {
                 handleViewDetail(params.row);
+                setUpdate(true);
               }}
             >
               Chi tiết
@@ -139,8 +198,28 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     name: permission.name,
     code: permission.code,
     description: permission.description,
-    data: permission,
   }));
+
+  const { title, value, handleChange, handleAction, handleClose, actionText } =
+    useMemo(() => {
+      return update && cache
+        ? {
+            title: 'Thông tin quyền',
+            value: cache,
+            handleChange: hanleCachePermissionChange,
+            handleAction: handleUpdatePermission,
+            handleClose: handleCloseCacheDialog,
+            actionText: 'Cập nhật',
+          }
+        : {
+            title: 'Thêm quyền mới',
+            value: newPermission,
+            handleChange: handleNewPermissionChange,
+            handleAction: handleAddPermission,
+            handleClose: handleCloseDialog,
+            actionText: 'Thêm',
+          };
+    }, [update, cache, newPermission]);
 
   return (
     <Stack gap={1} my={2} pr={3}>
@@ -159,40 +238,40 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
         <DataGrid rows={rows} columns={columns} pageSizeOptions={[5]} />
       </div>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Thêm quyền mới</DialogTitle>
+      <Dialog open={openDialog} onClose={handleClose}>
+        <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <TextField
             label="Code"
             name="code"
-            value={newPermission.code}
-            onChange={handleNewPermissionChange}
+            value={value.code}
+            onChange={handleChange}
             fullWidth
             margin="normal"
           />
           <TextField
             label="Tên quyền"
             name="name"
-            value={newPermission.name}
-            onChange={handleNewPermissionChange}
+            value={value.name}
+            onChange={handleChange}
             fullWidth
             margin="normal"
           />
           <TextField
             label="Miêu tả"
             name="description"
-            value={newPermission.description}
-            onChange={handleNewPermissionChange}
+            value={value.description}
+            onChange={handleChange}
             fullWidth
             margin="normal"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">
+          <Button onClick={handleClose} color="secondary">
             Hủy
           </Button>
-          <Button onClick={handleAddPermission} color="secondary">
-            Thêm
+          <Button onClick={handleAction} color="secondary">
+            {actionText}
           </Button>
         </DialogActions>
       </Dialog>

@@ -75,11 +75,13 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
   };
 
   const handleGroupUpdate = async () => {
-    if (!group) {
+    if (!group || !value) {
       return;
     }
 
     const ref = doc(collection(db, COLLECTION_NAME.USER_GROUPS), group.id);
+
+    delete value.id;
 
     try {
       await updateDoc(ref, {

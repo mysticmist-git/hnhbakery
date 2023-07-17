@@ -1,4 +1,4 @@
-import { default as NewUserGroupDialog } from '@/components/authorize/NewUserGroupDialog';
+import NewUserGroupDialog from '@/components/authorize/NewUserGroupDialog';
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';
 import { db } from '@/firebase/config';
@@ -14,7 +14,7 @@ import {
 } from '@/lib/models';
 import { Button, Divider, Tab, Tabs, Typography } from '@mui/material';
 import { Box, Stack } from '@mui/system';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, query, where } from 'firebase/firestore';
 import { useState } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
@@ -32,7 +32,10 @@ const Authorize: React.FC<AuthorizeProps> = () => {
     }
   );
 
-  const usersRef = collection(db, COLLECTION_NAME.USERS);
+  const usersRef = query(
+    collection(db, COLLECTION_NAME.USERS),
+    where('role_id', '==', 'manager')
+  );
   const [users] = useCollectionData<UserObject>(
     usersRef.withConverter<UserObject>(userConverter),
     {
