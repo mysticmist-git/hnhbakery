@@ -56,6 +56,8 @@ export const handleLoginWithGoogle = async () => {
     }
   } catch (error) {
     console.log(error);
+  } finally {
+    router.push('/');
   }
 };
 export const validateSigninInfo = ({

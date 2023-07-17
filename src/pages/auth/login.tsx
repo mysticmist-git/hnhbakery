@@ -68,7 +68,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (userData && userData.isActive) router.push('/');
-  }, [loading, userData]);
+  }, [loading, userData, user]);
 
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');
