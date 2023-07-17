@@ -34,12 +34,16 @@ function UserGroupItem({
   users,
   allUsers,
   handleDeleteGroup,
+  fallbackTitle = '',
+  noGroup = false,
 }: {
   key: Key;
-  group: UserGroup;
   users: UserObject[];
   allUsers: UserObject[];
   handleDeleteGroup: (group: UserGroup) => void;
+  group?: UserGroup;
+  fallbackTitle?: string;
+  noGroup?: boolean;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
@@ -53,7 +57,7 @@ function UserGroupItem({
   }
 
   async function handleRemoveUser() {
-    if (!deleteUser) {
+    if (!deleteUser || !group) {
       return;
     }
 
@@ -118,7 +122,7 @@ function UserGroupItem({
       renderCell: (params) => {
         return (
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
+            {/* <Button
               variant="contained"
               size="small"
               color="secondary"
@@ -127,7 +131,7 @@ function UserGroupItem({
               }}
             >
               Chi tiết
-            </Button>
+            </Button> */}
             <Button
               variant="contained"
               color="error"
@@ -158,6 +162,8 @@ function UserGroupItem({
   };
 
   const handleAddUsers = async () => {
+    if (!group) return;
+
     // Firestore reference to the user group
     const userGroupRef = doc(
       collection(db, COLLECTION_NAME.USER_GROUPS),
@@ -187,10 +193,10 @@ function UserGroupItem({
   };
 
   const availableToAddUsers = useMemo(() => {
-    console.log(group.users);
+    if (!group) return [];
 
     return allUsers.filter((user) => !group.users.includes(user.id!));
-  }, [group.users]);
+  }, [group?.users]);
 
   const handleViewUserGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -208,43 +214,53 @@ function UserGroupItem({
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography width={'20%'}>{group.name}</Typography>
-          <Stack
-            direction="row"
-            justifyContent={'end'}
-            width={'80%'}
-            gap={1}
-            pr={1}
-          >
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              onClick={handleViewUserGroup}
+          <Typography width={'20%'}>{group?.name || fallbackTitle}</Typography>
+          {!noGroup && (
+            <Stack
+              direction="row"
+              justifyContent={'end'}
+              width={'80%'}
+              gap={1}
+              pr={1}
             >
-              Chi tiết
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteGroup(group);
-              }}
-            >
-              Xóa
-            </Button>
-          </Stack>
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={handleViewUserGroup}
+              >
+                Chi tiết
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (!group) return;
+
+                  handleDeleteGroup(group);
+                }}
+              >
+                Xóa
+              </Button>
+            </Stack>
+          )}
         </AccordionSummary>
         <AccordionDetails>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => handleOpenDialog(group)}
-          >
-            Thêm người dùng
-          </Button>
+          {!noGroup && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => {
+                if (!group) return;
+                handleOpenDialog(group);
+              }}
+            >
+              Thêm người dùng
+            </Button>
+          )}
 
           <Divider sx={{ my: 1 }} />
 
@@ -254,6 +270,9 @@ function UserGroupItem({
                 rows={users ?? []}
                 columns={columns}
                 pageSizeOptions={[5, 10]}
+                columnVisibilityModel={{
+                  actions: !noGroup,
+                }}
               />
             ) : (
               <Box
@@ -290,7 +309,7 @@ function UserGroupItem({
       />
 
       {/* View user group info */}
-      {viewDialogOpen && (
+      {viewDialogOpen && group && (
         <ViewUserGroupDialog
           open={viewDialogOpen}
           group={group}

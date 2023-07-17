@@ -120,72 +120,71 @@ const Authorize: React.FC<AuthorizeProps> = () => {
 
   return (
     <AuthorizeContext.Provider value={{ permissions: permissions ?? [] }}>
-      <Stack gap={1} my={2} pr={3}>
-        <Tabs
-          value={currentTab}
-          onChange={handleTabChange}
-          centered
-          textColor="secondary"
-          indicatorColor="secondary"
-        >
-          <Tab label="User Groups" color="secondary" />
-          <Tab label="Permissions" color="secondary" />
-        </Tabs>
+      <Tabs
+        value={currentTab}
+        onChange={handleTabChange}
+        centered
+        textColor="secondary"
+        indicatorColor="secondary"
+        sx={{
+          my: 1,
+        }}
+      >
+        <Tab label="Nhóm người dùng" color="secondary" />
+        <Tab label="Quyền người dùng" color="secondary" />
+      </Tabs>
 
-        {currentTab === 0 && (
-          <>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleNewGroupOpen}
+      {currentTab === 0 && (
+        <Stack gap={1} pr={3}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleNewGroupOpen}
+            sx={{
+              alignSelf: 'flex-end',
+            }}
+          >
+            Thêm nhóm người dùng
+          </Button>
+
+          <Divider
+            sx={{
+              my: 1,
+            }}
+          />
+
+          {userGroups && userGroups.length > 0 ? (
+            <UserGroupAccordions
+              userGroups={userGroups ?? []}
+              users={users ?? []}
+            />
+          ) : (
+            <Box
               sx={{
-                alignSelf: 'flex-end',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
-              Thêm nhóm người dùng
-            </Button>
+              <Typography>Chưa có nhóm người dùng</Typography>
+            </Box>
+          )}
 
-            <Divider
-              sx={{
-                my: 1,
-              }}
-            />
-
-            {userGroups && userGroups.length > 0 ? (
-              <UserGroupAccordions
-                userGroups={userGroups ?? []}
-                users={users ?? []}
-              />
-            ) : (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Typography>Chưa có nhóm người dùng</Typography>
-              </Box>
+          <NewUserGroupDialog
+            newGroup={newGroup}
+            handleDialogClose={() => setNewGroup(null)}
+            handleNewGroupChange={carriedHandleGroupChange(
+              newGroup,
+              setNewGroup
             )}
+            handleNewGroupSubmit={handleNewGroupSubmit}
+            permissionOptions={permissions ?? []}
+          />
+        </Stack>
+      )}
 
-            <NewUserGroupDialog
-              newGroup={newGroup}
-              handleDialogClose={() => setNewGroup(null)}
-              handleNewGroupChange={carriedHandleGroupChange(
-                newGroup,
-                setNewGroup
-              )}
-              handleNewGroupSubmit={handleNewGroupSubmit}
-              permissionOptions={permissions ?? []}
-            />
-          </>
-        )}
-
-        {currentTab === 1 && (
-          <PermissionTable permissions={permissions ?? []} />
-        )}
-      </Stack>
+      {currentTab === 1 && <PermissionTable permissions={permissions ?? []} />}
     </AuthorizeContext.Provider>
   );
 };

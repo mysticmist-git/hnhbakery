@@ -11,6 +11,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Stack,
   TextField,
   Typography,
 } from '@mui/material';
@@ -57,8 +58,17 @@ const NewUserGroupDialog: React.FC<NewUserGroupDialogProps> = ({
         <List>
           {permissionOptions.map((p) => (
             <ListItem key={p.id} divider>
-              <Typography variant="body2">{p.name}</Typography>
-              <Checkbox color="secondary" />
+              <Stack
+                direction="row"
+                sx={{
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="body2">{p.name}</Typography>
+                <Checkbox color="secondary" />
+              </Stack>
             </ListItem>
           ))}
         </List>

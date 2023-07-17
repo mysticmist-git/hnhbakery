@@ -11,6 +11,7 @@ import {
   Divider,
   List,
   ListItem,
+  Stack,
   TextField,
   Typography,
 } from '@mui/material';
@@ -52,8 +53,6 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
     setValue({ ...value, [event.target.name]: event.target.value });
   };
 
-  console.log(changed);
-
   const handlePermissionChange: SwitchBaseProps['onChange'] = (
     event,
     checked
@@ -93,8 +92,6 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
     handleDialogClose();
   };
 
-  console.log(value);
-
   return (
     <Dialog
       open={open}
@@ -123,14 +120,23 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
         <List>
           {permissionOptions.map((p) => (
             <ListItem key={p.id} divider>
-              <Typography variant="body2">{p.name}</Typography>
-              <Checkbox
-                color="secondary"
-                name="permission"
-                checked={value ? value.permission.includes(p.id!) : false}
-                value={p.id}
-                onChange={handlePermissionChange}
-              />
+              <Stack
+                direction="row"
+                sx={{
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="body2">{p.name}</Typography>
+                <Checkbox
+                  color="secondary"
+                  name="permission"
+                  checked={value ? value.permission.includes(p.id!) : false}
+                  value={p.id}
+                  onChange={handlePermissionChange}
+                />
+              </Stack>
             </ListItem>
           ))}
         </List>

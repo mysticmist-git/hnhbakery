@@ -62,6 +62,21 @@ const UserGroupAccordions = ({
         />
       ))}
 
+      <UserGroupItem
+        key={'no-group'}
+        users={users.filter(
+          (user) =>
+            !userGroups
+              .map((group) => group.users)
+              .flat()
+              .includes(user.id!)
+        )}
+        allUsers={users}
+        handleDeleteGroup={handleConfirmDelete}
+        fallbackTitle="Không nhóm"
+        noGroup
+      />
+
       {/* Xóa nhóm người dùng */}
       <DeleteDialog
         title={'Xóa nhóm người dùng'}
