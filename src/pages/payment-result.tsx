@@ -1,9 +1,12 @@
 import { CaiKhungCoTitle } from '@/components/layouts/CaiKhungCoTitle';
 
 import ImageBackground from '@/components/Imagebackground';
+import { db } from '@/firebase/config';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { updateBillState } from '@/lib/firestore';
+import { updateBillState, updateDocToFirestore } from '@/lib/firestore';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
@@ -120,6 +123,16 @@ const PaymentResult = () => {
 
       if (['00', '07'].includes(responseCode as string)) {
         sendBillToMail();
+
+        // Update payment time
+        try {
+          await updateDoc(
+            doc(db, COLLECTION_NAME.BILLS, responseBillId as string),
+            { paymentTime: new Date() }
+          );
+        } catch (error) {
+          console.log(error);
+        }
       }
     };
 
