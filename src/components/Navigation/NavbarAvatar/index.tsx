@@ -62,7 +62,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   };
 
   const handleOpenManagement = () => {
-    router.push('/manager/manage');
+    router.push('/manager/storage');
     setAnchorEl(() => null);
   };
 

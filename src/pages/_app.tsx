@@ -32,9 +32,18 @@ import Head from 'next/head';
 import { Router, useRouter } from 'next/router';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-const unauthorizedPaths: { [path: string]: string[] } = {
-  customer: ['/manager'],
-  manager: ['/'],
+const unauthorizedPaths: {
+  [path: string]: { routes: string[]; fallback: string };
+} = {
+  customer: {
+    routes: [
+      '/manager/storage',
+      '/manager/orders',
+      '/manager/customers',
+      '/manager/reports',
+    ],
+    fallback: '/',
+  },
   // Add other roles and paths here
 };
 
@@ -72,24 +81,21 @@ const MyApp = (props: AppProps) => {
     };
 
     if (user && !loading) {
+      loadUserData();
     }
   }, [user, loading]);
 
   useEffect(() => {
+    console.log(router.pathname);
     if (!userData) return;
-
-    console.log(userData);
     const role = userData.role_id;
 
     // Redirects user to a certain page if they are on an unauthorized path
     const handleUnauthorizedPaths = (role: string) => {
       const rolePaths = unauthorizedPaths[role];
 
-      console.log(role, rolePaths);
-
-      if (rolePaths && rolePaths.includes(router.pathname)) {
-        console.log('this run');
-        router.push('/');
+      if (rolePaths && rolePaths.routes.includes(router.pathname)) {
+        router.push(rolePaths.fallback);
       }
     };
 

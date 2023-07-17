@@ -25,6 +25,8 @@ export const COLLECTION_NAME = {
   ROLES: 'roles',
   RIGHT_ROLES: 'right_Roles',
   RIGHTS: 'rights',
+  USER_GROUPS: 'userGroups',
+  PERMISSIONS: 'permissions',
   NONE: 'none',
 };
 

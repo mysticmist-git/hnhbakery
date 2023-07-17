@@ -96,7 +96,7 @@ export const MainListItems = memo((props: any) => {
           alignItems: 'center',
           justifyContent: open ? 'space-between' : 'center',
         }}
-        onClick={() => router.push('/manager/manage')}
+        onClick={() => router.push('/manager/storage')}
       >
         <ListItemIcon
           sx={{
@@ -105,18 +105,18 @@ export const MainListItems = memo((props: any) => {
             justifyContent: open ? 'space-between' : 'center',
           }}
         >
-          <Inventory2RoundedIcon sx={iconSxProps('manage')} />
+          <Inventory2RoundedIcon sx={iconSxProps('storage')} />
         </ListItemIcon>
         {open && (
           <>
             <ListItemText
               primary={
-                <Typography variant="body1" sx={typographySxProps('manage')}>
+                <Typography variant="body1" sx={typographySxProps('storage')}>
                   Kho hàng
                 </Typography>
               }
             />
-            {isActive('manage') && <Check color="secondary" />}
+            {isActive('storage') && <Check color="secondary" />}
           </>
         )}
       </ListItemButton>
@@ -213,6 +213,38 @@ export const MainListItems = memo((props: any) => {
               }
             />
             {isActive('reports') && <Check color="secondary" />}
+          </>
+        )}
+      </ListItemButton>
+
+      <ListItemButton
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
+        onClick={() => router.push('/manager/authorize')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
+          <BarChartIcon sx={iconSxProps('authorize')} />
+        </ListItemIcon>
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('authorize')}>
+                  Phân quyền
+                </Typography>
+              }
+            />
+            {isActive('authorize') && <Check color="secondary" />}
           </>
         )}
       </ListItemButton>

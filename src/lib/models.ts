@@ -278,3 +278,59 @@ export interface SuperDetail_UserObject extends UserObject {
   billObjects?: SuperDetail_BillObject[];
   feedbackObjects?: FeedbackObject[];
 }
+
+export interface UserGroup extends BaseObject {
+  id?: string;
+  name: string;
+  users: string[];
+  permission: string[];
+  isActive: boolean;
+}
+
+export interface Permission extends BaseObject {
+  id?: string;
+  name: string;
+  code: string;
+  description: string;
+  isActive: boolean;
+}
+
+export const userGroupConverter: FirestoreDataConverter<UserGroup> = {
+  fromFirestore: (snapshot, options) => {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    } as UserGroup;
+  },
+
+  toFirestore: (userGroup: UserGroup) => {
+    const { id: string, ...data } = userGroup;
+
+    return data;
+  },
+};
+
+export const permissionConverter: FirestoreDataConverter<Permission> = {
+  toFirestore: function (
+    modelObject: WithFieldValue<Permission>
+  ): DocumentData {
+    delete modelObject.id;
+
+    return {
+      ...modelObject,
+    };
+  },
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options?: SnapshotOptions | undefined
+  ): Permission {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    } as Permission;
+  },
+};

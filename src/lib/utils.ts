@@ -85,7 +85,10 @@ export const filterDuplicatesById = <T extends { id: string }>(data: T[]) => {
   return uniqueData;
 };
 
-export function formatDateString(value: Date | undefined, format = ''): string {
+export function formatDateString(
+  value: Date | undefined,
+  format: 'DD/MM/YYYY' | '' = ''
+): string {
   if (!value) {
     return 'Trống';
   }
