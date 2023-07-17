@@ -110,7 +110,7 @@ export interface BillDetailObject extends BaseObject {
   amount: number;
   price: number;
   discount: number;
-  discountAmount: number;
+  discountAmount: number; // price*discount -> giá thiệt = price - discountAmount
   batch_id: string;
   bill_id: string;
 }
@@ -333,4 +333,20 @@ export const permissionConverter: FirestoreDataConverter<PermissionObject> = {
       id: snapshot.id,
     } as PermissionObject;
   },
+};
+export interface SuperDetail_ReportObject {
+  products: ProductObject[];
+  batches: BatchObject[];
+  feedbacks: FeedbackObject[];
+  billDetails: BillDetailObject[];
+  deliveries: DeliveryObject[];
+  bills: BillObject[];
+  payments: PaymentObject[];
+  sales: SaleObject[];
+}
+
+export type SanPhamDoanhThu = BatchObject & {
+  revenue: number;
+  percentage: number;
+  productObject: ProductObject;
 };
