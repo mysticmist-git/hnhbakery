@@ -89,12 +89,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
       console.log(error);
     }
 
-    setNewPermission({
-      name: '',
-      code: '',
-      description: '',
-      isActive: true,
-    });
+    setNewPermission(newPermissionDefault);
     handleCloseDialog();
   };
 

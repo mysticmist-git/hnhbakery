@@ -1,3 +1,4 @@
+import AccountTable from '@/components/authorize/AccountTable.tsx/AccountTable';
 import NewUserGroupDialog from '@/components/authorize/NewUserGroupDialog';
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';
@@ -133,11 +134,18 @@ const Authorize: React.FC<AuthorizeProps> = () => {
           my: 1,
         }}
       >
+        <Tab label="Người dùng" color="secondary" />
         <Tab label="Nhóm người dùng" color="secondary" />
         <Tab label="Quyền người dùng" color="secondary" />
       </Tabs>
 
       {currentTab === 0 && (
+        <AccountTable
+          users={users?.filter((u) => u.role_id === 'manager') ?? []}
+        />
+      )}
+
+      {currentTab === 1 && (
         <Stack gap={1} pr={3}>
           <Button
             variant="outlined"
@@ -187,7 +195,7 @@ const Authorize: React.FC<AuthorizeProps> = () => {
         </Stack>
       )}
 
-      {currentTab === 1 && <PermissionTable permissions={permissions ?? []} />}
+      {currentTab === 2 && <PermissionTable permissions={permissions ?? []} />}
     </AuthorizeContext.Provider>
   );
 };

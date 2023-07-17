@@ -13,6 +13,8 @@ interface DeleteDialog {
   deleteTarget: any | null;
   handleCancelDelete: () => void;
   handleConfirmDelete: (deleteObjet: any) => Promise<void>;
+  deleteText?: string;
+  deleteColor?: any;
 }
 
 const DeleteDialog: React.FC<DeleteDialog> = ({
@@ -21,6 +23,8 @@ const DeleteDialog: React.FC<DeleteDialog> = ({
   deleteTarget,
   handleCancelDelete,
   handleConfirmDelete,
+  deleteText,
+  deleteColor,
 }) => {
   return (
     <Dialog open={deleteTarget !== null} onClose={handleCancelDelete}>
@@ -32,8 +36,8 @@ const DeleteDialog: React.FC<DeleteDialog> = ({
         <Button onClick={handleCancelDelete} color="secondary">
           Hủy
         </Button>
-        <Button onClick={handleConfirmDelete} color="error">
-          Xóa
+        <Button onClick={handleConfirmDelete} color={deleteColor || 'error'}>
+          {deleteText || 'Xóa'}
         </Button>
       </DialogActions>
     </Dialog>
