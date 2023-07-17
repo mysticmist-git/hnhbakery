@@ -6,6 +6,7 @@ export function Outlined_TextField(props: any) {
       <TextField
         {...props}
         variant="outlined"
+        color={props.color ?? 'secondary'}
         fullWidth
         InputProps={{
           readOnly: true,
