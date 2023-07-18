@@ -9,10 +9,15 @@ import React, { useState } from 'react';
 
 interface FeedbackDialogProps {
   open: boolean;
-  onClose: (rating: number, comment: string) => void;
+  onClose: () => void;
+  handleSubmit: (rating: number, comment: string) => void;
 }
 
-const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose }) => {
+const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
+  open,
+  onClose,
+  handleSubmit,
+}) => {
   // Declare state variables for 'rating' and 'comment'
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -22,6 +27,13 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose }) => {
     event: React.SyntheticEvent,
     value: number | null
   ) => void = (event, value) => setRating(value ?? 0);
+
+  const resetForm = () => {
+    // Reset state
+    setRating(0);
+    setComment('');
+  };
+
   const handleCommentChange: React.ChangeEventHandler<HTMLInputElement> = (
     event
   ) => setComment(event.target.value);
@@ -29,11 +41,15 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose }) => {
   // Handle dialog closing
   const handleClose = async () => {
     // Call onClose prop
-    onClose && (await onClose(rating, comment));
+    onClose && onClose();
 
-    // Reset state
-    setRating(0);
-    setComment('');
+    resetForm();
+  };
+
+  const handleSubmitFeedback = async () => {
+    handleSubmit && (await handleSubmit(rating, comment));
+
+    resetForm();
   };
 
   return (
@@ -59,7 +75,11 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose }) => {
         <Button variant="outlined" color="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={handleClose}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSubmitFeedback}
+        >
           Submit
         </Button>
       </DialogActions>

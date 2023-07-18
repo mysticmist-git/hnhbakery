@@ -29,7 +29,9 @@ const FeedbackItem = ({
   );
 
   const [image, iLoading, iError] = useDownloadURL(
-    user && user?.image !== '' ? ref(storage, user.image) : undefined
+    user && user?.image && user?.image !== ''
+      ? ref(storage, user.image)
+      : undefined
   );
 
   return (
