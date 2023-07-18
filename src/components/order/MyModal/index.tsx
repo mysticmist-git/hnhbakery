@@ -541,6 +541,8 @@ const MyModal = ({
                                   modalBill?.deliveryObject?.state ??
                                   'Trống'
                                 ) {
+                                  case 'cancel':
+                                    return theme.palette.error.dark;
                                   case 'fail':
                                     return theme.palette.error.main;
                                   case 'success':

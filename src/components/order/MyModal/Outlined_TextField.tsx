@@ -4,7 +4,6 @@ export function Outlined_TextField(props: any) {
   return (
     <>
       <TextField
-        {...props}
         variant="outlined"
         color={props.color ?? 'secondary'}
         fullWidth
@@ -23,6 +22,7 @@ export function Outlined_TextField(props: any) {
           },
         }}
         type="text"
+        {...props}
       >
         {props.children}
       </TextField>

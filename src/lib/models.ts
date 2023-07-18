@@ -351,3 +351,13 @@ export type SanPhamDoanhThu = BatchObject & {
   percentage: number;
   productObject: ProductObject;
 };
+
+export interface SuperDetail_SaleObject extends SaleObject {
+  numberOfUse?: number;
+  totalSaleAmount?: number;
+}
+
+export interface SuperDetail_DeliveryObject extends DeliveryObject {
+  billObject?: BillObject;
+  billDetailObjects?: AssembledBillDetail[];
+}

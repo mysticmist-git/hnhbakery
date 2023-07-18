@@ -38,6 +38,7 @@ const theme = createTheme({
     },
     error: {
       main: red.A400,
+      dark: red.A700,
     },
     success: {
       main: '#00A803',
