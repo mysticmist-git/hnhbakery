@@ -16,13 +16,17 @@ export async function filterExpired(cart: CartItem[]): Promise<CartItem[]> {
   const filteredCart: CartItem[] = [];
 
   for (const item of cart) {
-    const batch = await getDocFromFirestore<BatchObject>(
-      COLLECTION_NAME.BATCHES,
-      item.batchId
-    );
+    try {
+      const batch = await getDocFromFirestore<BatchObject>(
+        COLLECTION_NAME.BATCHES,
+        item.batchId
+      );
 
-    if (batch.EXP.getTime() > now) {
-      filteredCart.push(item);
+      if (batch.EXP.getTime() > now) {
+        filteredCart.push(item);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 

@@ -1,17 +1,26 @@
 import { auth, db, provider } from '@/firebase/config';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
-import { Timestamp, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
 import router from 'next/router';
+import { COLLECTION_NAME } from '../constants';
 import { getDocFromFirestore } from '../firestore';
 import { UserObject } from '../models';
 import { SignInInfo, SignupUser } from '../types/auth';
 
-export const addUserWithEmailAndPassword = (
+export const addUserWithEmailAndPassword = async (
   id: string,
   userData: SignupUser
 ) => {
   try {
-    setDoc(doc(db, 'users', id), userData);
+    delete userData.id;
+    await setDoc(doc(collection(db, COLLECTION_NAME.USERS), id), userData);
   } catch (error) {
     console.log(error);
   }

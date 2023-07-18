@@ -7,8 +7,9 @@ import { SignupData } from '@/lib/types/auth';
 import theme from '@/styles/themes/lightTheme';
 import { Box, Grid, Link, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
+import dayjs, { Dayjs } from 'dayjs';
 import { default as NextLink } from 'next/link';
-import { memo, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 
 const USER_ROLE_ID = 'user';
 
@@ -19,23 +20,23 @@ const SignUpForm = ({
 }) => {
   // #region Refs
 
-  const nameRef = useRef<HTMLInputElement>(null);
-  const birthdayRef = useRef<HTMLInputElement>(null);
-  const telRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState('');
+  const [birthday, setBirthday] = useState<Dayjs>(dayjs(new Date(1990, 1, 1)));
+  const [tel, setTel] = useState('');
+  const [mail, setMail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // #endregion
 
   const createSignupData = (): SignupData => {
     return {
-      name: nameRef.current?.value,
-      birthday: new Date(birthdayRef.current?.value as string),
-      tel: telRef.current?.value,
-      mail: emailRef.current?.value,
-      password: passwordRef.current?.value,
-      confirmPassword: confirmPasswordRef.current?.value,
+      name,
+      birthday: birthday.toDate(),
+      tel,
+      mail,
+      password,
+      confirmPassword,
     };
   };
 
@@ -56,7 +57,8 @@ const SignUpForm = ({
       >
         <Grid item xs={12}>
           <CustomTextField
-            ref={nameRef}
+            value={name}
+            onChange={(e: any) => setName(e.target.value)}
             placeholder="Họ và tên"
             fullWidth
             required
@@ -70,7 +72,10 @@ const SignUpForm = ({
         <Grid item xs={12} md={6}>
           <DatePicker
             format="DD/MM/YYYY"
-            inputRef={birthdayRef}
+            value={birthday}
+            onChange={(date) =>
+              setBirthday(date ?? dayjs(new Date(1990, 1, 1)))
+            }
             views={['day', 'month', 'year']}
             sx={{
               overflow: 'hidden',
@@ -102,7 +107,8 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12} md={6}>
           <CustomTextField
-            ref={telRef}
+            value={tel}
+            onChange={(e: any) => setTel(e.target.value)}
             placeholder="Số điện thoại"
             fullWidth
             required
@@ -114,7 +120,8 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12}>
           <CustomTextField
-            ref={emailRef}
+            value={mail}
+            onChange={(e: any) => setMail(e.target.value)}
             placeholder="Email"
             fullWidth
             required
@@ -126,7 +133,8 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12}>
           <CustomTextFieldPassword
-            ref={passwordRef}
+            value={password}
+            onChange={(e: any) => setPassword(e.target.value)}
             placeholder="Mật khẩu"
             required
             fullWidth
@@ -138,7 +146,8 @@ const SignUpForm = ({
         </Grid>
         <Grid item xs={12}>
           <CustomTextFieldPassword
-            ref={confirmPasswordRef}
+            value={confirmPassword}
+            onChange={(e: any) => setConfirmPassword(e.target.value)}
             placeholder="Nhập lại mật khẩu"
             required
             fullWidth
