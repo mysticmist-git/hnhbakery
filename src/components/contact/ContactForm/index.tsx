@@ -51,7 +51,7 @@ const ContactForm = () => {
 
   // #region Handlers
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
     const isValid = validateForm();
@@ -61,7 +61,7 @@ const ContactForm = () => {
       return;
     }
 
-    sendContact({
+    await sendContact({
       name: nameRef.current!.value,
       email: emailRef.current!.value,
       phone: phoneRef.current!.value,

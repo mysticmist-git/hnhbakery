@@ -71,7 +71,7 @@ const Authorize: React.FC<AuthorizeProps> = () => {
       const { name, value, checked } = event.target;
 
       if (group) {
-        if (name === 'permissions') {
+        if (name === 'permission') {
           if (checked) {
             setGroup({
               ...group,
@@ -97,12 +97,16 @@ const Authorize: React.FC<AuthorizeProps> = () => {
 
   const handleNewGroupSubmit = async () => {
     if (newGroup) {
-      const userGroupRef = collection(
-        db,
-        COLLECTION_NAME.USER_GROUPS
-      ).withConverter(userGroupConverter);
+      try {
+        const userGroupRef = collection(
+          db,
+          COLLECTION_NAME.USER_GROUPS
+        ).withConverter(userGroupConverter);
 
-      await addDoc(userGroupRef, newGroup);
+        await addDoc(userGroupRef, newGroup);
+      } catch (error) {
+        console.log(error);
+      }
       setNewGroup(null);
     }
   };

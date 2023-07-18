@@ -129,8 +129,15 @@ function ProductDetailInfo({
 
             <Grid item xs={12}>
               <ProductRating
-                rating={comments.ratingAverage}
-                numReviews={comments.numReviews}
+                rating={
+                  comments !== undefined
+                    ? comments.reduce(
+                        (total, comment) => total + comment.rating,
+                        0
+                      ) / comments.length
+                    : 0
+                }
+                numReviews={comments !== undefined ? comments.length : 0}
               />
             </Grid>
 

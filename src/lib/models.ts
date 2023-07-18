@@ -132,13 +132,32 @@ export interface DeliveryObject extends BaseObject {
 }
 
 export interface FeedbackObject extends BaseObject {
-  id: string;
+  id?: string;
   rating: number;
   comment: string;
   time?: Date;
   product_id: string;
   user_id: string;
 }
+
+export const feedbackConverter: FirestoreDataConverter<FeedbackObject> = {
+  toFirestore: function (feedback: FeedbackObject) {
+    delete feedback.id;
+    return { ...feedback };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<FeedbackObject>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+    return {
+      ...data,
+      id: snapshot.id,
+      time: data.time instanceof Timestamp ? data.time.toDate() : data.time,
+    } as FeedbackObject;
+  },
+};
 
 export interface PaymentObject extends BaseObject {
   id?: string;
@@ -241,7 +260,7 @@ export interface Countable {
   count?: number;
 }
 
-export interface Contact extends BillObject {
+export interface Contact extends BaseObject {
   name: string;
   email: string;
   phone?: string;

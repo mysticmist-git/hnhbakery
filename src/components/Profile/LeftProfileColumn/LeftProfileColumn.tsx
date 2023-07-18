@@ -1,31 +1,8 @@
-import { CustomIconButton } from '@/components/buttons';
 import { storage } from '@/firebase/config';
-import { BaseObject } from '@/lib/models';
-import { ModalProductTypeObject } from '@/lib/types/manage';
 import { LeftProfileColumnProps } from '@/lib/types/profile';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import {
-  Box,
-  Card,
-  Divider,
-  Grid,
-  Stack,
-  Typography,
-  alpha,
-  useTheme,
-} from '@mui/material';
-import { data } from 'autoprefixer';
+import { Box, Grid, useTheme } from '@mui/material';
 import { ref } from 'firebase/storage';
-import { useDeprecatedAnimatedState } from 'framer-motion';
-import Image from 'next/image';
-import React, {
-  ChangeEvent,
-  ChangeEventHandler,
-  memo,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { ChangeEvent, ChangeEventHandler, memo, useMemo } from 'react';
 import { useUploadFile } from 'react-firebase-hooks/storage';
 import ProfileAvatar from '../Avatar/ProfileAvatar';
 

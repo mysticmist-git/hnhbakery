@@ -1,14 +1,14 @@
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Typography,
   useTheme,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import React, { memo } from 'react';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-export const CustomAccordionItem = memo((props: any) => {
+const CustomAccordionItem = memo((props: any) => {
   const {
     heading = 'Heading',
     defaultExpanded = false,
@@ -54,3 +54,5 @@ export const CustomAccordionItem = memo((props: any) => {
     </Accordion>
   );
 });
+
+export default CustomAccordionItem;

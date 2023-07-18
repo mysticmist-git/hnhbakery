@@ -1,7 +1,7 @@
+import { SearchContext } from '@/lib/contexts/search';
 import { formatPrice } from '@/lib/utils';
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
-import { SearchContext } from '../../../pages/search';
 
 const ThongTinGiaoHang = memo((props: any) => {
   const theme = useTheme();

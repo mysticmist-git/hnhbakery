@@ -14,11 +14,6 @@ Router.events.on('routeChangeError', () => NProgress.done());
 import { TransitionUp } from '@/components/Transitions';
 import MainLayout from '@/components/layouts/MainLayout';
 import { SnackbarService } from '@/lib/contexts';
-import {
-  AppContext,
-  appReducer,
-  initialState,
-} from '@/lib/contexts/appContext';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -28,7 +23,6 @@ import Head from 'next/head';
 import { Router } from 'next/router';
 
 const MyApp = (props: AppProps) => {
-  const [state, dispatch] = useReducer(appReducer, initialState);
   const { Component, pageProps } = props;
 
   const {
@@ -47,28 +41,26 @@ const MyApp = (props: AppProps) => {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         {/* <CacheProvider value={emotionCache}> */}
         <ThemeProvider theme={theme}>
-          <AppContext.Provider value={{ state, dispatch }}>
-            <SnackbarService.Provider value={{ handleSnackbarAlert }}>
-              <CssBaseline />
-              <MainLayout>
-                <Component {...pageProps} />
-              </MainLayout>
-              <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
+          <SnackbarService.Provider value={{ handleSnackbarAlert }}>
+            <CssBaseline />
+            <MainLayout>
+              <Component {...pageProps} />
+            </MainLayout>
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={3000}
+              onClose={handleSnackbarClose}
+              TransitionComponent={TransitionUp}
+            >
+              <Alert
                 onClose={handleSnackbarClose}
-                TransitionComponent={TransitionUp}
+                severity={snackbarSeverity}
+                sx={{ width: '100%' }}
               >
-                <Alert
-                  onClose={handleSnackbarClose}
-                  severity={snackbarSeverity}
-                  sx={{ width: '100%' }}
-                >
-                  {snackbarText}
-                </Alert>
-              </Snackbar>
-            </SnackbarService.Provider>
-          </AppContext.Provider>
+                {snackbarText}
+              </Alert>
+            </Snackbar>
+          </SnackbarService.Provider>
         </ThemeProvider>
       </LocalizationProvider>
     </>

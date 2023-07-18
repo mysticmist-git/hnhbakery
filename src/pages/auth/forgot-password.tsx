@@ -1,4 +1,4 @@
-import { ContactForm, ContactWrapper } from '@/components/Contact';
+import { ContactWrapper } from '@/components/Contact';
 import Imagebackground from '@/components/Imagebackground';
 import { auth } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
