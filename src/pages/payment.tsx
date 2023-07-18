@@ -1,6 +1,5 @@
 import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
-import { CaiKhungCoTitle } from '@/components/layouts/CaiKhungCoTitle';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
 import { auth, db } from '@/firebase/config';
@@ -30,6 +29,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useLocalStorage } from 'usehooks-ts';
 import FormGiaoHang from '../components/payment/FormGiaoHang/FormGiaoHang';
+import { CaiKhungCoTitle } from '@/components/Layouts/CaiKhungCoTitle';
 
 // #endregion
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { PLACEHOLDER_DELIVERY_PRICE } from '../constants';
 
 // TODO: please fix this
 function useShippingFee(): number {
@@ -6,7 +7,7 @@ function useShippingFee(): number {
 
   useEffect(() => {
     async function execute() {
-      setShippingFee(100000);
+      setShippingFee(PLACEHOLDER_DELIVERY_PRICE);
     }
 
     execute();

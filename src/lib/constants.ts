@@ -81,4 +81,4 @@ export const MocGioGiaoHang = [
   },
 ];
 
-export const PLACEHOLDER_DELIVERY_PRICE = 100000;
+export const PLACEHOLDER_DELIVERY_PRICE = 20000;

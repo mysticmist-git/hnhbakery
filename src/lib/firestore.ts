@@ -337,7 +337,7 @@ export function getDocFromDocumentSnapshot<T extends BaseObject>(
 
 export async function getBestSellterProducts(): Promise<ProductObject[]> {
   // Constants
-  const minSoldQuantity = 5;
+  const minSoldQuantity = 1;
   const queryLimit = 7;
 
   const batches = await getBatchesWithQuery(

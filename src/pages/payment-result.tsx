@@ -171,7 +171,7 @@ const PaymentResult = () => {
         </Grid>
       </ImageBackground>
 
-      <Box sx={{ pt: 4, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+      <Box sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
         <Grid
           container
           direction={'column'}
