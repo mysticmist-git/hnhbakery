@@ -24,7 +24,7 @@ export const permissionRouteMap = new Map([
   ['KHO', '/manager/storage'],
   ['PQ', '/manager/authorize'],
   ['ĐH', '/manager/orders'],
-  ['KH', '/manager/users'],
+  ['KH', '/manager/customers'],
   ['BC', '/manager/reports'],
 ]);
 

@@ -1,5 +1,5 @@
 import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
-import { Check } from '@mui/icons-material';
+import { Check, Security } from '@mui/icons-material';
 import { default as BarChartIcon } from '@mui/icons-material/BarChart';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import { default as PeopleIcon } from '@mui/icons-material/People';
@@ -255,7 +255,7 @@ export const MainListItems = memo((props: any) => {
               justifyContent: open ? 'space-between' : 'center',
             }}
           >
-            <BarChartIcon sx={iconSxProps('authorize')} />
+            <Security sx={iconSxProps('authorize')} />
           </ListItemIcon>
           {open && (
             <>
