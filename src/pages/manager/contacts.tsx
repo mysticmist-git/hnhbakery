@@ -1,5 +1,8 @@
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import { getCollection } from '@/lib/firestore';
 import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
+import { Contact } from '@/lib/models';
 import { Mail } from '@/lib/types/manage-contact';
 import { Mail as MailIcon } from '@mui/icons-material';
 import {
@@ -20,7 +23,9 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { title } from 'process';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ContactTable } from '../../components/contacts/ContactTable';
+import { MyModal } from '../../components/contacts/MyModal';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -28,9 +33,8 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Contacts = ({}: {}) => {
-  const theme = useTheme();
-
+const Contacts = ({ contactData }: { contactData: string }) => {
+  //#region Gửi mail
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const handleSnackbarAlert = useSnackbarService();
@@ -69,6 +73,43 @@ const Contacts = ({}: {}) => {
     }
   };
 
+  //#endregion
+
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const theme = useTheme();
+
+  useEffect(() => {
+    const parsedContacts = (JSON.parse(contactData) as Contact[]) ?? [];
+    setContacts(() => parsedContacts);
+  }, []);
+
+  const handleContactDataChange = (value: Contact) => {
+    setContacts(() => {
+      return contacts.map((contact) => {
+        if (contact.id === value.id) {
+          return value;
+        } else {
+          return contact;
+        }
+      });
+    });
+  };
+
+  //#region Modal chi tiết
+  const [openModalChiTiet, setOpenModalChiTiet] = useState(false);
+  const [currentViewContact, setCurrentViewContact] = useState<Contact | null>(
+    null
+  );
+
+  const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
+  const handleCloseModalChiTiet = () => setOpenModalChiTiet(false);
+
+  const handleViewContactModalChiTiet = (value: Contact) => {
+    handleOpenModalChiTiet();
+    setCurrentViewContact(() => value);
+  };
+  //#endregion
+
   return (
     <>
       <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
@@ -88,7 +129,7 @@ const Contacts = ({}: {}) => {
             <Divider />
           </Grid>
 
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Typography
               variant="body2"
               color="text.secondary"
@@ -97,7 +138,7 @@ const Contacts = ({}: {}) => {
               *Tìm kiếm theo mã, họ tên, email, số điện thoại, ngày sinh, trạng
               thái...
             </Typography>
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'end' }}>
             <Button
@@ -108,6 +149,26 @@ const Contacts = ({}: {}) => {
             >
               Gửi mail
             </Button>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
+          <Grid item xs={12}>
+            <ContactTable
+              contactData={contacts}
+              handleViewContact={handleViewContactModalChiTiet}
+              // handleViewDeliveryModalState={handleViewDeliveryModalState}
+            />
+
+            {/* Modal chi tiết */}
+            <MyModal
+              open={openModalChiTiet}
+              handleClose={handleCloseModalChiTiet}
+              contact={currentViewContact}
+              handleContactDataChange={handleContactDataChange}
+            />
           </Grid>
         </Grid>
       </Box>
@@ -123,14 +184,20 @@ const Contacts = ({}: {}) => {
 
 export const getServerSideProps = async () => {
   try {
+    const contacts = await getCollection<Contact>(COLLECTION_NAME.CONTACTS);
+
     return {
-      props: {},
+      props: {
+        contactData: JSON.stringify(contacts),
+      },
     };
   } catch (error) {
     console.log(error);
 
     return {
-      props: {},
+      props: {
+        contactData: '',
+      },
     };
   }
 };
