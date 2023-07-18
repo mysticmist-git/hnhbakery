@@ -13,8 +13,7 @@ export type SignupUser = {
   id?: string;
   name?: string;
   mail?: string;
-  password?: string;
-  birthday?: Timestamp;
+  birthday?: Date;
   tel?: string;
   image?: string;
   isActive?: boolean;

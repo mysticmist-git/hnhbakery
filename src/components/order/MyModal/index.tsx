@@ -1,4 +1,5 @@
 import { CustomButton, CustomIconButton } from '@/components/buttons';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   getBatch,
@@ -6,6 +7,7 @@ import {
   getDocFromFirestore,
   updateDocToFirestore,
 } from '@/lib/firestore';
+import { deliveryStatusParse } from '@/lib/manage/manage';
 import {
   AssembledBillDetail,
   BatchObject,
@@ -15,6 +17,7 @@ import {
   ProductObject,
   SuperDetail_BillObject,
 } from '@/lib/models';
+import { isVNPhoneNumber, validateEmail } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
@@ -29,18 +32,15 @@ import {
   useTheme,
 } from '@mui/material';
 import { Box, alpha } from '@mui/system';
-import { memo, useEffect, useRef, useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { deliveryStatusParse } from '@/lib/manage/manage';
-import { Outlined_TextField } from './Outlined_TextField';
-import { ThongTin_Content } from './ThongTin_Content';
-import { SaleDelivery_Content } from './SaleDelivery_Content';
 import { where } from 'firebase/firestore';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { isVNPhoneNumber, validateEmail } from '@/lib/utils';
 import { get } from 'http';
+import { memo, useEffect, useRef, useState } from 'react';
+import { Outlined_TextField } from './Outlined_TextField';
+import { SaleDelivery_Content } from './SaleDelivery_Content';
 import { SanPham_Content } from './SanPham_Content';
+import { ThongTin_Content } from './ThongTin_Content';
 
 type EditType = {
   name?: string;
@@ -156,32 +156,36 @@ const MyModal = ({
 
   useEffect(() => {
     const getData = async (bill: SuperDetail_BillObject) => {
-      const billDetails = await getCollectionWithQuery<BillDetailObject>(
-        COLLECTION_NAME.BILL_DETAILS,
-        where('bill_id', '==', bill.id)
-      );
+      try {
+        const billDetails = await getCollectionWithQuery<BillDetailObject>(
+          COLLECTION_NAME.BILL_DETAILS,
+          where('bill_id', '==', bill.id)
+        );
 
-      const assembledBillDetails = await Promise.all(
-        billDetails.map(async (detail) => {
-          const batch = await getBatch(detail.batch_id);
-          const product = (await getDocFromFirestore(
-            COLLECTION_NAME.PRODUCTS,
-            batch.product_id
-          )) as ProductObject;
+        const assembledBillDetails = await Promise.all(
+          billDetails.map(async (detail) => {
+            const batch = await getBatch(detail.batch_id);
+            const product = (await getDocFromFirestore(
+              COLLECTION_NAME.PRODUCTS,
+              batch.product_id
+            )) as ProductObject;
+            return {
+              ...detail,
+              batchObject: batch,
+              productObject: product,
+            } as AssembledBillDetail;
+          })
+        );
+
+        setModalBill(() => {
           return {
-            ...detail,
-            batchObject: batch,
-            productObject: product,
-          } as AssembledBillDetail;
-        })
-      );
-
-      setModalBill(() => {
-        return {
-          ...bill,
-          billDetailObjects: assembledBillDetails,
-        };
-      });
+            ...bill,
+            billDetailObjects: assembledBillDetails,
+          };
+        });
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     if (!bill) {

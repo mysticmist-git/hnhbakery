@@ -9,7 +9,7 @@ import {
 
 //#region Constants
 
-export const PATH = '/manager/manage';
+export const PATH = '/manager/storage';
 export const crudTargets: CrudTarget[] = [
   {
     collectionName: COLLECTION_NAME.PRODUCT_TYPES,

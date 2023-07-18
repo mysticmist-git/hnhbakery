@@ -59,9 +59,9 @@ export default function CheckboxList(props: any) {
                   ? false
                   : true
               }
+              handleSetEditItem={handleSetEditItem}
               userData={userData}
               editItem={editItem}
-              handleSetEditItem={handleSetEditItem}
             />
           </ListItem>
         );

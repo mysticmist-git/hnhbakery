@@ -109,9 +109,8 @@ const SignUp = () => {
   ): SignupUser => {
     return {
       mail: userData.mail,
-      password: userData.password,
       name: userData.name,
-      birthday: Timestamp.fromDate(userData.birthday as Date),
+      birthday: userData.birthday ?? new Date(),
       tel: userData.tel,
       isActive: true,
       role_id: 'customer',
@@ -137,7 +136,7 @@ const SignUp = () => {
 
       const user = createUserObjectFromUSignupData(signupData);
 
-      addUserWithEmailAndPassword(userCredential.user.uid, user);
+      await addUserWithEmailAndPassword(userCredential.user.uid, user);
 
       handleSnackbarAlert('success', 'Đăng ký thành công!');
 

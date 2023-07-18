@@ -1,7 +1,15 @@
-import { auth } from '@/firebase/config';
+import { auth, db } from '@/firebase/config';
+import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore';
-import { UserObject } from '@/lib/models';
+import {
+  PermissionObject,
+  UserGroup,
+  UserObject,
+  permissionConverter,
+  userGroupConverter,
+} from '@/lib/models';
 import theme from '@/styles/themes/lightTheme';
 import {
   AccountCircle,
@@ -14,9 +22,12 @@ import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { User, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { collection } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo, useEffect, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 interface Props {
   photoURL: string | null;
@@ -31,10 +42,12 @@ const menuItemSx: SxProps<Theme> = {
 };
 
 const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
+  const { available, loading, user } = useAvailablePermissions();
+
   //#region States
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isCustomer, setIsCustomer] = useState(true);
+  const [isManager, setIsManager] = useState(false);
 
   //#endregion
 
@@ -42,7 +55,6 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
-  const auth = getAuth();
 
   //#endregion
 
@@ -62,7 +74,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   };
 
   const handleOpenManagement = () => {
-    router.push('/manager/manage');
+    router.push(permissionRouteMap.get(available![0]) ?? '/');
     setAnchorEl(() => null);
   };
 
@@ -79,35 +91,24 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   //#endregion
 
-  // #region Ons
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      const doStuffs = async (_user: User) => {
-        const userId = _user.uid;
+    const execute = async () => {
+      try {
+        if (!loading && user) {
+          const userData = await getDocFromFirestore<UserObject>(
+            COLLECTION_NAME.USERS,
+            user.uid
+          );
 
-        try {
-          const user = (await getDocFromFirestore(
-            'users',
-            userId
-          )) as UserObject;
-
-          setIsCustomer(() => user.role_id === 'customer');
-        } catch (error: any) {
-          console.log(error);
-          handleSnackbarAlert('error', `Lỗi: ${error.message}`);
+          setIsManager(userData.role_id === 'manager');
         }
-      };
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-      if (user) doStuffs(user);
-
-      return () => {
-        unsubscribe();
-      };
-    });
-  }, []);
-
-  // #endregion
+    execute();
+  }, [user, loading]);
 
   return (
     <>
@@ -119,7 +120,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
             Tài khoản
           </Typography>
         </MenuItem>
-        {!isCustomer && (
+        {isManager && available && available.length > 0 && (
           <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
             <ViewInAr />
             <Typography variant="body2" color={theme.palette.common.black}>

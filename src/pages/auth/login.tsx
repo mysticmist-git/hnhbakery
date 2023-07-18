@@ -7,8 +7,10 @@ import {
 } from '@/components/Inputs/textFields';
 import { auth } from '@/firebase/config';
 import { handleLoginWithGoogle, validateSigninInfo } from '@/lib/auth/auth';
-import { authMessages } from '@/lib/constants';
+import { authMessages, COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import { getDocFromFirestore } from '@/lib/firestore';
+import { UserObject } from '@/lib/models';
 import { SignInInfo } from '@/lib/types/auth';
 import theme from '@/styles/themes/lightTheme';
 import { Google } from '@mui/icons-material';
@@ -21,7 +23,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/system';
 import { FirebaseError } from 'firebase/app';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import * as React from 'react';
@@ -62,8 +64,11 @@ const Login = () => {
   const handleSnackbarAlert = useSnackbarService();
 
   const [user, loading, error] = useAuthState(auth);
+  const [userData, setUserData] = React.useState<UserObject | null>(null);
 
-  if (!loading && user) router.push('/');
+  React.useEffect(() => {
+    if (userData && userData.isActive) router.push('/');
+  }, [loading, userData, user]);
 
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -86,6 +91,20 @@ const Login = () => {
         password
       );
 
+      const id = userCredential.user.uid;
+
+      const user = await getDocFromFirestore<UserObject>(
+        COLLECTION_NAME.USERS,
+        id
+      );
+
+      setUserData(user);
+
+      if (!user.isActive) {
+        signOut(auth);
+        throw new FirebaseError('custom/disabled', 'User is not active');
+      }
+
       handleSnackbarAlert('success', 'Đăng nhập thành công');
     } catch (error: any) {
       console.log(error);
@@ -102,6 +121,9 @@ const Login = () => {
           break;
         case 'auth/too-many-requests':
           msg = 'Tài khoản tạm thời bị khóa đăng nhập sai nhiều lần';
+          break;
+        case 'cu  stom/disabled':
+          msg = 'Tài khoản của bạn đã bị vô hiệu hóa';
           break;
         default:
           msg = error.message;

@@ -1,9 +1,15 @@
 // Import the functions you need from the SDKs you need
-import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
 import { Google } from '@mui/icons-material';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import {
+  GoogleAuthProvider,
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  getAuth,
+  setPersistence,
+} from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -20,13 +26,30 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app2 = initializeApp(firebaseConfig, 'Secondary');
 
 const db = getFirestore(app);
 
 const storage = getStorage(app);
 
 const auth = getAuth(app);
+const auth2 = getAuth(app2);
 
 const provider = new GoogleAuthProvider();
 
-export { db, auth, storage, provider };
+// Create user
+export const createUser = async (email: string, password: string) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth2,
+      email,
+      password
+    );
+    return userCredential;
+  } catch (error: any) {
+    console.log(`Error code: ${error.code}`);
+    console.log(`Error message: ${error.message}`);
+  }
+};
+
+export { auth, auth2, db, provider, storage };

@@ -1,24 +1,13 @@
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
-import { Contact } from '@/lib/models';
-import {
-  Check,
-  ContactsRounded,
-  DiscountRounded,
-  LocalShippingRounded,
-} from '@mui/icons-material';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
+import { Check, Security } from '@mui/icons-material';
 import { default as BarChartIcon } from '@mui/icons-material/BarChart';
-import { default as DashboardIcon } from '@mui/icons-material/Dashboard';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
-import { default as LayersIcon } from '@mui/icons-material/Layers';
 import { default as PeopleIcon } from '@mui/icons-material/People';
 import { default as ShoppingCartIcon } from '@mui/icons-material/ShoppingCart';
 import { Badge, Typography, useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo } from 'react';
@@ -67,30 +56,25 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
   //#region Hooks
 
   const router = useRouter();
-  const [badgeContact, setBadgeContact] = React.useState(0);
+  const { open } = props;
 
-  const getUnread = async () => {
-    const contacts = await getCollection<Contact>(COLLECTION_NAME.CONTACTS);
-    return contacts.length;
-  };
+  const { available, loading } = useAvailablePermissions();
 
-  React.useEffect(() => {
-    const unRead = getUnread();
-    console.log(unRead);
-
-    setBadgeContact(() => 0);
-  }, []);
+  if (available && !loading) {
+    if (available.length <= 0) {
+      router.push('/');
+    } else if (
+      !available.map((p) => permissionRouteMap.get(p)).includes(router.pathname)
+    ) {
+      router.push(permissionRouteMap.get(available[0]) ?? '/');
+    }
+  }
 
   return (
     <React.Fragment>
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/manage')}
+      {/* <ListItemButton
+        sx={{ height: '60px' }}
+        onClick={() => router.push('/manager/dashboard')}
       >
         <ListItemIcon
           sx={{
@@ -99,218 +83,197 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
             justifyContent: open ? 'space-between' : 'center',
           }}
         >
-          <Inventory2RoundedIcon sx={iconSxProps('manage')} />
+          <DashboardIcon sx={iconSxProps('dashboard')} />
         </ListItemIcon>
         {open && (
           <>
             <ListItemText
               primary={
-                <Typography variant="body1" sx={typographySxProps('manage')}>
-                  Kho hàng
+                <Typography variant="body1" sx={typographySxProps('dashboard')}>
+                  Dashboard
                 </Typography>
               }
             />
-            {isActive('manage') && <Check color="secondary" />}
+            {isActive('dashboard') && <Check color="secondary" />}
           </>
         )}
-      </ListItemButton>
+      </ListItemButton> */}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/orders')}
-      >
-        <ListItemIcon
+      {available && available.includes('KHO') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/storage')}
         >
-          <ShoppingCartIcon sx={iconSxProps('orders')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('orders')}>
-                  Đơn hàng
-                </Typography>
-              }
-            />
-            {isActive('orders') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <Inventory2RoundedIcon sx={iconSxProps('storage')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={typographySxProps('storage')}>
+                    Kho hàng
+                  </Typography>
+                }
+              />
+              {isActive('storage') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/deliveries')}
-      >
-        <ListItemIcon
+      {available && available.includes('ĐH') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/orders')}
         >
-          <LocalShippingRounded sx={iconSxProps('deliveries')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography
-                  variant="body1"
-                  sx={typographySxProps('deliveries')}
-                >
-                  Giao hàng
-                </Typography>
-              }
-            />
-            {isActive('customers') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <ShoppingCartIcon sx={iconSxProps('orders')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={typographySxProps('orders')}>
+                    Đơn hàng
+                  </Typography>
+                }
+              />
+              {isActive('orders') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/customers')}
-      >
-        <ListItemIcon
+      {available && available.includes('KH') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/customers')}
         >
-          <PeopleIcon sx={iconSxProps('customers')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('customers')}>
-                  Khách hàng
-                </Typography>
-              }
-            />
-            {isActive('customers') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <PeopleIcon sx={iconSxProps('customers')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    sx={typographySxProps('customers')}
+                  >
+                    Khách hàng
+                  </Typography>
+                }
+              />
+              {isActive('customers') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/sales')}
-      >
-        <ListItemIcon
+      {available && available.includes('BC') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/reports')}
         >
-          <DiscountRounded sx={iconSxProps('sales')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('sales')}>
-                  Khuyến mãi
-                </Typography>
-              }
-            />
-            {isActive('customers') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <BarChartIcon sx={iconSxProps('reports')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={typographySxProps('reports')}>
+                    Báo cáo
+                  </Typography>
+                }
+              />
+              {isActive('reports') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/reports')}
-      >
-        <ListItemIcon
+      {available && available.includes('PQ') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/authorize')}
         >
-          <BarChartIcon sx={iconSxProps('reports')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('reports')}>
-                  Báo cáo
-                </Typography>
-              }
-            />
-            {isActive('reports') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
-
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/contacts')}
-      >
-        <ListItemIcon
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-        >
-          <Badge badgeContent={badgeContact} color="secondary" max={99}>
-            <ContactsRounded sx={iconSxProps('contacts')} />
-          </Badge>
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('contacts')}>
-                  Liên hệ
-                </Typography>
-              }
-            />
-            {isActive('customers') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <Security sx={iconSxProps('authorize')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    sx={typographySxProps('authorize')}
+                  >
+                    Phân quyền
+                  </Typography>
+                }
+              />
+              {isActive('authorize') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
     </React.Fragment>
   );
 });
