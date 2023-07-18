@@ -1,5 +1,7 @@
 import { CustomIconButton } from '@/components/buttons';
+import { useSnackbarService } from '@/lib/contexts';
 import { SuperDetail_SaleObject } from '@/lib/models';
+import { formatPrice } from '@/lib/utils';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -12,21 +14,17 @@ import {
   useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useSnackbarService } from '@/lib/contexts';
-import { ThongTin_Content } from './ThongTin_Content';
 import { Outlined_TextField } from '../order/MyModal/Outlined_TextField';
-import { formatPrice } from '@/lib/utils';
+import { ThongTin_Content } from './ThongTin_Content';
 
 export function MyModal({
   open,
   handleClose,
   sale,
-  handleSaleDataChange,
 }: {
   open: boolean;
   handleClose: () => void;
   sale: SuperDetail_SaleObject | null;
-  handleSaleDataChange: (value: SuperDetail_SaleObject) => void;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -122,11 +120,7 @@ export function MyModal({
             >
               {/* Thông tin khuyến mãi */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <ThongTin_Content
-                  textStyle={textStyle}
-                  modalSale={modalSale}
-                  handleSaleDataChange={handleSaleDataChange}
-                />
+                <ThongTin_Content textStyle={textStyle} modalSale={modalSale} />
               </Grid>
 
               {/* Thống kê */}

@@ -105,6 +105,32 @@ export interface BillObject extends BaseObject {
   created_at: Date;
 }
 
+export const billConverter: FirestoreDataConverter<BillObject> = {
+  toFirestore: function (bill: BillObject) {
+    delete bill.id;
+    return { ...bill };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options);
+    return {
+      ...data,
+      id: snapshot.id,
+      paymentTime:
+        data.paymentTime instanceof Timestamp
+          ? data.paymentTime.toDate()
+          : data.paymentTime,
+      created_at:
+        data.created_at instanceof Timestamp
+          ? data.created_at.toDate()
+          : data.created_at,
+    } as BillObject;
+  },
+};
+
 export interface BillDetailObject extends BaseObject {
   id?: string;
   amount: number;
@@ -191,6 +217,30 @@ export interface SaleObject extends BaseObject {
   image: string;
   isActive: boolean;
 }
+
+export const saleConverter: FirestoreDataConverter<SaleObject> = {
+  toFirestore: function (sale: SaleObject) {
+    delete sale.id;
+    return { ...sale };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<SaleObject>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+    return {
+      ...data,
+      id: snapshot.id,
+      start_at:
+        data.start_at instanceof Timestamp
+          ? data.start_at.toDate()
+          : data.start_at,
+      end_at:
+        data.end_at instanceof Timestamp ? data.end_at.toDate() : data.end_at,
+    } as SaleObject;
+  },
+};
 
 export interface StaffObject extends BaseObject {
   id: string;

@@ -1,7 +1,14 @@
 import { TableActionButton } from '@/components/buttons';
+import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
-import { BillObject, SaleObject, SuperDetail_SaleObject } from '@/lib/models';
+import {
+  BillObject,
+  SaleObject,
+  SuperDetail_SaleObject,
+  billConverter,
+  saleConverter,
+} from '@/lib/models';
 import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,
@@ -12,11 +19,14 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { SaleTable } from '../../components/sale/SaleTable';
-import { MyModal } from '../../components/sale/MyModal';
+import { slotShouldForwardProp } from '@mui/material/styles/styled';
+import { collection } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { ModalState } from '../../components/sale/ModalState';
+import { MyModal } from '../../components/sale/MyModal';
 import { MyModalAdd } from '../../components/sale/MyModalAdd';
+import { SaleTable } from '../../components/sale/SaleTable';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -25,26 +35,42 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Sales = ({ saleData }: { saleData: string }) => {
-  const [sales, setSales] = useState<SuperDetail_SaleObject[]>([]);
-  const theme = useTheme();
+  const [rawSales, sLoading] = useCollectionData<SaleObject>(
+    collection(db, COLLECTION_NAME.SALES).withConverter(saleConverter),
+    {
+      initialValue: [],
+    }
+  );
 
-  useEffect(() => {
-    const parsedSales =
-      (JSON.parse(saleData) as SuperDetail_SaleObject[]) ?? [];
-    setSales(() => parsedSales);
-  }, []);
+  const [bills, bLoading] = useCollectionData<BillObject>(
+    collection(db, COLLECTION_NAME.BILLS).withConverter(billConverter),
+    {
+      initialValue: [],
+    }
+  );
 
-  const handleSaleDataChange = (value: SuperDetail_SaleObject) => {
-    setSales(() => {
-      return sales.map((sale) => {
-        if (sale.id === value.id) {
-          return value;
-        } else {
-          return sale;
-        }
+  const sales = useMemo(() => {
+    if (!rawSales || !bills || sLoading || bLoading) {
+      return [];
+    }
+
+    return rawSales.map((sale) => {
+      const filter_bills = bills.filter((bill) => {
+        return bill.sale_id === sale.id;
       });
+      const totalSaleAmount = filter_bills.reduce(
+        (total, bill) => total + bill.saleAmount,
+        0
+      );
+      return {
+        ...sale,
+        numberOfUse: filter_bills.length,
+        totalSaleAmount: totalSaleAmount,
+      };
     });
-  };
+  }, [rawSales, bills, sLoading, bLoading]);
+
+  const theme = useTheme();
 
   //#region Modal chi tiết
   const [openModalChiTiet, setOpenModalChiTiet] = useState(false);
@@ -86,27 +112,6 @@ const Sales = ({ saleData }: { saleData: string }) => {
     handleOpenModalAdd();
   };
 
-  const handleSaleDataChangeAdd = async () => {
-    const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-
-    const final: SuperDetail_SaleObject[] = sales.map((sale) => {
-      const filter_bills = bills.filter((bill) => {
-        return bill.sale_id === sale.id;
-      });
-      const totalSaleAmount = filter_bills.reduce(
-        (total, bill) => total + bill.saleAmount,
-        0
-      );
-      return {
-        ...sale,
-        numberOfUse: filter_bills.length,
-        totalSaleAmount: totalSaleAmount,
-      };
-    });
-
-    setSales(() => final);
-  };
   //#endregion
 
   return (
@@ -162,7 +167,6 @@ const Sales = ({ saleData }: { saleData: string }) => {
                 open={openModalAdd}
                 handleClose={handleCloseModalAdd}
                 sale={contentAdd}
-                handleSaleDataChangeAdd={handleSaleDataChangeAdd}
               />
             </Box>
           </Grid>
@@ -183,7 +187,6 @@ const Sales = ({ saleData }: { saleData: string }) => {
               open={openModalChiTiet}
               handleClose={handleCloseModalChiTiet}
               sale={currentViewSale}
-              handleSaleDataChange={handleSaleDataChange}
             />
 
             {/* Modal state */}
@@ -192,7 +195,6 @@ const Sales = ({ saleData }: { saleData: string }) => {
               handleClose={handleCloseModalState}
               saleState={saleState}
               setSaleState={setSaleState}
-              handleSaleDataChange={handleSaleDataChange}
             />
           </Grid>
         </Grid>
@@ -201,39 +203,4 @@ const Sales = ({ saleData }: { saleData: string }) => {
   );
 };
 
-export const getServerSideProps = async () => {
-  try {
-    const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-
-    const final: SuperDetail_SaleObject[] = sales.map((sale) => {
-      const filter_bills = bills.filter((bill) => {
-        return bill.sale_id === sale.id;
-      });
-      const totalSaleAmount = filter_bills.reduce(
-        (total, bill) => total + bill.saleAmount,
-        0
-      );
-      return {
-        ...sale,
-        numberOfUse: filter_bills.length,
-        totalSaleAmount: totalSaleAmount,
-      };
-    });
-
-    return {
-      props: {
-        saleData: JSON.stringify(final),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        saleData: '',
-      },
-    };
-  }
-};
 export default Sales;

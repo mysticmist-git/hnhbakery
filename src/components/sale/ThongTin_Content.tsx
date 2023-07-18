@@ -1,5 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
+import { updateDocToFirestore } from '@/lib/firestore';
+import { statusTextResolver } from '@/lib/manage/manage';
 import { SaleObject, SuperDetail_SaleObject } from '@/lib/models';
+import { formatDateString, formatPrice } from '@/lib/utils';
 import {
   Close,
   ContentCopyRounded,
@@ -14,15 +19,10 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useSnackbarService } from '@/lib/contexts';
-import { Outlined_TextField } from '../order/MyModal/Outlined_TextField';
-import { formatDateString, formatPrice } from '@/lib/utils';
-import { statusTextResolver } from '@/lib/manage/manage';
-import { useEffect, useState } from 'react';
-import { updateDocToFirestore } from '@/lib/firestore';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { Outlined_TextField } from '../order/MyModal/Outlined_TextField';
 
 type EditType = {
   name?: string;
@@ -41,11 +41,9 @@ function ResetEditContent(sale: SuperDetail_SaleObject | null) {
 export function ThongTin_Content({
   textStyle,
   modalSale,
-  handleSaleDataChange,
 }: {
   textStyle: any;
   modalSale: SuperDetail_SaleObject | null;
-  handleSaleDataChange: (value: SuperDetail_SaleObject) => void;
 }) {
   const theme = useTheme();
   const StyleCuaCaiBox = {
@@ -86,6 +84,7 @@ export function ThongTin_Content({
       handleSnackbarAlert('warning', 'Ngày kết thúc không hợp lệ.');
       return;
     }
+
     const data = {
       id: modalSale?.id,
       name: editContent?.name,
@@ -98,13 +97,15 @@ export function ThongTin_Content({
       image: modalSale?.image,
       isActive: modalSale?.isActive,
     } as SaleObject;
-    await updateDocToFirestore(data, COLLECTION_NAME.SALES);
-    handleSnackbarAlert('success', 'Thay đổi thành công!');
-    setEditMode(false);
-    handleSaleDataChange({
-      ...modalSale!,
-      ...data,
-    });
+    try {
+      await updateDocToFirestore(data, COLLECTION_NAME.SALES);
+
+      handleSnackbarAlert('success', 'Thay đổi thành công!');
+      setEditMode(false);
+    } catch (error) {
+      console.log(error);
+      handleSnackbarAlert('error', 'Đã có lỗi khi hay đổi!');
+    }
   };
 
   function getGiaKhuyenMai(value: SuperDetail_SaleObject | null) {

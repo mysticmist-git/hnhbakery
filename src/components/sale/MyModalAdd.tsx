@@ -26,12 +26,10 @@ export function MyModalAdd({
   open,
   handleClose,
   sale,
-  handleSaleDataChangeAdd,
 }: {
   open: boolean;
   handleClose: () => void;
   sale: SaleObject | null;
-  handleSaleDataChangeAdd: () => void;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
