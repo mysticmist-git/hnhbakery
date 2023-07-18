@@ -1,5 +1,14 @@
 import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
-import { Check, Security } from '@mui/icons-material';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { getCollection } from '@/lib/firestore';
+import { Contact } from '@/lib/models';
+import {
+  Check,
+  ContactsRounded,
+  DiscountRounded,
+  LocalShippingRounded,
+  Security,
+} from '@mui/icons-material';
 import { default as BarChartIcon } from '@mui/icons-material/BarChart';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import { default as PeopleIcon } from '@mui/icons-material/People';
@@ -56,7 +65,6 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
   //#region Hooks
 
   const router = useRouter();
-  const { open } = props;
 
   const { available, loading } = useAvailablePermissions();
 
@@ -70,35 +78,14 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
     }
   }
 
+  const [badgeContact, setBadgeContact] = React.useState(0);
+
+  React.useEffect(() => {
+    setBadgeContact(() => 10);
+  }, []);
+
   return (
     <React.Fragment>
-      {/* <ListItemButton
-        sx={{ height: '60px' }}
-        onClick={() => router.push('/manager/dashboard')}
-      >
-        <ListItemIcon
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-        >
-          <DashboardIcon sx={iconSxProps('dashboard')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('dashboard')}>
-                  Dashboard
-                </Typography>
-              }
-            />
-            {isActive('dashboard') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton> */}
-
       {available && available.includes('KHO') && (
         <ListItemButton
           sx={{
@@ -167,6 +154,41 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
+      <ListItemButton
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
+        onClick={() => router.push('/manager/deliveries')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
+          <LocalShippingRounded sx={iconSxProps('deliveries')} />
+        </ListItemIcon>
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography
+                  variant="body1"
+                  sx={typographySxProps('deliveries')}
+                >
+                  Giao hàng
+                </Typography>
+              }
+            />
+            {isActive('storage') && <Check color="secondary" />}
+          </>
+        )}
+      </ListItemButton>
+
       {available && available.includes('KH') && (
         <ListItemButton
           sx={{
@@ -204,6 +226,38 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
+      <ListItemButton
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
+        onClick={() => router.push('/manager/sales')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
+          <DiscountRounded sx={iconSxProps('sales')} />
+        </ListItemIcon>
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('sales')}>
+                  Khuyến mãi
+                </Typography>
+              }
+            />
+            {isActive('storage') && <Check color="secondary" />}
+          </>
+        )}
+      </ListItemButton>
+
       {available && available.includes('BC') && (
         <ListItemButton
           sx={{
@@ -237,6 +291,40 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
           )}
         </ListItemButton>
       )}
+
+      <ListItemButton
+        sx={{
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
+        onClick={() => router.push('/manager/contacts')}
+      >
+        <ListItemIcon
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+        >
+          <Badge badgeContent={badgeContact} color="secondary" max={99}>
+            <ContactsRounded sx={iconSxProps('contacts')} />
+          </Badge>
+        </ListItemIcon>
+        {open && (
+          <>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={typographySxProps('contacts')}>
+                  Liên hệ
+                </Typography>
+              }
+            />
+            {isActive('storage') && <Check color="secondary" />}
+          </>
+        )}
+      </ListItemButton>
 
       {available && available.includes('PQ') && (
         <ListItemButton
