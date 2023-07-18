@@ -1,7 +1,9 @@
-import { SuperDetail_DeliveryObject } from '@/lib/models';
+import { DeliveryObject, SuperDetail_DeliveryObject } from '@/lib/models';
 import {
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
@@ -17,6 +19,8 @@ import { ThongTin_Content } from './ThongTin_Content';
 import { HanhDong_Content } from './HanhDong_Content';
 import { DonHang_Content } from './DonHang_Content';
 import ChiTietDonHang_Content from './ChiTietDonHang_Content';
+import { getCollection, updateDocToFirestore } from '@/lib/firestore';
+import { COLLECTION_NAME } from '@/lib/constants';
 
 export function MyModal({
   open,
@@ -229,6 +233,50 @@ export function MyModal({
             </Grid>
           </Box>
         </DialogContent>
+
+        <DialogActions>
+          <Box sx={{ width: '100%' }} textAlign={'center'}>
+            <Button
+              onClick={async () => {
+                const data = (
+                  await getCollection<DeliveryObject>(
+                    COLLECTION_NAME.DELIVERIES
+                  )
+                ).find((delivery) => delivery.id === modalDelivery?.id);
+                if (data) {
+                  data.state = 'success';
+                  await updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
+
+                  if (modalDelivery?.billObject?.state == 0) {
+                    var bill = modalDelivery.billObject;
+                    bill.state = 1;
+                    await updateDocToFirestore(bill, COLLECTION_NAME.BILLS);
+                    modalDelivery.billObject = bill;
+                  }
+
+                  handleSnackbarAlert('success', 'Giao hàng thành công!');
+                  handleDeliveryDataChange({
+                    ...modalDelivery,
+                    state: 'success',
+                  });
+
+                  handleClose();
+                } else {
+                  handleSnackbarAlert('error', 'Lỗi.');
+                  handleClose();
+                }
+              }}
+              color="success"
+              variant="contained"
+              disabled={
+                modalDelivery?.state === 'success' ||
+                modalDelivery?.state === 'cancel'
+              }
+            >
+              Giao hàng thành công
+            </Button>
+          </Box>
+        </DialogActions>
       </Dialog>
     </>
   );

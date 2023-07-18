@@ -120,6 +120,7 @@ export function ModalState({
                     var bill = deliveryState.billObject;
                     bill.state = -1;
                     await updateDocToFirestore(bill, COLLECTION_NAME.BILLS);
+                    deliveryState.billObject = bill;
                   }
 
                   handleSnackbarAlert('success', 'Hủy giao hàng thành công!');
