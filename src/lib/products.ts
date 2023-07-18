@@ -78,6 +78,8 @@ async function createProductsOnProductsPage(
       typeName: type.name,
     };
 
+    console.log(result);
+
     return result;
   });
 
