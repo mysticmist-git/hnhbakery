@@ -1,6 +1,6 @@
-import { statusTextResolver } from '@/lib/manage/manage';
-import { SaleObject, SuperDetail_SaleObject } from '@/lib/models';
-import { formatDateString, formatPrice } from '@/lib/utils';
+import { deliveryStatusParse } from '@/lib/manage/manage';
+import { SuperDetail_DeliveryObject } from '@/lib/models';
+import { formatDateString } from '@/lib/utils';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -13,27 +13,27 @@ import {
 } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
-export function SaleTable({
-  saleData,
-  handleViewSale,
-  handleViewSaleModalState,
+export function DeliveryTable({
+  deliveryData,
+  handleViewDelivery,
+  handleViewDeliveryModalState,
 }: {
-  saleData: SuperDetail_SaleObject[];
-  handleViewSale: any;
-  handleViewSaleModalState: any;
+  deliveryData: SuperDetail_DeliveryObject[];
+  handleViewDelivery: any;
+  handleViewDeliveryModalState: any;
 }) {
   const theme = useTheme();
 
-  const [rows, setRows] = useState<SuperDetail_SaleObject[]>(saleData);
+  const [rows, setRows] = useState<SuperDetail_DeliveryObject[]>(deliveryData);
 
   useEffect(() => {
-    setRows(() => saleData);
-  }, [saleData]);
+    setRows(() => deliveryData);
+  }, [deliveryData]);
 
   const columns: GridColDef[] = [
     {
       field: 'id',
-      headerName: 'Mã quản lý',
+      headerName: 'Mã giao hàng',
       align: 'left',
       headerAlign: 'center',
       sortable: false,
@@ -43,7 +43,7 @@ export function SaleTable({
     },
     {
       field: 'name',
-      headerName: 'Tên khuyến mãi',
+      headerName: 'Người nhận',
       align: 'left',
       headerAlign: 'center',
       sortable: false,
@@ -52,37 +52,8 @@ export function SaleTable({
       flex: 1,
     },
     {
-      field: 'code',
-      headerName: 'Code khuyến mãi',
-      align: 'left',
-      headerAlign: 'center',
-      sortable: false,
-      disableColumnMenu: true,
-      hideable: false,
-      width: 120,
-    },
-    {
-      field: 'percent',
-      headerName: 'Phần trăm',
-      align: 'left',
-      headerAlign: 'center',
-      sortable: false,
-      disableColumnMenu: true,
-      hideable: false,
-      width: 200,
-      valueGetter(params) {
-        return (
-          'Giảm ' +
-          params.value +
-          '% (' +
-          'Tối đa ' +
-          formatPrice(params.row.maxSalePrice)
-        );
-      },
-    },
-    {
-      field: 'maxSalePrice',
-      headerName: 'Giảm tối đa',
+      field: 'tel',
+      headerName: 'SĐT người nhận',
       align: 'left',
       headerAlign: 'center',
       sortable: false,
@@ -91,8 +62,8 @@ export function SaleTable({
       flex: 1,
     },
     {
-      field: 'description',
-      headerName: 'Mô tả',
+      field: 'email',
+      headerName: 'Email người nhận',
       align: 'left',
       headerAlign: 'center',
       sortable: false,
@@ -101,50 +72,28 @@ export function SaleTable({
       flex: 1,
     },
     {
-      field: 'start_at',
-      headerName: 'Thời gian',
-      align: 'center',
+      field: 'address',
+      headerName: 'Địa chỉ giao hàng',
+      align: 'left',
       headerAlign: 'center',
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
-      width: 150,
-      renderCell: (params: any) => {
-        return (
-          <div>
-            BĐ: {formatDateString(params.value, 'DD/MM/YYYY')}
-            <br />
-            KT: {formatDateString(params.row.end_at, 'DD/MM/YYYY')}
-          </div>
-        );
-      },
+      flex: 1,
     },
     {
-      field: 'numberOfUse',
-      headerName: 'Lượt sử dụng',
-      align: 'center',
+      field: 'note',
+      headerName: 'Ghi chú giao hàng',
+      align: 'left',
       headerAlign: 'center',
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
-      width: 110,
+      flex: 1,
     },
     {
-      field: 'totalSaleAmount',
-      headerName: 'Đã giảm',
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      disableColumnMenu: true,
-      hideable: false,
-      width: 130,
-      valueFormatter(params) {
-        return formatPrice(params.value);
-      },
-    },
-    {
-      field: 'end_at',
-      headerName: 'Kết thúc',
+      field: 'date',
+      headerName: 'Ngày giao hàng',
       align: 'center',
       headerAlign: 'center',
       sortable: false,
@@ -156,28 +105,87 @@ export function SaleTable({
       },
     },
     {
-      field: 'isActive',
+      field: 'time',
+      headerName: 'Thời gian giao hàng',
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      disableColumnMenu: true,
+      hideable: false,
+      width: 220,
+    },
+    {
+      field: 'startAt',
+      headerName: 'Bắt đầu giao',
+      align: 'left',
+      headerAlign: 'center',
+      sortable: false,
+      disableColumnMenu: true,
+      hideable: false,
+      flex: 1,
+      valueFormatter(params) {
+        return formatDateString(params.value);
+      },
+    },
+    {
+      field: 'endAt',
+      headerName: 'Kết thúc giao',
+      align: 'left',
+      headerAlign: 'center',
+      sortable: false,
+      disableColumnMenu: true,
+      hideable: false,
+      flex: 1,
+      valueFormatter(params) {
+        return formatDateString(params.value);
+      },
+    },
+    {
+      field: 'bill_id',
+      headerName: 'Mã hóa đơn',
+      align: 'left',
+      headerAlign: 'center',
+      sortable: false,
+      disableColumnMenu: true,
+      hideable: false,
+      flex: 1,
+    },
+    {
+      field: 'state',
       headerName: 'Trạng thái',
       align: 'center',
       headerAlign: 'center',
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
-      width: 100,
+      width: 120,
       valueFormatter(params) {
-        return statusTextResolver(params.value);
+        return deliveryStatusParse(params.value);
       },
-      renderCell: (params: any) => {
+      renderCell(params) {
         return (
-          <span
-            style={{
-              color: params.value
-                ? theme.palette.success.main
-                : theme.palette.error.main,
+          <Box
+            sx={{
+              color: () => {
+                switch (params.value) {
+                  case 'cancel':
+                    return theme.palette.error.dark;
+                  case 'fail':
+                    return theme.palette.error.main;
+                  case 'success':
+                    return theme.palette.success.main;
+                  case 'inProcress':
+                    return theme.palette.text.secondary;
+                  case 'inTransit':
+                    return theme.palette.secondary.main;
+                  default:
+                    return theme.palette.common.black;
+                }
+              },
             }}
           >
-            {statusTextResolver(params.value)}
-          </span>
+            {deliveryStatusParse(params.value)}
+          </Box>
         );
       },
     },
@@ -197,7 +205,7 @@ export function SaleTable({
               size="small"
               color="secondary"
               onClick={() => {
-                handleViewSale(params.row);
+                handleViewDelivery(params.row);
               }}
             >
               Chi tiết
@@ -207,9 +215,13 @@ export function SaleTable({
               variant="contained"
               color={'error'}
               size="small"
-              disabled={!params.row.isActive}
+              disabled={
+                params.row.state === 'success' ||
+                params.row.state === 'inTransit' ||
+                params.row.state === 'cancel'
+              }
               onClick={() => {
-                handleViewSaleModalState(params.row);
+                handleViewDeliveryModalState(params.row);
               }}
             >
               Hủy
@@ -219,7 +231,6 @@ export function SaleTable({
       },
     },
   ];
-
   return (
     <>
       <DataGrid
@@ -227,11 +238,13 @@ export function SaleTable({
         rowHeight={64}
         loading={false}
         columnVisibilityModel={{
-          maxSalePrice: false,
-          description: false,
-          code: false,
-          percent: false,
-          end_at: false,
+          name: false,
+          tel: false,
+          email: false,
+          address: false,
+          note: false,
+          startAt: false,
+          endAt: false,
         }}
         columns={columns}
         localeText={{
@@ -328,14 +341,3 @@ export function SaleTable({
     </>
   );
 }
-
-// id?: string;
-// name: string;
-// code: string;
-// percent: number;
-// maxSalePrice: number;
-// description: string;
-// start_at: Date;
-// end_at: Date;
-// image: string;
-// isActive: boolean;

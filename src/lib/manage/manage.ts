@@ -227,9 +227,9 @@ export function deliveryStatusParse(state: string | undefined) {
     case 'cancel':
       return 'Đã hủy';
     case 'fail':
-      return 'Giao hàng thất bại';
+      return 'Giao thất bại';
     case 'success':
-      return 'Giao hàng thành công';
+      return 'Giao thành công';
     case 'inProcress':
       return 'Đang xử lý';
     case 'inTransit':

@@ -161,7 +161,6 @@ export function CustomerTable({
               variant="contained"
               color={params.row.isActive ? 'error' : 'success'}
               size="small"
-              disabled={params.row.state === 1 || params.row.state === -1}
               onClick={() => {
                 handleViewUserModalState(params.row);
               }}
