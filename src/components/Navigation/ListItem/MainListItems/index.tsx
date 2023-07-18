@@ -154,40 +154,42 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/deliveries')}
-      >
-        <ListItemIcon
+      {available && available.includes('GH') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/deliveries')}
         >
-          <LocalShippingRounded sx={iconSxProps('deliveries')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography
-                  variant="body1"
-                  sx={typographySxProps('deliveries')}
-                >
-                  Giao hàng
-                </Typography>
-              }
-            />
-            {isActive('storage') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <LocalShippingRounded sx={iconSxProps('deliveries')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    sx={typographySxProps('deliveries')}
+                  >
+                    Giao hàng
+                  </Typography>
+                }
+              />
+              {isActive('storage') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
       {available && available.includes('KH') && (
         <ListItemButton
@@ -226,37 +228,39 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/sales')}
-      >
-        <ListItemIcon
+      {available && available.includes('KM') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/sales')}
         >
-          <DiscountRounded sx={iconSxProps('sales')} />
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('sales')}>
-                  Khuyến mãi
-                </Typography>
-              }
-            />
-            {isActive('storage') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <DiscountRounded sx={iconSxProps('sales')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={typographySxProps('sales')}>
+                    Khuyến mãi
+                  </Typography>
+                }
+              />
+              {isActive('sales') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
       {available && available.includes('BC') && (
         <ListItemButton
@@ -292,39 +296,44 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      <ListItemButton
-        sx={{
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-        }}
-        onClick={() => router.push('/manager/contacts')}
-      >
-        <ListItemIcon
+      {available && available.includes('LH') && (
+        <ListItemButton
           sx={{
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: open ? 'space-between' : 'center',
           }}
+          onClick={() => router.push('/manager/contacts')}
         >
-          <Badge badgeContent={badgeContact} color="secondary" max={99}>
-            <ContactsRounded sx={iconSxProps('contacts')} />
-          </Badge>
-        </ListItemIcon>
-        {open && (
-          <>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={typographySxProps('contacts')}>
-                  Liên hệ
-                </Typography>
-              }
-            />
-            {isActive('storage') && <Check color="secondary" />}
-          </>
-        )}
-      </ListItemButton>
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <Badge badgeContent={badgeContact} color="secondary" max={99}>
+              <ContactsRounded sx={iconSxProps('contacts')} />
+            </Badge>
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    sx={typographySxProps('contacts')}
+                  >
+                    Liên hệ
+                  </Typography>
+                }
+              />
+              {isActive('storage') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
 
       {available && available.includes('PQ') && (
         <ListItemButton
