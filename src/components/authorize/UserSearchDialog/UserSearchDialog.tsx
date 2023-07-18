@@ -149,7 +149,7 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onCloseDialog} color="secondary">
-          Hủy
+          Đóng
         </Button>
         <Button onClick={handleAddButtonClick} color="secondary">
           Thêm

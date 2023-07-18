@@ -1,4 +1,4 @@
-import AccountTable from '@/components/authorize/AccountTable.tsx/AccountTable';
+import AccountTable from '@/components/authorize/AccountTable.tsx';
 import NewUserGroupDialog from '@/components/authorize/NewUserGroupDialog';
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';

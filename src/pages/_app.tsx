@@ -1,7 +1,7 @@
 import '@/styles/nprogress.scss';
 import { Alert, CssBaseline, Snackbar, ThemeProvider } from '@mui/material';
-import NProgress, { set } from 'nprogress';
-import React, { useEffect, useReducer, useState } from 'react';
+import NProgress from 'nprogress';
+import React, { useReducer } from 'react';
 
 Router.events.on('routeChangeStart', () => NProgress.start());
 Router.events.on('routeChangeComplete', () => NProgress.done());
@@ -13,48 +13,23 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 import { TransitionUp } from '@/components/Transitions';
 import MainLayout from '@/components/layouts/MainLayout';
-import { auth } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { SnackbarService } from '@/lib/contexts';
 import {
   AppContext,
   appReducer,
   initialState,
 } from '@/lib/contexts/appContext';
-import { getDocFromFirestore } from '@/lib/firestore';
 import useSnackbar from '@/lib/hooks/useSnackbar';
-import { UserObject } from '@/lib/models';
 import theme from '@/styles/themes/lightTheme';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
-import { Router, useRouter } from 'next/router';
-import { useAuthState } from 'react-firebase-hooks/auth';
-
-const unauthorizedPaths: {
-  [path: string]: { routes: string[]; fallback: string };
-} = {
-  customer: {
-    routes: [
-      '/manager/storage',
-      '/manager/orders',
-      '/manager/customers',
-      '/manager/reports',
-      '/manager/authorize',
-    ],
-    fallback: '/',
-  },
-  // Add other roles and paths here
-};
+import { Router } from 'next/router';
 
 const MyApp = (props: AppProps) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  const [user, loading] = useAuthState(auth);
-  const [userData, setUserData] = useState<UserObject | null>(null);
-
   const { Component, pageProps } = props;
-  const router = useRouter();
 
   const {
     snackbarOpen,
@@ -63,45 +38,6 @@ const MyApp = (props: AppProps) => {
     handleSnackbarAlert,
     handleSnackbarClose,
   } = useSnackbar();
-
-  //#endregion
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user) {
-        setUserData(null);
-        return;
-      }
-
-      const userData = await getDocFromFirestore<UserObject>(
-        COLLECTION_NAME.USERS,
-        user.uid
-      );
-
-      setUserData(userData);
-    };
-
-    if (user && !loading) {
-      loadUserData();
-    }
-  }, [user, loading]);
-
-  useEffect(() => {
-    if (!userData) return;
-
-    const role = userData.role_id;
-
-    // Redirects user to a certain page if they are on an unauthorized path
-    function handleUnauthorizedPaths(role: string) {
-      const rolePaths = unauthorizedPaths[role];
-
-      if (rolePaths && rolePaths.routes.includes(router.pathname)) {
-        router.push(rolePaths.fallback);
-      }
-    }
-
-    handleUnauthorizedPaths(role);
-  }, [router.pathname, userData]);
 
   return (
     <>
