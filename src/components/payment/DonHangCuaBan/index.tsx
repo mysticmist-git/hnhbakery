@@ -25,7 +25,7 @@ export default function DonHangCuaBan(props: any) {
         alignItems={'start'}
         spacing={1}
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ display: 'none' }}>
           <Box component="form" noValidate onSubmit={TimKiemMaSale}>
             <Grid
               container

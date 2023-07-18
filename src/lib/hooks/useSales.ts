@@ -1,12 +1,9 @@
 import { db } from '@/firebase/config';
 import {
-  DocumentData,
   FirestoreDataConverter,
   Timestamp,
-  and,
   collection,
   query,
-  serverTimestamp,
   where,
 } from 'firebase/firestore';
 import { useMemo } from 'react';
@@ -23,8 +20,12 @@ const saleConverter: FirestoreDataConverter<SaleObject> = {
     const result: SaleObject = {
       ...data,
       id: snapshot.id,
-      start_at: new Date(data.start_at),
-      end_at: new Date(data.end_at),
+      start_at:
+        data.start_at instanceof Timestamp
+          ? data.start_at.toDate()
+          : data.start_at,
+      end_at:
+        data.end_at instanceof Timestamp ? data.end_at.toDate() : data.end_at,
     } as SaleObject;
 
     console.log(result);
@@ -54,7 +55,10 @@ function useSales() {
 
   const filterdValue = useMemo(() => {
     return value?.filter((v) => v.end_at > new Date());
-  }, [value]);
+  }, [value, loading]);
+
+  console.log(value);
+  console.log(filterdValue);
 
   return {
     value: filterdValue,

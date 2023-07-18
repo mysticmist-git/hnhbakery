@@ -20,8 +20,16 @@ function RenderSaleItem(props: any) {
     useMemo(() => {
       return sale;
     }, [sale]);
+
   const [isHover, setIsHover] = useState(false);
-  const [downloadURL, loading, error] = useDownloadURL(ref(storage, image));
+
+  // const [downloadURL, loading, error] = useDownloadURL(
+  //   image && image !== '' ? ref(storage, image) : undefined
+  // );
+
+  const [downloadURL, loading, error] = useDownloadURL(
+    ref(storage, '/sales/sale-img.jpg')
+  );
 
   const style = {
     normal: {

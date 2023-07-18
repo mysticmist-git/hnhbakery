@@ -1,5 +1,6 @@
 import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
+import { CaiKhungCoTitle } from '@/components/layouts/CaiKhungCoTitle';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
 import { auth, db } from '@/firebase/config';
@@ -29,7 +30,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useLocalStorage } from 'usehooks-ts';
 import FormGiaoHang from '../components/payment/FormGiaoHang/FormGiaoHang';
-import { CaiKhungCoTitle } from '@/components/Layouts/CaiKhungCoTitle';
 
 // #endregion
 
@@ -183,6 +183,8 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     try {
       if (!checkPaymentValidation(type)) return;
 
+      console.log(id, type);
+
       console.log('Running...');
 
       console.log('Adding data to firestore...');
@@ -197,25 +199,26 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       setCart([]);
       setCartNote('');
 
-      // Update bill to localStorage (in case use is not logged it)
-      console.log('Saving bills to local storage...');
+      if (type === 'Thanh toán khi nhận hàng') {
+        router.push(`/tienmat-result?billId=${billData.id}`);
+      } else {
+        const reqData = {
+          billId: billData.id as string,
+          totalPrice: totalBill,
+          paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
+        };
 
-      const reqData = {
-        billId: billData.id as string,
-        totalPrice: totalBill,
-        paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
-      };
+        console.log('Sending payment request wih data...');
+        console.log('Payload:', reqData);
 
-      console.log('Sending payment request wih data...');
-      console.log('Payload:', reqData);
+        const data = await sendPaymentRequestToVNPay(reqData);
 
-      const data = await sendPaymentRequestToVNPay(reqData);
+        console.log('URL received from VNPay: ', data.url);
 
-      console.log('URL received from VNPay: ', data.url);
+        window.location.href = data.url;
 
-      window.location.href = data.url;
-
-      console.log('Finishing...');
+        console.log('Finishing...');
+      }
     } catch (error: any) {
       console.log(error);
       handleSnackbarAlert('error', error.message);
