@@ -40,7 +40,7 @@ export function ThongTin_Content({
         alignItems="center"
         spacing={3}
       >
-        <Grid item xs={12} md={4} lg={2} alignSelf={'stretch'}>
+        {/* <Grid item xs={12} md={4} lg={2} alignSelf={'stretch'}>
           <Box
             sx={{
               width: '100%',
@@ -63,8 +63,8 @@ export function ThongTin_Content({
               }}
             />
           </Box>
-        </Grid>
-        <Grid item xs={12} md={4} lg={5} alignSelf={'stretch'}>
+        </Grid> */}
+        <Grid item xs={12} md={4} lg={6} alignSelf={'stretch'}>
           <Box
             sx={{
               width: '100%',
@@ -119,7 +119,7 @@ export function ThongTin_Content({
             />
           </Box>
         </Grid>
-        <Grid item xs={12} md={4} lg={5} alignSelf={'stretch'}>
+        <Grid item xs={12} md={4} lg={6} alignSelf={'stretch'}>
           <Box
             sx={{
               width: '100%',
@@ -147,14 +147,14 @@ export function ThongTin_Content({
             />
           </Box>
         </Grid>
-        <Grid item xs={12} alignSelf={'stretch'}>
+        {/* <Grid item xs={12} alignSelf={'stretch'}>
           <Outlined_TextField
             textStyle={textStyle}
             multiline
             label="Danh sách địa chỉ"
             value={getAddresses(modalUser?.addresses) ?? 'Trống'}
           />
-        </Grid>
+        </Grid> */}
       </Grid>
     </>
   );
