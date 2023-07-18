@@ -1,33 +1,15 @@
-import avatar from '@/assets/Logo.png';
 import ImageBackground from '@/components/Imagebackground';
 import { LeftProfileColumn } from '@/components/Profile';
 import RightProfileColumn from '@/components/Profile/RightProfileColumn/RightProfileColumn';
-import { auth, db } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { updateDocToFirestore } from '@/lib/firestore';
 import useUserData from '@/lib/hooks/userUserData';
-import { UserObject, userConverter } from '@/lib/models';
-import {
-  Box,
-  CircularProgress,
-  Grid,
-  Link,
-  Skeleton,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import {
-  Timestamp,
-  collection,
-  doc,
-  getDoc,
-  updateDoc,
-} from 'firebase/firestore';
+import { UserObject } from '@/lib/models';
+import { Box, Grid, Link, Skeleton, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useDocumentData } from 'react-firebase-hooks/firestore';
 
 const Profile = () => {
   const router = useRouter();

@@ -1,4 +1,9 @@
-import { BatchObjectWithDiscount, ProductVariant, UserObject } from '../models';
+import {
+  BatchObjectWithDiscount,
+  FeedbackObject,
+  ProductVariant,
+  UserObject,
+} from '../models';
 import { AssembledProduct } from './products';
 
 export type CommentUser = {
@@ -20,7 +25,7 @@ export type Comments = {
 };
 
 export type ProductDetailInfoProps = {
-  comments: Comments;
+  comments: FeedbackObject[];
   variant: ProductVariant | null;
   onVariantChange: (newVariant: ProductVariant) => void;
   batch: BatchObjectWithDiscount | null;

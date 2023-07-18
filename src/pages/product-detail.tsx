@@ -4,7 +4,7 @@ import banh2 from '@/assets/Carousel/2.jpg';
 import banh3 from '@/assets/Carousel/3.jpg';
 import ImageBackground from '@/components/Imagebackground';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
-import Comments from '@/components/product-detail/Comments';
+import Feedbacks from '@/components/product-detail/Comments/Feedbacks';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
 import { auth, db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
@@ -230,31 +230,6 @@ function ProductDetail({
     return batches;
   }, [selectedVariant]);
 
-  const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
-    return {
-      product: product,
-      variant: selectedVariant,
-      onVariantChange: handleVariantChange,
-      batch: selectedBatch,
-      onBatchChange: handleBatchChange,
-      batchOptions: batchOptions,
-      quantity: quantity,
-      onQuantityChange: handleQuantityChange,
-      comments: comments,
-      onAddToCart: handleAddToCart,
-    };
-  }, [
-    product,
-    selectedVariant,
-    handleVariantChange,
-    selectedBatch,
-    handleBatchChange,
-    batchOptions,
-    quantity,
-    handleQuantityChange,
-    comments,
-  ]);
-
   const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
     product
       ? query(
@@ -266,6 +241,31 @@ function ProductDetail({
       initialValue: [],
     }
   );
+
+  const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
+    return {
+      product: product,
+      variant: selectedVariant,
+      onVariantChange: handleVariantChange,
+      batch: selectedBatch,
+      onBatchChange: handleBatchChange,
+      batchOptions: batchOptions,
+      quantity: quantity,
+      onQuantityChange: handleQuantityChange,
+      comments: feedbacks ?? [],
+      onAddToCart: handleAddToCart,
+    };
+  }, [
+    product,
+    selectedVariant,
+    handleVariantChange,
+    selectedBatch,
+    handleBatchChange,
+    batchOptions,
+    quantity,
+    handleQuantityChange,
+    feedbacks,
+  ]);
 
   //#endregion
 
@@ -430,7 +430,15 @@ function ProductDetail({
             </Grid>
 
             <Grid item xs={12}>
-              <Comments comments={comments} />
+              {fLoading ? (
+                <div>Loading...</div>
+              ) : (
+                <Feedbacks
+                  userId={user?.uid ?? ''}
+                  productId={product.id}
+                  comments={feedbacks ?? []}
+                />
+              )}
             </Grid>
           </Grid>
         </Box>
