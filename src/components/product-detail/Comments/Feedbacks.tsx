@@ -41,9 +41,11 @@ function Feedbacks({
     setDialogOpen(true);
   };
 
-  const handleDialogClose = async (rating: number, comment: string) => {
-    alert(`${rating}, ${comment}`);
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
+  const handleSubmitFeedback = async (rating: number, comment: string) => {
     try {
       const newFeedback: FeedbackObject = {
         rating,
@@ -134,7 +136,11 @@ function Feedbacks({
                         trên 5 sao
                       </Typography>
                     </Box>
-                    <ProductRating rating={rating} size="large" />
+                    <ProductRating
+                      rating={rating}
+                      size="large"
+                      numReviews={comments ? comments.length : 0}
+                    />
                   </Box>
                   <Button
                     variant="outlined"
@@ -192,7 +198,11 @@ function Feedbacks({
         </Grid>
       </Grid>
 
-      <FeedbackDialog open={dialogOpen} onClose={handleDialogClose} />
+      <FeedbackDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        handleSubmit={handleSubmitFeedback}
+      />
     </>
   );
 }
