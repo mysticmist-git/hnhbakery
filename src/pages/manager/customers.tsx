@@ -145,7 +145,9 @@ export const getServerSideProps = async () => {
   try {
     const users = (
       await getCollection<UserObject>(COLLECTION_NAME.USERS)
-    ).filter((user) => user.role_id === 'customer');
+    ).filter(
+      (user) => user.role_id === 'customer' || user.role_id === 'manager'
+    );
 
     const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
 
@@ -175,7 +177,7 @@ export const getServerSideProps = async () => {
         b.billObjects?.forEach((bill) => {
           totalB += bill.totalPrice ?? 0;
         });
-        return totalA - totalB;
+        return totalB - totalA;
       });
 
     return {
