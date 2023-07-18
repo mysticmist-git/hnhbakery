@@ -28,8 +28,8 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useLocalStorage } from 'usehooks-ts';
-import { CaiKhungCoTitle } from '../components/layouts/CaiKhungCoTitle';
 import FormGiaoHang from '../components/payment/FormGiaoHang/FormGiaoHang';
+import { CaiKhungCoTitle } from '@/components/Layouts/CaiKhungCoTitle';
 
 // #endregion
 

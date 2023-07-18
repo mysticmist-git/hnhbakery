@@ -58,13 +58,24 @@ export function MyModalAdd({
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const [modalSale, setModalSale] = useState<SaleObject | null>(sale);
+  const defaultSale: SaleObject = {
+    name: '',
+    code: '',
+    percent: 0,
+    maxSalePrice: 0,
+    description: '',
+    start_at: new Date(),
+    end_at: new Date(new Date().getTime() + 24 * 36000),
+    image: '',
+    isActive: true,
+  };
+  const [modalSale, setModalSale] = useState<SaleObject>(defaultSale);
   useEffect(() => {
-    setModalSale(() => sale);
+    setModalSale(() => defaultSale);
   }, [sale]);
 
   const clearData = () => {
-    setModalSale(() => null);
+    setModalSale(() => defaultSale);
   };
   const localHandleClose = () => {
     clearData();
@@ -123,6 +134,9 @@ export function MyModalAdd({
                   textStyle={textStyle}
                   label="Tên"
                   value={modalSale?.name}
+                  onChange={(e: any) => {
+                    setModalSale({ ...modalSale, name: e.target.value });
+                  }}
                   InputProps={{
                     readOnly: false,
                     style: {
@@ -137,6 +151,9 @@ export function MyModalAdd({
                   textStyle={textStyle}
                   label="Mã code"
                   value={modalSale?.code}
+                  onChange={(e: any) => {
+                    setModalSale({ ...modalSale, code: e.target.value });
+                  }}
                   InputProps={{
                     readOnly: false,
                     style: {
@@ -153,6 +170,9 @@ export function MyModalAdd({
                   label="Phần trăm"
                   type="number"
                   value={modalSale?.percent}
+                  onChange={(e: any) => {
+                    setModalSale({ ...modalSale, percent: e.target.value });
+                  }}
                   InputProps={{
                     readOnly: false,
                     style: {
@@ -172,6 +192,12 @@ export function MyModalAdd({
                   label="Giảm tối đa"
                   type="number"
                   value={modalSale?.maxSalePrice}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      maxSalePrice: e.target.value,
+                    });
+                  }}
                   InputProps={{
                     readOnly: false,
                     style: {
@@ -192,13 +218,13 @@ export function MyModalAdd({
                     width: '100%',
                     color: theme.palette.secondary.main,
                   }}
-                  // value={dayjs(editContent?.end_at)}
-                  // onChange={(day: any) => {
-                  //   setEditContent({
-                  //     ...editContent,
-                  //     end_at: new Date(day),
-                  //   });
-                  // }}
+                  value={dayjs(modalSale?.start_at)}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      start_at: new Date(e),
+                    });
+                  }}
                   minDate={dayjs(new Date())}
                   format="DD/MM/YYYY"
                   slotProps={{
@@ -227,13 +253,13 @@ export function MyModalAdd({
                     width: '100%',
                     color: theme.palette.secondary.main,
                   }}
-                  // value={dayjs(editContent?.end_at)}
-                  // onChange={(day: any) => {
-                  //   setEditContent({
-                  //     ...editContent,
-                  //     end_at: new Date(day),
-                  //   });
-                  // }}
+                  value={dayjs(modalSale?.end_at)}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      end_at: new Date(e),
+                    });
+                  }}
                   minDate={dayjs(new Date())}
                   format="DD/MM/YYYY"
                   slotProps={{
@@ -258,6 +284,10 @@ export function MyModalAdd({
                 <Outlined_TextField
                   textStyle={textStyle}
                   label="Mô tả"
+                  value={modalSale?.description}
+                  onChange={(e: any) => {
+                    setModalSale({ ...modalSale, description: e.target.value });
+                  }}
                   multiline
                   rows={3}
                   InputProps={{
