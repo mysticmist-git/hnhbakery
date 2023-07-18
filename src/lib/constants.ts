@@ -16,6 +16,7 @@ export const COLLECTION_NAME = {
   BILL_DETAILS: 'bill_details',
   DELIVERIES: 'deliveries',
   CARTS: 'carts',
+  CONTACTS: 'contacts',
   BILLS: 'bills',
   PAYMENTS: 'payments',
   SALES: 'sales',

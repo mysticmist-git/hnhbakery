@@ -67,6 +67,7 @@ const ContactForm = () => {
       phone: phoneRef.current!.value,
       title: titleRef.current!.value,
       content: contentRef.current!.value,
+      isRead: false,
     });
 
     handleSnackbarAlert('success', 'Gửi thành công');

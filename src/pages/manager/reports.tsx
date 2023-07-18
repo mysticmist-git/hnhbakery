@@ -277,7 +277,7 @@ const Report = ({ finalData }: { finalData: string }) => {
                   gap: 3,
                   justifyContent: 'flex-start',
                   overflow: 'auto',
-                  height: '300px',
+                  height: '250px',
                 }}
               >
                 <SanPhamDoanhThu_Component
@@ -345,7 +345,7 @@ const Report = ({ finalData }: { finalData: string }) => {
                   gap: 3,
                   justifyContent: 'flex-start',
                   overflow: 'auto',
-                  height: '300px',
+                  height: '250px',
                 }}
               >
                 <SanPhamHaoHut

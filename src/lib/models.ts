@@ -241,12 +241,13 @@ export interface Countable {
   count?: number;
 }
 
-export interface Contact {
+export interface Contact extends BillObject {
   name: string;
   email: string;
   phone?: string;
   title: string;
   content: string;
+  isRead?: boolean;
 }
 
 export interface PathWithUrl {

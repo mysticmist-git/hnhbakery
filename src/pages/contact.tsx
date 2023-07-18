@@ -1,7 +1,7 @@
 import bg2 from '@/assets/Decorate/bg2.png';
 import contactImage from '@/assets/contact-img.jpg';
+import { ContactForm, ContactWrapper } from '@/components/Contact';
 import ImageBackground from '@/components/Imagebackground';
-import { ContactForm, ContactWrapper } from '@/components/contact';
 import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
 import React, { memo, useMemo } from 'react';
 
