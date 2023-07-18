@@ -1,12 +1,26 @@
+import { useSnackbarService } from '@/lib/contexts';
+import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
+import { Mail } from '@/lib/types/manage-contact';
+import { Mail as MailIcon } from '@mui/icons-material';
 import {
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Grid,
   LinearProgress,
+  TextField,
   Typography,
   styled,
   useTheme,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import { title } from 'process';
+import { useState } from 'react';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -16,6 +30,44 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 
 const Contacts = ({}: {}) => {
   const theme = useTheme();
+
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
+  const handleSnackbarAlert = useSnackbarService();
+
+  const handleClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleNewMail = () => {
+    setDialogOpen(true);
+  };
+
+  const handleSendMail = async (mail: Mail) => {
+    try {
+      const sendMailResponse = await fetch('/api/send-mail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: mail.to,
+          subject: mail.content,
+          text: mail.content,
+        }),
+      });
+
+      if (sendMailResponse.ok) {
+        handleSnackbarAlert('success', 'Mail gửi thành công');
+      } else {
+        const errorMessage = await sendMailResponse.json();
+        console.log(errorMessage);
+        handleSnackbarAlert('error', 'Lỗi xảy ra khi gửi mail');
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
@@ -46,8 +98,25 @@ const Contacts = ({}: {}) => {
               thái...
             </Typography>
           </Grid>
+
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'end' }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<MailIcon />}
+              onClick={handleNewMail}
+            >
+              Gửi mail
+            </Button>
+          </Grid>
         </Grid>
       </Box>
+
+      <MailDialog
+        open={dialogOpen}
+        handleClose={handleClose}
+        handleSubmit={handleSendMail}
+      />
     </>
   );
 };

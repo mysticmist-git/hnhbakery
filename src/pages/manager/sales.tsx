@@ -1,7 +1,6 @@
 import { TableActionButton } from '@/components/buttons';
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
 import {
   BillObject,
   SaleObject,
@@ -19,9 +18,8 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
-import { slotShouldForwardProp } from '@mui/material/styles/styled';
 import { collection } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { ModalState } from '../../components/sale/ModalState';
 import { MyModal } from '../../components/sale/MyModal';

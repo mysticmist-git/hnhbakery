@@ -1,7 +1,4 @@
 import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
-import { Contact } from '@/lib/models';
 import {
   Check,
   ContactsRounded,
