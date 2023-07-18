@@ -326,7 +326,7 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
                   </Typography>
                 }
               />
-              {isActive('storage') && <Check color="secondary" />}
+              {isActive('contacts') && <Check color="secondary" />}
             </>
           )}
         </ListItemButton>
