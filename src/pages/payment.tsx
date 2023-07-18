@@ -285,8 +285,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     setDialogOpen(false);
   };
 
-  console.log(deliveryForm);
-
   return (
     <>
       <Box sx={{ pb: 16 }}>
@@ -337,7 +335,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
           </Grid>
         </ImageBackground>
 
-        <Box sx={{ pt: 4, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box sx={{ pt: 8, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
           <Grid
             container
             direction={'row'}

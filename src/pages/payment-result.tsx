@@ -1,6 +1,5 @@
-import { CaiKhungCoTitle } from '@/components/layouts/CaiKhungCoTitle';
-
 import ImageBackground from '@/components/Imagebackground';
+import { CaiKhungCoTitle } from '@/components/Layouts/CaiKhungCoTitle';
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';

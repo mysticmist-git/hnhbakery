@@ -18,12 +18,16 @@ const saleConverter: FirestoreDataConverter<SaleObject> = {
   fromFirestore(snapshot, options) {
     const data = snapshot.data(options)!;
 
+    console.log(data);
+
     const result: SaleObject = {
       ...data,
       id: snapshot.id,
-      start_at: data.start_at.toDate(),
-      end_at: data.end_at.toDate(),
+      start_at: new Date(data.start_at),
+      end_at: new Date(data.end_at),
     } as SaleObject;
+
+    console.log(result);
 
     return result;
   },

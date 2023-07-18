@@ -12,8 +12,10 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import Image from 'next/image';
 import React, { memo, useMemo, useState } from 'react';
 import { useSendPasswordResetEmail } from 'react-firebase-hooks/auth';
+import contactImage from '@/assets/contact-img.jpg';
 
 const ForgetPasswordPage = () => {
   const wrapperTitle = useMemo(
@@ -39,7 +41,7 @@ const ForgetPasswordPage = () => {
       const success = await sendPasswordResetEmail(mail ?? '');
 
       if (success) {
-        handleSnackbarAlert('info', 'Email reset mật khẩu đã được gửi');
+        handleSnackbarAlert('info', 'Đã gửi mật khẩu đến email của bạn!');
       }
     } catch (error) {
       console.log(error);
@@ -76,6 +78,9 @@ const ForgetPasswordPage = () => {
                 <Typography
                   align="center"
                   variant="body2"
+                  sx={{
+                    mt: 1,
+                  }}
                   color={theme.palette.common.white}
                 >
                   {wrapperTitle}
@@ -85,26 +90,55 @@ const ForgetPasswordPage = () => {
           </Grid>
         </Imagebackground>
 
-        <Box sx={{ pt: 0, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box sx={{ pt: 6, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
           <Grid
             container
-            direction={'row'}
+            spacing={2}
             justifyContent={'center'}
             alignItems={'center'}
           >
-            <Grid item xs={12}>
-              <ContactWrapper>
+            <Grid item xs={12} lg={6}>
+              <Box
+                sx={{
+                  p: 2,
+                  py: 4,
+                  borderRadius: '16px',
+                  boxShadow: 3,
+                  backgroundColor: theme.palette.common.white,
+                }}
+              >
                 <Stack
-                  direction="row"
+                  direction="column"
                   spacing={2}
                   justifyContent={'center'}
                   alignItems={'center'}
                 >
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '300px',
+                      position: 'relative',
+                    }}
+                  >
+                    <Box
+                      fill={true}
+                      component={Image}
+                      src={contactImage.src}
+                      alt=""
+                      sx={{
+                        height: '100%',
+                        width: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </Box>
                   <TextField
                     value={mail}
+                    size="medium"
+                    color="secondary"
                     onChange={(e) => setMaili(e.target.value)}
                     placeholder="Email"
-                    helperText="Hãy nhập Email đã dùng để đăng ký tài khoản"
+                    helperText="Hãy nhập email đã đăng ký để nhận mật khẩu của bạn!"
                   />
                   <Button
                     color="secondary"
@@ -114,7 +148,7 @@ const ForgetPasswordPage = () => {
                     Nhận mã xác nhận
                   </Button>
                 </Stack>
-              </ContactWrapper>
+              </Box>
             </Grid>
           </Grid>
         </Box>

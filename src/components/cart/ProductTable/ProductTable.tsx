@@ -43,7 +43,7 @@ type ProductTableProps = {
 
 function ProductTable({ items, onChange }: ProductTableProps) {
   const theme = useTheme();
-  const imageHeight = '20vh';
+  const imageHeight = '25vh';
 
   const handleDeleteRow = (id: string) => {
     onChange(items.filter((item) => item.id !== id));
@@ -89,7 +89,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                 <TableCell
                   key={i}
                   align="center"
-                  sx={{ minWidth: i == 2 ? '255px' : '0px' }}
+                  sx={{ minWidth: i == 2 ? '300px' : '0px' }}
                 >
                   <Typography
                     variant="body1"
@@ -162,6 +162,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                         variant={'button'}
                         color={theme.palette.text.secondary}
                       >
+                        Hết hạn:{' '}
                         {formatDateString(item.batch?.EXP ?? new Date())}
                       </Typography>
                     </Grid>
