@@ -179,9 +179,12 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
   //#region useEffects
 
   useEffect(() => {
-    let products: ProductForProductsPage[] = JSON.parse(stringifiedProducts);
+    const products: ProductForProductsPage[] = JSON.parse(stringifiedProducts);
 
-    setProducts(() => products);
+    console.log(products);
+
+    setProducts(() => [...products]);
+
     setGroupBoLocState(() =>
       generateGroupBoLoc(
         filterDuplicatesById(

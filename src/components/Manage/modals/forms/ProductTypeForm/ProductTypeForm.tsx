@@ -261,7 +261,7 @@ export default memo(
                   disabled={disabled}
                   variant="contained"
                   color="secondary"
-                  component={'label'}
+                  // component={'label'}
                 >
                   Tải ảnh lên
                   <input

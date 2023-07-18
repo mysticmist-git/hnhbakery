@@ -110,7 +110,9 @@ function ProductForm(
   function handleDeleteImage(url: string) {
     if (!url) return;
 
-    const updatedImageUrls = data.imageUrls.toSpliced(
+    const updatedImageUrls = [...data.imageUrls];
+
+    updatedImageUrls.splice(
       data.imageUrls.findIndex((i) => i.url === url),
       1
     );

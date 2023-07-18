@@ -28,6 +28,7 @@ function ProductList(props: any) {
   );
 
   const displayProducts: ProductForProductsPage[] = useMemo(() => {
+    console.log(context.ProductList);
     const filteredProducts = filterProductList(context.ProductList);
     const sortedProducts = sortProductList(filteredProducts);
     let searchResultProductList = searchProductList(

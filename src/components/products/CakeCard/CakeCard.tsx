@@ -70,6 +70,8 @@ function CakeCard({
     },
   };
 
+  if (discounted) console.log(price, discountPrice);
+
   return (
     <Card
       onMouseOver={() => setCardHover(true)}
