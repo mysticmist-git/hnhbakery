@@ -319,6 +319,25 @@ export interface Contact extends BaseObject {
   isRead?: boolean;
 }
 
+export const contactConverter: FirestoreDataConverter<Contact> = {
+  toFirestore: function (contact: Contact) {
+    delete contact.id;
+    return { ...contact };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<Contact>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    };
+  },
+};
+
 export interface PathWithUrl {
   path?: string;
   url: string;
