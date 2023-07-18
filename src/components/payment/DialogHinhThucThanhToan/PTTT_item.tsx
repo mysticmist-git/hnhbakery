@@ -1,6 +1,7 @@
 import momo from '@/assets/Decorate/MOMO.jpg';
 import bg from '@/assets/Decorate/bg10.png';
 import vnpay from '@/assets/Decorate/vnpay.jpg';
+import tienmat from '@/assets/Decorate/tienmat.jpg';
 
 import { CustomIconButton } from '@/components/buttons';
 import { COLLECTION_NAME } from '@/lib/constants';
@@ -45,11 +46,13 @@ function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
       onClick={() => onClick()}
       sx={{
         width: '100%',
-        height: '25vh',
+        height: '30vh',
         overflow: 'hidden',
         borderRadius: '8px',
         position: 'relative',
         cursor: 'pointer',
+        borderColor: theme.palette.secondary.main,
+        border: 3,
       }}
       onMouseOver={() => setIsHover(true)}
       onMouseOut={() => setIsHover(false)}
@@ -121,6 +124,8 @@ export default function DialogHinhThucThanhToan({
           pttt.image = vnpay.src;
         } else if (pttt.name === 'Momo') {
           pttt.image = momo.src;
+        } else {
+          pttt.image = tienmat.src;
         }
       }
 

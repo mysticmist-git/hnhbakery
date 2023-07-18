@@ -39,14 +39,17 @@ function DanhSachSanPham_Item(props: any) {
     <>
       <Grid
         container
-        spacing={1}
+        sx={{
+          py: 1,
+        }}
+        spacing={2}
         direction={'row'}
         alignItems={'center'}
         justifyContent={'space-between'}
         onMouseOver={() => setIsHover(true)}
         onMouseOut={() => setIsHover(false)}
       >
-        <Grid item xs={3} alignSelf={'stretch'}>
+        <Grid item xs={4} alignSelf={'stretch'}>
           <Box
             sx={{
               width: '100%',
@@ -79,7 +82,7 @@ function DanhSachSanPham_Item(props: any) {
           </Box>
         </Grid>
 
-        <Grid item xs={9}>
+        <Grid item xs={8}>
           <Grid
             container
             spacing={0}
@@ -87,7 +90,7 @@ function DanhSachSanPham_Item(props: any) {
             alignItems={'start'}
             justifyContent={'center'}
             sx={{
-              py: 0.5,
+              py: 1,
             }}
           >
             <Grid item xs={12}>

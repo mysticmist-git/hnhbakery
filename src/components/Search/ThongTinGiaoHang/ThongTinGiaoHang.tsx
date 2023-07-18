@@ -8,10 +8,8 @@ const ThongTinGiaoHang = memo((props: any) => {
   const context = useContext(SearchContext);
 
   const {
-    deli_StaffName,
-    deli_StaffPhone,
-    deli_StartAt,
-    deli_EndAt,
+    // deli_StartAt,
+    // deli_EndAt,
     deli_State,
     deli_CustomerName,
     deli_CustomerPhone,
@@ -22,7 +20,7 @@ const ThongTinGiaoHang = memo((props: any) => {
 
   return (
     <Grid container direction={'row'} justifyContent={'center'} spacing={1}>
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Grid
           container
           direction={'row'}
@@ -40,9 +38,9 @@ const ThongTinGiaoHang = memo((props: any) => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Grid
           container
           direction={'row'}
@@ -60,9 +58,9 @@ const ThongTinGiaoHang = memo((props: any) => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Grid
           container
           direction={'row'}
@@ -80,9 +78,9 @@ const ThongTinGiaoHang = memo((props: any) => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Grid
           container
           direction={'row'}
@@ -100,7 +98,7 @@ const ThongTinGiaoHang = memo((props: any) => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
 
       <Grid item xs={12}>
         <Grid
