@@ -1,5 +1,8 @@
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import { addDocToFirestore } from '@/lib/firestore';
 import { SaleObject } from '@/lib/models';
+import { Close } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -13,13 +16,11 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { CustomIconButton } from '../buttons';
-import { Close } from '@mui/icons-material';
-import { Outlined_TextField } from '../order/MyModal/Outlined_TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { formatPrice } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { CustomIconButton } from '../buttons';
+import { Outlined_TextField } from '../order/MyModal/Outlined_TextField';
 
 export function MyModalAdd({
   open,
@@ -69,7 +70,9 @@ export function MyModalAdd({
     image: '',
     isActive: true,
   };
+
   const [modalSale, setModalSale] = useState<SaleObject>(defaultSale);
+
   useEffect(() => {
     setModalSale(() => defaultSale);
   }, [sale]);
@@ -79,6 +82,21 @@ export function MyModalAdd({
   };
   const localHandleClose = () => {
     clearData();
+    handleClose();
+  };
+
+  const handleAdd = async () => {
+    try {
+      const data: SaleObject = { ...modalSale };
+
+      await addDocToFirestore(data, COLLECTION_NAME.SALES);
+    } catch (error) {
+      console.log(error);
+      handleSnackbarAlert('error', 'Lỗi khi thêm mới');
+      return;
+    }
+
+    handleSnackbarAlert('success', 'Thêm khuyến mãi thành công');
     handleClose();
   };
 
@@ -323,14 +341,7 @@ export function MyModalAdd({
             >
               Hủy
             </Button>
-            <Button
-              variant="contained"
-              color={'success'}
-              onClick={async () => {
-                handleSnackbarAlert('error', 'Chưa cài.');
-                handleClose();
-              }}
-            >
+            <Button variant="contained" color={'success'} onClick={handleAdd}>
               Thêm
             </Button>
           </Box>
