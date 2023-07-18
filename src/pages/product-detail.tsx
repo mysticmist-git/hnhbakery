@@ -6,15 +6,17 @@ import ImageBackground from '@/components/Imagebackground';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
 import Comments from '@/components/product-detail/Comments';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
-import { auth } from '@/firebase/config';
+import { auth, db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { CartItemFactory } from '@/lib/factories/CartItemFactory';
 import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
 import {
   BatchObjectWithDiscount,
+  FeedbackObject,
   ProductObject,
   ProductVariant,
+  feedbackConverter,
 } from '@/lib/models';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { AssembledProduct } from '@/lib/types/products';
@@ -28,11 +30,13 @@ import {
 } from '@mui/material';
 import { isTimeView } from '@mui/x-date-pickers/internals/utils/time-utils';
 import { useLocalStorageValue } from '@react-hookz/web';
+import { collection, query, where } from 'firebase/firestore';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 const comments = {
   ratingAverage: 4.5,
@@ -250,6 +254,18 @@ function ProductDetail({
     handleQuantityChange,
     comments,
   ]);
+
+  const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
+    product
+      ? query(
+          collection(db, COLLECTION_NAME.FEEDBACKS),
+          where('product_id', '==', product.id)
+        ).withConverter(feedbackConverter)
+      : undefined,
+    {
+      initialValue: [],
+    }
+  );
 
   //#endregion
 

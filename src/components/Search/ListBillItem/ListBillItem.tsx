@@ -1,7 +1,7 @@
+import CustomAccordionItem from '@/components/accordions/CustomAccordionItem';
 import { SearchContext } from '@/lib/contexts/search';
 import { Grid, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
-import { CustomAccordionItem } from '../../accordions/CustomAccordionItem/CustomAccordionItem';
 import ChiTietHoaDon from '../ChiTietHoaDon/ChiTietHoaDon';
 import ThongTinGiaoHang from '../ThongTinGiaoHang/ThongTinGiaoHang';
 import ThongTinKhuyenMai from '../ThongTinKhuyenMai/ThongTinKhuyenMai';

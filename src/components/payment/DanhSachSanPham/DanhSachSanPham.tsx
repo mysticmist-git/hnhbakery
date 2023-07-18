@@ -1,4 +1,4 @@
-import { CustomAccordionItem } from '@/components/accordions/CustomAccordionItem/CustomAccordionItem';
+import CustomAccordionItem from '@/components/accordions/CustomAccordionItem';
 import { useTheme } from '@mui/material';
 import DanhSachSanPham_Item from './DanhSachSanPham_Item';
 

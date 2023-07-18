@@ -17,7 +17,6 @@ function useUserData(userId: string) {
           addresses: [],
           name: '',
           mail: '',
-          password: '',
           tel: '',
           birthday: new Date(),
           isActive: false,
