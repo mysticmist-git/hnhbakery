@@ -1,33 +1,19 @@
-import { auth, db } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore';
-import {
-  PermissionObject,
-  UserGroup,
-  UserObject,
-  permissionConverter,
-  userGroupConverter,
-} from '@/lib/models';
+import { UserObject } from '@/lib/models';
 import theme from '@/styles/themes/lightTheme';
-import {
-  AccountCircle,
-  KeyboardReturnTwoTone,
-  Logout,
-  ViewInAr,
-} from '@mui/icons-material';
+import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
 import { SxProps, Theme, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { User, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo, useEffect, useState } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 interface Props {
   photoURL: string | null;
@@ -109,9 +95,6 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
     execute();
   }, [user, loading]);
-
-  console.log(isManager);
-  console.log(available);
 
   return (
     <>
