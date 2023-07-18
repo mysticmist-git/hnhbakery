@@ -110,6 +110,9 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     execute();
   }, [user, loading]);
 
+  console.log(isManager);
+  console.log(available);
+
   return (
     <>
       <Avatar src={photoURL as string | undefined} onClick={handleClick} />

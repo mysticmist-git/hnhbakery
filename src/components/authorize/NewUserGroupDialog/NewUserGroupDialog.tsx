@@ -67,7 +67,13 @@ const NewUserGroupDialog: React.FC<NewUserGroupDialogProps> = ({
                 }}
               >
                 <Typography variant="body2">{p.name}</Typography>
-                <Checkbox color="secondary" />
+                <Checkbox
+                  checked={newGroup?.permission.includes(p.id!)}
+                  color="secondary"
+                  onChange={handleNewGroupChange}
+                  name="permission"
+                  value={p.id}
+                />
               </Stack>
             </ListItem>
           ))}

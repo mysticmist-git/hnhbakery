@@ -53,7 +53,7 @@ export function useAvailablePermissions(): {
   );
 
   const available: string[] = useMemo(() => {
-    if (!user || !groups || !permissions) {
+    if (!user || !groups || !permissions || uLoading || gLoading || pLoading) {
       return [];
     }
 
@@ -67,7 +67,7 @@ export function useAvailablePermissions(): {
     );
 
     return availabePermissions.map((p) => p.code);
-  }, [user, groups, permissions]);
+  }, [user, groups, permissions, uLoading, gLoading, pLoading]);
 
   return { user, available, loading: uLoading || gLoading || pLoading };
 }
