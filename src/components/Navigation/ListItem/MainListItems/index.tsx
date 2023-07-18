@@ -1,4 +1,8 @@
+import { db } from '@/firebase/config';
 import { permissionRouteMap, useAvailablePermissions } from '@/lib/authorize';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { Contact, contactConverter } from '@/lib/models';
+import contact from '@/pages/contact';
 import {
   Check,
   ContactsRounded,
@@ -14,9 +18,11 @@ import { Badge, Typography, useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { collection, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { memo } from 'react';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 //#region Constants
 
@@ -75,11 +81,21 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
     }
   }
 
-  const [badgeContact, setBadgeContact] = React.useState(0);
+  const [contacts, cLoading] = useCollectionData<Contact>(
+    query(
+      collection(db, COLLECTION_NAME.CONTACTS),
+      where('isRead', '==', false)
+    ).withConverter(contactConverter),
+    {
+      initialValue: [],
+    }
+  );
 
-  React.useEffect(() => {
-    setBadgeContact(() => 10);
-  }, []);
+  const badgeContact = React.useMemo(() => {
+    if (!contacts && cLoading) return;
+
+    return contacts?.length;
+  }, [contacts, cLoading]);
 
   return (
     <React.Fragment>
@@ -182,7 +198,7 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
                   </Typography>
                 }
               />
-              {isActive('storage') && <Check color="secondary" />}
+              {isActive('deliveries') && <Check color="secondary" />}
             </>
           )}
         </ListItemButton>
@@ -326,7 +342,7 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
                   </Typography>
                 }
               />
-              {isActive('storage') && <Check color="secondary" />}
+              {isActive('contacts') && <Check color="secondary" />}
             </>
           )}
         </ListItemButton>
