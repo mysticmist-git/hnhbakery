@@ -48,7 +48,7 @@ export function FeedBack_Content({
               <Outlined_TextField
                 textStyle={textStyle}
                 multiline
-                label={'Mã hóa đơn: ' + feedback.id ?? 'Trống'}
+                label={'Mã feedback: ' + feedback.id ?? 'Trống'}
                 value={getValueFromFeedBack(feedback)}
                 InputProps={{
                   readOnly: true,
@@ -66,11 +66,11 @@ export function FeedBack_Content({
                           );
                           handleSnackbarAlert(
                             'success',
-                            'Đã sao chép mã sản phẩm vào clipboard!'
+                            'Đã sao chép mã feedback vào clipboard!'
                           );
                         }}
                       >
-                        <Tooltip title="Sao chép mã sản phẩm vào clipboard">
+                        <Tooltip title="Sao chép mã feedback vào clipboard">
                           <ContentCopyRounded fontSize="small" />
                         </Tooltip>
                       </CustomIconButton>

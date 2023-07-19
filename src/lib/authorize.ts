@@ -29,6 +29,7 @@ export const permissionRouteMap = new Map([
   ['GH', '/manager/deliveries'],
   ['LH', '/manager/contacts'],
   ['KM', '/manager/sales'],
+  ['FB', '/manager/feedbacks'],
 ]);
 
 export function useAvailablePermissions(): {

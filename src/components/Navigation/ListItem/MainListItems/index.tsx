@@ -4,6 +4,7 @@ import { COLLECTION_NAME } from '@/lib/constants';
 import { Contact, contactConverter } from '@/lib/models';
 import contact from '@/pages/contact';
 import {
+  ChatRounded,
   Check,
   ContactsRounded,
   DiscountRounded,
@@ -343,6 +344,43 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
                 }
               />
               {isActive('contacts') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
+
+      {available && available.includes('FB') && (
+        <ListItemButton
+          sx={{
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+          onClick={() => router.push('/manager/feedbacks')}
+        >
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <ChatRounded sx={iconSxProps('feedbacks')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    sx={typographySxProps('feedbacks')}
+                  >
+                    Feedback
+                  </Typography>
+                }
+              />
+              {isActive('feedbacks') && <Check color="secondary" />}
             </>
           )}
         </ListItemButton>

@@ -449,3 +449,8 @@ export interface SuperDetail_DeliveryObject extends DeliveryObject {
   billObject?: BillObject;
   billDetailObjects?: AssembledBillDetail[];
 }
+
+export interface SuperDetail_FeedbackObject extends FeedbackObject {
+  productObject?: ProductObject;
+  userObject?: UserObject;
+}
