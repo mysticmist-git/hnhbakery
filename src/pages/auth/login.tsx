@@ -148,7 +148,7 @@ const Login = () => {
       <Box
         sx={{
           height: 'auto',
-          pt: 8,
+          pt: 24,
           pb: 16,
           minHeight: '650px',
           px: { xs: 3, sm: 3, md: 5, lg: 9 },

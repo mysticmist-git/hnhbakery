@@ -80,17 +80,17 @@ const similiarProducts = [
     id: 1,
     image: banh2.src,
     href: '#',
-    name: '2',
+    name: 'Bánh bông lan',
     description:
-      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+      'Bánh bông lan với cốt bánh đặc trưng thơm béo, ngất ngây lòng người,...',
   },
   {
     id: 1,
     image: banh3.src,
     href: '#',
-    name: '3',
+    name: 'Bánh kem',
     description:
-      'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
+      'Bánh kem với lớp kem độc quyền từ H&H mang đến trải nghiệm đột phá ở đầu lưỡi,...',
   },
   {
     id: 1,

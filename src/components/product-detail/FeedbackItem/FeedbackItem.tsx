@@ -23,9 +23,11 @@ const FeedbackItem = ({
   const theme = useTheme();
 
   const [user, uLoading, uError] = useDocumentData<UserObject>(
-    doc(collection(db, COLLECTION_NAME.USERS), value.user_id).withConverter(
-      userConverter
-    )
+    value.user_id
+      ? doc(collection(db, COLLECTION_NAME.USERS), value.user_id).withConverter(
+          userConverter
+        )
+      : undefined
   );
 
   const [image, iLoading, iError] = useDownloadURL(

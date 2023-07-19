@@ -205,7 +205,7 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
         </Box>
       </Grid>
 
-      <Grid item xs={12} sx={{ visibility: 'hidden' }}>
+      <Grid item xs={12} sx={{ display: 'none' }}>
         <Box
           sx={{
             backgroundColor: theme.palette.common.white,
