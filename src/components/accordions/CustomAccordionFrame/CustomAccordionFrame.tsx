@@ -9,7 +9,7 @@ import {
 import React, { memo } from 'react';
 
 //#region Hóa đơn của bạn
-const CustomAccordionFrame = memo((props: any) => {
+const CustomAccordionFrame = (props: any) => {
   const { heading = 'Heading', children = () => {} } = props;
   const theme = useTheme();
   return (
@@ -50,10 +50,10 @@ const CustomAccordionFrame = memo((props: any) => {
           overflow: 'hidden',
         }}
       >
-        <props.children />
+        {children}
       </AccordionDetails>
     </Accordion>
   );
-});
+};
 
-export default CustomAccordionFrame;
+export default memo(CustomAccordionFrame);

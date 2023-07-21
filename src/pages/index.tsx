@@ -4,10 +4,9 @@ import bg2 from '@/assets/Decorate/bg2.png';
 import { Box, Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import React, { memo, useContext, useEffect, useState } from 'react';
 
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
-import FadeDiv from '@/components/Animation/Loof/FadeDiv';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
+import TopSlideInDiv from '@/components/animations/appear/TopSlideInDiv';
+import FadeDiv from '@/components/animations/loof/FadeDiv';
 import { CustomButton } from '@/components/buttons';
 import {
   CustomCard,
@@ -18,6 +17,7 @@ import {
   DashDownWhite,
   DashUpWhite,
 } from '@/components/decorates/DecorateDivider/DecorateDivider';
+import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import {
   BestSellerItem,
   CarouselImageItem,
@@ -39,7 +39,7 @@ import Carousel from 'react-material-ui-carousel';
 
 // #region Carousel
 
-const CustomCarousel = memo((props: any) => {
+const CustomCarousel = (props: any) => {
   const theme = useTheme();
   const context = useContext(HomeContext);
   return (
@@ -65,9 +65,9 @@ const CustomCarousel = memo((props: any) => {
       </Carousel>
     </>
   );
-});
+};
 
-const CustomCarouselItem = memo((props: any) => {
+const CustomCarouselItem = (props: any) => {
   const { height, image } = props;
   const [isLoading, setIsLoading] = useState(true);
   const handleImageLoad = () => {
@@ -94,7 +94,7 @@ const CustomCarouselItem = memo((props: any) => {
       </Box>
     </>
   );
-});
+};
 //#endregion
 
 //#region BestSeller
@@ -187,7 +187,7 @@ const initTypeCake: TypeCakeItem[] = [
   },
 ];
 
-const TypeCake = memo((props: any) => {
+const TypeCake = (props: any) => {
   const theme = useTheme();
   const context = useContext<HomeContextType>(HomeContext);
   return (
@@ -232,11 +232,11 @@ const TypeCake = memo((props: any) => {
       </Box>
     </>
   );
-});
+};
 //#endregion
 
 //#region Khuyến mãi
-const DangKyKhuyenMai = memo((props: any) => {
+const DangKyKhuyenMai = (props: any) => {
   const theme = useTheme();
   return (
     <Box
@@ -316,7 +316,7 @@ const DangKyKhuyenMai = memo((props: any) => {
       </Grid>
     </Box>
   );
-});
+};
 
 const TEXT_SERVER_ERROR = 'Đã có lỗi phía Server';
 
@@ -331,20 +331,6 @@ function Home({
   productTypesWithImageFetched: typeCakeState,
   bestSellerProductsWithImageFetched: bestSellerState,
 }: HomeProps) {
-  if (!isSuccess)
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: 600,
-        }}
-      >
-        {TEXT_SERVER_ERROR}
-      </Box>
-    );
-
   //#region States
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
@@ -377,6 +363,20 @@ function Home({
 
     importImages();
   }, []);
+
+  if (!isSuccess)
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 600,
+        }}
+      >
+        {TEXT_SERVER_ERROR}
+      </Box>
+    );
 
   //#endregion
   //#region Logs

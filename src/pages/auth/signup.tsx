@@ -1,6 +1,6 @@
 import banh1 from '@/assets/Carousel/3.jpg';
 import bg2 from '@/assets/Decorate/bg2.png';
-import { SignUpForm } from '@/components/auth/SignUpForm';
+import SignUpForm from '@/components/auth/SignUpForm';
 import Copyright from '@/components/Copyright';
 import { auth } from '@/firebase/config';
 import { addUserWithEmailAndPassword } from '@/lib/auth/auth';

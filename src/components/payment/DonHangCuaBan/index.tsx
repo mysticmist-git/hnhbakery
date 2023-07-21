@@ -1,7 +1,7 @@
 import CustomButton from '@/components/buttons/CustomButton';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
-import CustomTextField from '../../Inputs/textFields/CustomTextField';
+import CustomTextField from '../../inputs/textFields/CustomTextField';
 import RenderSale from '../RenderSale';
 
 export default function DonHangCuaBan(props: any) {

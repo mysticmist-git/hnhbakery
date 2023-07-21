@@ -1,8 +1,8 @@
 import ImageBackground from '@/components/Imagebackground';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
-import { ListBillItem, ListProductItem } from '@/components/Search';
 import CustomAccordionFrame from '@/components/accordions/CustomAccordionFrame';
 import { CustomButton } from '@/components/buttons';
+import CustomTextField from '@/components/inputs/textFields/CustomTextField';
+import { ListBillItem, ListProductItem } from '@/components/search';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { SearchContext } from '@/lib/contexts/search';
@@ -192,16 +192,14 @@ const Search = () => {
             {billInforState && !loading && (
               <>
                 <Grid item md={4} xs={12}>
-                  <CustomAccordionFrame
-                    heading="Hóa đơn của bạn"
-                    children={ListBillItem}
-                  />
+                  <CustomAccordionFrame heading="Hóa đơn của bạn">
+                    <ListBillItem />
+                  </CustomAccordionFrame>
                 </Grid>
                 <Grid item md={8} xs={12}>
-                  <CustomAccordionFrame
-                    heading="Danh sách sản phẩm"
-                    children={ListProductItem}
-                  />
+                  <CustomAccordionFrame heading="Danh sách sản phẩm">
+                    <ListProductItem />
+                  </CustomAccordionFrame>
                 </Grid>
               </>
             )}

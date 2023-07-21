@@ -40,7 +40,7 @@ export default forwardRef(function Form(
         },
       };
     },
-    [productTypeFormRef, productFormRef, collectionName]
+    [productTypeFormRef, productFormRef]
   );
 
   //#endregion

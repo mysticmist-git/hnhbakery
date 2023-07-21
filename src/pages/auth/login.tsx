@@ -4,10 +4,10 @@ import { CustomButton } from '@/components/buttons';
 import {
   CustomTextField,
   CustomTextFieldPassword,
-} from '@/components/Inputs/textFields';
+} from '@/components/inputs/textFields';
 import { auth } from '@/firebase/config';
 import { handleLoginWithGoogle, validateSigninInfo } from '@/lib/auth/auth';
-import { authMessages, COLLECTION_NAME } from '@/lib/constants';
+import { COLLECTION_NAME, authMessages } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore';
 import { UserObject } from '@/lib/models';
@@ -68,7 +68,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (userData && userData.isActive) router.push('/');
-  }, [loading, userData, user]);
+  }, [loading, userData, user, router]);
 
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');

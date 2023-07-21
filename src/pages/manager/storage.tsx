@@ -1,7 +1,7 @@
-import { RowModal } from '@/components/Manage/modals/rowModals';
-import CustomDataTable from '@/components/Manage/tables/CustomDataTable';
 import { TableActionButton } from '@/components/buttons';
 import SimpleDialog from '@/components/dialogs/SimpleDialog';
+import { RowModal } from '@/components/manage/modals/rowModals';
+import CustomDataTable from '@/components/manage/tables/CustomDataTable';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
@@ -63,7 +63,14 @@ import {
 } from '@mui/material';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
 //#region Styled Components
 
@@ -85,8 +92,6 @@ export default function Manage({
   mainDocs: string;
   collectionName: string;
 }) {
-  if (!success) return <Typography variant="h4">Lỗi khi trang</Typography>;
-
   //#region States
 
   const [state, dispatch] = useReducer<
@@ -124,7 +129,8 @@ export default function Manage({
       payload: value,
     });
   }
-  function updateSelectedCRUDTargetToMatch() {
+
+  const updateSelectedCRUDTargetToMatch = useCallback(() => {
     if (!justLoaded) return;
 
     if (!paramCollectionName) return;
@@ -137,9 +143,9 @@ export default function Manage({
     });
 
     setJustLoaded(false);
-  }
+  }, [justLoaded, paramCollectionName]);
 
-  function updateDataManagerStrategy() {
+  const updateDataManagerStrategy = useCallback(() => {
     switch (paramCollectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
@@ -154,7 +160,7 @@ export default function Manage({
         setDataManager(() => null);
         break;
     }
-  }
+  }, [paramCollectionName]);
 
   function createAddData(): AddData | null {
     let addData: AddData | null = null;
@@ -272,12 +278,16 @@ export default function Manage({
 
     const collectionName = state.selectedTarget.collectionName;
     router.push(`${PATH}?collectionName=${collectionName}`);
-  }, [state.selectedTarget]);
+  }, [router, state.selectedTarget]);
 
   useEffect(() => {
     updateSelectedCRUDTargetToMatch();
     updateDataManagerStrategy();
-  }, [paramCollectionName]);
+  }, [
+    paramCollectionName,
+    updateDataManagerStrategy,
+    updateSelectedCRUDTargetToMatch,
+  ]);
 
   //#endregion
 
@@ -322,7 +332,7 @@ export default function Manage({
     const names = namesFactory.generate(state.mainDocs);
 
     return names;
-  }, [state.mainDocs]);
+  }, [paramCollectionName, state.mainDocs]);
 
   // #endregion
 
@@ -640,6 +650,8 @@ export default function Manage({
   }
 
   //#endregion
+
+  if (!success) return <Typography variant="h4">Lỗi khi trang</Typography>;
 
   return (
     <>

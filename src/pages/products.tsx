@@ -1,5 +1,5 @@
 import bg12 from '@/assets/Decorate/bg12.png';
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
+import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
 import { Filter, ProductList, TypeSort, TypeView } from '@/components/products';
 import ProductsContext, { BoLocItem } from '@/lib/contexts/productsContext';
@@ -9,16 +9,16 @@ import { cachedCreateProductsOnProductsPage } from '@/lib/pageSpecific/products'
 import { ProductForProductsPage } from '@/lib/types/products';
 import { filterDuplicatesById } from '@/lib/utils';
 import {
+  alpha,
   Box,
   Grid,
   Link as MuiLink,
   TextField,
   Typography,
-  alpha,
   useTheme,
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const initSortList = {
   value: '0',
@@ -57,122 +57,125 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
 
   // #region functions
 
-  const generateGroupBoLoc = (types: { id: string; name: string }[]) => {
-    let children = types.map((type) => ({
-      display: type.name,
-      value: type.id,
-      isChecked: false,
-    }));
+  const generateGroupBoLoc = useCallback(
+    (types: { id: string; name: string }[]) => {
+      let children = types.map((type) => ({
+        display: type.name,
+        value: type.id,
+        isChecked: false,
+      }));
 
-    // This is to handle if a product type is selected from the index.tsx page
-    const initialProductTypeCheckk = router.query.product_type;
+      // This is to handle if a product type is selected from the index.tsx page
+      const initialProductTypeCheckk = router.query.product_type;
 
-    children = children.map((item) => {
-      if (item.value === initialProductTypeCheckk) {
-        return {
-          ...item,
-          isChecked: !item.isChecked,
-        };
-      } else {
-        return item;
-      }
-    });
+      children = children.map((item) => {
+        if (item.value === initialProductTypeCheckk) {
+          return {
+            ...item,
+            isChecked: !item.isChecked,
+          };
+        } else {
+          return item;
+        }
+      });
 
-    return [
-      {
-        heading: 'Loại bánh',
-        heading_value: 'typeCake',
-        children: children,
-      },
-      {
-        heading: 'Màu sắc',
-        heading_value: 'color',
-        children: [
-          {
-            display: 'Đỏ',
-            value: '#F43545',
-            realValue: 'đỏ',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Cam',
-            value: '#FA8901',
-            realValue: 'cam',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Vàng',
-            value: '#C4A705',
-            realValue: 'vàng',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Lục',
-            value: '#00BA71',
-            realValue: 'lục',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Lam',
-            value: '#00C2DE',
-            realValue: 'lam',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Chàm',
-            value: '#00418D',
-            realValue: 'chàm',
-            color: true,
-            isChecked: false,
-          },
-          {
-            display: 'Tím',
-            value: '#5F2879',
-            realValue: 'tím',
-            color: true,
-            isChecked: false,
-          },
-        ],
-      },
-      {
-        heading: 'Size bánh',
-        heading_value: 'size',
-        children: [
-          { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
-          { display: 'Thường', value: 'vừa', isChecked: false },
-          { display: 'Lớn', value: 'lớn', isChecked: false },
-        ],
-      },
-      {
-        heading: 'Giá bánh',
-        heading_value: 'price',
-        children: [
-          { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
-          {
-            display: '100,000đ - 200,000đ',
-            value: '100-200',
-            isChecked: false,
-          },
-          {
-            display: '200,000đ - 300,000đ',
-            value: '200-300',
-            isChecked: false,
-          },
-          {
-            display: '300,000đ - 400,000đ',
-            value: '300-400',
-            isChecked: false,
-          },
-          { display: 'Trên 500,000đ', value: '>500', isChecked: false },
-        ],
-      },
-    ];
-  };
+      return [
+        {
+          heading: 'Loại bánh',
+          heading_value: 'typeCake',
+          children: children,
+        },
+        {
+          heading: 'Màu sắc',
+          heading_value: 'color',
+          children: [
+            {
+              display: 'Đỏ',
+              value: '#F43545',
+              realValue: 'đỏ',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Cam',
+              value: '#FA8901',
+              realValue: 'cam',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Vàng',
+              value: '#C4A705',
+              realValue: 'vàng',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Lục',
+              value: '#00BA71',
+              realValue: 'lục',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Lam',
+              value: '#00C2DE',
+              realValue: 'lam',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Chàm',
+              value: '#00418D',
+              realValue: 'chàm',
+              color: true,
+              isChecked: false,
+            },
+            {
+              display: 'Tím',
+              value: '#5F2879',
+              realValue: 'tím',
+              color: true,
+              isChecked: false,
+            },
+          ],
+        },
+        {
+          heading: 'Size bánh',
+          heading_value: 'size',
+          children: [
+            { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
+            { display: 'Thường', value: 'vừa', isChecked: false },
+            { display: 'Lớn', value: 'lớn', isChecked: false },
+          ],
+        },
+        {
+          heading: 'Giá bánh',
+          heading_value: 'price',
+          children: [
+            { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
+            {
+              display: '100,000đ - 200,000đ',
+              value: '100-200',
+              isChecked: false,
+            },
+            {
+              display: '200,000đ - 300,000đ',
+              value: '200-300',
+              isChecked: false,
+            },
+            {
+              display: '300,000đ - 400,000đ',
+              value: '300-400',
+              isChecked: false,
+            },
+            { display: 'Trên 500,000đ', value: '>500', isChecked: false },
+          ],
+        },
+      ];
+    },
+    [router.query.product_type]
+  );
 
   // #endregion
 
@@ -195,7 +198,7 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
         )
       )
     );
-  }, [stringifiedProducts]);
+  }, [generateGroupBoLoc, stringifiedProducts]);
 
   //#endregion
 

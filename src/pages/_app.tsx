@@ -11,8 +11,8 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 // const clientSideEmotionCache = createEmotionCache();
 
-import { TransitionUp } from '@/components/Transitions';
 import MainLayout from '@/components/layouts/MainLayout';
+import { TransitionUp } from '@/components/transitions';
 import { SnackbarService } from '@/lib/contexts';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';

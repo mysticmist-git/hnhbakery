@@ -1,4 +1,4 @@
-import DoiMKTextField from '@/components/Search/DoiMKTextField';
+import DoiMKTextField from '@/components/search/DoiMKTextField';
 import { UserObject } from '@/lib/models';
 import { Google } from '@mui/icons-material';
 import { Box, Grid, TextField, Typography, useTheme } from '@mui/material';

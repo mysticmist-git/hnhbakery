@@ -1,6 +1,6 @@
-import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
-import CheckboxButtonGroup from '@/components/Inputs/MultiValue/CheckboxButtonGroup';
 import { CustomButton } from '@/components/buttons';
+import { NumberInputWithButtons } from '@/components/inputs/MultiValue';
+import CheckboxButtonGroup from '@/components/inputs/MultiValue/CheckboxButtonGroup';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
@@ -57,7 +57,7 @@ function ProductDetailInfo({
     else text = `${formatPrice(min)} - ${formatPrice(max)}`;
 
     return [min, max, text];
-  }, [product.variants]);
+  }, [product]);
 
   const isProductAvailable: boolean = useMemo(() => {
     if (!product.batches || product.batches.length <= 0) return false;
@@ -90,7 +90,7 @@ function ProductDetailInfo({
       const discountTotalPrice = itemDiscountPrice * quantity;
 
       return [itemPrice, itemDiscountPrice, totalPrice, discountTotalPrice];
-    }, [batch, quantity]);
+    }, [batch, quantity, variant]);
 
   return (
     <Grid

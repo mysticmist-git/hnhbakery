@@ -1,5 +1,5 @@
 import contactImage from '@/assets/contact-img.jpg';
-import { ContactWrapper } from '@/components/Contact';
+import { ContactWrapper } from '@/components/contact';
 import Imagebackground from '@/components/Imagebackground';
 import { auth } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';

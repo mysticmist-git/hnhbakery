@@ -1,6 +1,6 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
-import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
+import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
 import { CustomButton } from '@/components/buttons';
 import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
 import ProductTable from '@/components/cart/ProductTable';
@@ -35,7 +35,7 @@ function Cart() {
       setFirstTime(false);
       return;
     }
-  }, [cart]);
+  }, [cart, firstTime, reloadAssembledCart]);
 
   const [note, setNote] = useCartNote();
 

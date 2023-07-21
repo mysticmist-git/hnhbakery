@@ -1,5 +1,5 @@
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import CustomTextarea from '@/components/inputs/TextArea/CustomTextArea';
+import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import { Grid, Typography, alpha, useTheme } from '@mui/material';
