@@ -1,4 +1,4 @@
-import { NumberInputWithButtons } from '@/components/Inputs/MultiValue';
+import { NumberInputWithButtons } from '@/components/inputs/MultiValue';
 import { useTheme } from '@mui/material';
 
 export default function UI_Quantity({

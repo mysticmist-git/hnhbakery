@@ -1,5 +1,5 @@
 import placeholderImage from '@/assets/placeholder-image.png';
-import { RowModalLayoutButton } from '@/components/Manage/modals/rowModals';
+import { RowModalLayoutButton } from '@/components/manage/modals/rowModals';
 import { BaseObject } from '@/lib/models';
 import {
   ModalFormProps,
@@ -43,9 +43,6 @@ export default memo(
     }: ProductTypeFormProps,
     ref: ForwardedRef<ProductTypeFormRef>
   ) {
-    if (!data) return <div>Loading...</div>;
-    if (mode === 'none') return <div>No mode specified</div>;
-
     //#region States
 
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -99,6 +96,7 @@ export default memo(
         ...data,
         imageURL: URL.createObjectURL(file),
       };
+
       onDataChange(newData as BaseObject);
     };
 
@@ -119,6 +117,9 @@ export default memo(
     );
 
     //#endregion
+
+    if (!data) return <div>Loading...</div>;
+    if (mode === 'none') return <div>No mode specified</div>;
 
     return (
       <Grid container columnSpacing={2}>

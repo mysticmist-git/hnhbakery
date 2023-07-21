@@ -1,4 +1,4 @@
-import Sidebar from '@/components/Navigation/SideBar';
+import Sidebar from '@/components/navigation/SideBar';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';

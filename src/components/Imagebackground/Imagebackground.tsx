@@ -1,9 +1,9 @@
 import banh1 from '@/assets/Carousel/3.jpg';
+import TopSlideInDiv_Appear from '@/components/animations/appear/TopSlideInDiv';
+import TopSlideInDiv_Loof from '@/components/animations/loof/TopSlideInDiv';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/system';
 import React, { memo } from 'react';
-import TopSlideInDiv_Appear from '../Animation/Appear/TopSlideInDiv';
-import TopSlideInDiv_Loof from '../Animation/Loof/TopSlideInDiv';
 import { SolidUpWhite } from '../decorates/DecorateDivider/DecorateDivider';
 
 const ImageBackground = (props: any) => {

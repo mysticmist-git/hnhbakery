@@ -1,4 +1,4 @@
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import { CustomTextArea } from '@/components/inputs/TextArea';
 import { Box, Typography, alpha, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 
@@ -67,7 +67,7 @@ function GhiChuCuaBan({ note: paramNote, onChange }: GhiChuCuaBanProps) {
           },
         }}
       >
-        <CustomTextarea
+        <CustomTextArea
           value={note}
           onChange={handleNoteChange}
           minRows={3}

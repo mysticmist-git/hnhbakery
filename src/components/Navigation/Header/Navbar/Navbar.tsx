@@ -1,7 +1,12 @@
 import logo from '@/assets/Logo.png';
-import CustomDrawer from '@/components/Navigation/Header/CustomDrawer';
-import Skeleton_img from '@/components/Skeletons/skeleton_img';
 import { CustomIconButton } from '@/components/buttons';
+import {
+  CustomTab,
+  NavbarContextType,
+  RightMenu,
+} from '@/components/navigation/Header';
+import CustomDrawer from '@/components/navigation/Header/CustomDrawer';
+import Skeleton_img from '@/components/skeletons/skeleton_img';
 import { LOCAL_CART_KEY } from '@/lib/constants';
 import Menu from '@mui/icons-material/Menu';
 import {
@@ -26,8 +31,6 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { CustomTab, NavbarContextType } from '..';
-import RightMenu from '../RightMenu';
 
 //#region Tab
 
@@ -157,6 +160,8 @@ export const NavbarContext =
 function Navbar() {
   //#region States
 
+  const router = useRouter();
+
   const [tabState, setTabState] = useState({
     ...initTabs,
     value: initialTab(),
@@ -195,7 +200,7 @@ function Navbar() {
     }
 
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   // #endregion
 
@@ -214,7 +219,6 @@ function Navbar() {
   //#region Functions
 
   function initialTab() {
-    const router = useRouter();
     const pathname = router.pathname;
     let temp = initTabs.tabItems.findIndex((item) => {
       return item.href === pathname;

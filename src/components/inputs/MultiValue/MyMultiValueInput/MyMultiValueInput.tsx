@@ -1,10 +1,10 @@
+import NewValueChip from '@/components/inputs/MultiValue/NewValueChip';
 import { useSnackbarService } from '@/lib/contexts';
 import theme from '@/styles/themes/lightTheme';
 import { Close } from '@mui/icons-material';
 import { Chip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import React, { memo, useEffect, useState } from 'react';
-import NewValueChip from '../NewValueChip';
 
 const MyMultiValueInput = ({
   label,

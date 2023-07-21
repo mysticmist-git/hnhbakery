@@ -1,5 +1,5 @@
-import Footer from '@/components/Navigation/Footer';
-import { Navbar } from '@/components/Navigation/Header';
+import Footer from '@/components/navigation/Footer';
+import { Navbar } from '@/components/navigation/Header';
 import { memo } from 'react';
 
 const Layout = ({ children }: { children: any }) => {

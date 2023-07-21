@@ -1,9 +1,8 @@
-import { useTheme } from '@emotion/react';
 import { Tab, Tabs } from '@mui/material';
 import Link from 'next/link';
 import React, { memo, useContext } from 'react';
-import { TabItem } from '..';
 import { NavbarContext } from '../Navbar/Navbar';
+import { TabItem } from '../localLib';
 
 const CustomTab = (props: any) => {
   const context = useContext(NavbarContext);

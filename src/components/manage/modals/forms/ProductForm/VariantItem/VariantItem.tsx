@@ -1,4 +1,4 @@
-import { MyMultiValuePickerInput } from '@/components/Inputs/MultiValue';
+import { MyMultiValuePickerInput } from '@/components/inputs/MultiValue';
 import { ProductVariant } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { Delete, Edit, Remove } from '@mui/icons-material';

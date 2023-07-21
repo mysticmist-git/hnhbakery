@@ -1,5 +1,5 @@
 import placeholderImage from '@/assets/placeholder-image.png';
-import { MyMultiValueInput } from '@/components/Inputs/MultiValue';
+import { MyMultiValueInput } from '@/components/inputs/MultiValue';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollectionWithQuery } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
@@ -196,7 +196,7 @@ function ProductForm(
         },
       };
     },
-    [imageFiles]
+    [data.productType_id, imageFiles, productTypes]
   );
 
   //#endregion

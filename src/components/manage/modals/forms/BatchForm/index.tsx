@@ -1,4 +1,4 @@
-import { CustomTextFieldWithLabel } from '@/components/Inputs/textFields';
+import { CustomTextFieldWithLabel } from '@/components/inputs/textFields';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
   getCollectionWithQuery,
@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import { renderTimeViewClock } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import CustomDateTimePicker from './CustomDateTimePicker';
 import ProductTypeRenderOption from './ProductTypeRenderOption';
 import ProductVariantRenderOption from './ProductVariantRenderOption';
@@ -50,6 +50,43 @@ export default memo(function BatchForm(props: BatchFormProps) {
     useState<ProductVariant | null>(null);
 
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+
+  //#endregion
+
+  //#region Methods
+
+  const calculateDiscountMoney = useCallback((): number => {
+    if (!selectedProductVariant || !props.data) return 0;
+
+    return (selectedProductVariant.price * props.data.discount.percent) / 100;
+  }, [props.data, selectedProductVariant]);
+
+  const handleFieldChange = useCallback(
+    <Property extends keyof ModalBatchObject>(
+      property: Property,
+      value: ModalBatchObject[Property]
+    ) => {
+      if (!props.data) return;
+
+      const newData: ModalBatchObject = {
+        ...props.data,
+        [property]: value,
+      };
+
+      props.onDataChange(newData);
+    },
+    [props]
+  );
+
+  //#endregion
+
+  //#region Functions
+
+  function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
+    const shouldDisabled =
+      day.isBefore(props.data?.MFG) || day.isAfter(props.data?.EXP);
+    return shouldDisabled;
+  }
 
   //#endregion
 
@@ -116,7 +153,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
     fetchProductTypes();
     fetchNeededDataForView();
-  }, []);
+  }, [props.data]);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -138,19 +175,19 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   useEffect(() => {
     setDiscountAmount(() => calculateDiscountMoney());
-  }, [props.data?.discount.percent]);
+  }, [calculateDiscountMoney, props.data?.discount.percent]);
 
   useEffect(() => {
     if (!selectedProduct) return;
 
     handleFieldChange('product_id', selectedProduct.id);
-  }, [selectedProduct]);
+  }, [handleFieldChange, selectedProduct]);
 
   useEffect(() => {
     if (!selectedProductVariant) return;
 
     handleFieldChange('variant_id', selectedProductVariant.id);
-  }, [selectedProductVariant]);
+  }, [handleFieldChange, selectedProductVariant]);
 
   //#endregion
 
@@ -169,39 +206,6 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   function handleSelectedProductVariantChange(value: ProductVariant | null) {
     setSelectedProductVariant(() => value);
-  }
-
-  function handleFieldChange<
-    Property extends keyof ModalBatchObject
-  >(property: Property, value: ModalBatchObject[Property]) {
-    if (!props.data) return;
-
-    const newData: ModalBatchObject = {
-      ...props.data,
-      [property]: value,
-    };
-
-    props.onDataChange(newData);
-  }
-
-  //#endregion
-
-  //#region Methods
-
-  function calculateDiscountMoney(): number {
-    if (!selectedProductVariant || !props.data) return 0;
-
-    return (selectedProductVariant.price * props.data.discount.percent) / 100;
-  }
-
-  //#endregion
-
-  //#region Functions
-
-  function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
-    const shouldDisabled =
-      day.isBefore(props.data?.MFG) || day.isAfter(props.data?.EXP);
-    return shouldDisabled;
   }
 
   //#endregion

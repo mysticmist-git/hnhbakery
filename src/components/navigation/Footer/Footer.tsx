@@ -1,8 +1,8 @@
 import bg9 from '@/assets/Decorate/bg9.png';
 import logo from '@/assets/Logo.png';
+import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv/BottomSlideInDiv';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import React, { memo } from 'react';
-import BottomSlideInDiv from '../../Animation/Loof/BottomSlideInDiv';
 
 const Footer = () => {
   //#region Style
