@@ -1,8 +1,8 @@
-import ImageBackground from '@/components/Imagebackground';
+import ImageBackground from '@/components/Imagebackground/Imagebackground';
 import { LeftProfileColumn } from '@/components/Profile';
 import RightProfileColumn from '@/components/Profile/RightProfileColumn/RightProfileColumn';
 import { CustomIconButton } from '@/components/buttons';
-import { Outlined_TextField } from '@/components/order/MyModal/Outlined_TextField';
+import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { auth } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';

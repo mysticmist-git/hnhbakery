@@ -1,6 +1,6 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
+import { assembleItems } from '@/lib/pageSpecific/cart';
 import { useState } from 'react';
-import { assembleItems } from '../cart';
 
 function useAssembledCartItems(
   init: AssembledCartItem[] = []

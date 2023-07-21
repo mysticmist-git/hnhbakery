@@ -2,7 +2,7 @@ import ProductsContext, {
   BoLocItem,
   ProductsContextType,
 } from '@/lib/contexts/productsContext';
-import { valueComparer } from '@/lib/products';
+import { valueComparer } from '@/lib/pageSpecific/products';
 import { ProductForProductsPage } from '@/lib/types/products';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useContext, useMemo } from 'react';

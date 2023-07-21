@@ -1,11 +1,11 @@
 import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import ImageBackground from '@/components/Imagebackground';
+import ImageBackground from '@/components/Imagebackground/Imagebackground';
 import { Filter, ProductList, TypeSort, TypeView } from '@/components/products';
 import ProductsContext, { BoLocItem } from '@/lib/contexts/productsContext';
 import { fetchAvailableBatches } from '@/lib/firestore';
 import { BatchObject } from '@/lib/models';
-import { cachedCreateProductsOnProductsPage } from '@/lib/products';
+import { cachedCreateProductsOnProductsPage } from '@/lib/pageSpecific/products';
 import { ProductForProductsPage } from '@/lib/types/products';
 import { filterDuplicatesById } from '@/lib/utils';
 import {

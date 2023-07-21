@@ -1,8 +1,11 @@
 import { db } from '@/firebase/config';
-import { AuthorizeContext, AuthorizeContextType } from '@/lib/authorize';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { UserGroup, UserObject } from '@/lib/models';
+import {
+  AuthorizeContext,
+  AuthorizeContextType,
+} from '@/lib/pageSpecific/authorize';
 import { formatDateString } from '@/lib/utils';
 import { ExpandMore } from '@mui/icons-material';
 import {

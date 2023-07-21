@@ -1,4 +1,6 @@
-import MyModal from '@/components/order/MyModal';
+import ModalState from '@/components/order/MyModal/ModalState';
+import MyModal from '@/components/order/MyModal/MyModal';
+import BillTable from '@/components/order/MyTable/BillTable';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import {
@@ -20,8 +22,6 @@ import {
 } from '@mui/material';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { BillTable } from '../../components/order/MyTable/BillTable';
-import { ModalState } from '../../components/order/MyModal/ModalState';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {

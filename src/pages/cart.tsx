@@ -1,6 +1,6 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import ImageBackground from '@/components/Imagebackground';
+import ImageBackground from '@/components/Imagebackground/Imagebackground';
 import { CustomButton } from '@/components/buttons';
 import { GhiChuCuaBan, TongTienHoaDon } from '@/components/cart';
 import ProductTable from '@/components/cart/ProductTable';

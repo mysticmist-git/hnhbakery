@@ -1,5 +1,6 @@
+import contactImage from '@/assets/contact-img.jpg';
 import { ContactWrapper } from '@/components/Contact';
-import Imagebackground from '@/components/Imagebackground';
+import Imagebackground from '@/components/Imagebackground/Imagebackground';
 import { auth } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
 import {
@@ -15,7 +16,6 @@ import {
 import Image from 'next/image';
 import React, { memo, useMemo, useState } from 'react';
 import { useSendPasswordResetEmail } from 'react-firebase-hooks/auth';
-import contactImage from '@/assets/contact-img.jpg';
 
 const ForgetPasswordPage = () => {
   const wrapperTitle = useMemo(

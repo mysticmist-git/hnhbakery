@@ -3,7 +3,6 @@ import NewUserGroupDialog from '@/components/authorize/NewUserGroupDialog';
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';
 import { db } from '@/firebase/config';
-import { AuthorizeContext } from '@/lib/authorize';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
   PermissionObject,
@@ -13,6 +12,7 @@ import {
   userConverter,
   userGroupConverter,
 } from '@/lib/models';
+import { AuthorizeContext } from '@/lib/pageSpecific/authorize';
 import { Button, Divider, Tab, Tabs, Typography } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { addDoc, collection, query, where } from 'firebase/firestore';

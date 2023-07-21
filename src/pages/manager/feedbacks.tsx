@@ -1,3 +1,6 @@
+import FeedbackTable from '@/components/feedbacks/FeedbackTable';
+import ModalState from '@/components/feedbacks/ModalState';
+import MyModal from '@/components/feedbacks/MyModal';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import {
@@ -16,9 +19,6 @@ import {
   useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { FeedbackTable } from '../../components/feedbacks/FeedbackTable';
-import { MyModal } from '../../components/feedbacks/MyModal';
-import { ModalState } from '../../components/feedbacks/ModalState';
 
 const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {

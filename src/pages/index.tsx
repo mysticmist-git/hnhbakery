@@ -17,7 +17,7 @@ import {
 import {
   DashDownWhite,
   DashUpWhite,
-} from '@/components/decorates/DecorateDivider';
+} from '@/components/decorates/DecorateDivider/DecorateDivider';
 import {
   BestSellerItem,
   CarouselImageItem,

@@ -1,3 +1,4 @@
+import { ContactTable, MyModal } from '@/components/contacts';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection } from '@/lib/firestore';
@@ -15,12 +16,7 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
-import { title } from 'process';
 import { useEffect, useState } from 'react';
-import { ContactTable } from '../../components/contacts/ContactTable';
-import { MyModal } from '../../components/contacts/MyModal';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {

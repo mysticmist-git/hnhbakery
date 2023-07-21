@@ -1,7 +1,7 @@
 import { RowModal } from '@/components/Manage/modals/rowModals';
-import CustomDataTable from '@/components/Manage/tables/CustomDataTable';
+import CustomDataTable from '@/components/Manage/tables/CustomDataTable/CustomGridToolBar';
 import { TableActionButton } from '@/components/buttons';
-import SimpleDialog from '@/components/dialogs/SimpleDialog';
+import SimpleDialog from '@/components/dialogs/SimpleDialog/SimpleDialog';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {

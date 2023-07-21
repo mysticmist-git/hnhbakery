@@ -1,4 +1,5 @@
 import { TableActionButton } from '@/components/buttons';
+import { ModalState, MyModal, MyModalAdd, SaleTable } from '@/components/sale';
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
@@ -21,10 +22,6 @@ import {
 import { collection } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { ModalState } from '../../components/sale/ModalState';
-import { MyModal } from '../../components/sale/MyModal';
-import { MyModalAdd } from '../../components/sale/MyModalAdd';
-import { SaleTable } from '../../components/sale/SaleTable';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {

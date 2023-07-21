@@ -1,17 +1,17 @@
-import ImageBackground from '@/components/Imagebackground';
+import ImageBackground from '@/components/Imagebackground/Imagebackground';
 import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
 import { ListBillItem, ListProductItem } from '@/components/Search';
+import CustomAccordionFrame from '@/components/accordions/CustomAccordionFrame';
 import { CustomButton } from '@/components/buttons';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { SearchContext } from '@/lib/contexts/search';
 import { getDocFromFirestore } from '@/lib/firestore';
-import { createSearchResult } from '@/lib/search';
+import { createSearchResult } from '@/lib/pageSpecific/search';
 import { BillInfor, ProductInfor } from '@/lib/types/search';
 import { Box, Grid, Link, Skeleton, Typography, useTheme } from '@mui/material';
 import { FirebaseError } from 'firebase/app';
 import React, { createContext, memo, useState } from 'react';
-import { CustomAccordionFrame } from '../components/accordions/CustomAccordionFrame/index';
 
 const MSG_NOTIFY_EMPTY_SEARCH_TEXT =
   'Vui lòng nhập mã đơn hàng để tiến hành tìm kiếm';

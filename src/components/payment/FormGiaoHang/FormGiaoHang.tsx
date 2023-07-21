@@ -1,4 +1,4 @@
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea/CustomTextArea';
 import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
 
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';

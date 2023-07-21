@@ -105,32 +105,6 @@ export interface BillObject extends BaseObject {
   created_at: Date;
 }
 
-export const billConverter: FirestoreDataConverter<BillObject> = {
-  toFirestore: function (bill: BillObject) {
-    delete bill.id;
-    return { ...bill };
-  },
-
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<DocumentData>,
-    options: SnapshotOptions
-  ) {
-    const data = snapshot.data(options);
-    return {
-      ...data,
-      id: snapshot.id,
-      paymentTime:
-        data.paymentTime instanceof Timestamp
-          ? data.paymentTime.toDate()
-          : data.paymentTime,
-      created_at:
-        data.created_at instanceof Timestamp
-          ? data.created_at.toDate()
-          : data.created_at,
-    } as BillObject;
-  },
-};
-
 export interface BillDetailObject extends BaseObject {
   id?: string;
   amount: number;
@@ -166,25 +140,6 @@ export interface FeedbackObject extends BaseObject {
   user_id: string;
 }
 
-export const feedbackConverter: FirestoreDataConverter<FeedbackObject> = {
-  toFirestore: function (feedback: FeedbackObject) {
-    delete feedback.id;
-    return { ...feedback };
-  },
-
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<FeedbackObject>,
-    options: SnapshotOptions
-  ) {
-    const data = snapshot.data(options)!;
-    return {
-      ...data,
-      id: snapshot.id,
-      time: data.time instanceof Timestamp ? data.time.toDate() : data.time,
-    } as FeedbackObject;
-  },
-};
-
 export interface PaymentObject extends BaseObject {
   id?: string;
   name: string;
@@ -218,30 +173,6 @@ export interface SaleObject extends BaseObject {
   isActive: boolean;
 }
 
-export const saleConverter: FirestoreDataConverter<SaleObject> = {
-  toFirestore: function (sale: SaleObject) {
-    delete sale.id;
-    return { ...sale };
-  },
-
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<SaleObject>,
-    options: SnapshotOptions
-  ) {
-    const data = snapshot.data(options)!;
-    return {
-      ...data,
-      id: snapshot.id,
-      start_at:
-        data.start_at instanceof Timestamp
-          ? data.start_at.toDate()
-          : data.start_at,
-      end_at:
-        data.end_at instanceof Timestamp ? data.end_at.toDate() : data.end_at,
-    } as SaleObject;
-  },
-};
-
 export interface StaffObject extends BaseObject {
   id: string;
   mail?: string;
@@ -253,33 +184,6 @@ export interface StaffObject extends BaseObject {
   role_id: string;
   addresses: string[];
 }
-
-export const userConverter: FirestoreDataConverter<UserObject> = {
-  toFirestore: function (
-    modelObject: WithFieldValue<UserObject>
-  ): DocumentData {
-    delete modelObject.id;
-
-    return {
-      ...modelObject,
-    };
-  },
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<DocumentData>,
-    options?: SnapshotOptions | undefined
-  ): UserObject {
-    const data = snapshot.data(options)!;
-
-    return {
-      ...data,
-      id: snapshot.id,
-      birthday:
-        data.birthday instanceof Timestamp
-          ? data.birthday.toDate()
-          : data.birthday,
-    } as UserObject;
-  },
-};
 
 export interface UserObject extends BaseObject {
   id?: string;
@@ -318,25 +222,6 @@ export interface Contact extends BaseObject {
   content: string;
   isRead?: boolean;
 }
-
-export const contactConverter: FirestoreDataConverter<Contact> = {
-  toFirestore: function (contact: Contact) {
-    delete contact.id;
-    return { ...contact };
-  },
-
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<Contact>,
-    options: SnapshotOptions
-  ) {
-    const data = snapshot.data(options)!;
-
-    return {
-      ...data,
-      id: snapshot.id,
-    };
-  },
-};
 
 export interface PathWithUrl {
   path?: string;
@@ -384,45 +269,6 @@ export interface PermissionObject extends BaseObject {
   isActive: boolean;
 }
 
-export const userGroupConverter: FirestoreDataConverter<UserGroup> = {
-  fromFirestore: (snapshot, options) => {
-    const data = snapshot.data(options)!;
-
-    return {
-      ...data,
-      id: snapshot.id,
-    } as UserGroup;
-  },
-
-  toFirestore: (userGroup: UserGroup) => {
-    const { id: string, ...data } = userGroup;
-
-    return data;
-  },
-};
-
-export const permissionConverter: FirestoreDataConverter<PermissionObject> = {
-  toFirestore: function (
-    modelObject: WithFieldValue<PermissionObject>
-  ): DocumentData {
-    delete modelObject.id;
-
-    return {
-      ...modelObject,
-    };
-  },
-  fromFirestore: function (
-    snapshot: QueryDocumentSnapshot<DocumentData>,
-    options?: SnapshotOptions | undefined
-  ): PermissionObject {
-    const data = snapshot.data(options)!;
-
-    return {
-      ...data,
-      id: snapshot.id,
-    } as PermissionObject;
-  },
-};
 export interface SuperDetail_ReportObject {
   products: ProductObject[];
   batches: BatchObject[];
@@ -454,3 +300,156 @@ export interface SuperDetail_FeedbackObject extends FeedbackObject {
   productObject?: ProductObject;
   userObject?: UserObject;
 }
+
+//#region Converter
+
+export const billConverter: FirestoreDataConverter<BillObject> = {
+  toFirestore: function (bill: BillObject) {
+    delete bill.id;
+    return { ...bill };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options);
+    return {
+      ...data,
+      id: snapshot.id,
+      paymentTime:
+        data.paymentTime instanceof Timestamp
+          ? data.paymentTime.toDate()
+          : data.paymentTime,
+      created_at:
+        data.created_at instanceof Timestamp
+          ? data.created_at.toDate()
+          : data.created_at,
+    } as BillObject;
+  },
+};
+export const feedbackConverter: FirestoreDataConverter<FeedbackObject> = {
+  toFirestore: function (feedback: FeedbackObject) {
+    delete feedback.id;
+    return { ...feedback };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<FeedbackObject>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+    return {
+      ...data,
+      id: snapshot.id,
+      time: data.time instanceof Timestamp ? data.time.toDate() : data.time,
+    } as FeedbackObject;
+  },
+};
+export const saleConverter: FirestoreDataConverter<SaleObject> = {
+  toFirestore: function (sale: SaleObject) {
+    delete sale.id;
+    return { ...sale };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<SaleObject>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+    return {
+      ...data,
+      id: snapshot.id,
+      start_at:
+        data.start_at instanceof Timestamp
+          ? data.start_at.toDate()
+          : data.start_at,
+      end_at:
+        data.end_at instanceof Timestamp ? data.end_at.toDate() : data.end_at,
+    } as SaleObject;
+  },
+};
+export const userConverter: FirestoreDataConverter<UserObject> = {
+  toFirestore: function (
+    modelObject: WithFieldValue<UserObject>
+  ): DocumentData {
+    delete modelObject.id;
+
+    return {
+      ...modelObject,
+    };
+  },
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options?: SnapshotOptions | undefined
+  ): UserObject {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+      birthday:
+        data.birthday instanceof Timestamp
+          ? data.birthday.toDate()
+          : data.birthday,
+    } as UserObject;
+  },
+};
+export const contactConverter: FirestoreDataConverter<Contact> = {
+  toFirestore: function (contact: Contact) {
+    delete contact.id;
+    return { ...contact };
+  },
+
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<Contact>,
+    options: SnapshotOptions
+  ) {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    };
+  },
+};
+export const userGroupConverter: FirestoreDataConverter<UserGroup> = {
+  fromFirestore: (snapshot, options) => {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    } as UserGroup;
+  },
+
+  toFirestore: (userGroup: UserGroup) => {
+    const { id: string, ...data } = userGroup;
+
+    return data;
+  },
+};
+export const permissionConverter: FirestoreDataConverter<PermissionObject> = {
+  toFirestore: function (
+    modelObject: WithFieldValue<PermissionObject>
+  ): DocumentData {
+    delete modelObject.id;
+
+    return {
+      ...modelObject,
+    };
+  },
+  fromFirestore: function (
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    options?: SnapshotOptions | undefined
+  ): PermissionObject {
+    const data = snapshot.data(options)!;
+
+    return {
+      ...data,
+      id: snapshot.id,
+    } as PermissionObject;
+  },
+};
+
+//#endregion

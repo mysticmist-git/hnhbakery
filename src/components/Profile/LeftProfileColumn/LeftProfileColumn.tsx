@@ -4,7 +4,7 @@ import { Box, Grid, useTheme } from '@mui/material';
 import { ref } from 'firebase/storage';
 import React, { ChangeEvent, ChangeEventHandler, memo, useMemo } from 'react';
 import { useUploadFile } from 'react-firebase-hooks/storage';
-import ProfileAvatar from '../Avatar/ProfileAvatar';
+import ProfileAvatar from '../ProfileAvatar/ProfileAvatar';
 
 const LeftProfileColumn = ({
   image,

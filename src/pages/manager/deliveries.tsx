@@ -1,3 +1,4 @@
+import { DeliveryTable, ModalState, MyModal } from '@/components/deliveries';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import {
@@ -19,9 +20,6 @@ import {
   useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { DeliveryTable } from '../../components/deliveries/DeliveryTable';
-import { MyModal } from '../../components/deliveries/MyModal';
-import { ModalState } from '../../components/deliveries/ModalState';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {

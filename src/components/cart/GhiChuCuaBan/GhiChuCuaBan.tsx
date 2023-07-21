@@ -1,4 +1,4 @@
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea/CustomTextArea';
 import { Box, Typography, alpha, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 

@@ -1,4 +1,4 @@
-import CustomButton from '@/components/buttons/CustomButton';
+import CustomButton from '@/components/buttons/CustomButton/CustomButton';
 import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import CustomTextField from '../../Inputs/textFields/CustomTextField/CustomTextField';

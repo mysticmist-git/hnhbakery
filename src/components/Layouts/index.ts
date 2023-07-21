@@ -1,2 +1,6 @@
-export { default as DefaultLayout } from './MainLayout/DefaultLayout';
-export { default as ManageLayout } from './MainLayout/ManageLayout';
+export {
+  default as DefaultLayout,
+  default as ManageLayout,
+} from './MainLayout';
+
+export { default as CaiKhungCoTitle } from './CaiKhungCoTitle';

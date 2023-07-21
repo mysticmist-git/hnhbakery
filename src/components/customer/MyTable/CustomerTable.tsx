@@ -1,4 +1,10 @@
+import {
+  billStatusParse,
+  statusTextResolver,
+  userAccountTypeParse,
+} from '@/lib/manage/manage';
 import { SuperDetail_UserObject } from '@/lib/models';
+import { formatDateString, formatPrice } from '@/lib/utils';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
   DataGrid,
@@ -10,14 +16,8 @@ import {
 } from '@mui/x-data-grid';
 import React, { useEffect, useState } from 'react';
 import { CustomLinearProgres } from '../../../pages/manager/customers';
-import { formatDateString, formatPrice } from '@/lib/utils';
-import {
-  billStatusParse,
-  statusTextResolver,
-  userAccountTypeParse,
-} from '@/lib/manage/manage';
 
-export function CustomerTable({
+export default function CustomerTable({
   usersData,
   handleViewUser,
   handleViewUserModalState,

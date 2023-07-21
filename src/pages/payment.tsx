@@ -1,6 +1,6 @@
-import ImageBackground from '@/components/Imagebackground';
-import CustomButton from '@/components/buttons/CustomButton';
-import { CaiKhungCoTitle } from '@/components/layouts/CaiKhungCoTitle';
+import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import CustomButton from '@/components/buttons/CustomButton/CustomButton';
+import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
 import { auth, db } from '@/firebase/config';
@@ -20,7 +20,7 @@ import {
   mapProductBillToBillDetailObject,
   sendPaymentRequestToVNPay,
   validateForm,
-} from '@/lib/payment';
+} from '@/lib/pageSpecific/payment';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import { collection, doc, increment, updateDoc } from 'firebase/firestore';

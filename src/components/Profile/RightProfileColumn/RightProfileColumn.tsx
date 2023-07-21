@@ -6,7 +6,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import React, { memo } from 'react';
 import AddressList from '../AddressList';
-import TelTextField from '../TelTextField/TelTextField';
+import TelTextField from '../TelTextField';
 
 interface RightProfileColumnProps {
   userData?: UserObject;
