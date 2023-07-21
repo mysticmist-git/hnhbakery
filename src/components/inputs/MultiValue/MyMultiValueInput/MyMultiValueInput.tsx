@@ -3,7 +3,7 @@ import theme from '@/styles/themes/lightTheme';
 import { Close } from '@mui/icons-material';
 import { Chip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
-import { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import NewValueChip from '../NewValueChip';
 
 const MyMultiValueInput = ({

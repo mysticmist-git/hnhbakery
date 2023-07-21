@@ -1,28 +1,3 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "plugin:react/recommended",
-    "prettier",
-    "plugin:@typescript-eslint/recommended"
-  ],
-  "plugins": ["import"],
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"],
-        "moduleDirectory": ["node_modules", "src/"]
-      },
-      "next": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      },
-      "typescript": {}
-    }
-  },
-  "rules": {
-    // ESLint rules
-    "import/no-unresolved": "error",
-    "import/named": "error",
-    "import/default": "error",
-    "import/namespace": "error"
-  }
+  "extends": "next/core-web-vitals"
 }
