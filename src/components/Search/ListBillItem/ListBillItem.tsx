@@ -2,9 +2,8 @@ import CustomAccordionItem from '@/components/accordions/CustomAccordionItem';
 import { SearchContext } from '@/lib/contexts/search';
 import { Grid, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
-import ChiTietHoaDon from '../ChiTietHoaDon/ChiTietHoaDon';
-import ThongTinGiaoHang from '../ThongTinGiaoHang/ThongTinGiaoHang';
-import ThongTinKhuyenMai from '../ThongTinKhuyenMai/ThongTinKhuyenMai';
+import ChiTietHoaDon from '../ChiTietHoaDon';
+import ThongTinKhuyenMai from '../ThongTinKhuyenMai';
 
 const ListBillItem = memo((props: any) => {
   const theme = useTheme();

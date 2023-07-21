@@ -1,5 +1,5 @@
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea/CustomTextArea';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
+import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
 
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import { Grid, Typography, alpha, useTheme } from '@mui/material';
@@ -8,7 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { memo } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-import ChooseTime from '../ChooseTime/ChooseTime';
+import ChooseTime from '../ChooseTime';
 
 type FormGiaoHangProps = {
   form: DeliveryForm;

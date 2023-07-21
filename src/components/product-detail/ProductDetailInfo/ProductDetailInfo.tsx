@@ -6,7 +6,7 @@ import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 import { ProductObject, ProductVariant } from '../../../lib/models';
-import MyDivider from '../Divider/Divider';
+import MyDivider from '../Divider';
 import ProductCarousel from '../ProductCarousel';
 import ProductRating from '../ProductRating';
 

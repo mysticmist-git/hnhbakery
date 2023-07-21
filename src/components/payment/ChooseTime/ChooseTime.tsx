@@ -1,5 +1,5 @@
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
-import CustomButton from '@/components/buttons/CustomButton/CustomButton';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
+import CustomButton from '@/components/buttons/CustomButton';
 import { MocGioGiaoHang } from '@/lib/constants';
 import {
   Dialog,

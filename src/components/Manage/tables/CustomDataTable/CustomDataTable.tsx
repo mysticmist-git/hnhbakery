@@ -28,7 +28,7 @@ import {
   GridValueGetterParams,
 } from '@mui/x-data-grid';
 import { memo, useEffect, useMemo, useState } from 'react';
-import CustomGridToolBar from './CustomGridToolBar/CustomGridToolBar';
+import CustomGridToolBar from './CustomGridToolBar';
 
 //#region Types
 

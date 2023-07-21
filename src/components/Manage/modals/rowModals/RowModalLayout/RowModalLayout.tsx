@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
-import RowModalLayoutButton from '../RowModalLayoutButton/RowModalLayoutButton';
+import RowModalLayoutButton from '../RowModalLayoutButton';
 
 const formStyle = {
   // These 4 below are positionings I used for larger

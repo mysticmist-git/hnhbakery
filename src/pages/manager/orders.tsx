@@ -1,5 +1,5 @@
+import MyModal from '@/components/order/MyModal';
 import ModalState from '@/components/order/MyModal/ModalState';
-import MyModal from '@/components/order/MyModal/MyModal';
 import BillTable from '@/components/order/MyTable/BillTable';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';

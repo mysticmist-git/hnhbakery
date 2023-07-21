@@ -3,7 +3,7 @@ import { Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { StaticImageData } from 'next/image';
 import { memo, useEffect, useState } from 'react';
-import MyGalleryImage from './MyGalleryImage/MyGalleryImage';
+import MyGalleryImage from './MyGalleryImage';
 import MyGalleryImageNewButton from './MyGalleryImage/MyGalleryImageNewButton';
 
 function MyGallery({

@@ -1,6 +1,6 @@
 import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { Filter, ProductList, TypeSort, TypeView } from '@/components/products';
 import ProductsContext, { BoLocItem } from '@/lib/contexts/productsContext';
 import { fetchAvailableBatches } from '@/lib/firestore';

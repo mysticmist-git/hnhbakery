@@ -7,7 +7,7 @@ import React, { memo, useContext, useEffect, useState } from 'react';
 import BottomSlideInDiv from '@/components/Animation/Appear/BottomSlideInDiv';
 import TopSlideInDiv from '@/components/Animation/Appear/TopSlideInDiv';
 import FadeDiv from '@/components/Animation/Loof/FadeDiv';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
 import { CustomButton } from '@/components/buttons';
 import {
   CustomCard,

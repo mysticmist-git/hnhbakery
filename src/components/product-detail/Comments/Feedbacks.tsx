@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import FeedbackDialog from '../FeedbackDialog';
-import FeedbackItem from '../FeedbackItem/FeedbackItem';
+import FeedbackItem from '../FeedbackItem';
 import ProductRating from '../ProductRating';
 
 function Feedbacks({

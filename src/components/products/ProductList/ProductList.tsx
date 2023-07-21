@@ -6,7 +6,7 @@ import { valueComparer } from '@/lib/pageSpecific/products';
 import { ProductForProductsPage } from '@/lib/types/products';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useContext, useMemo } from 'react';
-import CakeCard from '../CakeCard/CakeCard';
+import CakeCard from '../CakeCard';
 
 function ProductList(props: any) {
   //#region Hooks

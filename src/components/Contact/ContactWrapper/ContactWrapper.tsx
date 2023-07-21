@@ -1,7 +1,7 @@
-import { Box, useTheme, alpha, Grid } from '@mui/material';
-import { memo } from 'react';
 import contactImage from '@/assets/contact-img.jpg';
+import { Box, Grid, useTheme } from '@mui/material';
 import Image from 'next/image';
+import { memo } from 'react';
 
 const ContactWrapper = ({ children = '' }: { children?: React.ReactNode }) => {
   const theme = useTheme();

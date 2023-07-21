@@ -1,4 +1,4 @@
-import CustomButton from '@/components/buttons/CustomButton/CustomButton';
+import CustomButton from '@/components/buttons/CustomButton';
 import {
   CustomTextField,
   CustomTextFieldPassword,

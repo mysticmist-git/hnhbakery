@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
-import ChiTietDonHang_Content from '../ChiTietDonHang_Content/ChiTietDonHang_Content';
+import ChiTietDonHang_Content from '../ChiTietDonHang_Content';
 import DonHang_Content from '../DonHang_Content';
 import ThongTin_Content from '../ThongTin_Content';
 

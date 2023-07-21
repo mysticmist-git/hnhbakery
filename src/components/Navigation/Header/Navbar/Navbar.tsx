@@ -27,7 +27,7 @@ import React, {
   useState,
 } from 'react';
 import { CustomTab, NavbarContextType } from '..';
-import RightMenu from '../RightMenu/RightMenu';
+import RightMenu from '../RightMenu';
 
 //#region Tab
 

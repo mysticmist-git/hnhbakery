@@ -26,7 +26,7 @@ import {
 import { renderTimeViewClock } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { memo, useEffect, useState } from 'react';
-import CustomDateTimePicker from './CustomDateTimePicker/CustomDateTimePicker';
+import CustomDateTimePicker from './CustomDateTimePicker';
 import ProductTypeRenderOption from './ProductTypeRenderOption';
 import ProductVariantRenderOption from './ProductVariantRenderOption';
 

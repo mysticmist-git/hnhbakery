@@ -2,15 +2,12 @@ import { CustomIconButton } from '@/components/buttons';
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getDocFromFirestore, updateDocToFirestore } from '@/lib/firestore';
-import useUserData from '@/lib/hooks/userUserData';
-import { UserObject } from '@/lib/models';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
-import CheckboxList from '../CheckboxList/CheckboxList';
-import XacNhanXoa_Dialog from '../XacNhanXoa_Dialog/XacNhanXoa_Dialog';
+import CheckboxList from '../CheckboxList';
+import XacNhanXoa_Dialog from '../XacNhanXoa_Dialog';
 
 export default function AddressList(props: any) {
   const { textStyle, userData } = props;

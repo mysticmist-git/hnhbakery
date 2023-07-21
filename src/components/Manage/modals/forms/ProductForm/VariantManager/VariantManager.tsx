@@ -5,7 +5,7 @@ import { Button, List, ListItem, ListItemText, styled } from '@mui/material';
 import { where } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useState } from 'react';
-import VariantItem from '../VariantItem/VariantItem';
+import VariantItem from '../VariantItem';
 
 type VariantManagerProps = {
   variants: ProductVariant[];

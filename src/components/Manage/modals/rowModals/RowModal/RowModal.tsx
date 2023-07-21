@@ -1,5 +1,5 @@
 import { useSnackbarService } from '@/lib/contexts';
-import {} from '@/lib/manage/manage';
+import {} from '@/lib/manage';
 import { BaseObject } from '@/lib/models';
 import {
   AddRowHandler,
@@ -12,8 +12,8 @@ import {
 } from '@/lib/types/manage';
 import { Backdrop, CircularProgress } from '@mui/material';
 import React, { forwardRef, memo, useEffect, useState } from 'react';
-import Form from '../../forms/Form/Form';
-import RowModalLayout from '../RowModalLayout/RowModalLayout';
+import Form from '../../forms/Form';
+import RowModalLayout from '../RowModalLayout';
 
 interface RowModalProps extends CommonRowModalProps {
   handleAddRow: AddRowHandler;

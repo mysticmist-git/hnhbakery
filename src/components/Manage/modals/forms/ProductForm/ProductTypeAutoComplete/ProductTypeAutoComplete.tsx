@@ -2,7 +2,7 @@ import { CustomTextFieldWithLabel } from '@/components/Inputs/textFields';
 import { Identifiable, Nameable } from '@/lib/models';
 import { Autocomplete, AutocompleteRenderOptionState } from '@mui/material';
 import React from 'react';
-import ProductTypeRenderOption from '../ProductTypeRenderOption/ProductTypeRenderOption';
+import ProductTypeRenderOption from '../ProductTypeRenderOption';
 
 type ProductTypeAutocompleteProps<T> = {
   readOnly: boolean;

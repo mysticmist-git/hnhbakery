@@ -43,10 +43,10 @@ import {
   useState,
 } from 'react';
 import { a11yProps } from '../utils/a11yProps';
-import MyGallery from './MyGallery/MyGallery';
-import ProductTypeAutocomplete from './ProductTypeAutoComplete/ProductTypeAutoComplete';
-import TabPanel from './TabPanel/TabPanel';
-import VariantManager from './VariantManager/VariantManager';
+import MyGallery from './MyGallery';
+import ProductTypeAutocomplete from './ProductTypeAutoComplete';
+import TabPanel from './TabPanel';
+import VariantManager from './VariantManager';
 
 interface ProductTypeStateProps {
   id: string;

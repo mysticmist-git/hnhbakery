@@ -1,4 +1,4 @@
-import CustomButton from '@/components/buttons/CustomButton/CustomButton';
+import CustomButton from '@/components/buttons/CustomButton';
 import { CustomDialog } from '@/components/dialogs';
 import { useSnackbarService } from '@/lib/contexts';
 import { Grid, Typography, useTheme } from '@mui/material';

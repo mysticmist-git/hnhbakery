@@ -1,5 +1,5 @@
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
+import ImageBackground from '@/components/Imagebackground';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
 import { ListBillItem, ListProductItem } from '@/components/Search';
 import CustomAccordionFrame from '@/components/accordions/CustomAccordionFrame';
 import { CustomButton } from '@/components/buttons';

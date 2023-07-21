@@ -5,7 +5,7 @@ import { Box, Typography, useTheme } from '@mui/material';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { memo, useContext, useEffect, useMemo, useState } from 'react';
-import NavbarAvatar from '../../NavbarAvatar/NavbarAvatar';
+import NavbarAvatar from '../../NavbarAvatar';
 import { NavbarContext } from '../Navbar/Navbar';
 
 const RightMenu = (props: any) => {

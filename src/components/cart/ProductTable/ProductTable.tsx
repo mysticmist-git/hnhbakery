@@ -19,8 +19,8 @@ import UI_Delete from '../UI_Delete';
 import UI_Name from '../UI_Name';
 import UI_Price from '../UI_Price';
 import UI_Quantity from '../UI_Quantity';
-import UI_SizeMaterial from '../UI_SizeMaterial/UI_SizeMaterial';
-import UI_TotalPrice from '../UI_TotalPrice/UI_TotalPrice';
+import UI_SizeMaterial from '../UI_SizeMaterial';
+import UI_TotalPrice from '../UI_TotalPrice';
 
 function resolveBatchMax(total?: number, sold?: number) {
   if (total === undefined || sold === undefined) return 0;

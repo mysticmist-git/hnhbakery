@@ -1,4 +1,4 @@
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';

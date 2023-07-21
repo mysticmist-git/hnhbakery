@@ -1,6 +1,6 @@
-import CustomButton from '@/components/buttons/CustomButton/CustomButton';
-import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea/CustomTextArea';
-import CustomTextField from '@/components/Inputs/textFields/CustomTextField/CustomTextField';
+import CustomButton from '@/components/buttons/CustomButton/';
+import CustomTextarea from '@/components/Inputs/TextArea/CustomTextArea';
+import CustomTextField from '@/components/Inputs/textFields/CustomTextField';
 import { useSnackbarService } from '@/lib/contexts';
 import { sendContact } from '@/lib/firestore';
 import theme from '@/styles/themes/lightTheme';

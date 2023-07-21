@@ -2,9 +2,9 @@ import { useTheme } from '@emotion/react';
 import { DensityMediumOutlined } from '@mui/icons-material';
 import { Drawer, Grid } from '@mui/material';
 import { memo, useContext } from 'react';
-import CustomTab from '../CustomTab/CustomTab';
+import CustomTab from '../CustomTab';
 import { NavbarContext } from '../Navbar/Navbar';
-import RightMenu from '../RightMenu/RightMenu';
+import RightMenu from '../RightMenu';
 
 const CustomDrawer = (props: any) => {
   const theme = useTheme();

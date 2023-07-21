@@ -1,5 +1,5 @@
 import { ContactForm, ContactWrapper } from '@/components/Contact';
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import React, { memo, useMemo } from 'react';
 

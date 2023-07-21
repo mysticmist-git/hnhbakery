@@ -1,6 +1,6 @@
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { LeftProfileColumn } from '@/components/Profile';
-import RightProfileColumn from '@/components/Profile/RightProfileColumn/RightProfileColumn';
+import RightProfileColumn from '@/components/Profile/RightProfileColumn';
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { auth } from '@/firebase/config';

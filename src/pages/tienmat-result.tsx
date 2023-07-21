@@ -1,4 +1,4 @@
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { useSnackbarService } from '@/lib/contexts';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';

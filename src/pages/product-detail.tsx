@@ -2,7 +2,7 @@ import { CartItem } from '@/@types/cart';
 import banh1 from '@/assets/Carousel/1.jpg';
 import banh2 from '@/assets/Carousel/2.jpg';
 import banh3 from '@/assets/Carousel/3.jpg';
-import ImageBackground from '@/components/Imagebackground/Imagebackground';
+import ImageBackground from '@/components/Imagebackground';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
 import Feedbacks from '@/components/product-detail/Comments/Feedbacks';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
