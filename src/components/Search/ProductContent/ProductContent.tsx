@@ -3,7 +3,7 @@ import { formatPrice } from '@/lib/utils';
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
 
-const ProductContent = memo((props: any) => {
+const ProductContent = (props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const item = props.item;
@@ -111,6 +111,6 @@ const ProductContent = memo((props: any) => {
       </Grid>
     </>
   );
-});
+};
 
-export default ProductContent;
+export default memo(ProductContent);

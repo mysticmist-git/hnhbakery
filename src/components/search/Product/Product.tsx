@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import React, { memo } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 
-const Product = memo((props: any) => {
+const Product = (props: any) => {
   const theme = useTheme();
   const item = props.item;
 
@@ -205,6 +205,6 @@ const Product = memo((props: any) => {
       </Grid>
     </>
   );
-});
+};
 
-export default Product;
+export default memo(Product);

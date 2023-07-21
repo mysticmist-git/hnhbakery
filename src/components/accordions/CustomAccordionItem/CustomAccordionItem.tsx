@@ -8,13 +8,17 @@ import {
 } from '@mui/material';
 import React, { memo } from 'react';
 
-const CustomAccordionItem = memo((props: any) => {
-  const {
-    heading = 'Heading',
-    defaultExpanded = false,
-    children = () => {},
-  } = props;
+const CustomAccordionItem = ({
+  heading = 'Heading',
+  defaultExpanded = false,
+  children,
+}: {
+  heading?: string;
+  defaultExpanded?: boolean;
+  children: React.ReactNode;
+}) => {
   const theme = useTheme();
+
   return (
     <Accordion
       sx={{
@@ -49,10 +53,10 @@ const CustomAccordionItem = memo((props: any) => {
           bgcolor: theme.palette.common.white,
         }}
       >
-        <props.children />
+        {children}
       </AccordionDetails>
     </Accordion>
   );
-});
+};
 
 export default CustomAccordionItem;

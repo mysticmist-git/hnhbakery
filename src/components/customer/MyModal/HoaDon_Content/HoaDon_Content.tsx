@@ -50,8 +50,8 @@ export default function HoaDon_Content({
         spacing={3}
       >
         {modalUser?.billObjects && modalUser?.billObjects?.length > 0 ? (
-          modalUser?.billObjects.map((bill) => (
-            <Grid item xs={12} alignSelf={'stretch'}>
+          modalUser?.billObjects.map((bill, index) => (
+            <Grid item xs={12} alignSelf={'stretch'} key={index}>
               <Outlined_TextField
                 textStyle={textStyle}
                 multiline

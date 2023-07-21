@@ -50,8 +50,9 @@ function MyGallery({
         </Typography>
       </Typography>
       <Stack direction={'row'} flexWrap={'wrap'} gap={1}>
-        {srcsConverter(srcs ?? []).map((src) => (
+        {srcsConverter(srcs ?? []).map((src, index) => (
           <MyGalleryImage
+            key={index}
             src={src && src !== '' ? src : placeholderImage}
             handleDeleteImage={handleDeleteImage}
             readOnly={readOnly}

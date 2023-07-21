@@ -5,7 +5,6 @@ import {
   permissionRouteMap,
   useAvailablePermissions,
 } from '@/lib/pageSpecific/authorize';
-import contact from '@/pages/contact';
 import {
   ChatRounded,
   Check,
@@ -25,7 +24,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { collection, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import * as React from 'react';
-import { memo } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 //#region Constants
@@ -36,42 +34,12 @@ const PATH = '/manager/';
 
 //#region Functions
 
-function isActive(route: string) {
-  const router = useRouter();
-  return router.pathname === `${PATH}${route}`;
-}
-function iconSxProps(route: string) {
-  const theme = useTheme();
-
-  const sx = [
-    {},
-    isActive(route) && {
-      color: theme.palette.secondary.main,
-    },
-  ];
-
-  return sx;
-}
-
-function typographySxProps(route: string) {
-  const theme = useTheme();
-
-  const sx = [
-    { color: theme.palette.text.secondary },
-    isActive(route) && {
-      color: theme.palette.secondary.main,
-      fontWeight: 'bold',
-    },
-  ];
-
-  return sx;
-}
-
 //#endregion
-export const MainListItems = memo(({ open }: { open: boolean }) => {
+export const MainListItems = ({ open }: { open: boolean }) => {
   //#region Hooks
 
   const router = useRouter();
+  const theme = useTheme();
 
   const { available, loading } = useAvailablePermissions();
 
@@ -100,6 +68,42 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
 
     return contacts?.length;
   }, [contacts, cLoading]);
+
+  const isActive = React.useCallback(
+    (route: string) => {
+      return router.pathname === `${PATH}${route}`;
+    },
+    [router.pathname]
+  );
+
+  const iconSxProps = React.useCallback(
+    (route: string) => {
+      const sx = [
+        {},
+        isActive(route) && {
+          color: theme.palette.secondary.main,
+        },
+      ];
+
+      return sx;
+    },
+    [isActive, theme.palette.secondary.main]
+  );
+
+  const typographySxProps = React.useCallback(
+    (route: string) => {
+      const sx = [
+        { color: theme.palette.text.secondary },
+        isActive(route) && {
+          color: theme.palette.secondary.main,
+          fontWeight: 'bold',
+        },
+      ];
+
+      return sx;
+    },
+    [isActive, theme.palette.secondary.main, theme.palette.text.secondary]
+  );
 
   return (
     <React.Fragment>
@@ -427,6 +431,6 @@ export const MainListItems = memo(({ open }: { open: boolean }) => {
       )}
     </React.Fragment>
   );
-});
+};
 
 export default MainListItems;

@@ -13,8 +13,9 @@ export default function DanhSachSanPham(props: any) {
           heading={item.product?.name ?? 'Sản phẩm'}
           key={i}
           defaultExpanded={i == 0 ? true : false}
-          children={() => <DanhSachSanPham_Item item={item} />}
-        />
+        >
+          <DanhSachSanPham_Item item={item} />
+        </CustomAccordionItem>
       ))}
     </>
   );

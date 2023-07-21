@@ -43,8 +43,8 @@ export default function FeedBack_Content({
       >
         {modalUser?.feedbackObjects &&
         modalUser?.feedbackObjects?.length > 0 ? (
-          modalUser?.feedbackObjects.map((feedback) => (
-            <Grid item xs={12} alignSelf={'stretch'}>
+          modalUser?.feedbackObjects.map((feedback, index) => (
+            <Grid item xs={12} alignSelf={'stretch'} key={index}>
               <Outlined_TextField
                 textStyle={textStyle}
                 multiline

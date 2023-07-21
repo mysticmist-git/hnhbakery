@@ -14,7 +14,7 @@ import { Product, ProductContent } from '..';
 
 //#endregion
 //#region Danh sách sản phẩm
-const ListProductItem = memo((props: any) => {
+const ListProductItem = (props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -128,6 +128,6 @@ const ListProductItem = memo((props: any) => {
       </Grid>
     </Grid>
   );
-});
+};
 
-export default ListProductItem;
+export default memo(ListProductItem);

@@ -27,7 +27,7 @@ import {
   GridValueFormatterParams,
   GridValueGetterParams,
 } from '@mui/x-data-grid';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import CustomGridToolBar from './CustomGridToolBar';
 
 //#region Types
@@ -72,11 +72,13 @@ function ActionsCell(
 ) {
   return [
     <GridActionsCellItem
+      key={'view'}
       icon={<Visibility />}
       label="Xem"
       onClick={() => handleViewRow(params.id)}
     />,
     <GridActionsCellItem
+      key="delete"
       icon={<Delete />}
       label="Xóa"
       onClick={() => handleDeleteRow(params.row)}
@@ -158,17 +160,9 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   //#endregion
 
-  //#region useMemos
-
-  const columns = useMemo(() => {
-    return generateDatagridColumn();
-  }, [props.mainDocs, props.collectionName, productTypes, products]);
-
-  //#endregion
-
   //#region Functions
 
-  function generateDatagridColumn(): GridColDef[] {
+  const generateDatagridColumn = useCallback((): GridColDef[] => {
     switch (props.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         return [
@@ -466,7 +460,23 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
     }
 
     //#endregion
-  }
+  }, [
+    productTypes,
+    products,
+    props.collectionName,
+    props.handleDeleteRow,
+    props.handleViewRow,
+    theme.palette.error.main,
+    theme.palette.success.main,
+  ]);
+
+  //#endregion
+
+  //#region useMemos
+
+  const columns = useMemo(() => {
+    return generateDatagridColumn();
+  }, [generateDatagridColumn]);
 
   //#endregion
 

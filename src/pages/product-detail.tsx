@@ -34,7 +34,7 @@ import { collection, query, where } from 'firebase/firestore';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
@@ -155,23 +155,6 @@ function ProductDetail({
   invalid?: boolean;
   product: string;
 }) {
-  if (invalid) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-        }}
-      >
-        <Typography variant="h2">
-          Đã có lỗi xảy ra hoặc Không tồn tại sản phẩm này
-        </Typography>
-      </Box>
-    );
-  }
-
   // #region Hooks
 
   const theme = useTheme();
@@ -213,96 +196,14 @@ function ProductDetail({
 
   // #endregion
 
-  //#region useMemo
+  //#region Callbacks
 
   const product: AssembledProduct = useMemo(() => {
     const product = JSON.parse(paramProduct);
     return product;
   }, [paramProduct]);
 
-  const batchOptions: BatchObjectWithDiscount[] = useMemo(() => {
-    if (!selectedVariant) return [];
-
-    const batches = product.batches.filter(
-      (b) => b.variant_id === selectedVariant.id
-    );
-
-    return batches;
-  }, [selectedVariant]);
-
-  const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
-    product
-      ? query(
-          collection(db, COLLECTION_NAME.FEEDBACKS),
-          where('product_id', '==', product.id)
-        ).withConverter(feedbackConverter)
-      : undefined,
-    {
-      initialValue: [],
-    }
-  );
-
-  const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
-    return {
-      product: product,
-      variant: selectedVariant,
-      onVariantChange: handleVariantChange,
-      batch: selectedBatch,
-      onBatchChange: handleBatchChange,
-      batchOptions: batchOptions,
-      quantity: quantity,
-      onQuantityChange: handleQuantityChange,
-      comments: feedbacks ?? [],
-      onAddToCart: handleAddToCart,
-    };
-  }, [
-    product,
-    selectedVariant,
-    handleVariantChange,
-    selectedBatch,
-    handleBatchChange,
-    batchOptions,
-    quantity,
-    handleQuantityChange,
-    feedbacks,
-  ]);
-
-  //#endregion
-
-  //#region useEffects
-
-  useEffect(() => {
-    if (product.variants.length > 0)
-      setSelectedVariant(() => product.variants[0]);
-  }, [product.variants]);
-
-  useEffect(() => {
-    if (batchOptions && batchOptions.length > 0) {
-      setSelectedBatch(() => batchOptions[0]);
-    }
-  }, [batchOptions]);
-
-  useEffect(() => {
-    setBackdropOpen(() => isAdding);
-  }, [isAdding]);
-
-  //#endregion
-
-  //#region Handlers
-
-  function handleVariantChange(variant: ProductVariant) {
-    setSelectedVariant(() => variant);
-  }
-
-  function handleBatchChange(batch: BatchObjectWithDiscount) {
-    setSelectedBatch(() => batch);
-  }
-
-  function handleQuantityChange(quantity: number) {
-    setQuantity(() => quantity);
-  }
-
-  function handleAddToCart() {
+  const handleAddToCart = useCallback(() => {
     setIsLoading(() => true);
 
     if (loading) {
@@ -362,9 +263,121 @@ function ProductDetail({
     router.push('/cart');
 
     setIsLoading(() => false);
+  }, [
+    cart,
+    handleSnackbarAlert,
+    loading,
+    product,
+    quantity,
+    router,
+    selectedBatch,
+    selectedVariant,
+    setCart,
+    user?.uid,
+  ]);
+
+  //#endregion
+
+  //#region useMemo
+
+  const batchOptions: BatchObjectWithDiscount[] = useMemo(() => {
+    if (!selectedVariant) return [];
+
+    const batches = product.batches.filter(
+      (b) => b.variant_id === selectedVariant.id
+    );
+
+    return batches;
+  }, [product.batches, selectedVariant]);
+
+  const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
+    product
+      ? query(
+          collection(db, COLLECTION_NAME.FEEDBACKS),
+          where('product_id', '==', product.id)
+        ).withConverter(feedbackConverter)
+      : undefined,
+    {
+      initialValue: [],
+    }
+  );
+
+  const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
+    return {
+      product: product,
+      variant: selectedVariant,
+      onVariantChange: handleVariantChange,
+      batch: selectedBatch,
+      onBatchChange: handleBatchChange,
+      batchOptions: batchOptions,
+      quantity: quantity,
+      onQuantityChange: handleQuantityChange,
+      comments: feedbacks ?? [],
+      onAddToCart: handleAddToCart,
+    };
+  }, [
+    product,
+    selectedVariant,
+    selectedBatch,
+    batchOptions,
+    quantity,
+    feedbacks,
+    handleAddToCart,
+  ]);
+
+  //#endregion
+
+  //#region useEffects
+
+  useEffect(() => {
+    if (product.variants.length > 0)
+      setSelectedVariant(() => product.variants[0]);
+  }, [product.variants]);
+
+  useEffect(() => {
+    if (batchOptions && batchOptions.length > 0) {
+      setSelectedBatch(() => batchOptions[0]);
+    }
+  }, [batchOptions]);
+
+  useEffect(() => {
+    setBackdropOpen(() => isAdding);
+  }, [isAdding]);
+
+  //#endregion
+
+  //#region Handlers
+
+  function handleVariantChange(variant: ProductVariant) {
+    setSelectedVariant(() => variant);
+  }
+
+  function handleBatchChange(batch: BatchObjectWithDiscount) {
+    setSelectedBatch(() => batch);
+  }
+
+  function handleQuantityChange(quantity: number) {
+    setQuantity(() => quantity);
   }
 
   //#endregion
+
+  if (invalid) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Typography variant="h2">
+          Đã có lỗi xảy ra hoặc Không tồn tại sản phẩm này
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <>

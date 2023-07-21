@@ -3,7 +3,7 @@ import { formatPrice } from '@/lib/utils';
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { memo, useContext } from 'react';
 
-const ThongTinGiaoHang = memo((props: any) => {
+const ThongTinGiaoHang = (props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
 
@@ -248,6 +248,6 @@ const ThongTinGiaoHang = memo((props: any) => {
       </Grid>
     </Grid>
   );
-});
+};
 
-export default ThongTinGiaoHang;
+export default memo(ThongTinGiaoHang);

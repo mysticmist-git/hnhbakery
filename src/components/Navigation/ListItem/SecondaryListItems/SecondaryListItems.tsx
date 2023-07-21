@@ -6,7 +6,7 @@ import {
   ListSubheader,
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 
 //#region Constants
 
@@ -16,14 +16,18 @@ const PATH = '/manager/';
 
 //#region Functions
 
-function isActive(route: string) {
-  const router = useRouter();
-  return router.pathname === `${PATH}${route}`;
-}
-
 //#endregion
 
 const SecondaryListItems = () => {
+  const router = useRouter();
+
+  const isActive = useCallback(
+    (route: string) => {
+      return router.pathname === `${PATH}${route}`;
+    },
+    [router.pathname]
+  );
+
   return (
     <React.Fragment>
       <ListSubheader component="div" inset>

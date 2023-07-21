@@ -6,12 +6,10 @@ import { ref } from 'firebase/storage';
 import React, { memo, useContext } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 
-const ThongTinKhuyenMai = memo((props: any) => {
+const ThongTinKhuyenMai = (props: any) => {
   const theme = useTheme();
   const context = useContext(SearchContext);
   const imageHeight = '240px';
-
-  if (!context.billInfor.saleDetail) return <></>;
 
   const {
     sale_Id,
@@ -26,6 +24,8 @@ const ThongTinKhuyenMai = memo((props: any) => {
   } = context.billInfor.saleDetail;
 
   const [url, loading, error] = useDownloadURL(ref(storage, sale_Image));
+
+  if (!context.billInfor.saleDetail) return <></>;
 
   return (
     <Grid container direction={'row'} justifyContent={'center'} spacing={1}>
@@ -138,6 +138,6 @@ const ThongTinKhuyenMai = memo((props: any) => {
       </Grid>
     </Grid>
   );
-});
+};
 
-export default ThongTinKhuyenMai;
+export default memo(ThongTinKhuyenMai);

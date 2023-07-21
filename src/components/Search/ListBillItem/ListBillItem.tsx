@@ -5,9 +5,8 @@ import React, { memo, useContext } from 'react';
 import ChiTietHoaDon from '../ChiTietHoaDon';
 import ThongTinKhuyenMai from '../ThongTinKhuyenMai';
 
-const ListBillItem = memo((props: any) => {
+const ListBillItem = () => {
   const theme = useTheme();
-  const context = useContext(SearchContext);
 
   return (
     <Grid
@@ -20,9 +19,10 @@ const ListBillItem = memo((props: any) => {
       <Grid item width={'100%'} sx={{ bgcolor: theme.palette.common.black }}>
         <CustomAccordionItem
           heading={'Chi tiết hóa đơn'}
-          children={ChiTietHoaDon}
           defaultExpanded={true}
-        />
+        >
+          <ChiTietHoaDon />
+        </CustomAccordionItem>
         {/* <CustomAccordionItem
           heading={'Thông tin giao hàng'}
           children={ThongTinGiaoHang}
@@ -30,12 +30,13 @@ const ListBillItem = memo((props: any) => {
         /> */}
         <CustomAccordionItem
           heading={'Thông tin khuyến mãi'}
-          children={ThongTinKhuyenMai}
           defaultExpanded={true}
-        />
+        >
+          <ThongTinKhuyenMai />
+        </CustomAccordionItem>
       </Grid>
     </Grid>
   );
-});
+};
 
-export default ListBillItem;
+export default memo(ListBillItem);
