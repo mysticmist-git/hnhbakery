@@ -1,5 +1,5 @@
 import { RowModal } from '@/components/Manage/modals/rowModals';
-import CustomDataTable from '@/components/Manage/tables/CustomDataTable/CustomGridToolBar';
+import CustomDataTable from '@/components/Manage/tables/CustomDataTable';
 import { TableActionButton } from '@/components/buttons';
 import SimpleDialog from '@/components/dialogs/SimpleDialog/SimpleDialog';
 import { COLLECTION_NAME } from '@/lib/constants';
