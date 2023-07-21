@@ -12,7 +12,7 @@ Router.events.on('routeChangeError', () => NProgress.done());
 // const clientSideEmotionCache = createEmotionCache();
 
 import { TransitionUp } from '@/components/Transitions';
-import MainLayout from '@/components/layouts/MainLayout';
+import MainLayout from '@/components/layouts/MainLayout/MainLayout';
 import { SnackbarService } from '@/lib/contexts';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
