@@ -12,7 +12,7 @@ import {
 } from '@/lib/types/manage';
 import { Backdrop, CircularProgress } from '@mui/material';
 import React, { forwardRef, memo, useEffect, useState } from 'react';
-import Form from '../../forms/Form';
+import { Form } from '../../forms/';
 import RowModalLayout from '../RowModalLayout';
 
 interface RowModalProps extends CommonRowModalProps {

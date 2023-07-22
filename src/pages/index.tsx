@@ -18,6 +18,7 @@ import {
   DashUpWhite,
 } from '@/components/decorates/DecorateDivider/DecorateDivider';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
+import { COLLECTION_NAME } from '@/lib/constants';
 import {
   BestSellerItem,
   CarouselImageItem,
@@ -236,6 +237,7 @@ const TypeCake = (props: any) => {
 //#endregion
 
 //#region Khuyến mãi
+
 const DangKyKhuyenMai = (props: any) => {
   const theme = useTheme();
   return (
@@ -439,7 +441,9 @@ function Home({
                     buttonOnclick={() => {}}
                   />
                   {bestSellerState.length <= 0 && (
-                    <Typography variant="h2">Không có dữ liệu</Typography>
+                    <Typography variant="h2">
+                      Hiện không có Best Seller nào
+                    </Typography>
                   )}
                 </Box>
               </FadeDiv>
@@ -549,7 +553,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   let bestSellerProductsWithImageFetched;
 
   try {
-    const productTypes = await getCollection<ProductTypeObject>('productTypes');
+    const productTypes = await getCollection<ProductTypeObject>(
+      COLLECTION_NAME.PRODUCT_TYPES
+    );
     const bestSellerProducts = await getBestSellterProducts();
 
     productTypesWithImageFetched = await fetchTypeCakesAndGetTheirImagesToo(

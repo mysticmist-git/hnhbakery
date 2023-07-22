@@ -271,13 +271,16 @@ export default function Manage({
   useEffect(() => {
     if (!state.selectedTarget) return;
 
+    const collectionName = state.selectedTarget.collectionName;
+
+    if (collectionName === router.query.collectionName) return;
+
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
       payload: null,
     });
 
-    const collectionName = state.selectedTarget.collectionName;
-    router.push(`${PATH}?collectionName=${collectionName}`);
+    router.replace(`${PATH}?collectionName=${collectionName}`);
   }, [router, state.selectedTarget]);
 
   useEffect(() => {
@@ -650,6 +653,8 @@ export default function Manage({
   }
 
   //#endregion
+
+  console.log(state.mainDocs);
 
   if (!success) return <Typography variant="h4">Lỗi khi trang</Typography>;
 

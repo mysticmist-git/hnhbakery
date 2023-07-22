@@ -11,7 +11,7 @@ import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 import { BatchForm, ProductForm, ProductTypeForm } from '..';
 import { FormProps } from '../../rowModals/RowModal/RowModal';
 
-export default forwardRef(function Form(
+const Form = (
   {
     data,
     collectionName,
@@ -22,7 +22,7 @@ export default forwardRef(function Form(
     loading = false,
   }: FormProps,
   ref: ForwardedRef<FormRef>
-) {
+) => {
   //#region Refs
 
   const productTypeFormRef = useRef<ProductTypeFormRef>(null);
@@ -74,4 +74,6 @@ export default forwardRef(function Form(
     default:
       return <div>Error</div>;
   }
-});
+};
+
+export default forwardRef(Form);
