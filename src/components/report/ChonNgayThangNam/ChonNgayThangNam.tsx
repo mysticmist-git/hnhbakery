@@ -59,7 +59,7 @@ export default function ChonNgayThangNam({
     } else {
       setDays(() => [0]);
     }
-  }, [reportData.bills]);
+  }, [reportData.bills, reportDate.month, reportDate.year]);
 
   useEffect(() => {
     if (reportDate.month > 0 && reportDate.year > 0) {
@@ -79,7 +79,12 @@ export default function ChonNgayThangNam({
       setDays(() => [0]);
       handleReportDateChange(0, reportDate.month, reportDate.year);
     }
-  }, [reportDate.month, reportDate.year]);
+  }, [
+    handleReportDateChange,
+    reportDate.day,
+    reportDate.month,
+    reportDate.year,
+  ]);
 
   return (
     <>

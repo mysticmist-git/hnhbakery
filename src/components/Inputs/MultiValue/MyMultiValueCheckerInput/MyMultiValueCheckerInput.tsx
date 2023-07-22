@@ -1,7 +1,7 @@
 import { useSnackbarService } from '@/lib/contexts';
-import { Typography, Chip, useTheme } from '@mui/material';
+import { Chip, Typography, useTheme } from '@mui/material';
 import { Stack } from '@mui/system';
-import { useState, useEffect, memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 const MyMultiValueCheckerPickerInput = ({
   label,
@@ -33,7 +33,7 @@ const MyMultiValueCheckerPickerInput = ({
 
   useEffect(() => {
     onChange(values);
-  }, [values]);
+  }, [onChange, values]);
 
   //#endregion
 

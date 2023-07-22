@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
 
 export default function MyModalAdd({
@@ -57,23 +57,27 @@ export default function MyModalAdd({
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const defaultSale: SaleObject = {
-    name: '',
-    code: '',
-    percent: 0,
-    maxSalePrice: 0,
-    description: '',
-    start_at: new Date(),
-    end_at: new Date(new Date().getTime() + 24 * 36000),
-    image: '',
-    isActive: true,
-  };
+
+  const defaultSale: SaleObject = useMemo(
+    () => ({
+      name: '',
+      code: '',
+      percent: 0,
+      maxSalePrice: 0,
+      description: '',
+      start_at: new Date(),
+      end_at: new Date(new Date().getTime() + 24 * 36000),
+      image: '',
+      isActive: true,
+    }),
+    []
+  );
 
   const [modalSale, setModalSale] = useState<SaleObject>(defaultSale);
 
   useEffect(() => {
     setModalSale(() => defaultSale);
-  }, [sale]);
+  }, [defaultSale, sale]);
 
   const clearData = () => {
     setModalSale(() => defaultSale);

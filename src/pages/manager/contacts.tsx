@@ -72,7 +72,7 @@ const Contacts = ({ contactData }: { contactData: string }) => {
   useEffect(() => {
     const parsedContacts = (JSON.parse(contactData) as Contact[]) ?? [];
     setContacts(() => parsedContacts);
-  }, []);
+  }, [contactData]);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts(() => {

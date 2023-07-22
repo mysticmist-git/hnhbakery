@@ -6,7 +6,6 @@ import {
   RightMenu,
 } from '@/components/navigation/Header';
 import CustomDrawer from '@/components/navigation/Header/CustomDrawer';
-import Skeleton_img from '@/components/skeletons/skeleton_img';
 import { LOCAL_CART_KEY } from '@/lib/constants';
 import Menu from '@mui/icons-material/Menu';
 import {

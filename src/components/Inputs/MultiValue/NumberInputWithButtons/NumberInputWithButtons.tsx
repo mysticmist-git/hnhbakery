@@ -71,7 +71,7 @@ export default function NumberInputWithButtons({
 
   useEffect(() => {
     if (onChange) onChange(value);
-  }, [value]);
+  }, [onChange, value]);
 
   function handleOnBlur() {
     if (value < min) {

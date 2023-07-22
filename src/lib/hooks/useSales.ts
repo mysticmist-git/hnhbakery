@@ -55,7 +55,7 @@ function useSales() {
 
   const filterdValue = useMemo(() => {
     return value?.filter((v) => v.end_at > new Date());
-  }, [value, loading]);
+  }, [value]);
 
   console.log(value);
   console.log(filterdValue);

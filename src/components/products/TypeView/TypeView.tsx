@@ -24,7 +24,11 @@ function TypeView(props: any) {
         borderRadius: '4px',
       },
     }),
-    []
+    [
+      theme.palette.common.black,
+      theme.palette.common.white,
+      theme.palette.secondary.main,
+    ]
   );
 
   const ListTypeSort = useMemo(() => {

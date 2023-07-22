@@ -33,7 +33,7 @@ const Customer = ({ finalUsers }: { finalUsers: string }) => {
     const parsedUsers =
       (JSON.parse(finalUsers) as SuperDetail_UserObject[]) ?? [];
     setUsersData(() => parsedUsers);
-  }, []);
+  }, [finalUsers]);
 
   //#region Phần phụ
   const theme = useTheme();

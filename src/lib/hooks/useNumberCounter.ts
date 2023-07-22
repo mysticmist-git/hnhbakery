@@ -29,7 +29,7 @@ function useNumberCounter(
     if (max < value) {
       setValue(() => max);
     }
-  }, [max]);
+  }, [max, value]);
 
   return [value, setValue, handleAddClick, handleMinusClick];
 }

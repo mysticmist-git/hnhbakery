@@ -34,7 +34,7 @@ const MyMultiValueInput = ({
 
   useEffect(() => {
     onChange(values);
-  }, [values]);
+  }, [onChange, values]);
 
   //#endregion
 

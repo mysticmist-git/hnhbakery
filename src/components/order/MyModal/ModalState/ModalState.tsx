@@ -19,7 +19,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 export default function ModalState({
   open,
@@ -47,7 +47,7 @@ export default function ModalState({
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
 
-  const getIsCancel = () => {
+  const getIsCancel = useCallback(() => {
     const deliveryState = billState?.deliveryObject?.state;
     if (deliveryState === 'inTransit') {
       return false;
@@ -58,13 +58,13 @@ export default function ModalState({
     } else if (deliveryState === 'success') {
       return false;
     }
-  };
+  }, [billState?.deliveryObject?.state]);
 
   const [isCancel, setIsCancel] = useState(false);
 
   useEffect(() => {
     setIsCancel(getIsCancel() ?? false);
-  }, [billState]);
+  }, [billState, getIsCancel]);
 
   return (
     <>

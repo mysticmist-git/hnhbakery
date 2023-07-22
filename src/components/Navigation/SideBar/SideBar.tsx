@@ -1,6 +1,6 @@
-import { Divider, List, useTheme } from '@mui/material';
+import { List, useTheme } from '@mui/material';
 import React from 'react';
-import { MainListItems, SecondaryListItems } from '../ListItem';
+import { MainListItems } from '../ListItem';
 
 export default function Sidebar(props: any) {
   const theme = useTheme();

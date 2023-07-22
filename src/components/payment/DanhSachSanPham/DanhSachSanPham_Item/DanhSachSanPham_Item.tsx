@@ -27,7 +27,7 @@ function DanhSachSanPham_Item(props: any) {
     let price = (item.variant?.price ?? 0) - item.discountAmount;
 
     return price * item.quantity;
-  }, [item.quantity]);
+  }, [item.discountAmount, item.quantity, item.variant?.price]);
 
   const [isLoading, setIsLoading] = useState(true);
 

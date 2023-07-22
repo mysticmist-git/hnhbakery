@@ -29,7 +29,7 @@ import {
 } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { setUncaughtExceptionCaptureCallback } from 'process';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import DeleteDialog from '../DeleteDialog';
 
@@ -83,27 +83,29 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
     }, 100);
   };
 
-  const handleCacheAccountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!cache) return;
+  const handleCacheAccountChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!cache) return;
 
-    setCache({
-      ...cache,
-      [event.target.name]: event.target.value,
-    });
-  };
+      setCache({
+        ...cache,
+        [event.target.name]: event.target.value,
+      });
+    },
+    [cache]
+  );
 
-  const handleNewAccountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setNewAccount({
-      ...newAccount,
-      [event.target.name]: event.target.value,
-    });
-  };
+  const handleNewAccountChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setNewAccount({
+        ...newAccount,
+        [event.target.name]: event.target.value,
+      });
+    },
+    [newAccount]
+  );
 
-  const handleAddAccount = async () => {
+  const handleAddAccount = useCallback(async () => {
     // Implement tbhe logic to add the new permission
 
     try {
@@ -127,9 +129,9 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
 
     setNewAccount(defaultNewAccount);
     handleCloseDialog();
-  };
+  }, [handleSnackbarAlert, newAccount, password]);
 
-  const handleUpdateAccount = async () => {
+  const handleUpdateAccount = useCallback(async () => {
     // Implement the logic to add the new permission
 
     if (!cache) return;
@@ -146,7 +148,7 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
 
     setCache(null);
     handleCloseDialog();
-  };
+  }, [cache]);
 
   const handleViewDetail = (user: UserObject) => {
     setCache(user);
@@ -269,7 +271,15 @@ const AccountTable: React.FC<AccountTableProps> = ({ users }) => {
             handleClose: handleCloseDialog,
             actionText: 'Thêm',
           };
-    }, [updateMode, cache, newAccount]);
+    }, [
+      updateMode,
+      cache,
+      handleCacheAccountChange,
+      handleUpdateAccount,
+      newAccount,
+      handleNewAccountChange,
+      handleAddAccount,
+    ]);
 
   const handleBirthdayChange = (value: Date) => {
     if (updateMode) {

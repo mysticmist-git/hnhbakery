@@ -78,7 +78,7 @@ const Order = ({ finalBills }: { finalBills: string }) => {
     const parsedBills =
       (JSON.parse(finalBills) as SuperDetail_BillObject[]) ?? [];
     setBillsData(() => parsedBills);
-  }, []);
+  }, [finalBills]);
 
   const theme = useTheme();
 

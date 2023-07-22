@@ -197,7 +197,7 @@ const MyModal = ({
     setEditContent(() => ResetEditContent(bill));
 
     getData(bill);
-  }, [bill]);
+  }, [bill, handleClose]);
 
   return (
     <>

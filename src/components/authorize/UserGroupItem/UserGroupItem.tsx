@@ -199,7 +199,7 @@ function UserGroupItem({
     if (!group) return [];
 
     return allUsers.filter((user) => !group.users.includes(user.id!));
-  }, [group?.users]);
+  }, [allUsers, group]);
 
   const handleViewUserGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();

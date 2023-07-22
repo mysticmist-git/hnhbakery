@@ -14,7 +14,7 @@ import {
   GridToolbarFilterButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   All_All_All,
   All_All_So,
@@ -52,6 +52,27 @@ export default function ReportTable({
   const theme = useTheme();
 
   const [rows, setRows] = useState<dataRow[]>([]);
+
+  const handle = useCallback(
+    (batches_HaoHut: BatchObject[]) => {
+      var spHaoHut: SanPhamDoanhThu[] = [];
+      batches_HaoHut.forEach((batch) => {
+        const productObject = reportData.products.find(
+          (product) => product.id == batch.product_id
+        );
+        if (productObject) {
+          spHaoHut.push({
+            ...batch,
+            revenue: 0,
+            percentage: 0,
+            productObject: productObject,
+          });
+        }
+      });
+      handleSpHaoHutChange(spHaoHut);
+    },
+    [handleSpHaoHutChange, reportData.products]
+  );
 
   useEffect(() => {
     const isDayAll = reportDate.day == 0;
@@ -191,25 +212,14 @@ export default function ReportTable({
       });
       handle(batches_HaoHut);
     }
-  }, [reportData, reportDate]);
-
-  function handle(batches_HaoHut: BatchObject[]) {
-    var spHaoHut: SanPhamDoanhThu[] = [];
-    batches_HaoHut.forEach((batch) => {
-      const productObject = reportData.products.find(
-        (product) => product.id == batch.product_id
-      );
-      if (productObject) {
-        spHaoHut.push({
-          ...batch,
-          revenue: 0,
-          percentage: 0,
-          productObject: productObject,
-        });
-      }
-    });
-    handleSpHaoHutChange(spHaoHut);
-  }
+  }, [
+    handle,
+    handleRealRevenueChange,
+    handleRevenueChange,
+    handleSpDoanhThuChange,
+    reportData,
+    reportDate,
+  ]);
 
   const columns: GridColDef[] = [
     {

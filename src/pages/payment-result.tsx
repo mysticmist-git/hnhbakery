@@ -7,7 +7,7 @@ import { updateBillState, updateDocToFirestore } from '@/lib/firestore';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 const MSG_ERROR_UPDATE_BILL =
@@ -57,7 +57,12 @@ const PaymentResult = () => {
 
   const router = useRouter();
 
-  const sendBillToMail = async () => {
+  const { vnp_ResponseCode: responseCode, vnp_TxnRef: responseBillId } =
+    useMemo(() => {
+      return router.query;
+    }, [router.query]);
+
+  const sendBillToMail = useCallback(async () => {
     try {
       const sendMailResponse = await fetch('/api/send-mail', {
         method: 'POST',
@@ -86,12 +91,7 @@ const PaymentResult = () => {
     } catch (error: any) {
       console.log(error);
     }
-  };
-
-  const { vnp_ResponseCode: responseCode, vnp_TxnRef: responseBillId } =
-    useMemo(() => {
-      return router.query;
-    }, [router.query]);
+  }, [email, handlerSnackbarAlert, responseBillId]);
 
   useEffect(() => {
     const getPaymentResultAndUpdateBillState = async () => {
@@ -136,7 +136,7 @@ const PaymentResult = () => {
     };
 
     getPaymentResultAndUpdateBillState();
-  }, [responseCode, responseBillId]);
+  }, [responseCode, responseBillId, handlerSnackbarAlert, sendBillToMail]);
 
   return (
     <Box sx={{ pb: 16 }}>

@@ -1,5 +1,4 @@
 import { AssembledCartItem } from '@/@types/cart';
-import ProductRating from '@/components/product-detail/ProductRating';
 import { DeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import { BillDetailObject, DeliveryObject } from '@/lib/models';
 import { FormValidationResult } from '@/lib/types/payment';

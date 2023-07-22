@@ -93,7 +93,7 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
       setFirstTime(false);
       return;
     }
-  }, [cart]);
+  }, [cart, firstTime, reloadAssembledCartItems]);
 
   // #endregion
 

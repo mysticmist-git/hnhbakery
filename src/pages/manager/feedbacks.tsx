@@ -34,7 +34,7 @@ const Feedbacks = ({ feedbackData }: { feedbackData: string }) => {
     const parsedFeedbacks =
       (JSON.parse(feedbackData) as SuperDetail_FeedbackObject[]) ?? [];
     setFeedbacks(() => parsedFeedbacks);
-  }, []);
+  }, [feedbackData]);
 
   const handleFeedbackDataChange = (value: SuperDetail_FeedbackObject) => {
     setFeedbacks(() => {

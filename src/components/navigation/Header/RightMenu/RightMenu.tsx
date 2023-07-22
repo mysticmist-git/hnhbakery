@@ -47,7 +47,7 @@ const RightMenu = (props: any) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   // #endregion
 

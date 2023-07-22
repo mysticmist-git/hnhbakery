@@ -37,7 +37,7 @@ const Deliveries = ({ deliveryData }: { deliveryData: string }) => {
     const parsedDeliveries =
       (JSON.parse(deliveryData) as SuperDetail_DeliveryObject[]) ?? [];
     setDeliveries(() => parsedDeliveries);
-  }, []);
+  }, [deliveryData]);
 
   const handleDeliveryDataChange = (value: SuperDetail_DeliveryObject) => {
     setDeliveries(() => {

@@ -1,7 +1,6 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { PermissionObject } from '@/lib/models';
-import { SystemUpdateAltRounded } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -20,7 +19,7 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 
 interface PermissionTableProps {
@@ -58,27 +57,29 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     setUpdate(false);
   };
 
-  const hanleCachePermissionChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!cache) return;
+  const hanleCachePermissionChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!cache) return;
 
-    setCache({
-      ...cache,
-      [event.target.name]: event.target.value,
-    });
-  };
+      setCache({
+        ...cache,
+        [event.target.name]: event.target.value,
+      });
+    },
+    [cache]
+  );
 
-  const handleNewPermissionChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setNewPermission({
-      ...newPermission,
-      [event.target.name]: event.target.value,
-    });
-  };
+  const handleNewPermissionChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setNewPermission({
+        ...newPermission,
+        [event.target.name]: event.target.value,
+      });
+    },
+    [newPermission]
+  );
 
-  const handleAddPermission = async () => {
+  const handleAddPermission = useCallback(async () => {
     // Implement the logic to add the new permission
 
     const permissionRef = collection(db, COLLECTION_NAME.PERMISSIONS);
@@ -91,9 +92,9 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
     setNewPermission(newPermissionDefault);
     handleCloseDialog();
-  };
+  }, [newPermission]);
 
-  const handleUpdatePermission = async () => {
+  const handleUpdatePermission = useCallback(async () => {
     // Implement the logic to add the new permission
 
     if (!cache) return;
@@ -116,7 +117,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
     setCache(null);
     handleCloseDialog();
-  };
+  }, [cache]);
 
   const handleViewDetail = (permission: PermissionObject) => {
     setCache(permission);
@@ -214,7 +215,15 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
             handleClose: handleCloseDialog,
             actionText: 'Thêm',
           };
-    }, [update, cache, newPermission]);
+    }, [
+      update,
+      cache,
+      hanleCachePermissionChange,
+      handleUpdatePermission,
+      newPermission,
+      handleNewPermissionChange,
+      handleAddPermission,
+    ]);
 
   return (
     <Stack gap={1} my={2} pr={3}>
