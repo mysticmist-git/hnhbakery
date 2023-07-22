@@ -549,21 +549,32 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     'Cache-Control',
     'public, s-maxage=10, stale-while-revalidate=59'
   );
-  let productTypesWithImageFetched;
-  let bestSellerProductsWithImageFetched;
-
   try {
-    const productTypes = await getCollection<ProductTypeObject>(
-      COLLECTION_NAME.PRODUCT_TYPES
-    );
-    const bestSellerProducts = await getBestSellterProducts();
+    const [productTypesWithImageFetched, bestSellerProductsWithImageFetched] =
+      await Promise.all([
+        async () => {
+          const productTypes = await getCollection<ProductTypeObject>(
+            COLLECTION_NAME.PRODUCT_TYPES
+          );
+          const productTypesWithImageFetched =
+            await fetchTypeCakesAndGetTheirImagesToo(productTypes);
+          return productTypesWithImageFetched;
+        },
+        async () => {
+          const bestSellerProducts = await getBestSellterProducts();
 
-    productTypesWithImageFetched = await fetchTypeCakesAndGetTheirImagesToo(
-      productTypes
-    );
+          const bestSellerProductsWithImageFetched =
+            await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
+        },
+      ]);
 
-    bestSellerProductsWithImageFetched =
-      await fetchBestSellerProductsAndTheirImagesToo(bestSellerProducts);
+    return {
+      props: {
+        isSuccess: true,
+        productTypesWithImageFetched,
+        bestSellerProductsWithImageFetched,
+      },
+    };
   } catch (error: any) {
     console.log(error);
     return {
@@ -573,14 +584,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
-
-  return {
-    props: {
-      isSuccess: true,
-      productTypesWithImageFetched,
-      bestSellerProductsWithImageFetched,
-    },
-  };
 }
 
 export default memo(Home);
