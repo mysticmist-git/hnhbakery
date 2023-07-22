@@ -1,7 +1,7 @@
-import momo from '@/assets/Decorate/MOMO.jpg';
 import bg from '@/assets/Decorate/bg10.png';
-import vnpay from '@/assets/Decorate/vnpay.jpg';
+import momo from '@/assets/Decorate/momo.jpg';
 import tienmat from '@/assets/Decorate/tienmat.jpg';
+import vnpay from '@/assets/Decorate/vnpay.jpg';
 
 import { CustomIconButton } from '@/components/buttons';
 import { COLLECTION_NAME } from '@/lib/constants';
