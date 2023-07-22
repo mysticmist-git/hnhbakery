@@ -1,5 +1,5 @@
 import HenImage from '@/assets/CoFounder/Hen.jpg';
-import HuyImage from '@/assets/CoFounder/Huy.png';
+import HuyImage from '@/assets/CoFounder/HuyPhan.png';
 import cake3 from '@/assets/Decorate/Cake3.png';
 import cake4 from '@/assets/Decorate/Cake4.png';
 import cake5 from '@/assets/Decorate/Cake5.png';
