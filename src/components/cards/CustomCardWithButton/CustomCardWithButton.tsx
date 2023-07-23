@@ -72,7 +72,7 @@ export default function CustomCardWithButton(props: any) {
     >
       <CardActionArea
         LinkComponent={Link}
-        href={`/product-detail?id=${cardInfo.id}`}
+        href={cardInfo.href}
         sx={{ width: '100%', height: 'auto' }}
       >
         <Grid

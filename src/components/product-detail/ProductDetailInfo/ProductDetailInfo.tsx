@@ -63,10 +63,12 @@ function ProductDetailInfo({
   }, [product]);
 
   const isProductAvailable: boolean = useMemo(() => {
+    if (!product) return false;
+
     if (!product.batches || product.batches.length <= 0) return false;
 
     return true;
-  }, [product.batches]);
+  }, [product]);
 
   const maxQuantity = useMemo(() => {
     let max = 1;
@@ -104,7 +106,7 @@ function ProductDetailInfo({
       spacing={4}
     >
       <Grid item xs={12}>
-        <ProductCarousel images={product.images} />
+        <ProductCarousel images={product?.images ?? []} />
       </Grid>
 
       <Grid item xs={12} md={8} lg={6}>
@@ -126,7 +128,7 @@ function ProductDetailInfo({
           >
             <Grid item xs={12}>
               <Typography variant="h2" color={theme.palette.secondary.main}>
-                {product.name}
+                {product?.name ?? ''}
               </Typography>
             </Grid>
 
@@ -181,7 +183,9 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.type.name}</Typography>
+                  <Typography variant="body1">
+                    {product?.type.name ?? ''}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -232,7 +236,9 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.description}</Typography>
+                  <Typography variant="body1">
+                    {product?.description ?? ''}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -254,7 +260,7 @@ function ProductDetailInfo({
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {product.ingredients.join(', ')}
+                    {product?.ingredients.join(', ') ?? ''}
                   </Typography>
                 </Grid>
               </Grid>
@@ -276,7 +282,9 @@ function ProductDetailInfo({
                   </Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{product.howToUse}</Typography>
+                  <Typography variant="body1">
+                    {product?.howToUse ?? ''}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -298,7 +306,7 @@ function ProductDetailInfo({
                 </Grid>
                 <Grid item xs={9}>
                   <Typography variant="body1">
-                    {product.preservation}
+                    {product?.preservation ?? ''}
                   </Typography>
                 </Grid>
               </Grid>
@@ -307,7 +315,7 @@ function ProductDetailInfo({
         </Box>
       </Grid>
 
-      {product.variants && product.variants.length > 0 ? (
+      {product?.variants && product?.variants.length > 0 ? (
         <Grid item xs={12} md={8} lg={6}>
           <Box
             sx={{
@@ -348,7 +356,7 @@ function ProductDetailInfo({
                   </Grid>
                   <Grid item xs={9}>
                     <CheckboxButtonGroup
-                      options={product.variants}
+                      options={product?.variants ?? []}
                       value={variant}
                       getOptionLabel={(o) => `${o.material} - ${o.size}`}
                       onChange={onVariantChange}

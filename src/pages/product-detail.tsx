@@ -75,13 +75,7 @@ const similiarProducts = [
 
 // #endregion
 
-function ProductDetail({
-  invalid,
-  product: paramProduct,
-}: {
-  invalid?: boolean;
-  product: string;
-}) {
+function ProductDetail() {
   // #region Hooks
 
   const theme = useTheme();
@@ -120,14 +114,11 @@ function ProductDetail({
     }
   );
 
+  const [product, setProduct] = useState<AssembledProduct | null>(null);
+
   // #endregion
 
   //#region Callbacks
-
-  const product: AssembledProduct = useMemo(() => {
-    const product = JSON.parse(paramProduct);
-    return product;
-  }, [paramProduct]);
 
   const handleAddToCart = useCallback(() => {
     setIsLoading(() => true);
@@ -207,14 +198,14 @@ function ProductDetail({
   //#region useMemo
 
   const batchOptions: BatchObjectWithDiscount[] = useMemo(() => {
-    if (!selectedVariant) return [];
+    if (!selectedVariant || !product) return [];
 
     const batches = product.batches.filter(
       (b) => b.variant_id === selectedVariant.id
     );
 
     return batches;
-  }, [product.batches, selectedVariant]);
+  }, [product, selectedVariant]);
 
   const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
     product
@@ -256,9 +247,44 @@ function ProductDetail({
   //#region useEffects
 
   useEffect(() => {
+    const fetchData = async () => {
+      const id = router.query.id;
+
+      try {
+        // Get product
+        const product = await getDocFromFirestore<ProductObject>(
+          COLLECTION_NAME.PRODUCTS,
+          id as string
+        );
+
+        const assembledProduct = await assembleProduct(product);
+
+        console.log(assembledProduct);
+
+        setProduct(assembledProduct);
+      } catch (error) {
+        console.log(error);
+        return {
+          props: {
+            invalid: true,
+          },
+        };
+      }
+    };
+
+    fetchData();
+  }, [router.query.id]);
+
+  useEffect(() => {
+    if (!product) {
+      setSelectedBatch(null);
+
+      return;
+    }
+
     if (product.variants.length > 0)
       setSelectedVariant(() => product.variants[0]);
-  }, [product.variants]);
+  }, [product, product?.variants]);
 
   useEffect(() => {
     if (batchOptions && batchOptions.length > 0) {
@@ -287,23 +313,6 @@ function ProductDetail({
   }
 
   //#endregion
-
-  if (invalid) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-        }}
-      >
-        <Typography variant="h2">
-          Đã có lỗi xảy ra hoặc Không tồn tại sản phẩm này
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <>
@@ -347,7 +356,7 @@ function ProductDetail({
                     variant="h2"
                     color={theme.palette.primary.main}
                   >
-                    {product.name}
+                    {product?.name ?? ''}
                   </Typography>
                 </Grid>
               </Grid>
@@ -374,7 +383,7 @@ function ProductDetail({
               ) : (
                 <Feedbacks
                   userId={user?.uid ?? ''}
-                  productId={product.id}
+                  productId={product?.id ?? ''}
                   comments={feedbacks ?? []}
                 />
               )}
@@ -403,49 +412,5 @@ function ProductDetail({
     </>
   );
 }
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  context.res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59'
-  );
-
-  if (!context.query.id) {
-    console.log('null id in query');
-    // Redirect
-    return {
-      invalid: true,
-    };
-  }
-
-  try {
-    // Get product
-    const productId = context.query.id as string;
-    const product = await getDocFromFirestore<ProductObject>(
-      COLLECTION_NAME.PRODUCTS,
-      productId
-    );
-
-    const assembledProduct = await assembleProduct(product);
-
-    console.log(assembledProduct);
-
-    return {
-      props: {
-        invalid: false,
-        product: JSON.stringify(assembledProduct),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      props: {
-        invalid: true,
-      },
-    };
-  }
-};
 
 export default ProductDetail;

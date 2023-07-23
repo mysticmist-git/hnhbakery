@@ -33,7 +33,7 @@ export type ProductDetailInfoProps = {
   onBatchChange: (newBatch: BatchObjectWithDiscount) => void;
   quantity: number;
   onQuantityChange: (newQuantity: number) => void;
-  product: AssembledProduct;
+  product: AssembledProduct | null;
   onAddToCart: () => void;
 };
 

@@ -215,6 +215,8 @@ const getProductTypes = async () => {
 const getBestSellers = async () => {
   const bestSellers = await getBestSellterProducts();
 
+  console.log(bestSellers);
+
   return (
     bestSellers.map((product) => ({
       ...product,
