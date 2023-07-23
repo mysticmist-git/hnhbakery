@@ -24,14 +24,6 @@ import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { alpha } from '@mui/system';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 
-const TEXT_SERVER_ERROR = 'Đã có lỗi phía Server';
-
-interface HomeProps {
-  isSuccess: boolean;
-  productTypes: ProductTypeObject[];
-  bestSellers: ProductObject[];
-}
-
 function Home() {
   //#region States
   const [carouselImagesState, setCarouselImagesState] = useState<
@@ -212,13 +204,24 @@ const getProductTypes = async () => {
     COLLECTION_NAME.PRODUCT_TYPES
   );
 
-  return productTypes || [];
+  return (
+    productTypes.map((type) => ({
+      ...type,
+      href: `products?product_type=${type.description}`,
+    })) ?? []
+  );
 };
 
 const getBestSellers = async () => {
   const bestSellers = await getBestSellterProducts();
 
-  return bestSellers;
+  return (
+    bestSellers.map((product) => ({
+      ...product,
+      image: product.images[0] || '',
+      href: `/product-detail?id=${product.id}`,
+    })) ?? []
+  );
 };
 
 export default Home;
