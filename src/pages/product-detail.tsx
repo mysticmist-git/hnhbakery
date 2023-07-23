@@ -38,35 +38,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
-const comments = {
-  ratingAverage: 4.5,
-  numReviews: 123,
-  items: [
-    {
-      id: '1',
-      rating: 5,
-      comment: 'Ôi là trời',
-      time: '12:00 20/01/2023',
-      user: {
-        id: '1',
-        name: 'Nguyen Van A',
-        image: banh1.src,
-      },
-    },
-    {
-      id: '2',
-      rating: 5,
-      comment: 'Ôi là trời, cứu mẹ',
-      time: '09:00 20/01/2023',
-      user: {
-        id: '1',
-        name: 'Nguyen Van B',
-        image: banh2.src,
-      },
-    },
-  ],
-};
-
 const similiarProducts = [
   {
     id: 1,
@@ -104,50 +75,6 @@ const similiarProducts = [
 
 // #endregion
 
-//#region Giả dữ liệu
-
-const initProduct = {
-  id: 1,
-  name: 'Bánh Croissant',
-  type: 'Bánh mặn',
-  state: true,
-  description:
-    'Bánh sừng trâu với hình dáng tựa lưỡi liềm độc & lạ, cán ngàn lớp bơ Anchor, cho vị giòn rụm,...',
-
-  ingredients: 'Bột mì, trứng, sữa, đường, muối',
-  howToUse: 'Dùng ngay khi mở túi',
-  preservation: 'Bảo quản ở nhiệt độ dưới 30 độ C',
-  images: [
-    {
-      src: banh1.src,
-      alt: '',
-    },
-    {
-      src: banh2.src,
-      alt: '',
-    },
-    {
-      src: banh3.src,
-      alt: '',
-    },
-  ],
-  prices: [25000, 35000, 100000],
-  sizes: ['nhỏ', 'vừa', 'lớn'],
-  materials: ['Mức dâu', 'Mức dừa', 'Mức thơm'],
-};
-
-const initStars = {
-  // object này để hiển thị các nút sao
-  all: { display: 'Tất cả', displayMore: 123, value: 'all', checked: true },
-  five: { display: '5 sao', displayMore: 50, value: '5', checked: false },
-  four: { display: '4 sao', displayMore: 50, value: '4', checked: false },
-  three: { display: '3 sao', displayMore: 15, value: '3', checked: false },
-  two: { display: '2 sao', displayMore: 5, value: '2', checked: false },
-  one: { display: '1 sao', displayMore: 3, value: '1', checked: false },
-};
-
-//#endregion
-
 function ProductDetail({
   invalid,
   product: paramProduct,
@@ -167,7 +94,6 @@ function ProductDetail({
 
   const [backdropOpen, setBackdropOpen] = useState<boolean>(false);
   const [user, loading, error] = useAuthState(auth);
-  const [starState, setStarState] = useState(initStars);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     null
   );

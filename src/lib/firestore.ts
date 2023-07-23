@@ -699,6 +699,8 @@ export async function assembleProduct(
 
   let belongBatches = await getBelongBatches(product.id, batches);
 
+  console.log(belongBatches);
+
   const checkedBelongBatches = belongBatches.map((b) => {
     const batchDiscounted = checkBatchDiscounted(b);
 
@@ -714,7 +716,6 @@ export async function assembleProduct(
 
   const assembledProduct: AssembledProduct = {
     ...product,
-    images: await getDownloadUrlsFromFirebaseStorage(product.images),
     type: type,
     batches: checkedBelongBatches,
     totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),

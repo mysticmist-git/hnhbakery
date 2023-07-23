@@ -31,6 +31,9 @@ function ProductDetailInfo({
   ] = useMemo(() => {
     if (!product) return [0, 0, formatPrice(0)];
 
+    if (!product.variants || product.variants.length <= 0)
+      return [0, 0, 'Hết hàng'];
+
     const prices = product.variants.map((v) => v.price);
 
     const variantsWithDiscountPrice = create(product.batches, product);
@@ -303,227 +306,232 @@ function ProductDetailInfo({
           </Grid>
         </Box>
       </Grid>
-      <Grid item xs={12} md={8} lg={6}>
-        <Box
-          sx={{
-            border: 3,
-            borderColor: theme.palette.secondary.main,
-            borderRadius: '8px',
-            overflow: 'hidden',
-            p: 2,
-          }}
-        >
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'center'}
-            alignItems={'center'}
-            spacing={2}
+
+      {product.variants && product.variants.length > 0 ? (
+        <Grid item xs={12} md={8} lg={6}>
+          <Box
+            sx={{
+              border: 3,
+              borderColor: theme.palette.secondary.main,
+              borderRadius: '8px',
+              overflow: 'hidden',
+              p: 2,
+            }}
           >
-            <Grid item xs={12}>
-              <Typography variant="h2" color={theme.palette.secondary.main}>
-                Phần bạn chọn
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Biến thể:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <CheckboxButtonGroup
-                    options={product.variants}
-                    value={variant}
-                    getOptionLabel={(o) => `${o.material} - ${o.size}`}
-                    onChange={onVariantChange}
-                    valueEqualOption={(value, option) =>
-                      value?.id === option.id
-                    }
-                  />
-                </Grid>
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Typography variant="h2" color={theme.palette.secondary.main}>
+                  Phần bạn chọn
+                </Typography>
               </Grid>
-            </Grid>
 
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Ngày hết hạn:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <CheckboxButtonGroup
-                    options={batchOptions}
-                    value={batch}
-                    getOptionLabel={
-                      (batch) => {
-                        const label = new Date(batch.EXP).toLocaleString(
-                          'vi-VN',
-                          {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          }
-                        );
-
-                        return label;
-                      }
-                      // TODO: fix this formating
-                    }
-                    onChange={onBatchChange}
-                    valueEqualOption={(value, option) =>
-                      value?.id === option.id
-                    }
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Số lượng:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <NumberInputWithButtons
-                    min={1}
-                    max={maxQuantity}
-                    value={quantity}
-                    onChange={onQuantityChange}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <MyDivider />
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Giá:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Stack direction={'row'} gap={1}>
-                    <Typography
-                      sx={
-                        itemDiscountPrice > 0
-                          ? {
-                              textDecoration: 'line-through',
-                            }
-                          : {}
-                      }
-                    >
-                      {formatPrice(itemPrice)}
-                    </Typography>
-                    {itemDiscountPrice > 0 && (
-                      <Typography
-                        sx={{
-                          color: theme.palette.secondary.main,
-                        }}
-                      >
-                        {formatPrice(itemDiscountPrice)}
-                      </Typography>
-                    )}
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Tổng tiền:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography>
-                    {formatPrice(
-                      discountTotalPrice > 0 ? discountTotalPrice : totalPrice
-                    )}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <MyDivider />
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <CustomButton
-                  onClick={() => onAddToCart()}
-                  sx={{
-                    py: 1.5,
-                    width: '100%',
-                    borderRadius: '8px',
-                  }}
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
                 >
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.common.white}
+                  <Grid item xs={3}>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.text.secondary}
+                    >
+                      Biến thể:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={9}>
+                    <CheckboxButtonGroup
+                      options={product.variants}
+                      value={variant}
+                      getOptionLabel={(o) => `${o.material} - ${o.size}`}
+                      onChange={onVariantChange}
+                      valueEqualOption={(value, option) =>
+                        value?.id === option.id
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <Grid item xs={3}>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.text.secondary}
+                    >
+                      Ngày hết hạn:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={9}>
+                    <CheckboxButtonGroup
+                      options={batchOptions}
+                      value={batch}
+                      getOptionLabel={
+                        (batch) => {
+                          const label = new Date(batch.EXP).toLocaleString(
+                            'vi-VN',
+                            {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            }
+                          );
+
+                          return label;
+                        }
+                        // TODO: fix this formating
+                      }
+                      onChange={onBatchChange}
+                      valueEqualOption={(value, option) =>
+                        value?.id === option.id
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <Grid item xs={3}>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.text.secondary}
+                    >
+                      Số lượng:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={9}>
+                    <NumberInputWithButtons
+                      min={1}
+                      max={maxQuantity}
+                      value={quantity}
+                      onChange={onQuantityChange}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <MyDivider />
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <Grid item xs={3}>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.text.secondary}
+                    >
+                      Giá:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={9}>
+                    <Stack direction={'row'} gap={1}>
+                      <Typography
+                        sx={
+                          itemDiscountPrice > 0
+                            ? {
+                                textDecoration: 'line-through',
+                              }
+                            : {}
+                        }
+                      >
+                        {formatPrice(itemPrice)}
+                      </Typography>
+                      {itemDiscountPrice > 0 && (
+                        <Typography
+                          sx={{
+                            color: theme.palette.secondary.main,
+                          }}
+                        >
+                          {formatPrice(itemDiscountPrice)}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <Grid item xs={3}>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.text.secondary}
+                    >
+                      Tổng tiền:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={9}>
+                    <Typography>
+                      {formatPrice(
+                        discountTotalPrice > 0 ? discountTotalPrice : totalPrice
+                      )}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <MyDivider />
+
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                >
+                  <CustomButton
+                    onClick={() => onAddToCart()}
+                    sx={{
+                      py: 1.5,
+                      width: '100%',
+                      borderRadius: '8px',
+                    }}
                   >
-                    Thêm vào giỏ hàng
-                  </Typography>
-                </CustomButton>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.common.white}
+                    >
+                      Thêm vào giỏ hàng
+                    </Typography>
+                  </CustomButton>
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </Grid>
+          </Box>
+        </Grid>
+      ) : (
+        <></>
+      )}
     </Grid>
   );
 }

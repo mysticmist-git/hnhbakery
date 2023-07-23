@@ -1,4 +1,5 @@
 import banh1 from '@/assets/Carousel/3.jpg';
+import { storage } from '@/firebase/config';
 import {
   Box,
   Card,
@@ -8,12 +9,15 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { ref } from 'firebase/storage';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
+import { useDownloadURL } from 'react-firebase-hooks/storage';
 
 export default function CustomCard(props: any) {
   const theme = useTheme();
+
   const {
     imageHeight = '184px',
     imageWidth = '100%',
@@ -48,9 +52,15 @@ export default function CustomCard(props: any) {
 
   const [cardHover, setCardHover] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const handleImageLoad = () => {
     setIsLoading(false);
   };
+
+  const [image, imageLoading, imageError] = useDownloadURL(
+    props.cardInfo.image ? ref(storage, props.cardInfo.image) : undefined
+  );
+
   return (
     <>
       <Card
@@ -82,24 +92,27 @@ export default function CustomCard(props: any) {
                   position: 'relative',
                 }}
               >
-                {isLoading ? (
+                {imageLoading ? (
                   <Skeleton
                     variant="rectangular"
                     width={'100%'}
                     height={imageHeight}
                   />
-                ) : null}
-                <Box
-                  component={Image}
-                  fill={true}
-                  sx={
-                    cardHover ? imageStyles.cardHovered : imageStyles.cardNormal
-                  }
-                  alt=""
-                  src={cardInfo.image}
-                  loading="lazy"
-                  onLoad={handleImageLoad}
-                />
+                ) : (
+                  <Box
+                    component={Image}
+                    fill={true}
+                    sx={
+                      cardHover
+                        ? imageStyles.cardHovered
+                        : imageStyles.cardNormal
+                    }
+                    alt=""
+                    src={image || ''}
+                    loading="lazy"
+                    onLoad={handleImageLoad}
+                  />
+                )}
               </Box>
             </Grid>
             <Grid

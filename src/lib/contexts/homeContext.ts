@@ -2,14 +2,13 @@
 
 import { createContext } from 'react';
 
-export interface BestSellerItem {
+export interface HomeCardDisplayItem {
+  id: string;
   image: string;
   name: string;
   description: string;
   href: string;
 }
-
-export interface TypeCakeItem extends BestSellerItem {}
 
 export interface CarouselImageItem {
   src: string;
@@ -19,12 +18,12 @@ export interface CarouselImageItem {
 
 export interface HomeContextType {
   carouselImages: CarouselImageItem[];
-  typeCake: TypeCakeItem[];
+  productTypes: HomeCardDisplayItem[];
 }
 
 export const initHomeContext: HomeContextType = {
   carouselImages: [],
-  typeCake: [],
+  productTypes: [],
 };
 
 export const HomeContext = createContext<HomeContextType>(initHomeContext);

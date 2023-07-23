@@ -1,5 +1,6 @@
 import banh1 from '@/assets/Carousel/3.jpg';
 import { CustomButton } from '@/components/buttons';
+import { storage } from '@/firebase/config';
 import {
   Box,
   Card,
@@ -10,12 +11,15 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { ref } from 'firebase/storage';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useMemo, useState } from 'react';
+import { useDownloadURL } from 'react-firebase-hooks/storage';
 
 export default function CustomCardWithButton(props: any) {
   const theme = useTheme();
+
   const {
     imageHeight = '184px',
     imageWidth = '100%',
@@ -55,6 +59,10 @@ export default function CustomCardWithButton(props: any) {
     setIsLoading(false);
   };
 
+  const [image, imageLoading, imageError] = useDownloadURL(
+    props.cardInfo.image ? ref(storage, props.cardInfo.image) : undefined
+  );
+
   return (
     <Card
       onMouseOver={() => setCardHover(true)}
@@ -85,24 +93,25 @@ export default function CustomCardWithButton(props: any) {
                 position: 'relative',
               }}
             >
-              {isLoading ? (
+              {imageLoading ? (
                 <Skeleton
                   variant="rectangular"
                   width={'100%'}
                   height={imageHeight}
                 />
-              ) : null}
-              <Box
-                component={Image}
-                fill={true}
-                sx={
-                  cardHover ? imageStyles.cardHovered : imageStyles.cardNormal
-                }
-                alt=""
-                src={cardInfo.image}
-                loading="lazy"
-                onLoad={handleImageLoad}
-              />
+              ) : (
+                <Box
+                  component={Image}
+                  fill={true}
+                  sx={
+                    cardHover ? imageStyles.cardHovered : imageStyles.cardNormal
+                  }
+                  alt=""
+                  src={image || ''}
+                  loading="lazy"
+                  onLoad={handleImageLoad}
+                />
+              )}
             </Box>
           </Grid>
           <Grid
