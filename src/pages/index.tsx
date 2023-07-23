@@ -189,37 +189,17 @@ function Home({ isSuccess, productTypes, bestSellers }: HomeProps) {
 }
 
 const getProductTypes = async () => {
-  const productTypes =
-    (await getCollection<ProductTypeObject>(COLLECTION_NAME.PRODUCT_TYPES)) ||
-    [];
-
-  const productTypesWithHref: HomeCardDisplayItem[] = productTypes.map(
-    (type) => ({
-      id: type.id || '',
-      name: type.name,
-      description: type.description,
-      image: type.image,
-      href: `/products?product_type=${type.id}`,
-    })
+  const productTypes = await getCollection<ProductTypeObject>(
+    COLLECTION_NAME.PRODUCT_TYPES
   );
 
-  return productTypesWithHref;
+  return productTypes || [];
 };
 
 const getBestSellers = async () => {
   const bestSellers = await getBestSellterProducts();
 
-  const bestSellersWithHref: HomeCardDisplayItem[] = bestSellers.map(
-    (product) => ({
-      id: product.id,
-      name: product.name,
-      image: product.images[0] || '',
-      description: product.description,
-      href: `/product-detail?id=${product.id}`,
-    })
-  );
-
-  return bestSellersWithHref;
+  return bestSellers;
 };
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

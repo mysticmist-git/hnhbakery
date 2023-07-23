@@ -356,7 +356,7 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
 
   if (productIds.length === 0) return [];
 
-  const products = getCollectionWithQuery<ProductObject>(
+  const products = await getCollectionWithQuery<ProductObject>(
     COLLECTION_NAME.PRODUCTS,
     where(documentId(), 'in', productIds)
   );

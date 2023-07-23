@@ -61,6 +61,8 @@ export default function CustomCard(props: any) {
     props.cardInfo.image ? ref(storage, props.cardInfo.image) : undefined
   );
 
+  console.log(`/products?product_type=${cardInfo.id}`);
+
   return (
     <>
       <Card
@@ -71,7 +73,7 @@ export default function CustomCard(props: any) {
       >
         <CardActionArea
           LinkComponent={Link}
-          href={cardInfo.href}
+          href={`/products?product_type=${cardInfo.id}`}
           sx={{ width: '100%', height: 'auto' }}
         >
           <Grid
