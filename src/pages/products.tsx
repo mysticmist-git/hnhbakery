@@ -36,7 +36,7 @@ const initSortList = {
 
 //#endregion
 
-const Products = ({ products: stringifiedProducts }: { products: string }) => {
+const Products = () => {
   //#region Hooks
 
   const theme = useTheme();
@@ -182,23 +182,35 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
   //#region useEffects
 
   useEffect(() => {
-    const products: ProductForProductsPage[] = JSON.parse(stringifiedProducts);
+    async function fetchData() {
+      let batches: BatchObject[] = [];
 
-    console.log(products);
+      try {
+        batches = await fetchAvailableBatches();
+      } catch (error) {
+        console.log(error);
+      }
 
-    setProducts(() => [...products]);
+      const products = await cachedCreateProductsOnProductsPage(batches);
 
-    setGroupBoLocState(() =>
-      generateGroupBoLoc(
-        filterDuplicatesById(
-          products.map((p) => ({
-            id: p.productType_id ?? '',
-            name: p.typeName,
-          }))
+      console.log(products);
+
+      setProducts(() => [...products]);
+
+      setGroupBoLocState(() =>
+        generateGroupBoLoc(
+          filterDuplicatesById(
+            products.map((p) => ({
+              id: p.productType_id ?? '',
+              name: p.typeName,
+            }))
+          )
         )
-      )
-    );
-  }, [generateGroupBoLoc, stringifiedProducts]);
+      );
+    }
+
+    fetchData();
+  }, [generateGroupBoLoc]);
 
   //#endregion
 
@@ -425,31 +437,5 @@ const Products = ({ products: stringifiedProducts }: { products: string }) => {
     </>
   );
 };
-
-export async function getServerSideProps() {
-  let batches: BatchObject[] = [];
-
-  try {
-    batches = await fetchAvailableBatches();
-  } catch (error) {
-    console.log(error);
-  }
-
-  if (batches.length <= 0) {
-    return {
-      props: {
-        products: JSON.stringify([]),
-      },
-    };
-  }
-
-  const products = await cachedCreateProductsOnProductsPage(batches);
-
-  return {
-    props: {
-      products: JSON.stringify(products),
-    },
-  };
-}
 
 export default Products;

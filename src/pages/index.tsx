@@ -20,25 +20,28 @@ import {
   HomeContext,
 } from '@/lib/contexts/homeContext';
 import { getBestSellterProducts, getCollection } from '@/lib/firestore';
-import { ProductTypeObject } from '@/lib/models';
+import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { alpha } from '@mui/system';
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 
 const TEXT_SERVER_ERROR = 'Đã có lỗi phía Server';
 
 interface HomeProps {
   isSuccess: boolean;
-  productTypes: HomeCardDisplayItem[];
-  bestSellers: HomeCardDisplayItem[];
+  productTypes: ProductTypeObject[];
+  bestSellers: ProductObject[];
 }
 
-function Home({ isSuccess, productTypes, bestSellers }: HomeProps) {
+function Home() {
   //#region States
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
 
   //#endregion
+
+  const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
+  const [bestSellers, setBestSellers] = useState<ProductObject[]>([]);
 
   //#region Hooks
 
@@ -47,6 +50,36 @@ function Home({ isSuccess, productTypes, bestSellers }: HomeProps) {
   //#endregion
 
   //#region UseEffects
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productTypesPromise, bestSellersPromise] =
+          await Promise.allSettled([
+            await getProductTypes(),
+            await getBestSellers(),
+          ]);
+
+        const productTypes =
+          productTypesPromise.status === 'fulfilled'
+            ? productTypesPromise.value
+            : [];
+
+        const bestSellers =
+          bestSellersPromise.status === 'fulfilled'
+            ? bestSellersPromise.value
+            : [];
+
+        setProductTypes(productTypes);
+        setBestSellers(bestSellers);
+      } catch (error: any) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     const importImages = async () => {
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
@@ -68,20 +101,6 @@ function Home({ isSuccess, productTypes, bestSellers }: HomeProps) {
 
     importImages();
   }, []);
-
-  if (!isSuccess)
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: 600,
-        }}
-      >
-        {TEXT_SERVER_ERROR}
-      </Box>
-    );
 
   //#endregion
 
@@ -202,40 +221,4 @@ const getBestSellers = async () => {
   return bestSellers;
 };
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  try {
-    const [productTypesPromise, bestSellersPromise] = await Promise.allSettled([
-      await getProductTypes(),
-      await getBestSellers(),
-    ]);
-
-    const productTypes =
-      productTypesPromise.status === 'fulfilled'
-        ? productTypesPromise.value
-        : [];
-
-    const bestSellers =
-      bestSellersPromise.status === 'fulfilled' ? bestSellersPromise.value : [];
-
-    console.log(productTypes);
-    console.log(bestSellers);
-
-    return {
-      props: {
-        isSuccess: true,
-        productTypes,
-        bestSellers,
-      },
-    };
-  } catch (error: any) {
-    console.log(error);
-    return {
-      props: {
-        isSuccess: false,
-        message: error.message,
-      },
-    };
-  }
-}
-
-export default memo(Home);
+export default Home;
