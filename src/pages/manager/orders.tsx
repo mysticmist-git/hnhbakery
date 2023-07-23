@@ -29,7 +29,7 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Order = ({ finalBills }: { finalBills: string }) => {
+const Order = () => {
   const [billsData, setBillsData] = useState<SuperDetail_BillObject[]>([]);
 
   //#region Modal chi tiết
@@ -75,10 +75,54 @@ const Order = ({ finalBills }: { finalBills: string }) => {
   //#endregion
 
   useEffect(() => {
-    const parsedBills =
-      (JSON.parse(finalBills) as SuperDetail_BillObject[]) ?? [];
-    setBillsData(() => parsedBills);
-  }, [finalBills]);
+    const fetchData = async () => {
+      try {
+        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+        const payments = await getCollection<PaymentObject>(
+          COLLECTION_NAME.PAYMENTS
+        );
+        const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
+        const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
+        const deliveries = await getCollection<DeliveryObject>(
+          COLLECTION_NAME.DELIVERIES
+        );
+
+        const finalBills: SuperDetail_BillObject[] = bills
+          .map((bill: BillObject) => {
+            const finalBill: SuperDetail_BillObject = {
+              ...bill,
+              paymentObject: payments.find((payment: PaymentObject) => {
+                return payment.id === bill.payment_id;
+              }),
+              userObject: users.find((user: UserObject) => {
+                return user.id === bill.user_id;
+              }),
+              saleObject: sales.find((sale: SaleObject) => {
+                return sale.id === bill.sale_id;
+              }),
+              deliveryObject: deliveries.find((delivery: DeliveryObject) => {
+                return delivery.bill_id === bill.id;
+              }),
+            };
+
+            return {
+              ...finalBill,
+            };
+          })
+          .sort((a, b) => {
+            return (
+              new Date(b.created_at ?? '').getTime() -
+              new Date(a.created_at ?? '').getTime()
+            );
+          });
+
+        setBillsData(() => finalBills || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const theme = useTheme();
 
@@ -143,63 +187,6 @@ const Order = ({ finalBills }: { finalBills: string }) => {
       </Box>
     </>
   );
-};
-
-export const getServerSideProps = async () => {
-  try {
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-    const payments = await getCollection<PaymentObject>(
-      COLLECTION_NAME.PAYMENTS
-    );
-    const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
-    const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
-    const deliveries = await getCollection<DeliveryObject>(
-      COLLECTION_NAME.DELIVERIES
-    );
-
-    const finalBills: SuperDetail_BillObject[] = bills
-      .map((bill: BillObject) => {
-        const finalBill: SuperDetail_BillObject = {
-          ...bill,
-          paymentObject: payments.find((payment: PaymentObject) => {
-            return payment.id === bill.payment_id;
-          }),
-          userObject: users.find((user: UserObject) => {
-            return user.id === bill.user_id;
-          }),
-          saleObject: sales.find((sale: SaleObject) => {
-            return sale.id === bill.sale_id;
-          }),
-          deliveryObject: deliveries.find((delivery: DeliveryObject) => {
-            return delivery.bill_id === bill.id;
-          }),
-        };
-
-        return {
-          ...finalBill,
-        };
-      })
-      .sort((a, b) => {
-        return (
-          new Date(b.created_at ?? '').getTime() -
-          new Date(a.created_at ?? '').getTime()
-        );
-      });
-
-    return {
-      props: {
-        finalBills: JSON.stringify(finalBills),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        finalBills: '',
-      },
-    };
-  }
 };
 
 export default Order;

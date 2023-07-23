@@ -27,17 +27,68 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Deliveries = ({ deliveryData }: { deliveryData: string }) => {
+const Deliveries = () => {
   const [deliveries, setDeliveries] = useState<SuperDetail_DeliveryObject[]>(
     []
   );
   const theme = useTheme();
 
   useEffect(() => {
-    const parsedDeliveries =
-      (JSON.parse(deliveryData) as SuperDetail_DeliveryObject[]) ?? [];
-    setDeliveries(() => parsedDeliveries);
-  }, [deliveryData]);
+    const fetchData = async () => {
+      try {
+        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+        const billDetails = await getCollection<BillDetailObject>(
+          COLLECTION_NAME.BILL_DETAILS
+        );
+        const batches = await getCollection<BatchObject>(
+          COLLECTION_NAME.BATCHES
+        );
+        const products = await getCollection<ProductObject>(
+          COLLECTION_NAME.PRODUCTS
+        );
+        const deliveries = await getCollection<DeliveryObject>(
+          COLLECTION_NAME.DELIVERIES
+        );
+
+        const finalDeliveries: SuperDetail_DeliveryObject[] = deliveries.map(
+          (delivery) => {
+            const filter_bills = bills.find((bill) => {
+              return bill.id === delivery.bill_id;
+            });
+            const filter_billDetail = billDetails.filter((billDetail) => {
+              return billDetail.bill_id === filter_bills?.id;
+            });
+
+            const billDetailObjects: AssembledBillDetail[] =
+              filter_billDetail.map((billDetail) => {
+                const batch = batches.find(
+                  (batch) => batch.id === billDetail.batch_id
+                );
+                const product = products.find(
+                  (product) => product.id === batch?.product_id
+                );
+                return {
+                  ...billDetail,
+                  batchObject: batch,
+                  productObject: product,
+                };
+              });
+
+            return {
+              ...delivery,
+              billObject: filter_bills,
+              billDetailObjects: billDetailObjects,
+            };
+          }
+        );
+        setDeliveries(() => finalDeliveries || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleDeliveryDataChange = (value: SuperDetail_DeliveryObject) => {
     setDeliveries(() => {
@@ -142,64 +193,4 @@ const Deliveries = ({ deliveryData }: { deliveryData: string }) => {
   );
 };
 
-export const getServerSideProps = async () => {
-  try {
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-    const billDetails = await getCollection<BillDetailObject>(
-      COLLECTION_NAME.BILL_DETAILS
-    );
-    const batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
-    const products = await getCollection<ProductObject>(
-      COLLECTION_NAME.PRODUCTS
-    );
-    const deliveries = await getCollection<DeliveryObject>(
-      COLLECTION_NAME.DELIVERIES
-    );
-
-    const finalDeliveries: SuperDetail_DeliveryObject[] = deliveries.map(
-      (delivery) => {
-        const filter_bills = bills.find((bill) => {
-          return bill.id === delivery.bill_id;
-        });
-        const filter_billDetail = billDetails.filter((billDetail) => {
-          return billDetail.bill_id === filter_bills?.id;
-        });
-
-        const billDetailObjects: AssembledBillDetail[] = filter_billDetail.map(
-          (billDetail) => {
-            const batch = batches.find(
-              (batch) => batch.id === billDetail.batch_id
-            );
-            const product = products.find(
-              (product) => product.id === batch?.product_id
-            );
-            return {
-              ...billDetail,
-              batchObject: batch,
-              productObject: product,
-            };
-          }
-        );
-
-        return {
-          ...delivery,
-          billObject: filter_bills,
-          billDetailObjects: billDetailObjects,
-        };
-      }
-    );
-
-    return {
-      props: {
-        deliveryData: JSON.stringify(finalDeliveries),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: { deliveryData: '' },
-    };
-  }
-};
 export default Deliveries;

@@ -40,16 +40,52 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Report = ({ finalData }: { finalData: string }) => {
-  const [reportData, setReportData] = useState<SuperDetail_ReportObject>(
-    JSON.parse(finalData)
-  );
+const Report = () => {
+  const [reportData, setReportData] = useState<SuperDetail_ReportObject>();
 
   useEffect(() => {
-    const parsedData =
-      (JSON.parse(finalData) as SuperDetail_ReportObject) ?? {};
-    setReportData(() => parsedData);
-  }, [finalData]);
+    const fetchData = async () => {
+      try {
+        const products = await getCollection<ProductObject>(
+          COLLECTION_NAME.PRODUCTS
+        );
+        const batches = await getCollection<BatchObject>(
+          COLLECTION_NAME.BATCHES
+        );
+        const feedbacks = await getCollection<FeedbackObject>(
+          COLLECTION_NAME.FEEDBACKS
+        );
+        const billDetails = await getCollection<BillDetailObject>(
+          COLLECTION_NAME.BILL_DETAILS
+        );
+        const deliveries = await getCollection<DeliveryObject>(
+          COLLECTION_NAME.DELIVERIES
+        );
+        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+        const payments = await getCollection<PaymentObject>(
+          COLLECTION_NAME.PAYMENTS
+        );
+        const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
+
+        const finalData: SuperDetail_ReportObject = {
+          products: products,
+          batches: batches,
+          feedbacks: feedbacks,
+          billDetails: billDetails,
+          deliveries: deliveries,
+          bills: bills,
+          payments: payments,
+          sales: sales,
+        };
+
+        setReportData(() => finalData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const [reportDate, setReportDate] = useState<{
     day: number;
@@ -143,11 +179,13 @@ const Report = ({ finalData }: { finalData: string }) => {
           </Grid>
 
           <Grid item xs={12}>
-            <ChonNgayThangNam
-              reportData={reportData}
-              reportDate={reportDate}
-              handleReportDateChange={handleReportDateChange}
-            />
+            {reportData && (
+              <ChonNgayThangNam
+                reportData={reportData}
+                reportDate={reportDate}
+                handleReportDateChange={handleReportDateChange}
+              />
+            )}
           </Grid>
 
           <Grid item xs={12}>
@@ -208,14 +246,16 @@ const Report = ({ finalData }: { finalData: string }) => {
             </Typography>
           </Grid>
           <Grid item xs={12}>
-            <ReportTable
-              reportData={reportData}
-              reportDate={reportDate}
-              handleRevenueChange={handleRevenueChange}
-              handleRealRevenueChange={handleRealRevenueChange}
-              handleSpDoanhThuChange={handleSpDoanhThuChange}
-              handleSpHaoHutChange={handleSpHaoHutChange}
-            />
+            {reportData && (
+              <ReportTable
+                reportData={reportData}
+                reportDate={reportDate}
+                handleRevenueChange={handleRevenueChange}
+                handleRealRevenueChange={handleRealRevenueChange}
+                handleSpDoanhThuChange={handleSpDoanhThuChange}
+                handleSpHaoHutChange={handleSpHaoHutChange}
+              />
+            )}
           </Grid>
 
           <Grid item xs={12}>
@@ -361,54 +401,6 @@ const Report = ({ finalData }: { finalData: string }) => {
       </Box>
     </>
   );
-};
-
-export const getServerSideProps = async () => {
-  try {
-    const products = await getCollection<ProductObject>(
-      COLLECTION_NAME.PRODUCTS
-    );
-    const batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
-    const feedbacks = await getCollection<FeedbackObject>(
-      COLLECTION_NAME.FEEDBACKS
-    );
-    const billDetails = await getCollection<BillDetailObject>(
-      COLLECTION_NAME.BILL_DETAILS
-    );
-    const deliveries = await getCollection<DeliveryObject>(
-      COLLECTION_NAME.DELIVERIES
-    );
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-    const payments = await getCollection<PaymentObject>(
-      COLLECTION_NAME.PAYMENTS
-    );
-    const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
-
-    const finalData: SuperDetail_ReportObject = {
-      products: products,
-      batches: batches,
-      feedbacks: feedbacks,
-      billDetails: billDetails,
-      deliveries: deliveries,
-      bills: bills,
-      payments: payments,
-      sales: sales,
-    };
-
-    return {
-      props: {
-        finalData: JSON.stringify(finalData),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        finalData: '',
-      },
-    };
-  }
 };
 
 export default Report;

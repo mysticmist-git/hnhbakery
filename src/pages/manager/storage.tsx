@@ -61,6 +61,7 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
+import { reauthenticateWithCredential } from 'firebase/auth';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, {
@@ -83,15 +84,7 @@ const DialogButton = styled(Button)(({ theme }) => ({
 
 //#endregion
 
-export default function Manage({
-  success,
-  mainDocs: paramMainDocs,
-  collectionName: paramCollectionName,
-}: {
-  success: boolean;
-  mainDocs: string;
-  collectionName: string;
-}) {
+export default function Manage() {
   //#region States
 
   const [state, dispatch] = useReducer<
@@ -133,20 +126,20 @@ export default function Manage({
   const updateSelectedCRUDTargetToMatch = useCallback(() => {
     if (!justLoaded) return;
 
-    if (!paramCollectionName) return;
+    if (!router.query.collectionName) return;
 
     dispatch({
       type: ManageActionType.SET_SELECTED_TARGET,
       payload: crudTargets.find(
-        (t) => t.collectionName === paramCollectionName
+        (t) => t.collectionName === router.query.collectionName
       ),
     });
 
     setJustLoaded(false);
-  }, [justLoaded, paramCollectionName]);
+  }, [justLoaded, router.query.collectionName]);
 
   const updateDataManagerStrategy = useCallback(() => {
-    switch (paramCollectionName) {
+    switch (router.query.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
         break;
@@ -160,12 +153,12 @@ export default function Manage({
         setDataManager(() => null);
         break;
     }
-  }, [paramCollectionName]);
+  }, [router.query.collectionName]);
 
   function createAddData(): AddData | null {
     let addData: AddData | null = null;
 
-    switch (paramCollectionName) {
+    switch (router.query.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         const imageFile = rowModalRef.current
           ?.getProductTypeFormRef()
@@ -214,7 +207,7 @@ export default function Manage({
   function createUpdateData(): UpdateData | null {
     let updateData: UpdateData | null = null;
 
-    switch (paramCollectionName) {
+    switch (router.query.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         updateData = {
           newData: state.modalData,
@@ -256,17 +249,72 @@ export default function Manage({
   //#region UseEffects
 
   useEffect(() => {
-    const mainDocs = JSON.parse(paramMainDocs) as BaseObject[];
+    const fetchData = async () => {
+      // Extract the collection name from the query parameter of the URL.
+      const collectionName: string | undefined = router.query.collectionName as
+        | string
+        | undefined;
 
-    if (!mainDocs) return;
+      if (!collectionName) {
+        router.replace(
+          `/manager/storage?collectionName=${COLLECTION_NAME.PRODUCT_TYPES}`
+        );
+        return;
+      }
 
-    console.log(mainDocs);
+      const isCollectionNameValid: boolean =
+        validateCollectionNameParams(collectionName);
 
-    dispatch({
-      type: ManageActionType.SET_MAIN_DOCS,
-      payload: mainDocs,
-    });
-  }, [paramMainDocs]);
+      if (!isCollectionNameValid) {
+        router.replace(
+          `/manager/storage?collectionName=${COLLECTION_NAME.PRODUCT_TYPES}`
+        );
+        return;
+      }
+
+      // Get the documents from the specified collection.
+      // const mainDocs = await getCollection<BaseObject>(collectionName);
+      let fetcher: StorageDocsFactory | null = null;
+
+      switch (collectionName) {
+        case 'productTypes':
+          fetcher = new ProductTypeStorageDocsFetcher();
+          break;
+        case 'products':
+          fetcher = new ProductStorageDocsFetcher();
+          break;
+        case 'batches':
+          fetcher = new BatchStorageDocsFetcher();
+          break;
+        default:
+          break;
+      }
+
+      if (!fetcher) {
+        handleSnackbarAlert('error', 'Đã có lỗi xảy ra khi tải dữ liệu');
+        return;
+      }
+
+      let mainDocs: BaseObject[] = [];
+
+      try {
+        mainDocs = await fetcher.createDocs();
+      } catch (error) {
+        console.error('Lỗi fetch main docs: ', error);
+      }
+
+      if (!mainDocs) return;
+
+      console.log(mainDocs);
+
+      dispatch({
+        type: ManageActionType.SET_MAIN_DOCS,
+        payload: mainDocs,
+      });
+    };
+
+    fetchData();
+  }, [handleSnackbarAlert, router, state.selectedTarget]);
 
   useEffect(() => {
     if (!state.selectedTarget) return;
@@ -286,11 +334,7 @@ export default function Manage({
   useEffect(() => {
     updateSelectedCRUDTargetToMatch();
     updateDataManagerStrategy();
-  }, [
-    paramCollectionName,
-    updateDataManagerStrategy,
-    updateSelectedCRUDTargetToMatch,
-  ]);
+  }, [updateDataManagerStrategy, updateSelectedCRUDTargetToMatch]);
 
   //#endregion
 
@@ -318,7 +362,7 @@ export default function Manage({
 
     let namesFactory: SearchBarNamesFactory | null = null;
 
-    switch (paramCollectionName) {
+    switch (router.query.collectionName) {
       case 'productTypes':
         namesFactory = new ProductTypeSearchBarNamesFactory();
         break;
@@ -335,7 +379,7 @@ export default function Manage({
     const names = namesFactory.generate(state.mainDocs);
 
     return names;
-  }, [paramCollectionName, state.mainDocs]);
+  }, [router.query.collectionName, state.mainDocs]);
 
   // #endregion
 
@@ -359,7 +403,7 @@ export default function Manage({
   function handleNewRow() {
     dispatch({
       type: ManageActionType.NEW_ROW,
-      payload: paramCollectionName,
+      payload: router.query.collectionName,
     });
   }
 
@@ -500,7 +544,7 @@ export default function Manage({
   function handleResetForm() {
     dispatch({
       type: ManageActionType.SET_MODAL_DATA,
-      payload: generateDefaultRow(paramCollectionName),
+      payload: generateDefaultRow(router.query.collectionName as string),
     });
   }
 
@@ -618,7 +662,7 @@ export default function Manage({
 
     let factory: StorageDocsFactory | null = null;
 
-    switch (paramCollectionName) {
+    switch (router.query.collectionName) {
       case COLLECTION_NAME.PRODUCT_TYPES:
         factory = new ProductTypeStorageDocsFetcher();
         break;
@@ -655,8 +699,6 @@ export default function Manage({
   //#endregion
 
   console.log(state.mainDocs);
-
-  if (!success) return <Typography variant="h4">Lỗi khi trang</Typography>;
 
   return (
     <>
@@ -730,7 +772,7 @@ export default function Manage({
           <Grid item xs={12}>
             <CustomDataTable
               mainDocs={state.mainDocs}
-              collectionName={paramCollectionName}
+              collectionName={router.query.collectionName as string}
               handleViewRow={handleViewRow}
               handleDeleteRow={handleDeleteRow}
             />
@@ -781,7 +823,7 @@ export default function Manage({
           handleCancelUpdateData={handleCancelUpdateData}
           onDataChange={handleOnDataChange}
           data={state.modalData}
-          collectionName={paramCollectionName}
+          collectionName={router.query.collectionName as string}
           handleAddRow={handleAddRow}
           handleUpdateRow={handleUpdateRow}
           handleResetForm={handleResetForm}
@@ -793,82 +835,3 @@ export default function Manage({
     </>
   );
 }
-
-const errorProps = {
-  props: {
-    success: false,
-  },
-};
-
-const defaultPageRedirect = {
-  redirect: {
-    destination: `${PATH}?collectionName=productTypes`,
-    permanent: false,
-  },
-};
-
-/**
- * Returns server-side props for the page.
- *
- * @param {Object} context - The context object received from Next.js.
- * @returns {Object} The server-side props object.
- */
-export const getServerSideProps: GetServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  context.res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59'
-  );
-
-  // Extract the collection name from the query parameter of the URL.
-  const collectionName: string | undefined = context.query.collectionName as
-    | string
-    | undefined;
-
-  if (!collectionName) return defaultPageRedirect;
-
-  const isCollectionNameValid: boolean =
-    validateCollectionNameParams(collectionName);
-
-  if (!isCollectionNameValid) return defaultPageRedirect;
-
-  // Get the documents from the specified collection.
-  // const mainDocs = await getCollection<BaseObject>(collectionName);
-  let fetcher: StorageDocsFactory | null = null;
-
-  switch (collectionName) {
-    case 'productTypes':
-      fetcher = new ProductTypeStorageDocsFetcher();
-      break;
-    case 'products':
-      fetcher = new ProductStorageDocsFetcher();
-      break;
-    case 'batches':
-      fetcher = new BatchStorageDocsFetcher();
-      break;
-    default:
-      break;
-  }
-
-  if (!fetcher) return errorProps;
-
-  let mainDocs: BaseObject[] = [];
-
-  try {
-    mainDocs = await fetcher.createDocs();
-  } catch (error) {
-    console.error('Lỗi fetch main docs: ', error);
-  }
-
-  const stringifyMainDocs = JSON.stringify(mainDocs);
-
-  // Return the main documents as props.
-  return {
-    props: {
-      success: true,
-      mainDocs: stringifyMainDocs,
-      collectionName,
-    },
-  };
-};

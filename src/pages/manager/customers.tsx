@@ -26,14 +26,56 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Customer = ({ finalUsers }: { finalUsers: string }) => {
+const Customer = () => {
   const [usersData, setUsersData] = useState<SuperDetail_UserObject[]>([]);
 
   useEffect(() => {
-    const parsedUsers =
-      (JSON.parse(finalUsers) as SuperDetail_UserObject[]) ?? [];
-    setUsersData(() => parsedUsers);
-  }, [finalUsers]);
+    const fetchData = async () => {
+      try {
+        const users = (
+          await getCollection<UserObject>(COLLECTION_NAME.USERS)
+        ).filter(
+          (user) => user.role_id === 'customer' || user.role_id === 'manager'
+        );
+
+        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+
+        const feedbacks = await getCollection<FeedbackObject>(
+          COLLECTION_NAME.FEEDBACKS
+        );
+
+        const finalUsers: SuperDetail_UserObject[] = users
+          .map((user) => {
+            const finalUser: SuperDetail_UserObject = {
+              ...user,
+              billObjects: bills.filter((bill) => bill.user_id === user.id),
+              feedbackObjects: feedbacks.filter(
+                (feedback) => feedback.user_id === user.id
+              ),
+            };
+            return {
+              ...finalUser,
+            };
+          })
+          .sort((a, b) => {
+            var totalA = 0;
+            var totalB = 0;
+            a.billObjects?.forEach((bill) => {
+              totalA += bill.totalPrice ?? 0;
+            });
+            b.billObjects?.forEach((bill) => {
+              totalB += bill.totalPrice ?? 0;
+            });
+            return totalB - totalA;
+          });
+        setUsersData(() => finalUsers || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   //#region Phần phụ
   const theme = useTheme();
@@ -138,61 +180,6 @@ const Customer = ({ finalUsers }: { finalUsers: string }) => {
       </Box>
     </>
   );
-};
-
-export const getServerSideProps = async () => {
-  try {
-    const users = (
-      await getCollection<UserObject>(COLLECTION_NAME.USERS)
-    ).filter(
-      (user) => user.role_id === 'customer' || user.role_id === 'manager'
-    );
-
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-
-    const feedbacks = await getCollection<FeedbackObject>(
-      COLLECTION_NAME.FEEDBACKS
-    );
-
-    const finalUsers: SuperDetail_UserObject[] = users
-      .map((user) => {
-        const finalUser: SuperDetail_UserObject = {
-          ...user,
-          billObjects: bills.filter((bill) => bill.user_id === user.id),
-          feedbackObjects: feedbacks.filter(
-            (feedback) => feedback.user_id === user.id
-          ),
-        };
-        return {
-          ...finalUser,
-        };
-      })
-      .sort((a, b) => {
-        var totalA = 0;
-        var totalB = 0;
-        a.billObjects?.forEach((bill) => {
-          totalA += bill.totalPrice ?? 0;
-        });
-        b.billObjects?.forEach((bill) => {
-          totalB += bill.totalPrice ?? 0;
-        });
-        return totalB - totalA;
-      });
-
-    return {
-      props: {
-        finalUsers: JSON.stringify(finalUsers),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        finalUsers: '',
-      },
-    };
-  }
 };
 
 export default Customer;

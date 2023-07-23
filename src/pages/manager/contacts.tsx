@@ -24,11 +24,7 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-interface ContactsProps {
-  contactData: string;
-}
-
-const Contacts: React.FC<ContactsProps> = ({ contactData }) => {
+const Contacts: React.FC = () => {
   //#region Gửi mail
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -74,9 +70,14 @@ const Contacts: React.FC<ContactsProps> = ({ contactData }) => {
   const theme = useTheme();
 
   useEffect(() => {
-    const parsedContacts = (JSON.parse(contactData) as Contact[]) ?? [];
-    setContacts(parsedContacts);
-  }, [contactData]);
+    async function fetchData() {
+      const contacts = await getCollection<Contact>(COLLECTION_NAME.CONTACTS);
+
+      setContacts(contacts || []);
+    }
+
+    fetchData();
+  }, []);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {
@@ -177,23 +178,4 @@ const Contacts: React.FC<ContactsProps> = ({ contactData }) => {
   );
 };
 
-export const getServerSideProps = async () => {
-  try {
-    const contacts = await getCollection<Contact>(COLLECTION_NAME.CONTACTS);
-
-    return {
-      props: {
-        contactData: JSON.stringify(contacts),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        contactData: '',
-      },
-    };
-  }
-};
 export default Contacts;

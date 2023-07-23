@@ -26,15 +26,49 @@ const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const Feedbacks = ({ feedbackData }: { feedbackData: string }) => {
+const Feedbacks = () => {
   const [feedbacks, setFeedbacks] = useState<SuperDetail_FeedbackObject[]>([]);
   const theme = useTheme();
 
   useEffect(() => {
-    const parsedFeedbacks =
-      (JSON.parse(feedbackData) as SuperDetail_FeedbackObject[]) ?? [];
-    setFeedbacks(() => parsedFeedbacks);
-  }, [feedbackData]);
+    const fetchData = async () => {
+      try {
+        const feedbacks = await getCollection<FeedbackObject>(
+          COLLECTION_NAME.FEEDBACKS
+        );
+        const products = await getCollection<ProductObject>(
+          COLLECTION_NAME.PRODUCTS
+        );
+        const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
+
+        const finalFeedbacks: SuperDetail_FeedbackObject[] = feedbacks
+          .map((feedback) => {
+            const user = users.find((user) => user.id === feedback.user_id);
+            const product = products.find(
+              (product) => product.id === feedback.product_id
+            );
+
+            return {
+              ...feedback,
+              userObject: user,
+              productObject: product,
+            };
+          })
+          .sort((a, b) => {
+            return (
+              new Date(b.time ?? '').getTime() -
+              new Date(a.time ?? '').getTime()
+            );
+          });
+
+        setFeedbacks(() => finalFeedbacks || []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleFeedbackDataChange = (value: SuperDetail_FeedbackObject) => {
     setFeedbacks(() => {
@@ -122,51 +156,6 @@ const Feedbacks = ({ feedbackData }: { feedbackData: string }) => {
       </Box>
     </>
   );
-};
-
-export const getServerSideProps = async () => {
-  try {
-    const feedbacks = await getCollection<FeedbackObject>(
-      COLLECTION_NAME.FEEDBACKS
-    );
-    const products = await getCollection<ProductObject>(
-      COLLECTION_NAME.PRODUCTS
-    );
-    const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
-
-    const finalFeedbacks: SuperDetail_FeedbackObject[] = feedbacks
-      .map((feedback) => {
-        const user = users.find((user) => user.id === feedback.user_id);
-        const product = products.find(
-          (product) => product.id === feedback.product_id
-        );
-
-        return {
-          ...feedback,
-          userObject: user,
-          productObject: product,
-        };
-      })
-      .sort((a, b) => {
-        return (
-          new Date(b.time ?? '').getTime() - new Date(a.time ?? '').getTime()
-        );
-      });
-
-    return {
-      props: {
-        feedbackData: JSON.stringify(finalFeedbacks),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        feedbackData: '',
-      },
-    };
-  }
 };
 
 export default Feedbacks;
