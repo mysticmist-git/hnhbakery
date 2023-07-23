@@ -9,6 +9,7 @@ import cake7 from '@/assets/Decorate/cake7.jpg';
 import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { CustomCard } from '@/components/cards';
+import CustomCardWithoutStorageRef from '@/components/cards/CustomCardWithoutStorageRef';
 import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
 import Image from 'next/image';
 import React, { memo } from 'react';
@@ -152,7 +153,7 @@ const About = () => {
             </Grid>
             {cofounder.map((item, index) => (
               <Grid key={index} item xs={12} sm={6} md={5} lg={4}>
-                <CustomCard
+                <CustomCardWithoutStorageRef
                   imageHeight="276px"
                   descriptionHeight="32px"
                   cardInfo={{
