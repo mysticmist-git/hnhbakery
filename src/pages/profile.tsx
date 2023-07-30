@@ -23,15 +23,16 @@ import {
   useTheme,
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-const Profile = ({ billData }: { billData: string }) => {
+const Profile = () => {
   const router = useRouter();
 
   // #region states
 
   const [user, userLoading, userError] = useAuthState(auth);
+  const [myBills, setMyBills] = useState<BillObject[]>([]);
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -42,6 +43,22 @@ const Profile = ({ billData }: { billData: string }) => {
   const { userData, userDataLoading, userDataError } = useUserData(
     user?.uid ?? '1'
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+
+      if (userData && !userDataLoading) {
+        const filteredBills = bills.filter((bill) => {
+          return bill.user_id === userData.id;
+        });
+
+        setMyBills(filteredBills);
+      }
+    };
+
+    fetchData();
+  }, [userData, userDataLoading]);
 
   // #endregion
 
@@ -62,14 +79,6 @@ const Profile = ({ billData }: { billData: string }) => {
     await updateDocToFirestore(updateData, COLLECTION_NAME.USERS);
   };
 
-  const myBills = useMemo(() => {
-    if (userData && !userDataLoading) {
-      const bills: BillObject[] = JSON.parse(billData);
-      return bills.filter((bill) => {
-        return bill.user_id === userData.id;
-      });
-    }
-  }, [billData, userData, userDataLoading]);
   const handleSnackbarAlert = useSnackbarService();
 
   return (
@@ -256,22 +265,3 @@ const Profile = ({ billData }: { billData: string }) => {
 };
 
 export default Profile;
-
-export const getServerSideProps = async () => {
-  try {
-    const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-    return {
-      props: {
-        billData: JSON.stringify(bills),
-      },
-    };
-  } catch (error) {
-    console.log(error);
-
-    return {
-      props: {
-        billData: '',
-      },
-    };
-  }
-};
