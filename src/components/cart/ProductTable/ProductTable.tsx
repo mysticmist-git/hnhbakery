@@ -46,6 +46,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
   const imageHeight = '25vh';
 
   const handleDeleteRow = (id: string) => {
+    console.log(id);
     onChange(items.filter((item) => item.id !== id));
   };
 
