@@ -28,13 +28,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useLocalStorage } from 'usehooks-ts';
 import FormGiaoHang from '../components/payment/FormGiaoHang';
 
 // #endregion
 
-const Payment = ({ salesJSON }: { salesJSON: string }) => {
+const Payment = () => {
   // #region States
+
   const { value: sales } = useSales();
   const [user, loading, error] = useAuthState(auth);
 
@@ -91,7 +91,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
     if (cart && firstTime) {
       reloadAssembledCartItems(cart);
       setFirstTime(false);
-      return;
     }
   }, [cart, firstTime, reloadAssembledCartItems]);
 
@@ -271,7 +270,6 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
 
   //   handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
   // };
-  // #endregion
 
   const handleClickOpen = () => {
     const result = validateForm(deliveryForm);
@@ -287,6 +285,8 @@ const Payment = ({ salesJSON }: { salesJSON: string }) => {
   const handleClose = () => {
     setDialogOpen(false);
   };
+
+  // #endregion
 
   return (
     <>
