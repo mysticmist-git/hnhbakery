@@ -9,5 +9,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "exportall.config.folderListener": []
+  "exportall.config.folderListener": [],
+  "cSpell.words": ["Firestore"]
 }

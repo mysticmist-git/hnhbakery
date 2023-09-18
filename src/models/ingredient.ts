@@ -4,24 +4,17 @@ import {
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from 'firebase/firestore';
-import WithCreatedUpdated from './created_updated';
-import WithActive from './withActive';
 import WithId from './withId';
 
 /**
- * Product type
- * Sub-Collections: products
+ * Product
  */
-type ProductType = WithCreatedUpdated &
-  WithActive &
-  WithId & {
-    name: string;
-    description: string;
-    image: string;
-  };
+type Ingredient = WithId & {
+  name: string;
+};
 
-const productTypeConverter: FirestoreDataConverter<ProductType> = {
-  toFirestore: (obj: ProductType) => {
+const ingredientConverter: FirestoreDataConverter<Ingredient> = {
+  toFirestore: (obj: Ingredient) => {
     const { id, ...data } = obj;
 
     return data;
@@ -35,12 +28,11 @@ const productTypeConverter: FirestoreDataConverter<ProductType> = {
     const object = {
       ...data,
       id: snapshot.id,
-    } as ProductType;
+    } as Ingredient;
 
     return object;
   },
 };
 
-export default ProductType;
-
-export { productTypeConverter };
+export default Ingredient;
+export { ingredientConverter };

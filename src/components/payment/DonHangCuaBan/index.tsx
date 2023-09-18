@@ -79,7 +79,6 @@ export default function DonHangCuaBan(props: any) {
             />
 
             {Sales.length <= 0 && (
-              // TODO: use another prhase
               <Typography
                 variant="body2"
                 color={theme.palette.text.secondary}

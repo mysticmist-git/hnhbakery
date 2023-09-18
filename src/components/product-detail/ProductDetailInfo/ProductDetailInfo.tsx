@@ -137,9 +137,9 @@ function ProductDetailInfo({
                 rating={
                   comments !== undefined
                     ? comments.reduce(
-                        (total, comment) => total + comment.rating,
-                        0
-                      ) / comments.length
+                      (total, comment) => total + comment.rating,
+                      0
+                    ) / comments.length
                     : 0
                 }
                 numReviews={comments !== undefined ? comments.length : 0}
@@ -462,8 +462,8 @@ function ProductDetailInfo({
                         sx={
                           itemDiscountPrice > 0
                             ? {
-                                textDecoration: 'line-through',
-                              }
+                              textDecoration: 'line-through',
+                            }
                             : {}
                         }
                       >
