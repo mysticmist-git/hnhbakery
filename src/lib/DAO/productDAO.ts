@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Product, { productConverter } from '@/models/product';
 import {
   addDoc,
   collection,
