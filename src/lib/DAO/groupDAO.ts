@@ -1,5 +1,6 @@
 import { db } from '@/firebase/config';
 import Group, { groupConverter } from '@/models/group';
+import User, { userConverter } from '@/models/user';
 import {
   addDoc,
   collection,
@@ -22,6 +23,21 @@ async function getGroups() {
     const data = snapshot.docs.map((doc) => doc.data());
 
     return data;
+  } catch (error) {
+    console.log('[DAO] Fail to get collection', error);
+  }
+}
+
+// TODO: Please give others the get snapshot function too.
+async function getGroupSnapshots() {
+  try {
+    const collectionRef = collection(db, COLLECTION_NAME.GROUPS).withConverter(
+      groupConverter
+    );
+
+    const snapshot = await getDocs(collectionRef);
+
+    return snapshot;
   } catch (error) {
     console.log('[DAO] Fail to get collection', error);
   }
@@ -73,4 +89,39 @@ async function deleteGroup(id: string) {
   }
 }
 
-export { createGroup, deleteGroup, getGroupById, getGroups, updateGroup };
+async function getAllGroupsUsers(id: string) {
+  try {
+    const groupsRef = collection(db, COLLECTION_NAME.GROUPS).withConverter(
+      groupConverter
+    );
+
+    const groupsSnapshot = await getDocs(groupsRef);
+
+    const allUsersPromises = groupsSnapshot.docs.map(async (groupSnap) => {
+      const usersRef = collection(
+        groupSnap.ref,
+        COLLECTION_NAME.USERS
+      ).withConverter(userConverter);
+
+      const usersSnapshot = await getDocs(usersRef);
+      return usersSnapshot.docs.map((doc) => doc.data());
+    });
+
+    const allUsers = await Promise.all(allUsersPromises);
+    const flattenedUsers = allUsers.flat();
+
+    return flattenedUsers;
+  } catch (error) {
+    console.log('[DAO] Fail to get users from all groups', error);
+  }
+}
+
+export {
+  createGroup,
+  deleteGroup,
+  getAllGroupsUsers,
+  getGroupById,
+  getGroupSnapshots,
+  getGroups,
+  updateGroup,
+};

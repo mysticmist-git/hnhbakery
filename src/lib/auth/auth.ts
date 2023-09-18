@@ -1,17 +1,10 @@
 import { auth, db, provider } from '@/firebase/config';
+import { createUser, getUserById, getUserByUid } from '@/lib/DAO/userDAO';
+import User from '@/models/user';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
-import {
-  Timestamp,
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import router from 'next/router';
 import { COLLECTION_NAME } from '../constants';
-import { getDocFromFirestore } from '../firestore';
-import { UserObject } from '../models';
 import { SignInInfo, SignupUser } from '../types/auth';
 
 export const addUserWithEmailAndPassword = async (
@@ -26,26 +19,42 @@ export const addUserWithEmailAndPassword = async (
   }
 };
 
-export const addUserWithGoogleLogin = (userCredential: UserCredential) => {
+export const addUserWithGoogleLogin = async (
+  userCredential: UserCredential
+) => {
   try {
     const user = userCredential.user;
 
-    const userData: UserObject = {
-      id: user.uid,
+    // OLD CODE
+    // const userData: UserObject = {
+    //   id: user.uid,
+    //   name: user.displayName ?? '',
+    //   tel: user.phoneNumber ?? '',
+    //   mail: user.email ?? '',
+    //   accountType: 'google',
+    //   role_id: 'customer',
+    //   addresses: [],
+    //   birthday: new Date(1990, 1, 1),
+    //   image: '',
+    //   isActive: true,
+    // };
+
+    const data: Omit<User, 'id'> = {
+      uid: user.uid,
       name: user.displayName ?? '',
       tel: user.phoneNumber ?? '',
       mail: user.email ?? '',
-      accountType: 'google',
-      role_id: 'customer',
-      addresses: [],
-      birthday: new Date(1990, 1, 1),
-      image: '',
-      isActive: true,
+      birth: new Date(1990, 1, 1),
+      avatar: '',
+      active: true,
+      group_id: COLLECTION_NAME.DEFAULT_USERS,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
 
-    setDoc(doc(db, 'users', user.uid), userData);
+    await createUser(data);
   } catch (error) {
-    console.log(error);
+    console.log('[Auth service] Fail to add user with google login', error);
   }
 };
 
@@ -53,22 +62,19 @@ export const handleLoginWithGoogle = async () => {
   try {
     const userCredential = await signInWithPopup(auth, provider);
 
-    try {
-      const user = await getDocFromFirestore<UserObject>(
-        'users',
-        userCredential.user.uid
-      );
+    const user = await getUserByUid(userCredential.user.uid);
 
-      if (!user) throw new Error('No user');
-    } catch (error) {
-      addUserWithGoogleLogin(userCredential);
+    if (!user) {
+      console.log('[Auth service] No user data found. Proceed to create one.');
+      await addUserWithGoogleLogin(userCredential);
     }
-  } catch (error) {
-    console.log(error);
-  } finally {
+
     router.push('/');
+  } catch (error) {
+    console.log('[Auth service] Fail to login with google', error);
   }
 };
+
 export const validateSigninInfo = ({
   mail,
   password,

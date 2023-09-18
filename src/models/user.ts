@@ -5,8 +5,8 @@ import {
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
-import WithActive from './WithActive';
 import WithCreatedUpdated from './created_updated';
+import WithActive from './withActive';
 import WithId from './withId';
 
 /**
@@ -17,9 +17,11 @@ import WithId from './withId';
 type User = WithCreatedUpdated &
   WithActive &
   WithId & {
+    uid: string;
     name: string;
     tel: string;
     birth: Date;
+    mail: string;
     avatar: string;
     group_id: string;
   };

@@ -22,6 +22,7 @@ export const COLLECTION_NAME = {
   SALES: 'sales',
   REFERENCES: 'references',
   GROUPS: 'groups',
+  DEFAULT_USERS: 'default_users', // This for user just created
   USERS: 'users',
   USER_GROUPS: 'userGroups',
   PERMISSIONS: 'permissions',
