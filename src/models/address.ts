@@ -18,7 +18,7 @@ type Address = WithCreatedUpdated &
     user_id: string;
   };
 
-const userConverter: FirestoreDataConverter<Address> = {
+const addressConverter: FirestoreDataConverter<Address> = {
   toFirestore: function (modelObject: WithFieldValue<Address>): DocumentData {
     const { id, ...obj } = modelObject;
 
@@ -37,4 +37,4 @@ const userConverter: FirestoreDataConverter<Address> = {
 };
 
 export default Address;
-export { userConverter };
+export { addressConverter };

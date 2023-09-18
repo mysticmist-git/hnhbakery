@@ -39,7 +39,7 @@ async function getProductTypeById(id: string) {
 
     return snapshot.data();
   } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+    console.log('[DAO] Fail to get doc', error);
   }
 }
 
@@ -51,7 +51,7 @@ async function updateProductType(id: string, data: ProductType) {
 
     await updateDoc(docRef, data);
   } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+    console.log('[DAO] Fail to update doc', error);
   }
 }
 
@@ -59,7 +59,7 @@ async function createProductType(data: ProductType) {
   try {
     await addDoc(collection(db, COLLECTION_NAME.PRODUCT_TYPES), data);
   } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+    console.log('[DAO] Fail to create doc', error);
   }
 }
 
@@ -71,7 +71,7 @@ async function deleteProductType(id: string) {
 
     await deleteDoc(docRef);
   } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+    console.log('[DAO] Fail to delete doc', error);
   }
 }
 

@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Variant, { variantConverter } from '@/models/variant';
 import {
   addDoc,
   collection,
@@ -11,12 +11,12 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getVariants() {
   try {
     const collectionRef = collection(
       db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+      COLLECTION_NAME.VARIANTS
+    ).withConverter(variantConverter);
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +28,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getVariantById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
+      variantConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +42,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updateVariant(id: string, data: Variant) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
+      variantConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +54,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createVariant(data: Variant) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.VARIANTS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deleteVariant(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
+      variantConverter
     );
 
     await deleteDoc(docRef);
@@ -75,9 +75,9 @@ async function deleteProduct(id: string) {
 }
 
 export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
+  createVariant,
+  deleteVariant,
+  getVariantById,
+  getVariants,
+  updateVariant,
 };

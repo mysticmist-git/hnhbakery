@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Ingredient, { ingredientConverter } from '@/models/ingredient';
 import {
+  DocumentData,
   addDoc,
   collection,
   deleteDoc,
@@ -11,12 +12,12 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getIngredients() {
   try {
     const collectionRef = collection(
       db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+      COLLECTION_NAME.INGREDIENTS
+    ).withConverter(ingredientConverter);
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +29,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getIngredientById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.INGREDIENTS, id).withConverter(
+      ingredientConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +43,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updateIngredient(id: string, data: Ingredient) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.INGREDIENTS, id).withConverter(
+      ingredientConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +55,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createIngredient(data: Ingredient) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.INGREDIENTS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deleteIngredient(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.INGREDIENTS, id).withConverter(
+      ingredientConverter
     );
 
     await deleteDoc(docRef);
@@ -75,9 +76,9 @@ async function deleteProduct(id: string) {
 }
 
 export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
+  createIngredient,
+  deleteIngredient,
+  getIngredientById,
+  getIngredients,
+  updateIngredient,
 };

@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Feedback, { feedbackConverter } from '@/models/feedback';
 import {
   addDoc,
   collection,
@@ -11,12 +11,12 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getFeedbacks() {
   try {
     const collectionRef = collection(
       db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+      COLLECTION_NAME.FEEDBACKS
+    ).withConverter(feedbackConverter);
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +28,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getFeedbackById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
+      feedbackConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +42,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updateFeedback(id: string, data: Feedback) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
+      feedbackConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +54,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createFeedback(data: Feedback) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.FEEDBACKS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deleteFeedback(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
+      feedbackConverter
     );
 
     await deleteDoc(docRef);
@@ -75,9 +75,9 @@ async function deleteProduct(id: string) {
 }
 
 export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
+  createFeedback,
+  deleteFeedback,
+  getFeedbackById,
+  getFeedbacks,
+  updateFeedback,
 };

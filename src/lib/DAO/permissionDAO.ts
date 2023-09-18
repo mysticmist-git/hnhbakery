@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Permission, { permissionConverter } from '@/models/permission';
 import {
   addDoc,
   collection,
@@ -11,12 +11,12 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getPermissions() {
   try {
     const collectionRef = collection(
       db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+      COLLECTION_NAME.PERMISSIONS
+    ).withConverter(permissionConverter);
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +28,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getPermissionById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
+      permissionConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +42,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updatePermission(id: string, data: Permission) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
+      permissionConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +54,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createPermission(data: Permission) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.PERMISSIONS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deletePermission(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
+      permissionConverter
     );
 
     await deleteDoc(docRef);
@@ -75,9 +75,9 @@ async function deleteProduct(id: string) {
 }
 
 export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
+  createPermission,
+  deletePermission,
+  getPermissionById,
+  getPermissions,
+  updatePermission,
 };

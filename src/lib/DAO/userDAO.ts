@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import User, { userConverter } from '@/models/user';
 import {
   addDoc,
   collection,
@@ -11,12 +11,11 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getUsers() {
   try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+    const collectionRef = collection(db, COLLECTION_NAME.USERS).withConverter(
+      userConverter
+    );
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +27,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getUserById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.USERS, id).withConverter(
+      userConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +41,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updateUser(id: string, data: User) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.USERS, id).withConverter(
+      userConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +53,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createUser(data: User) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.USERS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deleteUser(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.USERS, id).withConverter(
+      userConverter
     );
 
     await deleteDoc(docRef);
@@ -74,10 +73,4 @@ async function deleteProduct(id: string) {
   }
 }
 
-export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
-};
+export { createUser, deleteUser, getUserById, getUsers, updateUser };

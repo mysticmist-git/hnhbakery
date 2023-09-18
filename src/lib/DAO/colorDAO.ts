@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Product, { productConverter } from '@/models/Product';
+import Color, { colorConverter } from '@/models/color';
 import {
   addDoc,
   collection,
@@ -11,12 +11,11 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProducts() {
+async function getColors() {
   try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PRODUCTS
-    ).withConverter(productConverter);
+    const collectionRef = collection(db, COLLECTION_NAME.COLORS).withConverter(
+      colorConverter
+    );
 
     const snapshot = await getDocs(collectionRef);
 
@@ -28,10 +27,10 @@ async function getProducts() {
   }
 }
 
-async function getProductById(id: string) {
+async function getColorById(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
+      colorConverter
     );
 
     const snapshot = await getDoc(docRef);
@@ -42,10 +41,10 @@ async function getProductById(id: string) {
   }
 }
 
-async function updateProduct(id: string, data: Product) {
+async function updateColor(id: string, data: Color) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
+      colorConverter
     );
 
     await updateDoc(docRef, data);
@@ -54,18 +53,18 @@ async function updateProduct(id: string, data: Product) {
   }
 }
 
-async function createProduct(data: Product) {
+async function createColor(data: Color) {
   try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCTS), data);
+    await addDoc(collection(db, COLLECTION_NAME.COLORS), data);
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteProduct(id: string) {
+async function deleteColor(id: string) {
   try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCTS, id).withConverter(
-      productConverter
+    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
+      colorConverter
     );
 
     await deleteDoc(docRef);
@@ -74,10 +73,4 @@ async function deleteProduct(id: string) {
   }
 }
 
-export {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  getProducts,
-  updateProduct,
-};
+export { createColor, deleteColor, getColorById, getColors, updateColor };

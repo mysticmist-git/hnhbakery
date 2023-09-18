@@ -9,27 +9,30 @@ export const authMessages = {
 export const COLLECTION_NAME = {
   PRODUCT_TYPES: 'productTypes',
   PRODUCTS: 'products',
+  VARIANTS: 'variants',
   BATCHES: 'batches',
   BRANDS: 'brands',
-  PRODUCT_DETAILS: 'productDetails',
   FEEDBACKS: 'feedbacks',
   BILL_DETAILS: 'bill_details',
   DELIVERIES: 'deliveries',
-  CARTS: 'carts',
   CONTACTS: 'contacts',
   BILLS: 'bills',
+  BILL_ITEMS: 'bill_items',
   PAYMENTS: 'payments',
   SALES: 'sales',
   REFERENCES: 'references',
+  GROUPS: 'groups',
   USERS: 'users',
-  STAFFS: 'staffs',
-  ROLES: 'roles',
-  RIGHT_ROLES: 'right_Roles',
-  RIGHTS: 'rights',
   USER_GROUPS: 'userGroups',
   PERMISSIONS: 'permissions',
+  INGREDIENTS: 'ingredients',
+  MATERIALS: 'materials',
+  COLORS: 'colors',
+  SIZES: 'sizes',
+  ADDRESSES: 'addresses',
+  PAYMENT_METHODS: 'payment_methods',
   NONE: 'none',
-};
+} as const;
 
 export const LOCAL_CART_KEY: string = 'cart';
 
