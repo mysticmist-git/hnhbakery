@@ -1,8 +1,13 @@
 import { db } from '@/firebase/config';
 import Group, { groupConverter } from '@/models/group';
+import { promises } from 'dns';
 import {
+  CollectionReference,
   DocumentReference,
+  DocumentSnapshot,
+  Query,
   QueryConstraint,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
@@ -16,25 +21,27 @@ import { COLLECTION_NAME } from '../constants';
 
 export const DEFAULT_GROUP_ID = 'default';
 
-export function getGroupsRef() {
+export function getGroupsRef(): CollectionReference<Group> {
   return collection(db, COLLECTION_NAME.GROUPS).withConverter(groupConverter);
 }
 
-export function getGroupsRefWithQuery(...queryConstraints: QueryConstraint[]) {
+export function getGroupsRefWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Query<Group> {
   return query(getGroupsRef(), ...queryConstraints);
 }
 
-export function getGroupRefById(id: string) {
+export function getGroupRefById(id: string): DocumentReference<Group> {
   return doc(getGroupsRef(), id);
 }
 
-export async function getGroupSnapshots() {
+export async function getGroupSnapshots(): Promise<QuerySnapshot<Group>> {
   const collectionRef = getGroupsRef();
 
   return await getDocs(collectionRef);
 }
 
-export async function getGroups() {
+export async function getGroups(): Promise<Group[]> {
   const snapshot = await getGroupSnapshots();
 
   return snapshot.docs.map((doc) => doc.data());
@@ -42,7 +49,7 @@ export async function getGroups() {
 
 export async function getGroupsSnapshotWithQuery(
   ...queryConstraints: QueryConstraint[]
-) {
+): Promise<QuerySnapshot<Group>> {
   const collectionRef = getGroupsRefWithQuery(...queryConstraints);
 
   return await getDocs(collectionRef);
@@ -50,27 +57,31 @@ export async function getGroupsSnapshotWithQuery(
 
 export async function getGroupsWithQuery(
   ...queryConstraints: QueryConstraint[]
-) {
+): Promise<Group[]> {
   return (await getGroupsSnapshotWithQuery(...queryConstraints)).docs.map(
     (doc) => doc.data()
   );
 }
 
-export async function getGroupSnapshotById(id: string) {
+export async function getGroupSnapshotById(
+  id: string
+): Promise<DocumentSnapshot<Group>> {
   return await getDoc(getGroupRefById(id));
 }
 
-export async function getGroupById(id: string) {
+export async function getGroupById(id: string): Promise<Group | undefined> {
   const snapshot = await getGroupSnapshotById(id);
 
   return snapshot.data();
 }
 
-export async function getDefaultGroupSnapshot() {
+export async function getDefaultGroupSnapshot(): Promise<
+  DocumentSnapshot<Group>
+> {
   return await getGroupSnapshotById(DEFAULT_GROUP_ID);
 }
 
-export async function getDefaultGroup() {
+export async function getDefaultGroup(): Promise<Group | undefined> {
   return await getGroupById(DEFAULT_GROUP_ID);
 }
 
@@ -86,7 +97,9 @@ export async function updateGroup(
   await updateDoc(typeof arg == 'string' ? getGroupRefById(arg) : arg, data);
 }
 
-export async function createGroup(data: Omit<Group, 'id'>) {
+export async function createGroup(
+  data: Omit<Group, 'id'>
+): Promise<DocumentReference<Group>> {
   return (
     await addDoc(collection(db, COLLECTION_NAME.GROUPS), data)
   ).withConverter(groupConverter);

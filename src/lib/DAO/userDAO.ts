@@ -17,6 +17,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
+
 import { COLLECTION_NAME } from '../constants';
 import {
   DEFAULT_GROUP_ID,
@@ -83,7 +84,9 @@ export async function getUsersSnapshot(
   groupRef: DocumentReference<Group>
 ): Promise<QuerySnapshot<User>>;
 
-export async function getUsersSnapshot(arg: string | DocumentReference<Group>) {
+export async function getUsersSnapshot(
+  arg: string | DocumentReference<Group>
+): Promise<QuerySnapshot<User>> {
   if (typeof arg === 'string') {
     return await getDocs(getUsersRef(arg));
   } else {
@@ -95,7 +98,9 @@ export async function getUsers(groupId: string): Promise<User[]>;
 export async function getUsers(
   groupRef: DocumentReference<Group>
 ): Promise<User[]>;
-export async function getUsers(arg: string | DocumentReference<Group>) {
+export async function getUsers(
+  arg: string | DocumentReference<Group>
+): Promise<User[]> {
   if (typeof arg === 'string') {
     return (await getUsersSnapshot(arg)).docs.map((doc) => doc.data());
   } else {
@@ -103,11 +108,11 @@ export async function getUsers(arg: string | DocumentReference<Group>) {
   }
 }
 
-export async function getDefaultUsersSnapshot() {
+export async function getDefaultUsersSnapshot(): Promise<QuerySnapshot<User>> {
   return await getUsersSnapshot(DEFAULT_GROUP_ID);
 }
 
-export async function getDefaultUsers() {
+export async function getDefaultUsers(): Promise<User[]> {
   return await getUsers(DEFAULT_GROUP_ID);
 }
 
@@ -164,7 +169,7 @@ export async function getUserSnapshot(
 export async function getUserSnapshot(
   arg: string | DocumentReference<Group>,
   id: string
-) {
+): Promise<DocumentSnapshot<User>> {
   if (typeof arg === 'string') {
     return await getDoc(getUserRef(arg, id));
   } else {
@@ -172,15 +177,18 @@ export async function getUserSnapshot(
   }
 }
 
-export async function getUser(groupId: string, id: string): Promise<User>;
+export async function getUser(
+  groupId: string,
+  id: string
+): Promise<User | undefined>;
 export async function getUser(
   groupRef: DocumentReference<Group>,
   id: string
-): Promise<User>;
+): Promise<User | undefined>;
 export async function getUser(
   arg: string | DocumentReference<Group>,
   id: string
-) {
+): Promise<User | undefined> {
   if (typeof arg === 'string') {
     return (await getUserSnapshot(arg, id)).data();
   } else {
@@ -219,7 +227,7 @@ export async function updateUser(
   arg: string | DocumentReference<Group>,
   id: string,
   data: User
-) {
+): Promise<void> {
   const docRef =
     typeof arg === 'string' ? getUserRef(arg, id) : getUserRef(arg, id);
 
