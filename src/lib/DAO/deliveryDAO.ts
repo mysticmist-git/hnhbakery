@@ -11,73 +11,45 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getDeliveries() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.DELIVERIES
-    ).withConverter(deliveryConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getDeliveriesRef() {
+  return collection(db, COLLECTION_NAME.DELIVERIES).withConverter(
+    deliveryConverter
+  );
 }
 
-async function getDeliveryById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getDeliveryRefById(id: string) {
+  return doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
+    deliveryConverter
+  );
 }
 
-async function updateDelivery(id: string, data: Delivery) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export async function getDeliveriesSnapshot() {
+  return await getDocs(getDeliveriesRef());
 }
 
-async function createDelivery(data: Delivery) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.DELIVERIES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getDeliveries() {
+  return (await getDeliveriesSnapshot()).docs.map((doc) => doc.data());
 }
 
-async function deleteDelivery(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getDeliverySnapshotById(id: string) {
+  return await getDoc(getDeliveryRefById(id));
 }
 
-export {
-  createDelivery,
-  deleteDelivery,
-  getDeliveries,
-  getDeliveryById,
-  updateDelivery,
-};
+export async function getDeliveryById(id: string) {
+  return (await getDeliverySnapshotById(id)).data();
+}
+
+export async function createDelivery(data: Omit<Delivery, 'id'>) {
+  const docRef = await addDoc(getDeliveriesRef(), data);
+  return docRef.id;
+}
+
+export async function updateDelivery(id: string, data: Delivery) {
+  const docRef = getDeliveryRefById(id);
+  await updateDoc(docRef, data);
+}
+
+export async function deleteDelivery(id: string) {
+  const docRef = getDeliveryRefById(id);
+  await deleteDoc(docRef);
+}

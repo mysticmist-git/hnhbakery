@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import Permission, { permissionConverter } from '@/models/permission';
 import {
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -18,9 +19,7 @@ export function getPermissionsRef() {
 }
 
 export function getPermissionRefById(id: string) {
-  return doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-    permissionConverter
-  );
+  return doc(getPermissionsRef(), id).withConverter(permissionConverter);
 }
 
 export async function getPermissionSnapshots() {
@@ -45,18 +44,38 @@ export async function getPermissionById(id: string) {
   return (await getPermissionSnapshotById(id)).data();
 }
 
-export async function updatePermission(id: string, data: Permission) {
-  const docRef = getPermissionRefById(id);
-
-  await updateDoc(docRef, data);
+export async function updatePermission(
+  id: string,
+  data: Permission
+): Promise<void>;
+export async function updatePermission(
+  docRef: DocumentReference<Permission>,
+  data: Permission
+): Promise<void>;
+export async function updatePermission(
+  arg: string | DocumentReference<Permission>,
+  data: Permission
+) {
+  await updateDoc(
+    typeof arg === 'string' ? getPermissionRefById(arg) : arg,
+    data
+  );
 }
 
 export async function createPermission(data: Omit<Permission, 'id'>) {
-  await addDoc(getPermissionsRef(), data);
+  return (await addDoc(getPermissionsRef(), data)).withConverter(
+    permissionConverter
+  );
 }
 
-export async function deletePermission(id: string) {
-  const docRef = getPermissionRefById(id);
+export async function deletePermission(id: string): Promise<void>;
+export async function deletePermission(
+  docRef: DocumentReference<Permission>
+): Promise<void>;
+export async function deletePermission(
+  arg: string | DocumentReference<Permission>
+) {
+  const docRef = typeof arg === 'string' ? getPermissionRefById(arg) : arg;
 
   await deleteDoc(docRef);
 }

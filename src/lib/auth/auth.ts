@@ -1,5 +1,5 @@
 import { auth, db, provider } from '@/firebase/config';
-import { createUser, getUserById, getUserByUid } from '@/lib/DAO/userDAO';
+import { createUser, getUser, getUserByUid } from '@/lib/DAO/userDAO';
 import User from '@/models/user';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
 import {

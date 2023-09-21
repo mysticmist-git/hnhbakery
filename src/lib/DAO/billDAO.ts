@@ -1,5 +1,4 @@
-import { db } from '@/firebase/config';
-import Bill, { billConverter } from '@/models/bill';
+import { billConverter } from '@/models/bill';
 import {
   addDoc,
   collection,
@@ -10,67 +9,57 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getUserRef } from './userDAO';
 
-async function getBills() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.BILLS).withConverter(
-      billConverter
-    );
+export function getBillsRef(groupId: string, userId: string) {
+  const docRef = getUserRef(groupId, userId);
 
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+  return collection(docRef, COLLECTION_NAME.BILLS).withConverter(billConverter);
 }
 
-async function getBillById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.BILLS, id).withConverter(
-      billConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getBillRefById(groupId: string, userId: string, id: string) {
+  return doc(getBillsRef(groupId, userId), id);
 }
 
-async function updateBill(id: string, data: Bill) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.BILLS, id).withConverter(
-      billConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export async function getBillsSnapshot(groupId: string, userId: string) {
+  return await getDocs(getBillsRef(groupId, userId));
 }
 
-async function createBill(data: Bill) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.BILLS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getBills(groupId: string, userId: string) {
+  return (await getBillsSnapshot(groupId, userId)).docs.map((doc) =>
+    doc.data()
+  );
 }
 
-async function deleteBill(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.BILLS, id).withConverter(
-      billConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getBillSnapshotById(
+  groupId: string,
+  userId: string,
+  id: string
+) {
+  return getDoc(getBillRefById(groupId, userId, id));
 }
 
-export { createBill, deleteBill, getBillById, getBills, updateBill };
+export async function getBillById(groupId: string, userId: string, id: string) {
+  return (await getBillSnapshotById(groupId, userId, id)).data();
+}
+
+export async function createBill(groupId: string, userId: string, data: any) {
+  const docRef = await addDoc(getBillsRef(groupId, userId), data);
+
+  return docRef;
+}
+
+export async function updateBill(
+  groupId: string,
+  userId: string,
+  id: string,
+  data: any
+) {
+  const docRef = getBillRefById(groupId, userId, id);
+
+  await updateDoc(docRef, data);
+}
+
+export async function deleteBill(groupId: string, userId: string, id: string) {
+  await deleteDoc(getBillRefById(groupId, userId, id));
+}

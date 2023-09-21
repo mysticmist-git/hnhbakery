@@ -11,73 +11,40 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getPaymentMethods() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PAYMENT_METHODS
-    ).withConverter(paymentMethodConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getPaymentMethodsRef() {
+  return collection(db, COLLECTION_NAME.PAYMENT_METHODS).withConverter(
+    paymentMethodConverter
+  );
 }
 
-async function getPaymentMethodById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PAYMENT_METHODS, id).withConverter(
-      paymentMethodConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getPaymentMethodRefById(id: string) {
+  return doc(getPaymentMethodsRef(), id);
 }
 
-async function updatePaymentMethod(id: string, data: PaymentMethod) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PAYMENT_METHODS, id).withConverter(
-      paymentMethodConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export async function getPaymentMethodsSnapshot() {
+  return await getDocs(getPaymentMethodsRef());
 }
 
-async function createPaymentMethod(data: PaymentMethod) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.PAYMENT_METHODS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getPaymentMethods() {
+  return (await getPaymentMethodsSnapshot()).docs.map((doc) => doc.data());
 }
 
-async function deletePaymentMethod(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PAYMENT_METHODS, id).withConverter(
-      paymentMethodConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getPaymentMethodSnapshotById(id: string) {
+  return await getDoc(getPaymentMethodRefById(id));
 }
 
-export {
-  createPaymentMethod,
-  deletePaymentMethod,
-  getPaymentMethodById,
-  getPaymentMethods,
-  updatePaymentMethod,
-};
+export async function getPaymentMethodById(id: string) {
+  return (await getPaymentMethodSnapshotById(id)).data();
+}
+
+export async function createPaymentMethod(data: Omit<PaymentMethod, 'id'>) {
+  return await addDoc(getPaymentMethodsRef(), data);
+}
+
+export async function updatePaymentMethod(id: string, data: PaymentMethod) {
+  await updateDoc(getPaymentMethodRefById(id), data);
+}
+
+export async function deletePaymentMethod(id: string) {
+  await deleteDoc(getPaymentMethodRefById(id));
+}

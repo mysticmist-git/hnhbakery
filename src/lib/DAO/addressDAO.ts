@@ -1,5 +1,3 @@
-import { db } from '@/firebase/config';
-import Address, { addressConverter } from '@/models/address';
 import {
   addDoc,
   collection,
@@ -10,74 +8,69 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getUserRef } from './userDAO';
 
-async function getAddresses() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.ADDRESSES
-    ).withConverter(addressConverter);
+export function getAddressesRef(groupId: string, userId: string) {
+  const userRef = getUserRef(groupId, userId);
 
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+  return collection(userRef, COLLECTION_NAME.ADDRESSES);
 }
 
-async function getAddressById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.ADDRESSES, id).withConverter(
-      addressConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getAddressRefById(groupId: string, userId: string, id: string) {
+  return doc(getAddressesRef(groupId, userId), id);
 }
 
-async function updateAddress(id: string, data: Address) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.ADDRESSES, id).withConverter(
-      addressConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export async function getAddressesSnapshot(groupId: string, userId: string) {
+  return await getDocs(getAddressesRef(groupId, userId));
 }
 
-async function createAddress(data: Address) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.ADDRESSES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getAddresses(groupId: string, userId: string) {
+  return (await getAddressesSnapshot(groupId, userId)).docs.map((doc) =>
+    doc.data()
+  );
 }
 
-async function deleteAddress(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.ADDRESSES, id).withConverter(
-      addressConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getAddressSnapshotById(
+  groupId: string,
+  userId: string,
+  id: string
+) {
+  return getDoc(getAddressRefById(groupId, userId, id));
 }
 
-export {
-  createAddress,
-  deleteAddress,
-  getAddressById,
-  getAddresses,
-  updateAddress,
-};
+export async function getAddressById(
+  groupId: string,
+  userId: string,
+  id: string
+) {
+  return (await getAddressSnapshotById(groupId, userId, id)).data();
+}
+
+export async function createAddress(
+  groupId: string,
+  userId: string,
+  data: any
+) {
+  const docRef = await addDoc(getAddressesRef(groupId, userId), data);
+
+  return docRef;
+}
+
+export async function updateAddress(
+  groupId: string,
+  userId: string,
+  id: string,
+  data: any
+) {
+  const docRef = getAddressRefById(groupId, userId, id);
+
+  await updateDoc(docRef, data);
+}
+
+export async function deleteAddress(
+  groupId: string,
+  userId: string,
+  id: string
+) {
+  await deleteDoc(getAddressRefById(groupId, userId, id));
+}

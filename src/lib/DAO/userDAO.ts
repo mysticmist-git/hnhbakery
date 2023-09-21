@@ -1,7 +1,12 @@
-import { db } from '@/firebase/config';
+import Group from '@/models/group';
 import User, { userConverter } from '@/models/user';
 import {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  Query,
   QueryConstraint,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
@@ -10,73 +15,187 @@ import {
   getDocs,
   query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 import {
   DEFAULT_GROUP_ID,
-  getGroupById,
   getGroupRefById,
   getGroupSnapshots,
 } from './groupDAO';
 
-export function getUsersRef(groupId: string) {
-  return collection(
-    getGroupRefById(groupId),
-    COLLECTION_NAME.USERS
-  ).withConverter(userConverter);
+export function getUsersRef(
+  groupRef: DocumentReference<Group>
+): CollectionReference<User>;
+export function getUsersRef(groupId: string): CollectionReference<User>;
+export function getUsersRef(
+  arg: string | DocumentReference<Group>
+): CollectionReference<User> {
+  if (typeof arg === 'string') {
+    return collection(
+      getGroupRefById(arg),
+      COLLECTION_NAME.USERS
+    ).withConverter(userConverter);
+  } else {
+    return collection(arg, COLLECTION_NAME.USERS).withConverter(userConverter);
+  }
 }
 
 export function getUsersRefWithQuery(
+  groupRef: DocumentReference<Group>,
+  ...queryConstraints: QueryConstraint[]
+): Query<User>;
+export function getUsersRefWithQuery(
   groupId: string,
   ...queryConstraints: QueryConstraint[]
-) {
-  return getDocs(
-    query(getUsersRef(groupId), ...queryConstraints).withConverter(
-      userConverter
-    )
-  );
-}
-
-export function getUserRefById(groupId: string, id: string) {
-  return doc(getGroupRefById(groupId), id).withConverter(userConverter);
-}
-
-export async function queryUsersByGroup(
-  groupId: string,
+): Query<User>;
+export function getUsersRefWithQuery(
+  arg: string | DocumentReference<Group>,
   ...queryConstraints: QueryConstraint[]
-) {
-  return await getDocs(query(getUsersRef(groupId), ...queryConstraints));
+): Query<User> {
+  if (typeof arg === 'string') {
+    return query(getUsersRef(arg), ...queryConstraints);
+  } else {
+    return query(getUsersRef(arg), ...queryConstraints);
+  }
 }
 
-export async function getUsersSnapshotByGroup(groupId: string) {
-  return await getDocs(getUsersRef(groupId));
+export function getUserRef(
+  groupRef: DocumentReference<Group>,
+  id: string
+): DocumentReference<User>;
+export function getUserRef(
+  groupId: string,
+  id: string
+): DocumentReference<User>;
+export function getUserRef(
+  arg: string | DocumentReference<Group>,
+  id: string
+): DocumentReference<User> {
+  const groupRef = typeof arg === 'string' ? getGroupRefById(arg) : arg;
+  return doc(groupRef, id).withConverter(userConverter);
 }
 
-export async function getUsersByGroup(groupId: string) {
-  return (await getUsersSnapshotByGroup(groupId)).docs.map((doc) => doc.data());
+export async function getUsersSnapshot(
+  groupId: string
+): Promise<QuerySnapshot<User>>;
+export async function getUsersSnapshot(
+  groupRef: DocumentReference<Group>
+): Promise<QuerySnapshot<User>>;
+
+export async function getUsersSnapshot(arg: string | DocumentReference<Group>) {
+  if (typeof arg === 'string') {
+    return await getDocs(getUsersRef(arg));
+  } else {
+    return await getDocs(getUsersRef(arg));
+  }
+}
+
+export async function getUsers(groupId: string): Promise<User[]>;
+export async function getUsers(
+  groupRef: DocumentReference<Group>
+): Promise<User[]>;
+export async function getUsers(arg: string | DocumentReference<Group>) {
+  if (typeof arg === 'string') {
+    return (await getUsersSnapshot(arg)).docs.map((doc) => doc.data());
+  } else {
+    return (await getUsersSnapshot(arg)).docs.map((doc) => doc.data());
+  }
 }
 
 export async function getDefaultUsersSnapshot() {
-  return await getUsersSnapshotByGroup(DEFAULT_GROUP_ID);
+  return await getUsersSnapshot(DEFAULT_GROUP_ID);
 }
 
 export async function getDefaultUsers() {
-  return await getUsersByGroup(DEFAULT_GROUP_ID);
+  return await getUsers(DEFAULT_GROUP_ID);
 }
 
-export async function getUserSnapshotById(groupId: string, id: string) {
-  return await getDoc(getUserRefById(groupId, id));
+export async function getUsersSnapshotWithQuery(
+  groupId: string,
+  ...queryConstraints: QueryConstraint[]
+): Promise<QuerySnapshot<User>>;
+export async function getUsersSnapshotWithQuery(
+  groupRef: DocumentReference<Group>,
+  ...queryConstraints: QueryConstraint[]
+): Promise<QuerySnapshot<User>>;
+export async function getUsersSnapshotWithQuery(
+  arg: string | DocumentReference<Group>,
+  ...queryConstraints: QueryConstraint[]
+): Promise<QuerySnapshot<User>> {
+  if (typeof arg === 'string') {
+    return await getDocs(getUsersRefWithQuery(arg, ...queryConstraints));
+  } else {
+    return await getDocs(getUsersRefWithQuery(arg, ...queryConstraints));
+  }
 }
 
-export async function getUserById(groupId: string, id: string) {
-  return (await getUserSnapshotById(groupId, id)).data();
+export async function getUsersWithQuery(
+  groupId: string,
+  ...queryConstraints: QueryConstraint[]
+): Promise<User[]>;
+export async function getUsersWithQuery(
+  groupRef: DocumentReference<Group>,
+  ...queryConstraints: QueryConstraint[]
+): Promise<User[]>;
+export async function getUsersWithQuery(
+  arg: string | DocumentReference<Group>,
+  ...queryConstraints: QueryConstraint[]
+): Promise<User[]> {
+  if (typeof arg === 'string') {
+    return (await getUsersSnapshotWithQuery(arg, ...queryConstraints)).docs.map(
+      (doc) => doc.data()
+    );
+  } else {
+    return (await getUsersSnapshotWithQuery(arg, ...queryConstraints)).docs.map(
+      (doc) => doc.data()
+    );
+  }
+}
+
+export async function getUserSnapshot(
+  groupId: string,
+  id: string
+): Promise<DocumentSnapshot<User>>;
+export async function getUserSnapshot(
+  groupRef: DocumentReference<Group>,
+  id: string
+): Promise<DocumentSnapshot<User>>;
+export async function getUserSnapshot(
+  arg: string | DocumentReference<Group>,
+  id: string
+) {
+  if (typeof arg === 'string') {
+    return await getDoc(getUserRef(arg, id));
+  } else {
+    return await getDoc(getUserRef(arg, id));
+  }
+}
+
+export async function getUser(groupId: string, id: string): Promise<User>;
+export async function getUser(
+  groupRef: DocumentReference<Group>,
+  id: string
+): Promise<User>;
+export async function getUser(
+  arg: string | DocumentReference<Group>,
+  id: string
+) {
+  if (typeof arg === 'string') {
+    return (await getUserSnapshot(arg, id)).data();
+  } else {
+    return (await getUserSnapshot(arg, id)).data();
+  }
 }
 
 export async function getUserByUid(uid: string) {
   const groupsSnapshot = await getGroupSnapshots();
 
   for (let groupSnapshot of groupsSnapshot.docs) {
-    const matchUsers = await getUsersRefWithQuery(groupSnapshot.id);
+    const matchUsers = await getUsersSnapshotWithQuery(
+      groupSnapshot.id,
+      where('uid', '==', uid)
+    );
 
     if (matchUsers.empty) continue;
 
@@ -86,18 +205,58 @@ export async function getUserByUid(uid: string) {
   }
 }
 
-export async function updateUser(groupId: string, id: string, data: User) {
-  const docRef = getUserRefById(groupId, id);
+export async function updateUser(
+  groupId: string,
+  id: string,
+  data: User
+): Promise<void>;
+export async function updateUser(
+  groupRef: DocumentReference<Group>,
+  id: string,
+  data: User
+): Promise<void>;
+export async function updateUser(
+  arg: string | DocumentReference<Group>,
+  id: string,
+  data: User
+) {
+  const docRef =
+    typeof arg === 'string' ? getUserRef(arg, id) : getUserRef(arg, id);
 
   await updateDoc(docRef, data);
 }
 
-export async function createUser(groupId: string, data: User) {
-  const docRef = await addDoc(getUsersRef(groupId), data);
+export async function createUser(
+  groupId: string,
+  data: Omit<User, 'id'>
+): Promise<DocumentReference<User>>;
+export async function createUser(
+  groupRef: DocumentReference<Group>,
+  data: Omit<User, 'id'>
+): Promise<DocumentReference<User>>;
+export async function createUser(
+  arg: string | DocumentReference<Group>,
+  data: Omit<User, 'id'>
+): Promise<DocumentReference<User>> {
+  const collectionRef =
+    typeof arg === 'string' ? getUsersRef(arg) : getUsersRef(arg);
 
-  return docRef;
+  return (await addDoc(collectionRef, data)).withConverter(userConverter);
 }
 
-export async function deleteUser(groupId: string, id: string) {
-  await deleteDoc(getUserRefById(groupId, id));
+export async function deleteUser(groupId: string, id: string): Promise<void>;
+export async function deleteUser(
+  groupRef: DocumentReference<Group>,
+  id: string
+): Promise<void>;
+export async function deleteUser(
+  groupId: string | DocumentReference<Group>,
+  id: string
+): Promise<void> {
+  const docRef =
+    typeof groupId === 'string'
+      ? getUserRef(groupId, id)
+      : getUserRef(groupId, id);
+
+  await deleteDoc(docRef);
 }
