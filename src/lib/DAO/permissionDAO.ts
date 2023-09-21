@@ -11,73 +11,52 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getPermissions() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PERMISSIONS
-    ).withConverter(permissionConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getPermissionsRef() {
+  return collection(db, COLLECTION_NAME.PERMISSIONS).withConverter(
+    permissionConverter
+  );
 }
 
-async function getPermissionById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getPermissionRefById(id: string) {
+  return doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
+    permissionConverter
+  );
 }
 
-async function updatePermission(id: string, data: Permission) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
+export async function getPermissionSnapshots() {
+  const collectionRef = getPermissionsRef();
 
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+  return await getDocs(collectionRef);
 }
 
-async function createPermission(data: Permission) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.PERMISSIONS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getPermissions() {
+  const snapshot = await getPermissionSnapshots();
+
+  return snapshot.docs.map((doc) => doc.data());
 }
 
-async function deletePermission(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
+export async function getPermissionSnapshotById(id: string) {
+  const docRef = getPermissionRefById(id);
 
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+  return await getDoc(docRef);
 }
 
-export {
-  createPermission,
-  deletePermission,
-  getPermissionById,
-  getPermissions,
-  updatePermission,
-};
+export async function getPermissionById(id: string) {
+  return (await getPermissionSnapshotById(id)).data();
+}
+
+export async function updatePermission(id: string, data: Permission) {
+  const docRef = getPermissionRefById(id);
+
+  await updateDoc(docRef, data);
+}
+
+export async function createPermission(data: Omit<Permission, 'id'>) {
+  await addDoc(getPermissionsRef(), data);
+}
+
+export async function deletePermission(id: string) {
+  const docRef = getPermissionRefById(id);
+
+  await deleteDoc(docRef);
+}

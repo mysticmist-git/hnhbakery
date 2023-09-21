@@ -1,5 +1,7 @@
+import User from '@/models/user';
 import { Timestamp } from 'firebase/firestore';
 
+// TODO: Remove this later
 export type SignupData = {
   name?: string;
   birthday?: Date;
@@ -7,6 +9,13 @@ export type SignupData = {
   mail?: string;
   password?: string;
   confirmPassword?: string;
+};
+
+export type SignUpData = {
+  user: Omit<User, 'id' | 'uid'>;
+  mail: string;
+  password: string;
+  confirmPassword: string;
 };
 
 export type SignupUser = {

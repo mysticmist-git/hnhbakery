@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import User, { userConverter } from '@/models/user';
 import {
+  QueryConstraint,
   addDoc,
   collection,
   deleteDoc,
@@ -8,123 +9,83 @@ import {
   getDoc,
   getDocs,
   query,
-  setDoc,
   updateDoc,
-  where,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getGroupSnapshots } from './groupDAO';
+import {
+  DEFAULT_GROUP_ID,
+  getGroupRefById,
+  getGroupSnapshots,
+} from './groupDAO';
 
-async function getDefaultUsers() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.DEFAULT_USERS
-    ).withConverter(userConverter);
+export function getUsersRefByGroup(groupId: string) {
+  return collection(
+    getGroupRefById(groupId),
+    COLLECTION_NAME.USERS
+  ).withConverter(userConverter);
+}
 
-    const snapshot = await getDocs(collectionRef);
+export function getUsersByGroupWithQuery(
+  groupId: string,
+  ...queryConstraints: QueryConstraint[]
+) {
+  return getDocs(
+    query(getUsersRefByGroup(groupId), ...queryConstraints).withConverter(
+      userConverter
+    )
+  );
+}
 
-    const data = snapshot.docs.map((doc) => doc.data());
+export function getUserRefById(groupId: string, id: string) {
+  return doc(getGroupRefById(groupId), id).withConverter(userConverter);
+}
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+export async function queryUsersByGroup(
+  groupId: string,
+  ...queryConstraints: QueryConstraint[]
+) {
+  return await getDocs(query(getUsersRefByGroup(groupId), ...queryConstraints));
+}
+
+export async function getUsersSnapshotByGroup(groupId: string) {
+  return await getDocs(getUsersRefByGroup(groupId));
+}
+
+export async function getUsersByGroup(groupId: string) {
+  return (await getUsersSnapshotByGroup(groupId)).docs.map((doc) => doc.data());
+}
+
+export async function getDefaultUsersSnapshot() {
+  return await getUsersSnapshotByGroup(DEFAULT_GROUP_ID);
+}
+
+export async function getDefaultUsers() {
+  return await getUsersByGroup(DEFAULT_GROUP_ID);
+}
+
+export async function getUserSnapshotById(groupId: string, id: string) {
+  return await getDoc(getUserRefById(groupId, id));
+}
+
+export async function getUserById(groupId: string, id: string) {
+  return (await getUserSnapshotById(groupId, id)).data();
+}
+
+export async function getUserByUid(uid: string) {
+  const groupsSnapshot = await getGroupSnapshots();
+
+  for (let groupSnapshot of groupsSnapshot.docs) {
+    const matchUsers = await getUsersByGroupWithQuery(groupSnapshot.id);
+
+    if (matchUsers.empty) continue;
+
+    const user = matchUsers.docs[0].data();
+
+    return user;
   }
 }
 
-async function getUsersByGroup(groupId: string) {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.GROUPS,
-      groupId,
-      COLLECTION_NAME.USERS
-    ).withConverter(userConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
-
-/**
- * Retrieves a user by their ID.
- *
- * IMPORTANT: This only works if you've already know where is it stored.
- *
- * @param {string} id - The ID of the user.
- * @param {string} [groupId] - The ID of the group the user belongs to (optional).
- * @return {Promise<User>} - A promise that resolves with the user data.
- */
-async function getUserById(id: string, groupId?: string) {
-  try {
-    let docRef;
-
-    if (groupId) {
-      docRef = doc(
-        db,
-        COLLECTION_NAME.GROUPS,
-        groupId,
-        COLLECTION_NAME.USERS,
-        id
-      ).withConverter(userConverter);
-    } else {
-      docRef = doc(db, COLLECTION_NAME.DEFAULT_USERS, id).withConverter(
-        userConverter
-      );
-    }
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
-}
-
-async function getUserByUid(uid: string) {
-  try {
-    let docRef;
-
-    // Find user in default users collection
-    const defaultUsersQuery = query(
-      collection(db, COLLECTION_NAME.DEFAULT_USERS),
-      where('uid', '==', uid)
-    );
-
-    const defaultUsersSnapshot = await getDocs(defaultUsersQuery);
-
-    if (defaultUsersSnapshot.docs.length > 0) {
-      return defaultUsersSnapshot.docs[0].data();
-    }
-
-    // Find user in group users collection
-    const groups = await getGroupSnapshots();
-
-    for (const group of groups!.docs) {
-      const groupUsersQuery = query(
-        collection(group.ref, COLLECTION_NAME.USERS),
-        where('uid', '==', uid)
-      );
-
-      const groupUsersSnapshot = await getDocs(groupUsersQuery);
-
-      if (groupUsersSnapshot.docs.length > 0) {
-        return groupUsersSnapshot.docs[0].data();
-      }
-    }
-
-    throw new Error('User not found');
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
-}
-
-async function updateUser(id: string, data: User, groupId?: string) {
+export async function updateUser(id: string, data: User, groupId?: string) {
   try {
     if (groupId) {
       await updateDoc(
@@ -148,22 +109,23 @@ async function updateUser(id: string, data: User, groupId?: string) {
   }
 }
 
-async function createUser(data: Omit<User, 'id'>, groupId?: string) {
+export async function createUser(data: Omit<User, 'id'>, groupId?: string) {
   try {
-    if (groupId) {
-      await addDoc(
-        collection(db, COLLECTION_NAME.GROUPS, groupId, COLLECTION_NAME.USERS),
-        data
-      );
-    } else {
-      await addDoc(collection(db, COLLECTION_NAME.DEFAULT_USERS), data);
-    }
+    await addDoc(
+      collection(
+        db,
+        COLLECTION_NAME.GROUPS,
+        groupId ? groupId : 'default',
+        COLLECTION_NAME.USERS
+      ),
+      data
+    );
   } catch (error) {
     console.log('[DAO] Fail to create doc', error);
   }
 }
 
-async function deleteUser(id: string, groupId?: string) {
+export async function deleteUser(id: string, groupId?: string) {
   try {
     if (groupId) {
       await deleteDoc(
@@ -176,13 +138,3 @@ async function deleteUser(id: string, groupId?: string) {
     console.log('[DAO] Fail to delete doc', error);
   }
 }
-
-export {
-  createUser,
-  deleteUser,
-  getDefaultUsers,
-  getUserById,
-  getUserByUid,
-  getUsersByGroup,
-  updateUser,
-};

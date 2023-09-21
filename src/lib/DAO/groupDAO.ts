@@ -12,116 +12,60 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getGroups() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.GROUPS).withConverter(
-      groupConverter
-    );
+export const DEFAULT_GROUP_ID = 'default';
 
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getGroupsRef() {
+  return collection(db, COLLECTION_NAME.GROUPS).withConverter(groupConverter);
 }
 
-// TODO: Please give others the get snapshot function too.
-async function getGroupSnapshots() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.GROUPS).withConverter(
-      groupConverter
-    );
-
-    const snapshot = await getDocs(collectionRef);
-
-    return snapshot;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getGroupRefById(id: string) {
+  return doc(db, COLLECTION_NAME.GROUPS, id).withConverter(groupConverter);
 }
 
-async function getGroupById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.GROUPS, id).withConverter(
-      groupConverter
-    );
+export async function getGroupSnapshots() {
+  const collectionRef = getGroupsRef();
 
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+  return await getDocs(collectionRef);
 }
 
-async function updateGroup(id: string, data: Group) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.GROUPS, id).withConverter(
-      groupConverter
-    );
+export async function getGroups() {
+  const snapshot = await getGroupSnapshots();
 
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+  return snapshot.docs.map((doc) => doc.data());
 }
 
-async function createGroup(data: Group) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.GROUPS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getGroupSnapshotById(id: string) {
+  return await getDoc(getGroupRefById(id));
 }
 
-async function deleteGroup(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.GROUPS, id).withConverter(
-      groupConverter
-    );
+export async function getGroupById(id: string) {
+  const snapshot = await getGroupSnapshotById(id);
 
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+  return snapshot.data();
 }
 
-async function getAllGroupsUsers(id: string) {
-  try {
-    const groupsRef = collection(db, COLLECTION_NAME.GROUPS).withConverter(
-      groupConverter
-    );
-
-    const groupsSnapshot = await getDocs(groupsRef);
-
-    const allUsersPromises = groupsSnapshot.docs.map(async (groupSnap) => {
-      const usersRef = collection(
-        groupSnap.ref,
-        COLLECTION_NAME.USERS
-      ).withConverter(userConverter);
-
-      const usersSnapshot = await getDocs(usersRef);
-      return usersSnapshot.docs.map((doc) => doc.data());
-    });
-
-    const allUsers = await Promise.all(allUsersPromises);
-    const flattenedUsers = allUsers.flat();
-
-    return flattenedUsers;
-  } catch (error) {
-    console.log('[DAO] Fail to get users from all groups', error);
-  }
+export async function getDefaultGroupSnapshot() {
+  return await getGroupSnapshotById(DEFAULT_GROUP_ID);
 }
 
-export {
-  createGroup,
-  deleteGroup,
-  getAllGroupsUsers,
-  getGroupById,
-  getGroupSnapshots,
-  getGroups,
-  updateGroup,
-};
+export async function getDefaultGroup() {
+  return await getGroupById(DEFAULT_GROUP_ID);
+}
+
+export async function updateGroup(id: string, data: Group) {
+  const docRef = getGroupRefById(id);
+
+  await updateDoc(docRef, data);
+}
+
+export async function createGroup(data: Omit<Group, 'id'>) {
+  const ref = await addDoc(collection(db, COLLECTION_NAME.GROUPS), data);
+
+  return ref;
+}
+
+export async function deleteGroup(id: string) {
+  const docRef = getGroupRefById(id);
+
+  await deleteDoc(docRef);
+}

@@ -2,22 +2,16 @@ import { auth, db, provider } from '@/firebase/config';
 import { createUser, getUserById, getUserByUid } from '@/lib/DAO/userDAO';
 import User from '@/models/user';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
 import router from 'next/router';
 import { COLLECTION_NAME } from '../constants';
 import { SignInInfo, SignupUser } from '../types/auth';
-
-export const addUserWithEmailAndPassword = async (
-  id: string,
-  userData: SignupUser
-) => {
-  try {
-    delete userData.id;
-    await setDoc(doc(collection(db, COLLECTION_NAME.USERS), id), userData);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const addUserWithGoogleLogin = async (
   userCredential: UserCredential
@@ -48,6 +42,7 @@ export const addUserWithGoogleLogin = async (
       avatar: '',
       active: true,
       group_id: COLLECTION_NAME.DEFAULT_USERS,
+      type: 'google',
       created_at: new Date(),
       updated_at: new Date(),
     };
