@@ -10,6 +10,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import router from 'next/router';
+import { DEFAULT_GROUP_ID } from '../DAO/groupDAO';
 import { COLLECTION_NAME } from '../constants';
 import { SignInInfo, SignupUser } from '../types/auth';
 
@@ -41,13 +42,13 @@ export const addUserWithGoogleLogin = async (
       birth: new Date(1990, 1, 1),
       avatar: '',
       active: true,
-      group_id: COLLECTION_NAME.DEFAULT_USERS,
+      group_id: DEFAULT_GROUP_ID,
       type: 'google',
       created_at: new Date(),
       updated_at: new Date(),
     };
 
-    await createUser(data);
+    await createUser(DEFAULT_GROUP_ID, data);
   } catch (error) {
     console.log('[Auth service] Fail to add user with google login', error);
   }
