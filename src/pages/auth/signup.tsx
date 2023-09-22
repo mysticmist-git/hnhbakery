@@ -4,6 +4,7 @@ import SignUpForm from '@/components/auth/SignUpForm';
 import Copyright from '@/components/Copyright';
 import { auth } from '@/firebase/config';
 import { useSnackbarService } from '@/lib/contexts';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 import { createUser } from '@/lib/DAO/userDAO';
 import { SignUpData } from '@/lib/types/auth';
 import User from '@/models/user';
@@ -131,7 +132,7 @@ const SignUp = () => {
         uid: userCredential.user.uid,
       };
 
-      await createUser(user);
+      await createUser(DEFAULT_GROUP_ID, user);
 
       handleSnackbarAlert('success', 'Đăng ký thành công!');
 
