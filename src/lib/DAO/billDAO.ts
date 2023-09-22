@@ -1,65 +1,390 @@
-import { billConverter } from '@/models/bill';
+import Bill, { billConverter } from '@/models/bill';
+import User from '@/models/user';
 import {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  Query,
+  QueryConstraint,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 import { getUserRef } from './userDAO';
 
-export function getBillsRef(groupId: string, userId: string) {
-  const docRef = getUserRef(groupId, userId);
+export function getBillsRef(
+  groupId: string,
+  userId: string
+): CollectionReference<Bill>;
+export function getBillsRef(
+  userRef: DocumentReference<User>
+): CollectionReference<Bill>;
+export function getBillsRef(
+  arg1: string | DocumentReference<User>,
+  userId?: string
+): CollectionReference<Bill> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
 
-  return collection(docRef, COLLECTION_NAME.BILLS).withConverter(billConverter);
+    return collection(
+      getUserRef(groupId, userId!),
+      COLLECTION_NAME.BILLS
+    ).withConverter(billConverter);
+  } else {
+    return collection(arg1, COLLECTION_NAME.BILLS).withConverter(billConverter);
+  }
 }
 
-export function getBillRefById(groupId: string, userId: string, id: string) {
-  return doc(getBillsRef(groupId, userId), id);
+export function getBillsWithQuery(
+  groupId: string,
+  userId: string,
+  ...queryConstraints: QueryConstraint[]
+): Query<Bill>;
+export function getBillsWithQuery(
+  userRef: DocumentReference<User>,
+  ...queryConstraints: QueryConstraint[]
+): Query<Bill>;
+export function getBillsWithQuery(
+  billsRef: CollectionReference<Bill>,
+  ...queryConstraints: QueryConstraint[]
+): Query<Bill>;
+export function getBillsWithQuery(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  arg2: string | QueryConstraint,
+  ...queryConstraints: QueryConstraint[]
+): Query<Bill> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2 as string;
+
+    return query(getBillsRef(groupId, userId), ...queryConstraints);
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return query(getBillsRef(userRef), ...queryConstraints);
+  } else {
+    const billsRef = arg1;
+
+    return query(billsRef, ...queryConstraints);
+  }
 }
 
-export async function getBillsSnapshot(groupId: string, userId: string) {
-  return await getDocs(getBillsRef(groupId, userId));
-}
-
-export async function getBills(groupId: string, userId: string) {
-  return (await getBillsSnapshot(groupId, userId)).docs.map((doc) =>
-    doc.data()
-  );
-}
-
-export async function getBillSnapshotById(
+export function getBillRef(
   groupId: string,
   userId: string,
   id: string
-) {
-  return getDoc(getBillRefById(groupId, userId, id));
+): DocumentReference<Bill>;
+export function getBillRef(
+  userRef: DocumentReference<User>,
+  id: string
+): DocumentReference<Bill>;
+export function getBillRef(
+  billsRef: CollectionReference<Bill>,
+  id: string
+): DocumentReference<Bill>;
+export function getBillRef(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  arg2: string,
+  id?: string
+): DocumentReference<Bill> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2;
+
+    return doc(getBillsRef(groupId, userId), id).withConverter(billConverter);
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return doc(userRef, id!).withConverter(billConverter);
+  } else {
+    const billsRef = arg1;
+
+    return doc(billsRef, id).withConverter(billConverter);
+  }
 }
 
-export async function getBillById(groupId: string, userId: string, id: string) {
-  return (await getBillSnapshotById(groupId, userId, id)).data();
+export async function getBillsSnapshot(
+  groupId: string,
+  userId: string
+): Promise<QuerySnapshot<Bill>>;
+export async function getBillsSnapshot(
+  userRef: DocumentReference<User>
+): Promise<QuerySnapshot<Bill>>;
+export async function getBillsSnapshot(
+  billsRef: CollectionReference<Bill>
+): Promise<QuerySnapshot<Bill>>;
+export async function getBillsSnapshot(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  userId?: string
+): Promise<QuerySnapshot<Bill>> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+
+    return await getDocs(getBillsWithQuery(groupId, userId!));
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return await getDocs(getBillsWithQuery(userRef));
+  } else {
+    return await getDocs(arg1.withConverter(billConverter));
+  }
 }
 
-export async function createBill(groupId: string, userId: string, data: any) {
-  const docRef = await addDoc(getBillsRef(groupId, userId), data);
+export async function getBills(
+  groupId: string,
+  userId: string
+): Promise<Bill[]>;
+export async function getBills(
+  userRef: DocumentReference<User>
+): Promise<Bill[]>;
+export async function getBills(
+  billsRef: CollectionReference<Bill>
+): Promise<Bill[]>;
+export async function getBills(
+  billsSnapshot: QuerySnapshot<Bill>
+): Promise<Bill[]>;
+export async function getBills(
+  arg1:
+    | string
+    | DocumentReference<User>
+    | CollectionReference<Bill>
+    | QuerySnapshot<Bill>,
+  userId?: string
+): Promise<Bill[]> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
 
-  return docRef;
+    return (await getBillsSnapshot(groupId, userId!)).docs.map((doc) =>
+      doc.data()
+    );
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return (await getBillsSnapshot(userRef)).docs.map((doc) => doc.data());
+  } else if (arg1 instanceof CollectionReference) {
+    return (await getDocs(arg1.withConverter(billConverter))).docs.map((doc) =>
+      doc.data()
+    );
+  } else {
+    return arg1.docs.map((doc) => doc.data());
+  }
+}
+
+export async function getBillSnapshot(
+  groupId: string,
+  userId: string,
+  id: string
+): Promise<DocumentSnapshot<Bill>>;
+export async function getBillSnapshot(
+  userRef: DocumentReference<User>,
+  id: string
+): Promise<DocumentSnapshot<Bill>>;
+export async function getBillSnapshot(
+  billsRef: CollectionReference<Bill>,
+  id: string
+): Promise<DocumentSnapshot<Bill>>;
+export async function getBillSnapshot(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  arg2: string,
+  id?: string
+): Promise<DocumentSnapshot<Bill>> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2;
+
+    return await getDoc(getBillRef(groupId, userId, id!));
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return await getDoc(getBillRef(userRef, id!));
+  } else {
+    const billsRef = arg1;
+
+    return await getDoc(getBillRef(billsRef, id!));
+  }
+}
+
+export async function getBill(
+  groupId: string,
+  userId: string,
+  id: string
+): Promise<Bill | undefined>;
+export async function getBill(
+  userRef: DocumentReference<User>,
+  id: string
+): Promise<Bill | undefined>;
+export async function getBill(
+  billsRef: CollectionReference<Bill>,
+  id: string
+): Promise<Bill | undefined>;
+export async function getBill(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  arg2: string,
+
+  id?: string
+): Promise<Bill | undefined> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2;
+
+    return (await getBillSnapshot(groupId, userId, id!)).data();
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return (await getBillSnapshot(userRef, id!)).data();
+  } else {
+    const billsRef = arg1;
+
+    return (await getDoc(getBillRef(billsRef, id!))).data();
+  }
+}
+
+export async function createBill(
+  groupId: string,
+  userId: string,
+  data: Omit<Bill, 'id'>
+): Promise<DocumentReference<Bill>>;
+export async function createBill(
+  userRef: DocumentReference<User>,
+  data: Omit<Bill, 'id'>
+): Promise<DocumentReference<Bill>>;
+export async function createBill(
+  billsRef: CollectionReference<Bill>,
+  data: Omit<Bill, 'id'>
+): Promise<DocumentReference<Bill>>;
+export async function createBill(
+  arg1: string | DocumentReference<User> | CollectionReference<Bill>,
+  arg2: Omit<Bill, 'id'> | string,
+  data?: Omit<Bill, 'id'>
+): Promise<DocumentReference<Bill>> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2 as string;
+
+    return (await addDoc(getBillsRef(groupId, userId), data)).withConverter(
+      billConverter
+    );
+  } else if (arg1 instanceof DocumentReference) {
+    const userRef = arg1;
+
+    return (await addDoc(getBillsRef(userRef), data)).withConverter(
+      billConverter
+    );
+  } else {
+    const billsRef = arg1;
+
+    return (await addDoc(billsRef, data)).withConverter(billConverter);
+  }
 }
 
 export async function updateBill(
   groupId: string,
   userId: string,
   id: string,
-  data: any
-) {
-  const docRef = getBillRefById(groupId, userId, id);
+  data: Bill
+): Promise<void>;
+export async function updateBill(
+  userRef: DocumentReference<User>,
+  id: string,
+  data: Bill
+): Promise<void>;
+export async function updateBill(
+  billsRef: CollectionReference<Bill>,
+  id: string,
+  data: Bill
+): Promise<void>;
+export async function updateBill(
+  billRef: DocumentReference<Bill>,
+  data: Bill
+): Promise<void>;
+export async function updateBill(
+  arg1:
+    | string
+    | DocumentReference<User>
+    | CollectionReference<Bill>
+    | DocumentReference<Bill>,
+  arg2: string | Bill,
+  arg3?: string | Bill,
+  arg4?: Bill
+): Promise<void> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2 as string;
+    const id = arg3 as string;
+    const data = arg4;
 
-  await updateDoc(docRef, data);
+    await updateDoc(getBillRef(groupId, userId, id), data);
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const userRef = arg1 as DocumentReference<User>;
+    const id = arg2 as string;
+    const data = arg3 as Bill;
+
+    await updateDoc(getBillRef(userRef, id), data);
+  } else if (arg1 instanceof CollectionReference) {
+    const billsRef = arg1 as CollectionReference<Bill>;
+    const id = arg2 as string;
+    const data = arg3 as Bill;
+
+    await updateDoc(getBillRef(billsRef, id), data);
+  } else {
+    const billRef = arg1 as DocumentReference<Bill>;
+    const data = arg2;
+
+    await updateDoc(billRef, data);
+  }
 }
 
-export async function deleteBill(groupId: string, userId: string, id: string) {
-  await deleteDoc(getBillRefById(groupId, userId, id));
+export async function deleteBill(
+  groupId: string,
+  userId: string,
+  id: string
+): Promise<void>;
+export async function deleteBill(
+  userRef: DocumentReference<User>,
+  id: string
+): Promise<void>;
+export async function deleteBill(
+  billsRef: CollectionReference<Bill>,
+  id: string
+): Promise<void>;
+export async function deleteBill(
+  billRef: DocumentReference<Bill>
+): Promise<void>;
+export async function deleteBill(
+  arg1:
+    | string
+    | DocumentReference<User>
+    | CollectionReference<Bill>
+    | DocumentReference<Bill>,
+  arg2?: string,
+  arg3?: string
+): Promise<void> {
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const userId = arg2 as string;
+    const id = arg3 as string;
+
+    await deleteDoc(getBillRef(groupId, userId, id));
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const userRef = arg1 as DocumentReference<User>;
+    const id = arg2 as string;
+
+    await deleteDoc(getBillRef(userRef, id));
+  } else if (arg1 instanceof CollectionReference) {
+    const billsRef = arg1 as CollectionReference<Bill>;
+    const id = arg2 as string;
+
+    await deleteDoc(getBillRef(billsRef, id));
+  } else {
+    const billRef = arg1 as DocumentReference<Bill>;
+
+    await deleteDoc(billRef);
+  }
 }

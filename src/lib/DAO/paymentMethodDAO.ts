@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import PaymentMethod, { paymentMethodConverter } from '@/models/paymentMethod';
 import {
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -41,10 +42,41 @@ export async function createPaymentMethod(data: Omit<PaymentMethod, 'id'>) {
   return await addDoc(getPaymentMethodsRef(), data);
 }
 
-export async function updatePaymentMethod(id: string, data: PaymentMethod) {
-  await updateDoc(getPaymentMethodRefById(id), data);
+export async function updatePaymentMethod(
+  id: string,
+  data: PaymentMethod
+): Promise<void>;
+export async function updatePaymentMethod(
+  paymentMethodRef: DocumentReference<PaymentMethod>,
+  data: PaymentMethod
+): Promise<void>;
+export async function updatePaymentMethod(
+  arg1: string | DocumentReference<PaymentMethod>,
+  arg2: PaymentMethod
+): Promise<void> {
+  if (typeof arg1 === 'string') {
+    const id = arg1;
+    const data = arg2;
+
+    await updateDoc(getPaymentMethodRefById(id), data);
+  } else {
+    const docRef = arg1;
+    const data = arg2;
+
+    await updateDoc(docRef, data);
+  }
 }
 
-export async function deletePaymentMethod(id: string) {
-  await deleteDoc(getPaymentMethodRefById(id));
+export async function deletePaymentMethod(id: string): Promise<void>;
+export async function deletePaymentMethod(
+  docRef: DocumentReference<PaymentMethod>
+): Promise<void>;
+export async function deletePaymentMethod(
+  arg: string | DocumentReference<PaymentMethod>
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await deleteDoc(getPaymentMethodRefById(arg));
+  } else {
+    await deleteDoc(arg);
+  }
 }

@@ -1,5 +1,8 @@
 import { db } from '@/firebase/config';
+import Sale, { saleConverter } from '@/models/sale';
 import {
+  CollectionReference,
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -9,13 +12,12 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { saleConverter } from '../models';
 
-export function getSalesRef() {
+export function getSalesRef(): CollectionReference<Sale> {
   return collection(db, COLLECTION_NAME.SALES).withConverter(saleConverter);
 }
 
-export function getSaleRefById(id: string) {
+export function getSaleRefById(id: string): DocumentReference<Sale> {
   return doc(getSalesRef(), id);
 }
 
@@ -35,14 +37,34 @@ export async function getSaleById(id: string) {
   return (await getSaleSnapshotById(id)).data();
 }
 
-export async function createSale(data: any) {
+export async function createSale(data: Omit<Sale, 'id'>) {
   return await addDoc(getSalesRef(), data);
 }
 
-export async function updateSale(id: string, data: any) {
-  await updateDoc(getSaleRefById(id), data);
+export async function updateSale(id: string, data: Sale): Promise<void>;
+export async function updateSale(
+  docRef: DocumentReference<Sale>,
+  data: Sale
+): Promise<void>;
+export async function updateSale(
+  arg: string | DocumentReference<Sale>,
+  data: Sale
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await updateDoc(getSaleRefById(arg), data);
+  } else {
+    await updateDoc(arg, data);
+  }
 }
 
-export async function deleteSale(id: string) {
-  await deleteDoc(getSaleRefById(id));
+export async function deleteSale(id: string): Promise<void>;
+export async function deleteSale(
+  docRef: DocumentReference<Sale>
+): Promise<void>;
+export async function deleteSale(arg: string | DocumentReference<Sale>) {
+  if (typeof arg === 'string') {
+    await deleteDoc(getSaleRefById(arg));
+  } else {
+    await deleteDoc(arg);
+  }
 }

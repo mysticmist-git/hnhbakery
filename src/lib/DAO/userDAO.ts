@@ -22,7 +22,9 @@ import { COLLECTION_NAME } from '../constants';
 import {
   DEFAULT_GROUP_ID,
   getGroupRefById,
-  getGroupSnapshots,
+  getGroupsRef,
+  getGroupsSnapshot,
+  getGroupsSnapshotWithQuery,
 } from './groupDAO';
 
 export function getUsersRef(
@@ -62,19 +64,22 @@ export function getUsersRefWithQuery(
 }
 
 export function getUserRef(
-  groupRef: DocumentReference<Group>,
+  groupId: string,
   id: string
 ): DocumentReference<User>;
 export function getUserRef(
-  groupId: string,
+  groupRef: DocumentReference<Group>,
   id: string
 ): DocumentReference<User>;
 export function getUserRef(
   arg: string | DocumentReference<Group>,
   id: string
 ): DocumentReference<User> {
-  const groupRef = typeof arg === 'string' ? getGroupRefById(arg) : arg;
-  return doc(groupRef, id).withConverter(userConverter);
+  if (typeof arg === 'string') {
+    return doc(getUsersRef(arg), id);
+  } else {
+    return doc(arg, id).withConverter(userConverter);
+  }
 }
 
 export async function getUsersSnapshot(
@@ -83,7 +88,6 @@ export async function getUsersSnapshot(
 export async function getUsersSnapshot(
   groupRef: DocumentReference<Group>
 ): Promise<QuerySnapshot<User>>;
-
 export async function getUsersSnapshot(
   arg: string | DocumentReference<Group>
 ): Promise<QuerySnapshot<User>> {
@@ -197,7 +201,7 @@ export async function getUser(
 }
 
 export async function getUserByUid(uid: string) {
-  const groupsSnapshot = await getGroupSnapshots();
+  const groupsSnapshot = await getGroupsSnapshot();
 
   for (let groupSnapshot of groupsSnapshot.docs) {
     const matchUsers = await getUsersSnapshotWithQuery(
@@ -224,14 +228,29 @@ export async function updateUser(
   data: User
 ): Promise<void>;
 export async function updateUser(
-  arg: string | DocumentReference<Group>,
-  id: string,
+  userRef: DocumentReference<User>,
   data: User
+): Promise<void>;
+export async function updateUser(
+  arg1: string | DocumentReference<Group> | DocumentReference<User>,
+  arg2: string | User,
+  data?: User
 ): Promise<void> {
-  const docRef =
-    typeof arg === 'string' ? getUserRef(arg, id) : getUserRef(arg, id);
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const id = arg2 as string;
 
-  await updateDoc(docRef, data);
+    await updateDoc(getUserRef(groupId, id), data);
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const groupRef = arg1 as DocumentReference<Group>;
+    const id = arg2 as string;
+
+    await updateDoc(getUserRef(groupRef, id), data);
+  } else {
+    const userRef = arg1 as DocumentReference<User>;
+
+    await updateDoc(userRef, data);
+  }
 }
 
 export async function createUser(
@@ -258,13 +277,25 @@ export async function deleteUser(
   id: string
 ): Promise<void>;
 export async function deleteUser(
-  groupId: string | DocumentReference<Group>,
-  id: string
+  userRef: DocumentReference<User>
+): Promise<void>;
+export async function deleteUser(
+  arg1: string | DocumentReference<Group> | DocumentReference<User>,
+  arg2?: string
 ): Promise<void> {
-  const docRef =
-    typeof groupId === 'string'
-      ? getUserRef(groupId, id)
-      : getUserRef(groupId, id);
+  if (typeof arg1 === 'string') {
+    const groupId = arg1;
+    const id = arg2 as string;
 
-  await deleteDoc(docRef);
+    await deleteDoc(getUserRef(groupId, id));
+  } else if (arg1 instanceof DocumentReference && arg2) {
+    const groupRef = arg1 as DocumentReference<Group>;
+    const id = arg2 as string;
+
+    await deleteDoc(getUserRef(groupRef, id));
+  } else {
+    const userRef = arg1 as DocumentReference<User>;
+
+    await deleteDoc(userRef);
+  }
 }

@@ -1,6 +1,5 @@
 import { db } from '@/firebase/config';
 import Group, { groupConverter } from '@/models/group';
-import { promises } from 'dns';
 import {
   CollectionReference,
   DocumentReference,
@@ -35,14 +34,14 @@ export function getGroupRefById(id: string): DocumentReference<Group> {
   return doc(getGroupsRef(), id);
 }
 
-export async function getGroupSnapshots(): Promise<QuerySnapshot<Group>> {
+export async function getGroupsSnapshot(): Promise<QuerySnapshot<Group>> {
   const collectionRef = getGroupsRef();
 
   return await getDocs(collectionRef);
 }
 
 export async function getGroups(): Promise<Group[]> {
-  const snapshot = await getGroupSnapshots();
+  const snapshot = await getGroupsSnapshot();
 
   return snapshot.docs.map((doc) => doc.data());
 }

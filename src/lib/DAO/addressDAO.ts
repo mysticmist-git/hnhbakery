@@ -1,5 +1,4 @@
 import Address, { addressConverter } from '@/models/address';
-import Group from '@/models/group';
 import { User } from 'firebase/auth';
 import {
   CollectionReference,
@@ -21,11 +20,11 @@ import { COLLECTION_NAME } from '../constants';
 import { getUserRef } from './userDAO';
 
 export function getAddressesRef(
-  userRef: DocumentReference<User>
-): CollectionReference<Address>;
-export function getAddressesRef(
   groupId: string,
   userId: string
+): CollectionReference<Address>;
+export function getAddressesRef(
+  userRef: DocumentReference<User>
 ): CollectionReference<Address>;
 export function getAddressesRef(
   arg: string | DocumentReference<User>,
@@ -61,22 +60,28 @@ export function getAddressesRefWithQuery(
 ): Query<Address>;
 
 export function getAddressesRefWithQuery(
-  arg1: string | DocumentReference<User>,
+  addressesRef: CollectionReference<Address>,
+  ...queryConstraints: QueryConstraint[]
+): Query<Address>;
+export function getAddressesRefWithQuery(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
   arg2?: string | QueryConstraint,
   ...queryConstraints: QueryConstraint[]
 ): Query<Address> {
-  if (typeof arg1 === 'string' && typeof arg2 === 'string') {
+  if (typeof arg1 === 'string') {
     const groupId = arg1;
-    const userId = arg2;
+    const userId = arg2 as string;
 
     return query(getAddressesRef(groupId, userId), ...queryConstraints);
   } else if (arg1 instanceof DocumentReference) {
     const userRef = arg1;
-    // implementation code for DocumentReference argument
 
     return query(getAddressesRef(userRef), ...queryConstraints);
   } else {
-    throw new Error('Invalid arguments');
+    const addressesRef = arg1;
+    // implementation code for DocumentReference argument
+
+    return query(addressesRef, ...queryConstraints);
   }
 }
 
@@ -90,32 +95,31 @@ export function getAddressRef(
   id: string
 ): DocumentReference<Address>;
 export function getAddressRef(
-  arg1: string | DocumentReference<User>,
-  arg2?: string,
+  addressesRef: CollectionReference<Address>,
+  id: string
+): DocumentReference<Address>;
+export function getAddressRef(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
+  arg2: string,
   id?: string
 ): DocumentReference<Address> {
   if (typeof arg1 === 'string') {
     const groupId = arg1;
-    const userId = arg2;
-
-    if (!id || !userId) {
-      throw new Error('Invalid argument');
-    }
+    const userId = arg2 as string;
 
     return doc(getAddressesRef(groupId, userId), id).withConverter(
       addressConverter
     );
   } else if (arg1 instanceof DocumentReference) {
     const userRef = arg1;
-    // implementation code for DocumentReference argument
+    const id = arg2;
 
-    if (!id) {
-      throw new Error('Invalid argument');
-    }
-
-    return doc(arg1, id).withConverter(addressConverter);
+    return doc(getAddressesRef(userRef), id).withConverter(addressConverter);
   } else {
-    throw new Error('Invalid arguments');
+    const addressesRef = arg1;
+    const id = arg2;
+
+    return doc(addressesRef, id).withConverter(addressConverter);
   }
 }
 
@@ -127,25 +131,25 @@ export async function getAddressesSnapshot(
   userRef: DocumentReference<User>
 ): Promise<QuerySnapshot<Address>>;
 export async function getAddressesSnapshot(
-  arg1: string | DocumentReference<User>,
+  addressesRef: CollectionReference<Address>
+): Promise<QuerySnapshot<Address>>;
+export async function getAddressesSnapshot(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
   arg2?: string
 ): Promise<QuerySnapshot<Address>> {
   if (typeof arg1 === 'string') {
     const groupId = arg1;
-    const userId = arg2;
-
-    if (!userId) {
-      throw new Error('Invalid argument');
-    }
+    const userId = arg2 as string;
 
     return getDocs(getAddressesRef(groupId, userId));
   } else if (arg1 instanceof DocumentReference) {
     const userRef = arg1;
-    // implementation code for DocumentReference argument
 
     return getDocs(getAddressesRef(userRef));
   } else {
-    throw new Error('Invalid arguments');
+    const addressesRef = arg1;
+
+    return getDocs(addressesRef);
   }
 }
 
@@ -171,27 +175,29 @@ export async function getAddresses(
     return (await getAddressesSnapshot(groupId, userId)).docs.map((doc) =>
       doc.data()
     );
-  } else if (arg1 instanceof DocumentReference) {
+  } else {
     const userRef = arg1;
     // implementation code for DocumentReference argument
 
     return (await getAddressesSnapshot(userRef)).docs.map((doc) => doc.data());
-  } else {
-    throw new Error('Invalid arguments');
   }
 }
 
-export async function getAddressSnapshotById(
+export async function getAddressSnapshot(
   groupId: string,
   userId: string,
   id: string
 ): Promise<DocumentSnapshot<Address>>;
-export async function getAddressSnapshotById(
+export async function getAddressSnapshot(
   userRef: DocumentReference<User>,
   id: string
 ): Promise<DocumentSnapshot<Address>>;
-export async function getAddressSnapshotById(
-  arg1: string | DocumentReference<User>,
+export async function getAddressSnapshot(
+  addressesRef: CollectionReference<Address>,
+  id: string
+): Promise<DocumentSnapshot<Address>>;
+export async function getAddressSnapshot(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
   arg2: string,
   id?: string
 ): Promise<DocumentSnapshot<Address>> {
@@ -199,36 +205,34 @@ export async function getAddressSnapshotById(
     const groupId = arg1;
     const userId = arg2;
 
-    if (!id || !userId) {
-      throw new Error('Invalid argument');
-    }
-
-    return await getDoc(getAddressRef(groupId, userId, id));
+    return await getDoc(getAddressRef(groupId, userId, id!));
   } else if (arg1 instanceof DocumentReference) {
     const userRef = arg1;
-    // implementation code for DocumentReference argument
-
-    if (!id) {
-      throw new Error('Invalid argument');
-    }
+    const id = arg2;
 
     return await getDoc(getAddressRef(userRef, id));
   } else {
-    throw new Error('Invalid arguments');
+    const addressesRef = arg1;
+
+    return await getDoc(getAddressRef(addressesRef, id!));
   }
 }
 
-export async function getAddressById(
+export async function getAddress(
   groupId: string,
   userId: string,
   id: string
 ): Promise<Address | undefined>;
-export async function getAddressById(
+export async function getAddress(
   userRef: DocumentReference<User>,
   id: string
 ): Promise<Address | undefined>;
-export async function getAddressById(
-  arg1: string | DocumentReference<User>,
+export async function getAddress(
+  addressesRef: CollectionReference<Address>,
+  id: string
+): Promise<Address | undefined>;
+export async function getAddress(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
   arg2: string,
   id?: string
 ): Promise<Address | undefined> {
@@ -240,17 +244,15 @@ export async function getAddressById(
       throw new Error('Invalid argument');
     }
 
-    return (await getAddressSnapshotById(groupId, userId, id)).data();
+    return (await getAddressSnapshot(groupId, userId, id)).data();
   } else if (arg1 instanceof DocumentReference) {
-    const userRef: DocumentReference<User> = arg1;
+    const userRef = arg1;
 
-    if (!id) {
-      throw new Error('Invalid argument');
-    }
-
-    return (await getAddressSnapshotById(userRef, id)).data();
+    return (await getDoc(getAddressRef(userRef, id!))).data();
   } else {
-    throw new Error('Invalid arguments');
+    const addressesRef = arg1;
+
+    return (await getDoc(getAddressRef(addressesRef, id!))).data();
   }
 }
 
@@ -266,7 +268,11 @@ export async function createAddress(
 ): Promise<DocumentReference<Address>>;
 
 export async function createAddress(
-  arg1: string | DocumentReference<User>,
+  billsRef: CollectionReference<Address>,
+  data: Address
+): Promise<DocumentReference<Address>>;
+export async function createAddress(
+  arg1: string | DocumentReference<User> | CollectionReference<Address>,
   arg2: string | Address,
   data?: Address
 ): Promise<DocumentReference<Address>> {
@@ -279,7 +285,12 @@ export async function createAddress(
     }
 
     return await addDoc(getAddressesRef(groupId, userId), data);
-  } else if (arg1 instanceof DocumentReference) {
+  } else if (arg1 instanceof CollectionReference) {
+    const billsRef = arg1 as CollectionReference<Address>;
+    const data = arg2 as Address;
+
+    return await addDoc(billsRef, data);
+  } else {
     const userRef = arg1 as DocumentReference<User>;
     // implementation code for DocumentReference argument
 
@@ -288,44 +299,110 @@ export async function createAddress(
     }
 
     return await addDoc(getAddressesRef(userRef), data);
-  } else {
-    throw new Error('Invalid arguments');
   }
 }
 
 export async function updateAddress(
   groupId: string,
   userId: string,
+  id: string,
   data: Address
 ): Promise<void>;
 export async function updateAddress(
   userRef: DocumentReference<User>,
+  id: string,
   data: Address
 ): Promise<void>;
 export async function updateAddress(
-  arg1: string | DocumentReference<User>,
+  addressesRef: CollectionReference<Address>,
+  id: string,
+  data: Address
+): Promise<void>;
+export async function updateAddress(
+  addressRef: DocumentReference<Address>,
+  data: Address
+): Promise<void>;
+export async function updateAddress(
+  arg1:
+    | string
+    | DocumentReference<User>
+    | CollectionReference<Address>
+    | DocumentReference<Address>,
   arg2: string | Address,
-  data?: Address
+  arg3?: string | Address,
+  arg4?: Address
+): Promise<void> {
+  if (typeof arg1 == 'string') {
+    const groupId = arg1;
+    const userId = arg2 as string;
+    const id = arg3 as string;
+    const data = arg4;
+
+    await updateDoc(getAddressRef(groupId, userId, id), data);
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const userRef = arg1 as DocumentReference<User>;
+    const id = arg2;
+    const data = arg3 as Address;
+
+    await updateDoc(getAddressRef(userRef, id), data);
+  } else if (arg1 instanceof CollectionReference) {
+    const addressesRef = arg1 as CollectionReference<Address>;
+    const id = arg2 as string;
+    const data = arg3 as Address;
+
+    await updateDoc(getAddressRef(addressesRef, id), data);
+  } else {
+    const addressRef = arg1 as DocumentReference<Address>;
+    const data = arg2 as Address;
+
+    await updateDoc(addressRef, data);
+  }
+}
+
+export async function deleteAddress(
+  groupId: string,
+  userId: string,
+  id: string
+): Promise<void>;
+export async function deleteAddress(
+  userRef: DocumentReference<User>,
+  id: string
+): Promise<void>;
+export async function deleteAddress(
+  addressesRef: CollectionReference<Address>,
+  id: string
+): Promise<void>;
+export async function deleteAddress(
+  addressRef: DocumentReference<Address>
+): Promise<void>;
+export async function deleteAddress(
+  arg1:
+    | string
+    | DocumentReference<User>
+    | CollectionReference<Address>
+    | DocumentReference<Address>,
+  arg2?: string,
+  arg3?: string
 ): Promise<void> {
   if (typeof arg1 === 'string') {
     const groupId = arg1;
     const userId = arg2 as string;
+    const id = arg3 as string;
 
-    if (!data) {
-      throw new Error('Invalid argument');
-    }
+    await deleteDoc(getAddressRef(groupId, userId, id));
+  } else if (arg1 instanceof DocumentReference && arg2) {
+    const userRef = arg1 as DocumentReference<User>;
+    const id = arg2 as string;
 
-    await updateDoc(getAddressRef(groupId, userId, data.id), data);
-  } else if (arg1 instanceof DocumentReference) {
-    const userRef = arg1;
-    // implementation code for DocumentReference argument
+    await deleteDoc(getAddressRef(userRef, id));
+  } else if (arg1 instanceof CollectionReference) {
+    const addressRef = arg1 as CollectionReference<Address>;
+    const id = arg2 as string;
 
-    if (!data) {
-      throw new Error('Invalid argument');
-    }
-
-    await updateDoc(getAddressRef(userRef, data.id), data);
+    await deleteDoc(getAddressRef(addressRef, id));
   } else {
-    throw new Error('Invalid arguments');
+    const addressRef = arg1 as DocumentReference<Address>;
+
+    await deleteDoc(addressRef);
   }
 }

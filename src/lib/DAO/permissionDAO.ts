@@ -41,18 +41,36 @@ export async function getPermissions(): Promise<Permission[]> {
   return snapshot.docs.map((doc) => doc.data());
 }
 
-export async function getPermissionSnapshotById(
+export async function getPermissionSnapshot(
   id: string
+): Promise<DocumentSnapshot<Permission>>;
+export async function getPermissionSnapshot(
+  permissionRef: DocumentReference<Permission>
+): Promise<DocumentSnapshot<Permission>>;
+export async function getPermissionSnapshot(
+  arg: string | DocumentReference<Permission>
 ): Promise<DocumentSnapshot<Permission>> {
-  const docRef = getPermissionRefById(id);
-
-  return await getDoc(docRef);
+  if (typeof arg === 'string') {
+    return await getDoc(getPermissionRefById(arg));
+  } else {
+    return await getDoc(arg);
+  }
 }
 
-export async function getPermissionById(
+export async function getPermission(
   id: string
+): Promise<Permission | undefined>;
+export async function getPermission(
+  permissionRef: DocumentReference<Permission>
+): Promise<Permission | undefined>;
+export async function getPermission(
+  arg: string | DocumentReference<Permission>
 ): Promise<Permission | undefined> {
-  return (await getPermissionSnapshotById(id)).data();
+  if (typeof arg === 'string') {
+    return (await getPermissionSnapshot(arg)).data();
+  } else {
+    return (await getPermissionSnapshot(arg)).data();
+  }
 }
 
 export async function updatePermission(
@@ -83,7 +101,7 @@ export async function createPermission(
 
 export async function deletePermission(id: string): Promise<void>;
 export async function deletePermission(
-  docRef: DocumentReference<Permission>
+  permissionRef: DocumentReference<Permission>
 ): Promise<void>;
 export async function deletePermission(
   arg: string | DocumentReference<Permission>

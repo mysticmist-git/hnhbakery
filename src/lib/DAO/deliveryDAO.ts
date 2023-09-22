@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import Delivery, { deliveryConverter } from '@/models/delivery';
 import {
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -44,12 +45,32 @@ export async function createDelivery(data: Omit<Delivery, 'id'>) {
   return docRef.id;
 }
 
-export async function updateDelivery(id: string, data: Delivery) {
-  const docRef = getDeliveryRefById(id);
-  await updateDoc(docRef, data);
+export async function updateDelivery(id: string, data: Delivery): Promise<void>;
+export async function updateDelivery(
+  docRef: DocumentReference<Delivery>,
+  data: Delivery
+): Promise<void>;
+export async function updateDelivery(
+  arg: string | DocumentReference<Delivery>,
+  data: Delivery
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await updateDoc(getDeliveryRefById(arg), data);
+  } else {
+    await updateDoc(arg, data);
+  }
 }
 
-export async function deleteDelivery(id: string) {
-  const docRef = getDeliveryRefById(id);
-  await deleteDoc(docRef);
+export async function deleteDelivery(id: string): Promise<void>;
+export async function deleteDelivery(
+  docRef: DocumentReference<Delivery>
+): Promise<void>;
+export async function deleteDelivery(
+  arg: string | DocumentReference<Delivery>
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await deleteDoc(getDeliveryRefById(arg));
+  } else {
+    await deleteDoc(arg);
+  }
 }
