@@ -6,12 +6,13 @@ import {
   CustomTextFieldPassword,
 } from '@/components/inputs/textFields';
 import { auth } from '@/firebase/config';
-import { handleLoginWithGoogle, validateSigninInfo } from '@/lib/auth/auth';
-import { COLLECTION_NAME, authMessages } from '@/lib/constants';
+import { getUserByUid } from '@/lib/DAO/userDAO';
+import {
+  handleLoginWithGoogle,
+  validateMailAndPassword,
+} from '@/lib/auth/auth';
+import { Path } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getDocFromFirestore } from '@/lib/firestore';
-import { UserObject } from '@/lib/models';
-import { SignInInfo } from '@/lib/types/auth';
 import theme from '@/styles/themes/lightTheme';
 import { Google } from '@mui/icons-material';
 import Box from '@mui/material/Box';
@@ -27,13 +28,10 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import * as React from 'react';
-import { memo, useRef } from 'react';
-import {
-  useAuthState,
-  useSignInWithEmailAndPassword,
-} from 'react-firebase-hooks/auth';
+import { memo } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
-//#region Top
+//#region Topc
 
 const Copyright = (props: any) => {
   return (
@@ -64,18 +62,13 @@ const Login = () => {
   const handleSnackbarAlert = useSnackbarService();
 
   const [user, loading, error] = useAuthState(auth);
-  const [userData, setUserData] = React.useState<UserObject | null>(null);
-
-  React.useEffect(() => {
-    if (userData && userData.isActive) router.push('/');
-  }, [loading, userData, user, router]);
 
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    const { valid, msg } = validateSigninInfo({
-      mail: mail,
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+    const { valid, msg } = validateMailAndPassword({
+      mail,
       password,
     });
 
@@ -85,27 +78,10 @@ const Login = () => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        mail,
-        password
-      );
-
-      const id = userCredential.user.uid;
-
-      const user = await getDocFromFirestore<UserObject>(
-        COLLECTION_NAME.USERS,
-        id
-      );
-
-      setUserData(user);
-
-      if (!user.isActive) {
-        signOut(auth);
-        throw new FirebaseError('custom/disabled', 'User is not active');
-      }
+      await signInWithEmailAndPassword(auth, mail, password);
 
       handleSnackbarAlert('success', 'Đăng nhập thành công');
+      router.push(Path.HOME);
     } catch (error: any) {
       console.log(error);
       let msg = '';
@@ -122,7 +98,7 @@ const Login = () => {
         case 'auth/too-many-requests':
           msg = 'Tài khoản tạm thời bị khóa đăng nhập sai nhiều lần';
           break;
-        case 'cu  stom/disabled':
+        case 'custom/disabled':
           msg = 'Tài khoản của bạn đã bị vô hiệu hóa';
           break;
         default:
@@ -131,7 +107,7 @@ const Login = () => {
       }
       handleSnackbarAlert('error', `${msg}`);
     }
-  };
+  }
 
   //#endregion
 

@@ -85,4 +85,19 @@ export const MocGioGiaoHang = [
   },
 ];
 
+export enum Path {
+  HOME = '/',
+  SEARCH = '/search',
+  PRODUCTS = '/products',
+  ABOUT = '/about',
+  CONTACT = '/contact',
+  PRODUCT_DETAIL = '/product-detail',
+  MANAGER = '/manager',
+  CART = '/cart',
+  PAYMENT = '/payment',
+  LOGIN = '/auth/login',
+  SIGN_UP = '/auth/signup',
+  PROFILE = '/profile',
+}
+
 export const PLACEHOLDER_DELIVERY_PRICE = 20000;

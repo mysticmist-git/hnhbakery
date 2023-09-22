@@ -1,5 +1,5 @@
 import { auth } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { COLLECTION_NAME, Path } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getDocFromFirestore } from '@/lib/firestore';
 import { UserObject } from '@/lib/models';
@@ -58,7 +58,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   };
 
   const handleOpenProfile = () => {
-    router.push('/profile');
+    router.push(Path.PROFILE);
     setAnchorEl(() => null);
   };
 
@@ -71,7 +71,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     await signOut(auth);
     handleClose();
     handleSnackbarAlert('success', 'Đã đăng xuất tài khoản');
-    router.push('/');
+    router.push(Path.LOGIN);
   };
 
   //#endregion
