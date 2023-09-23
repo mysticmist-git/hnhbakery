@@ -1,12 +1,8 @@
 import { auth } from '@/firebase/config';
-import { COLLECTION_NAME, Path } from '@/lib/constants';
+import { Path } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getDocFromFirestore } from '@/lib/firestore';
-import { UserObject } from '@/lib/models';
-import {
-  permissionRouteMap,
-  useAvailablePermissions,
-} from '@/lib/pageSpecific/authorize';
+import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
+import { permissionRouteMap } from '@/lib/pageSpecific/authorize';
 import theme from '@/styles/themes/lightTheme';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
 import { SxProps, Theme, Typography } from '@mui/material';
@@ -16,7 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import * as React from 'react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useMemo } from 'react';
 
 interface Props {
   photoURL: string | null;
@@ -31,19 +27,26 @@ const menuItemSx: SxProps<Theme> = {
 };
 
 const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
-  const { available, loading, user } = useAvailablePermissions();
+  //#region Hooks
+
+  const grantedPermissions: string[] = useGrantedPermissions();
+  const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
 
   //#region States
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isManager, setIsManager] = useState(false);
 
   //#endregion
 
-  //#region Hooks
+  //#region UseMemos
 
-  const router = useRouter();
-  const handleSnackbarAlert = useSnackbarService();
+  const isManager = useMemo(
+    () => grantedPermissions.length > 0,
+    [grantedPermissions]
+  );
 
   //#endregion
 
@@ -63,7 +66,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   };
 
   const handleOpenManagement = () => {
-    router.push(permissionRouteMap.get(available![0]) ?? '/');
+    router.push(permissionRouteMap.get(grantedPermissions![0]) ?? '/');
     setAnchorEl(() => null);
   };
 
@@ -80,25 +83,6 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
 
   //#endregion
 
-  useEffect(() => {
-    const execute = async () => {
-      try {
-        if (!loading && user) {
-          const userData = await getDocFromFirestore<UserObject>(
-            COLLECTION_NAME.USERS,
-            user.uid
-          );
-
-          setIsManager(userData.role_id === 'manager');
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    execute();
-  }, [user, loading]);
-
   return (
     <>
       <Avatar src={photoURL as string | undefined} onClick={handleClick} />
@@ -109,7 +93,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
             Tài khoản
           </Typography>
         </MenuItem>
-        {isManager && available && available.length > 0 && (
+        {isManager && (
           <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
             <ViewInAr />
             <Typography variant="body2" color={theme.palette.common.black}>

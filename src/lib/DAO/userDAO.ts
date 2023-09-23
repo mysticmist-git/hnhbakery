@@ -200,7 +200,9 @@ export async function getUser(
   }
 }
 
-export async function getUserByUid(uid: string) {
+export async function getUserRefByUid(
+  uid: string
+): Promise<DocumentReference<User> | undefined> {
   const groupsSnapshot = await getGroupsSnapshot();
 
   for (let groupSnapshot of groupsSnapshot.docs) {
@@ -211,10 +213,26 @@ export async function getUserByUid(uid: string) {
 
     if (matchUsers.empty) continue;
 
-    const user = matchUsers.docs[0].data();
-
-    return user;
+    return matchUsers.docs[0].ref;
   }
+}
+
+export async function getUserSnapshotByUid(
+  uid: string
+): Promise<DocumentSnapshot<User> | undefined> {
+  const userRef = await getUserRefByUid(uid);
+
+  if (!userRef) return undefined;
+
+  return await getDoc(userRef);
+}
+
+export async function getUserByUid(uid: string): Promise<User | undefined> {
+  const snapshot = await getUserSnapshotByUid(uid);
+
+  if (!snapshot) return undefined;
+
+  return snapshot.data();
 }
 
 export async function updateUser(

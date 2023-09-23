@@ -1,5 +1,5 @@
 import { auth, provider } from '@/firebase/config';
-import { createUser, getUserByUid } from '@/lib/DAO/userDAO';
+import { createUser, getUserSnapshotByUid } from '@/lib/DAO/userDAO';
 import User from '@/models/user';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
 import router from 'next/router';
@@ -36,7 +36,7 @@ export const handleLoginWithGoogle = async () => {
   try {
     const userCredential = await signInWithPopup(auth, provider);
 
-    const user = await getUserByUid(userCredential.user.uid);
+    const user = await getUserSnapshotByUid(userCredential.user.uid);
 
     if (!user) {
       console.log('[Auth service] No user data found. Proceed to create one.');

@@ -6,7 +6,7 @@ import {
   CustomTextFieldPassword,
 } from '@/components/inputs/textFields';
 import { auth } from '@/firebase/config';
-import { getUserByUid } from '@/lib/DAO/userDAO';
+import { getUserSnapshotByUid } from '@/lib/DAO/userDAO';
 import {
   handleLoginWithGoogle,
   validateMailAndPassword,

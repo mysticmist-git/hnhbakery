@@ -4,6 +4,8 @@ import {
   CollectionReference,
   DocumentReference,
   DocumentSnapshot,
+  Query,
+  QueryConstraint,
   QuerySnapshot,
   addDoc,
   collection,
@@ -11,6 +13,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
@@ -27,6 +30,12 @@ export function getPermissionRefById(
   return doc(getPermissionsRef(), id).withConverter(permissionConverter);
 }
 
+export function getPermissionsRefWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Query<Permission> {
+  return query(getPermissionsRef(), ...queryConstraints);
+}
+
 export async function getPermissionSnapshots(): Promise<
   QuerySnapshot<Permission>
 > {
@@ -39,6 +48,20 @@ export async function getPermissions(): Promise<Permission[]> {
   const snapshot = await getPermissionSnapshots();
 
   return snapshot.docs.map((doc) => doc.data());
+}
+
+export async function getPermissionsSnapshotWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Promise<QuerySnapshot<Permission>> {
+  return await getDocs(query(getPermissionsRef(), ...queryConstraints));
+}
+
+export async function getPermissionsWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Promise<Permission[]> {
+  return (
+    await getDocs(query(getPermissionsRef(), ...queryConstraints))
+  ).docs.map((doc) => doc.data());
 }
 
 export async function getPermissionSnapshot(

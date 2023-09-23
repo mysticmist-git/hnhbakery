@@ -1,10 +1,7 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
+import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
 import { Contact, contactConverter } from '@/lib/models';
-import {
-  permissionRouteMap,
-  useAvailablePermissions,
-} from '@/lib/pageSpecific/authorize';
 import {
   ChatRounded,
   Check,
@@ -41,17 +38,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
   const router = useRouter();
   const theme = useTheme();
 
-  const { available, loading } = useAvailablePermissions();
-
-  if (available && !loading) {
-    if (available.length <= 0) {
-      router.push('/');
-    } else if (
-      !available.map((p) => permissionRouteMap.get(p)).includes(router.pathname)
-    ) {
-      router.push(permissionRouteMap.get(available[0]) ?? '/');
-    }
-  }
+  const grantedPermissions = useGrantedPermissions();
 
   const [contacts, cLoading] = useCollectionData<Contact>(
     query(
@@ -107,7 +94,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
 
   return (
     <React.Fragment>
-      {available && available.includes('KHO') && (
+      {grantedPermissions && grantedPermissions.includes('KHO') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -141,7 +128,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('ĐH') && (
+      {grantedPermissions && grantedPermissions.includes('ĐH') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -175,7 +162,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('GH') && (
+      {grantedPermissions && grantedPermissions.includes('GH') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -212,7 +199,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('KH') && (
+      {grantedPermissions && grantedPermissions.includes('KH') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -249,7 +236,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('KM') && (
+      {grantedPermissions && grantedPermissions.includes('KM') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -283,7 +270,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('BC') && (
+      {grantedPermissions && grantedPermissions.includes('BC') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -317,7 +304,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('LH') && (
+      {grantedPermissions && grantedPermissions.includes('LH') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -356,7 +343,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('FB') && (
+      {grantedPermissions && grantedPermissions.includes('FB') && (
         <ListItemButton
           sx={{
             height: '60px',
@@ -393,7 +380,7 @@ export const MainListItems = ({ open }: { open: boolean }) => {
         </ListItemButton>
       )}
 
-      {available && available.includes('PQ') && (
+      {grantedPermissions && grantedPermissions.includes('PQ') && (
         <ListItemButton
           sx={{
             height: '60px',
