@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getProductTypes() {
+export async function getProductTypes() {
   try {
     const collectionRef = collection(
       db,
@@ -29,7 +29,22 @@ async function getProductTypes() {
   }
 }
 
-async function getProductTypeById(id: string) {
+export async function getProductTypeSnapshots() {
+  try {
+    const collectionRef = collection(
+      db,
+      COLLECTION_NAME.PRODUCT_TYPES
+    ).withConverter(productTypeConverter);
+
+    const snapshot = (await getDocs(collectionRef)).docs;
+
+    return snapshot;
+  } catch (error) {
+    console.log('[DAO] Fail to get collection', error);
+  }
+}
+
+export async function getProductTypeById(id: string) {
   try {
     const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
       productTypeConverter
@@ -43,7 +58,21 @@ async function getProductTypeById(id: string) {
   }
 }
 
-async function updateProductType(id: string, data: ProductType) {
+export async function getProductTypeSnapshotById(id: string) {
+  try {
+    const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
+      productTypeConverter
+    );
+
+    const snapshot = await getDoc(docRef);
+
+    return snapshot;
+  } catch (error) {
+    console.log('[DAO] Fail to get doc', error);
+  }
+}
+
+export async function updateProductType(id: string, data: ProductType) {
   try {
     const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
       productTypeConverter
@@ -55,7 +84,7 @@ async function updateProductType(id: string, data: ProductType) {
   }
 }
 
-async function createProductType(data: ProductType) {
+export async function createProductType(data: ProductType) {
   try {
     await addDoc(collection(db, COLLECTION_NAME.PRODUCT_TYPES), data);
   } catch (error) {
@@ -63,7 +92,7 @@ async function createProductType(data: ProductType) {
   }
 }
 
-async function deleteProductType(id: string) {
+export async function deleteProductType(id: string) {
   try {
     const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
       productTypeConverter
@@ -74,11 +103,3 @@ async function deleteProductType(id: string) {
     console.log('[DAO] Fail to delete doc', error);
   }
 }
-
-export {
-  createProductType,
-  deleteProductType,
-  getProductTypeById,
-  getProductTypes,
-  updateProductType,
-};
