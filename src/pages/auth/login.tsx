@@ -6,7 +6,6 @@ import {
   CustomTextFieldPassword,
 } from '@/components/inputs/textFields';
 import { auth } from '@/firebase/config';
-import { getUserSnapshotByUid } from '@/lib/DAO/userDAO';
 import {
   handleLoginWithGoogle,
   validateMailAndPassword,
@@ -23,8 +22,7 @@ import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/system';
-import { FirebaseError } from 'firebase/app';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { default as NextLink } from 'next/link';
 import { useRouter } from 'next/router';
 import * as React from 'react';
@@ -60,8 +58,6 @@ const Copyright = (props: any) => {
 const Login = () => {
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
-
-  const [user, loading, error] = useAuthState(auth);
 
   const [mail, setMail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -268,13 +264,12 @@ const Login = () => {
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setMail(e.target.value)
                           }
+                          id="email"
                           required
                           fullWidth
-                          id="email"
                           placeholder="Địa chỉ Email"
                           name="email"
                           autoComplete="email"
-                          autoFocus
                         />
                       </Grid>
                       <Grid item xs={12}>
