@@ -10,22 +10,39 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getProductTypeSnapshots } from './productTypeDAO';
 
-async function getBatches() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.BATCHES).withConverter(
-      batchConverter
-    );
+// async function getBatches() {
+//   try {
+//     const collectionRef = collection(db, COLLECTION_NAME.BATCHES).withConverter(
+//       batchConverter
+//     );
 
-    const snapshot = await getDocs(collectionRef);
+//     const snapshot = await getDocs(collectionRef);
 
-    const data = snapshot.docs.map((doc) => doc.data());
+//     const data = snapshot.docs.map((doc) => doc.data());
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
+//     return data;
+//   } catch (error) {
+//     console.log('[DAO] Fail to get collection', error);
+//   }
+// }
+
+// async function getBatches() {
+//   try {
+//     const productTypeSnapshots = await getProductTypeSnapshots();
+
+//     if (!productTypeSnapshots) {
+//       return [];
+//     }
+
+//     for (const p of productTypeSnapshots.docs) {
+
+//     }
+//   } catch (error) {
+//     console.log('[DAO] Fail to get collection', error);
+//   }
+// }
 
 async function getBatchById(id: string) {
   try {
@@ -73,4 +90,4 @@ async function deleteBatch(id: string) {
   }
 }
 
-export { createBatch, deleteBatch, getBatchById, getBatches, updateBatch };
+export { createBatch, deleteBatch, getBatchById, updateBatch };

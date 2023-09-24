@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import Variant, { variantConverter } from '@/models/variant';
 import {
+  QueryDocumentSnapshot,
   addDoc,
   collection,
   deleteDoc,
@@ -10,17 +11,25 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getProductSnapshots } from './productDAO';
 
-async function getVariants() {
+export async function getVariants() {
   try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.VARIANTS
-    ).withConverter(variantConverter);
+    const productSnapshots = await getProductSnapshots();
 
-    const snapshot = await getDocs(collectionRef);
+    if (!productSnapshots) {
+      return [];
+    }
 
-    const data = snapshot.docs.map((doc) => doc.data());
+    let data: Variant[] = [];
+
+    for (const p of productSnapshots) {
+      const variantsRef = collection(
+        p.ref,
+        COLLECTION_NAME.VARIANTS
+      ).withConverter(variantConverter);
+      data.push(...(await getDocs(variantsRef)).docs.map((doc) => doc.data()));
+    }
 
     return data;
   } catch (error) {
@@ -28,21 +37,55 @@ async function getVariants() {
   }
 }
 
-async function getVariantById(id: string) {
+export async function getVariantSnapshots() {
   try {
-    const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
-      variantConverter
+    const productSnapshots = await getProductSnapshots();
+
+    if (!productSnapshots) {
+      return [];
+    }
+
+    let data: QueryDocumentSnapshot<Variant>[] = [];
+
+    for (const p of productSnapshots) {
+      const variantsRef = collection(
+        p.ref,
+        COLLECTION_NAME.VARIANTS
+      ).withConverter(variantConverter);
+      data.push(...(await getDocs(variantsRef)).docs);
+    }
+
+    return data;
+  } catch (error) {
+    console.log('[DAO] Fail to get collection', error);
+  }
+}
+
+export async function getVariantsByProduct(
+  productTypeId: string,
+  productId: string
+) {
+  try {
+    const collectionRef = collection(
+      db,
+      COLLECTION_NAME.PRODUCT_TYPES,
+      productTypeId,
+      COLLECTION_NAME.PRODUCTS,
+      productId,
+      COLLECTION_NAME.VARIANTS
     );
 
-    const snapshot = await getDoc(docRef);
+    const snapshot = await getDocs(collectionRef);
 
-    return snapshot.data();
+    const data = snapshot.docs.map((doc) => doc.data());
+
+    return data;
   } catch (error) {
     console.log('[DAO] Fail to get doc', error);
   }
 }
 
-async function updateVariant(id: string, data: Variant) {
+export async function updateVariant(id: string, data: Variant) {
   try {
     const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
       variantConverter
@@ -54,7 +97,7 @@ async function updateVariant(id: string, data: Variant) {
   }
 }
 
-async function createVariant(data: Variant) {
+export async function createVariant(data: Variant) {
   try {
     await addDoc(collection(db, COLLECTION_NAME.VARIANTS), data);
   } catch (error) {
@@ -62,7 +105,7 @@ async function createVariant(data: Variant) {
   }
 }
 
-async function deleteVariant(id: string) {
+export async function deleteVariant(id: string) {
   try {
     const docRef = doc(db, COLLECTION_NAME.VARIANTS, id).withConverter(
       variantConverter
@@ -73,11 +116,3 @@ async function deleteVariant(id: string) {
     console.log('[DAO] Fail to delete doc', error);
   }
 }
-
-export {
-  createVariant,
-  deleteVariant,
-  getVariantById,
-  getVariants,
-  updateVariant,
-};
