@@ -3,29 +3,23 @@ import bg2 from '@/assets/Decorate/bg2.png';
 import SignUpForm from '@/components/auth/SignUpForm';
 import Copyright from '@/components/Copyright';
 import { auth } from '@/firebase/config';
-import { addUserWithEmailAndPassword } from '@/lib/auth/auth';
 import { useSnackbarService } from '@/lib/contexts';
-import { SignupData, SignupUser } from '@/lib/types/auth';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
+import { createUser } from '@/lib/DAO/userDAO';
+import { SignUpData } from '@/lib/types/auth';
+import User from '@/models/user';
 import theme from '@/styles/themes/lightTheme';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { isPhoneNumber, isValidMail } from '@/utils/stringUtils';
 import { alpha, Grid } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { generateKey } from 'crypto';
-import {
-  createUserWithEmailAndPassword,
-  User,
-  UserCredential,
-} from 'firebase/auth';
-import { Timestamp } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 
 enum SignupValidationMsg {
-  Success = 'Đăng ký thành công',
-  Error = 'Đăng ký thất bại',
+  Success = 'Đăng ký thành công',
+  Error = 'Đăng ký thât bai',
   EMPTY_NAME = 'Vui lòng nhập tên',
   EMPTY_MAIL = 'Vui lòng nhập Mail',
   EMPTY_BIRTH = 'Vui lòng nhập ngày sinh',
@@ -34,6 +28,8 @@ enum SignupValidationMsg {
   EMTPY_CONFIRM_PASSWORD = 'Vui lòng nhập lại mật khẩu',
   CONFIRM_PASSWORD_NOT_MATCH = 'Nhập lại mật khẩu không khớp',
   EMPTY_TEL = 'Vui lòng nhập số điện thoại',
+  INVALID_TEL = 'Số điện thoại không hợp lệ',
+  INVALID_MAIL = 'Email không hợp lệ',
 }
 
 enum SignupErrorCode {
@@ -57,28 +53,38 @@ const SignUp = () => {
 
   // #region Handlers
 
-  const validateSignupData = (data: SignupData) => {
-    if (!data.name || data.name === '') {
+  const validateSignupData = (data: SignUpData) => {
+    if (!data.user.name) {
       handleSnackbarAlert('error', SignupValidationMsg.EMPTY_NAME);
       return false;
     }
 
-    if (!data.mail || data.mail === '') {
-      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_MAIL);
-      return false;
-    }
-
-    if (!data.tel || data.tel === '') {
-      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_TEL);
-      return false;
-    }
-
-    if (!data.birthday) {
+    if (!data.user.birth) {
       handleSnackbarAlert('error', SignupValidationMsg.EMPTY_BIRTH);
       return false;
     }
 
-    if (!data.password || data.password === '') {
+    if (!data.user.tel) {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_TEL);
+      return false;
+    }
+
+    if (!isPhoneNumber(data.user.tel)) {
+      handleSnackbarAlert('error', SignupValidationMsg.INVALID_TEL);
+      return false;
+    }
+
+    if (!data.user.mail) {
+      handleSnackbarAlert('error', SignupValidationMsg.EMPTY_MAIL);
+      return false;
+    }
+
+    if (!isValidMail(data.mail)) {
+      handleSnackbarAlert('error', SignupValidationMsg.INVALID_MAIL);
+      return false;
+    }
+
+    if (!data.password) {
       handleSnackbarAlert('error', SignupValidationMsg.EMPTY_PASSWORD);
       return false;
     }
@@ -88,7 +94,7 @@ const SignUp = () => {
       return false;
     }
 
-    if (!data.confirmPassword || data.confirmPassword === '') {
+    if (!data.confirmPassword) {
       handleSnackbarAlert('error', SignupValidationMsg.EMTPY_CONFIRM_PASSWORD);
       return false;
     }
@@ -104,39 +110,29 @@ const SignUp = () => {
     return true;
   };
 
-  const createUserObjectFromUSignupData = (
-    userData: SignupData
-  ): SignupUser => {
-    return {
-      mail: userData.mail,
-      name: userData.name,
-      birthday: userData.birthday ?? new Date(),
-      tel: userData.tel,
-      isActive: true,
-      role_id: 'customer',
-      accountType: 'email_n_password',
-    } as SignupUser;
-  };
+  const handleSignup = async (createData: () => SignUpData) => {
+    const signUpData = createData();
 
-  const handleSignup = async (createData: () => SignupData) => {
-    const signupData = createData();
-
-    const validateResult = validateSignupData(signupData);
+    const validateResult = validateSignupData(signUpData);
 
     if (!validateResult) {
+      console.log('Sign up data validation: Invalid');
       return;
     }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        signupData.mail!,
-        signupData.password!
+        signUpData.mail,
+        signUpData.password
       );
 
-      const user = createUserObjectFromUSignupData(signupData);
+      const user: Omit<User, 'id'> = {
+        ...signUpData.user,
+        uid: userCredential.user.uid,
+      };
 
-      await addUserWithEmailAndPassword(userCredential.user.uid, user);
+      await createUser(DEFAULT_GROUP_ID, user);
 
       handleSnackbarAlert('success', 'Đăng ký thành công!');
 
@@ -246,7 +242,7 @@ const SignUp = () => {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <SignUpForm handleSignUp={handleSignup} />
+                    <SignUpForm onSignUp={handleSignup} />
                   </Grid>
                   <Grid item xs={12}>
                     <Copyright sx={{ mt: 5 }} />

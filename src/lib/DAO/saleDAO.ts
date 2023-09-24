@@ -1,6 +1,8 @@
 import { db } from '@/firebase/config';
-import Sale from '@/models/sale';
+import Sale, { saleConverter } from '@/models/sale';
 import {
+  CollectionReference,
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -10,68 +12,59 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { saleConverter } from '../models';
 
-async function getSales() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.SALES).withConverter(
-      saleConverter
-    );
+export function getSalesRef(): CollectionReference<Sale> {
+  return collection(db, COLLECTION_NAME.SALES).withConverter(saleConverter);
+}
 
-    const snapshot = await getDocs(collectionRef);
+export function getSaleRefById(id: string): DocumentReference<Sale> {
+  return doc(getSalesRef(), id);
+}
 
-    const data = snapshot.docs.map((doc) => doc.data());
+export async function getSalesSnapshot() {
+  return await getDocs(getSalesRef());
+}
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+export async function getSales() {
+  return (await getSalesSnapshot()).docs.map((doc) => doc.data());
+}
+
+export async function getSaleSnapshotById(id: string) {
+  return await getDoc(getSaleRefById(id));
+}
+
+export async function getSaleById(id: string) {
+  return (await getSaleSnapshotById(id)).data();
+}
+
+export async function createSale(data: Omit<Sale, 'id'>) {
+  return await addDoc(getSalesRef(), data);
+}
+
+export async function updateSale(id: string, data: Sale): Promise<void>;
+export async function updateSale(
+  docRef: DocumentReference<Sale>,
+  data: Sale
+): Promise<void>;
+export async function updateSale(
+  arg: string | DocumentReference<Sale>,
+  data: Sale
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await updateDoc(getSaleRefById(arg), data);
+  } else {
+    await updateDoc(arg, data);
   }
 }
 
-async function getSaleById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SALES, id).withConverter(
-      saleConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
+export async function deleteSale(id: string): Promise<void>;
+export async function deleteSale(
+  docRef: DocumentReference<Sale>
+): Promise<void>;
+export async function deleteSale(arg: string | DocumentReference<Sale>) {
+  if (typeof arg === 'string') {
+    await deleteDoc(getSaleRefById(arg));
+  } else {
+    await deleteDoc(arg);
   }
 }
-
-async function updateSale(id: string, data: Sale) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SALES, id).withConverter(
-      saleConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
-}
-
-async function createSale(data: Sale) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.SALES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
-}
-
-async function deleteSale(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SALES, id).withConverter(
-      saleConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
-}
-
-export { createSale, deleteSale, getSaleById, getSales, updateSale };

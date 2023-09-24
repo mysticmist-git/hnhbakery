@@ -24,6 +24,7 @@ type User = WithCreatedUpdated &
     mail: string;
     avatar: string;
     group_id: string;
+    type: 'google' | 'mail';
   };
 
 const userConverter: FirestoreDataConverter<User> = {

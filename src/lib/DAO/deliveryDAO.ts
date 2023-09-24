@@ -1,6 +1,7 @@
 import { db } from '@/firebase/config';
 import Delivery, { deliveryConverter } from '@/models/delivery';
 import {
+  DocumentReference,
   addDoc,
   collection,
   deleteDoc,
@@ -11,73 +12,65 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getDeliveries() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.DELIVERIES
-    ).withConverter(deliveryConverter);
+export function getDeliveriesRef() {
+  return collection(db, COLLECTION_NAME.DELIVERIES).withConverter(
+    deliveryConverter
+  );
+}
 
-    const snapshot = await getDocs(collectionRef);
+export function getDeliveryRefById(id: string) {
+  return doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
+    deliveryConverter
+  );
+}
 
-    const data = snapshot.docs.map((doc) => doc.data());
+export async function getDeliveriesSnapshot() {
+  return await getDocs(getDeliveriesRef());
+}
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+export async function getDeliveries() {
+  return (await getDeliveriesSnapshot()).docs.map((doc) => doc.data());
+}
+
+export async function getDeliverySnapshotById(id: string) {
+  return await getDoc(getDeliveryRefById(id));
+}
+
+export async function getDeliveryById(id: string) {
+  return (await getDeliverySnapshotById(id)).data();
+}
+
+export async function createDelivery(data: Omit<Delivery, 'id'>) {
+  const docRef = await addDoc(getDeliveriesRef(), data);
+  return docRef.id;
+}
+
+export async function updateDelivery(id: string, data: Delivery): Promise<void>;
+export async function updateDelivery(
+  docRef: DocumentReference<Delivery>,
+  data: Delivery
+): Promise<void>;
+export async function updateDelivery(
+  arg: string | DocumentReference<Delivery>,
+  data: Delivery
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await updateDoc(getDeliveryRefById(arg), data);
+  } else {
+    await updateDoc(arg, data);
   }
 }
 
-async function getDeliveryById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
+export async function deleteDelivery(id: string): Promise<void>;
+export async function deleteDelivery(
+  docRef: DocumentReference<Delivery>
+): Promise<void>;
+export async function deleteDelivery(
+  arg: string | DocumentReference<Delivery>
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await deleteDoc(getDeliveryRefById(arg));
+  } else {
+    await deleteDoc(arg);
   }
 }
-
-async function updateDelivery(id: string, data: Delivery) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
-}
-
-async function createDelivery(data: Delivery) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.DELIVERIES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
-}
-
-async function deleteDelivery(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.DELIVERIES, id).withConverter(
-      deliveryConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
-}
-
-export {
-  createDelivery,
-  deleteDelivery,
-  getDeliveries,
-  getDeliveryById,
-  updateDelivery,
-};

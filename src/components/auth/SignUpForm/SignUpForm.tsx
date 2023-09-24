@@ -3,20 +3,22 @@ import {
   CustomTextField,
   CustomTextFieldPassword,
 } from '@/components/inputs/textFields';
-import { SignupData } from '@/lib/types/auth';
+import { COLLECTION_NAME } from '@/lib/constants';
+import { SignUpData } from '@/lib/types/auth';
+import User from '@/models/user';
 import theme from '@/styles/themes/lightTheme';
 import { Box, Grid, Link, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
 import { default as NextLink } from 'next/link';
-import React, { memo, useRef, useState } from 'react';
+import React, { memo, useState } from 'react';
 
 const USER_ROLE_ID = 'user';
 
 const SignUpForm = ({
-  handleSignUp,
+  onSignUp,
 }: {
-  handleSignUp: (createData: () => SignupData) => Promise<void>;
+  onSignUp: (createData: () => SignUpData) => Promise<void>;
 }) => {
   // #region Refs
 
@@ -29,19 +31,32 @@ const SignUpForm = ({
 
   // #endregion
 
-  const createSignupData = (): SignupData => {
+  //#region Functions
+
+  const createSignUpData = (): SignUpData => {
+    const user: Omit<User, 'id' | 'uid'> = {
+      name: name,
+      mail: mail,
+      tel: tel,
+      birth: birthday.toDate(),
+      avatar: '',
+      group_id: COLLECTION_NAME.DEFAULT_USERS,
+      type: 'mail',
+      active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
     return {
-      name,
-      birthday: birthday.toDate(),
-      tel,
-      mail,
-      password,
-      confirmPassword,
+      user: user,
+      mail: mail,
+      password: password,
+      confirmPassword: confirmPassword,
     };
   };
 
-  const handleSignup = () => {
-    handleSignUp(createSignupData);
+  const handleSignUp = () => {
+    onSignUp(createSignUpData);
   };
 
   //#endregion
@@ -160,7 +175,7 @@ const SignUpForm = ({
 
         <Grid item xs={12}>
           <CustomButton
-            onClick={handleSignup}
+            onClick={handleSignUp}
             fullWidth
             variant="contained"
             sx={{

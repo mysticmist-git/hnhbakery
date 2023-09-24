@@ -1,76 +1,96 @@
 import { db } from '@/firebase/config';
 import Size, { sizeConverter } from '@/models/size';
 import {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  Query,
+  QueryConstraint,
+  QuerySnapshot,
   addDoc,
   collection,
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getSizes() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.SIZES).withConverter(
-      sizeConverter
-    );
+export function getSizesRef(): CollectionReference<Size> {
+  return collection(db, COLLECTION_NAME.SIZES).withConverter(sizeConverter);
+}
 
-    const snapshot = await getDocs(collectionRef);
+export function getSizesQuery(
+  ...queryConstraints: QueryConstraint[]
+): Query<Size> {
+  return query(getSizesRef(), ...queryConstraints);
+}
 
-    const data = snapshot.docs.map((doc) => doc.data());
+export function getSizeRef(id: string): DocumentReference<Size> {
+  return doc(getSizesRef(), id);
+}
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+export async function getSizesSnapshot(): Promise<QuerySnapshot<Size>> {
+  return await getDocs(getSizesRef());
+}
+
+export async function getSizes(): Promise<Size[]> {
+  return (await getSizesSnapshot()).docs.map((doc) => doc.data());
+}
+
+export async function getSizesSnapshotWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Promise<QuerySnapshot<Size>> {
+  return await getDocs(getSizesQuery(...queryConstraints));
+}
+
+export async function getSizesWithQuery(
+  ...queryConstraints: QueryConstraint[]
+): Promise<Size[]> {
+  return (await getDocs(getSizesQuery(...queryConstraints))).docs.map((doc) =>
+    doc.data()
+  );
+}
+
+export async function getSizeSnapshot(
+  id: string
+): Promise<DocumentSnapshot<Size>> {
+  return await getDoc(getSizeRef(id));
+}
+
+export async function getSize(id: string): Promise<Size | undefined> {
+  return (await getSizeSnapshot(id)).data();
+}
+
+export async function createSize(data: Omit<Size, 'id'>) {
+  return (await addDoc(getSizesRef(), data)).withConverter(sizeConverter);
+}
+
+export async function updateSize(id: string, data: Size): Promise<void>;
+export async function updateSize(
+  docRef: DocumentReference<Size>,
+  data: Size
+): Promise<void>;
+export async function updateSize(
+  arg: string | DocumentReference<Size>,
+  data: Size
+): Promise<void> {
+  if (typeof arg === 'string') {
+    return await updateDoc(getSizeRef(arg), data);
+  } else {
+    return await updateDoc(arg, data);
   }
 }
 
-async function getSizeById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SIZES, id).withConverter(
-      sizeConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+export async function deleteDoc(id: string): Promise<void>;
+export async function deleteDoc(docRef: DocumentReference<Size>): Promise<void>;
+export async function deleteDoc(
+  arg: string | DocumentReference<Size>
+): Promise<void> {
+  if (typeof arg === 'string') {
+    await deleteDoc(getSizeRef(arg));
+  } else {
+    await deleteDoc(arg);
   }
 }
-
-async function updateSize(id: string, data: Size) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SIZES, id).withConverter(
-      sizeConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
-}
-
-async function createSize(data: Size) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.SIZES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
-}
-
-async function deleteSize(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.SIZES, id).withConverter(
-      sizeConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
-}
-
-export { createSize, deleteSize, getSizeById, getSizes, updateSize };

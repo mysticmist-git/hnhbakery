@@ -1,6 +1,10 @@
 import { db } from '@/firebase/config';
 import Permission, { permissionConverter } from '@/models/permission';
 import {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
@@ -11,73 +15,98 @@ import {
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getPermissions() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PERMISSIONS
-    ).withConverter(permissionConverter);
+export function getPermissionsRef(): CollectionReference<Permission> {
+  return collection(db, COLLECTION_NAME.PERMISSIONS).withConverter(
+    permissionConverter
+  );
+}
 
-    const snapshot = await getDocs(collectionRef);
+export function getPermissionRefById(
+  id: string
+): DocumentReference<Permission> {
+  return doc(getPermissionsRef(), id).withConverter(permissionConverter);
+}
 
-    const data = snapshot.docs.map((doc) => doc.data());
+export async function getPermissionSnapshots(): Promise<
+  QuerySnapshot<Permission>
+> {
+  const collectionRef = getPermissionsRef();
 
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
+  return await getDocs(collectionRef);
+}
+
+export async function getPermissions(): Promise<Permission[]> {
+  const snapshot = await getPermissionSnapshots();
+
+  return snapshot.docs.map((doc) => doc.data());
+}
+
+export async function getPermissionSnapshot(
+  id: string
+): Promise<DocumentSnapshot<Permission>>;
+export async function getPermissionSnapshot(
+  permissionRef: DocumentReference<Permission>
+): Promise<DocumentSnapshot<Permission>>;
+export async function getPermissionSnapshot(
+  arg: string | DocumentReference<Permission>
+): Promise<DocumentSnapshot<Permission>> {
+  if (typeof arg === 'string') {
+    return await getDoc(getPermissionRefById(arg));
+  } else {
+    return await getDoc(arg);
   }
 }
 
-async function getPermissionById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
+export async function getPermission(
+  id: string
+): Promise<Permission | undefined>;
+export async function getPermission(
+  permissionRef: DocumentReference<Permission>
+): Promise<Permission | undefined>;
+export async function getPermission(
+  arg: string | DocumentReference<Permission>
+): Promise<Permission | undefined> {
+  if (typeof arg === 'string') {
+    return (await getPermissionSnapshot(arg)).data();
+  } else {
+    return (await getPermissionSnapshot(arg)).data();
   }
 }
 
-async function updatePermission(id: string, data: Permission) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export async function updatePermission(
+  id: string,
+  data: Permission
+): Promise<void>;
+export async function updatePermission(
+  docRef: DocumentReference<Permission>,
+  data: Permission
+): Promise<void>;
+export async function updatePermission(
+  arg: string | DocumentReference<Permission>,
+  data: Permission
+): Promise<void> {
+  await updateDoc(
+    typeof arg === 'string' ? getPermissionRefById(arg) : arg,
+    data
+  );
 }
 
-async function createPermission(data: Permission) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.PERMISSIONS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function createPermission(
+  data: Omit<Permission, 'id'>
+): Promise<DocumentReference<Permission>> {
+  return (await addDoc(getPermissionsRef(), data)).withConverter(
+    permissionConverter
+  );
 }
 
-async function deletePermission(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PERMISSIONS, id).withConverter(
-      permissionConverter
-    );
+export async function deletePermission(id: string): Promise<void>;
+export async function deletePermission(
+  permissionRef: DocumentReference<Permission>
+): Promise<void>;
+export async function deletePermission(
+  arg: string | DocumentReference<Permission>
+): Promise<void> {
+  const docRef = typeof arg === 'string' ? getPermissionRefById(arg) : arg;
 
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+  await deleteDoc(docRef);
 }
-
-export {
-  createPermission,
-  deletePermission,
-  getPermissionById,
-  getPermissions,
-  updatePermission,
-};

@@ -1,23 +1,18 @@
 import { auth, db, provider } from '@/firebase/config';
-import { createUser, getUserById, getUserByUid } from '@/lib/DAO/userDAO';
+import { createUser, getUser, getUserByUid } from '@/lib/DAO/userDAO';
 import User from '@/models/user';
 import { UserCredential, signInWithPopup } from 'firebase/auth';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
 import router from 'next/router';
+import { DEFAULT_GROUP_ID } from '../DAO/groupDAO';
 import { COLLECTION_NAME } from '../constants';
 import { SignInInfo, SignupUser } from '../types/auth';
-
-export const addUserWithEmailAndPassword = async (
-  id: string,
-  userData: SignupUser
-) => {
-  try {
-    delete userData.id;
-    await setDoc(doc(collection(db, COLLECTION_NAME.USERS), id), userData);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const addUserWithGoogleLogin = async (
   userCredential: UserCredential
@@ -47,12 +42,13 @@ export const addUserWithGoogleLogin = async (
       birth: new Date(1990, 1, 1),
       avatar: '',
       active: true,
-      group_id: COLLECTION_NAME.DEFAULT_USERS,
+      group_id: DEFAULT_GROUP_ID,
+      type: 'google',
       created_at: new Date(),
       updated_at: new Date(),
     };
 
-    await createUser(data);
+    await createUser(DEFAULT_GROUP_ID, data);
   } catch (error) {
     console.log('[Auth service] Fail to add user with google login', error);
   }
