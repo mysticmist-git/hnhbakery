@@ -1,6 +1,10 @@
 import { db } from '@/firebase/config';
 import Feedback, { feedbackConverter } from '@/models/feedback';
 import {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
@@ -10,74 +14,217 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import Product from '@/models/product';
+import { getProductRef } from './productDAO';
 
-async function getFeedbacks() {
-  try {
-    const collectionRef = collection(
-      db,
+export function getFeedbacksRef(
+  productRef: DocumentReference<Product>
+): CollectionReference<Feedback>;
+
+export function getFeedbacksRef(
+  productTypeId: string,
+  productId: string
+): CollectionReference<Feedback>;
+
+export function getFeedbacksRef(
+  arg: DocumentReference<Product> | string,
+  productId?: string
+): CollectionReference<Feedback> {
+  if (typeof arg === 'string') {
+    return collection(
+      getProductRef(arg, productId!),
       COLLECTION_NAME.FEEDBACKS
     ).withConverter(feedbackConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
-
-async function getFeedbackById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
+  } else {
+    return collection(arg, COLLECTION_NAME.FEEDBACKS).withConverter(
       feedbackConverter
     );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
   }
 }
 
-async function updateFeedback(id: string, data: Feedback) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
+export function getFeedbackRef(
+  productTypeId: string,
+  productId: string,
+  id: string
+): DocumentReference<Feedback>;
+
+export function getFeedbackRef(
+  productRef: DocumentReference<Product>,
+  id: string
+): DocumentReference<Feedback>;
+
+export function getFeedbackRef(
+  arg1: DocumentReference<Product> | string,
+  arg2: string,
+  id?: string
+): DocumentReference<Feedback> {
+  if (typeof arg1 === 'string') {
+    return doc(getFeedbacksRef(arg1, arg2), id!).withConverter(
       feedbackConverter
     );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
+  } else {
+    return doc(getFeedbacksRef(arg1), arg2).withConverter(feedbackConverter);
   }
 }
 
-async function createFeedback(data: Feedback) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.FEEDBACKS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
+export async function getFeedbacksSnapshot(
+  productTypeId: string,
+  productId: string
+): Promise<QuerySnapshot<Feedback>>;
+
+export async function getFeedbacksSnapshot(
+  productRef: DocumentReference<Product>
+): Promise<QuerySnapshot<Feedback>>;
+
+export async function getFeedbacksSnapshot(
+  arg1: DocumentReference<Product> | string,
+  arg2?: string
+): Promise<QuerySnapshot<Feedback>> {
+  if (typeof arg1 === 'string') {
+    return await getDocs(getFeedbacksRef(arg1, arg2!));
+  } else {
+    return await getDocs(getFeedbacksRef(arg1));
   }
 }
 
-async function deleteFeedback(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.FEEDBACKS, id).withConverter(
-      feedbackConverter
+export async function getFeedbackSnapshot(
+  productTypeId: string,
+  productId: string,
+  id: string
+): Promise<DocumentSnapshot<Feedback>>;
+
+export async function getFeedbackSnapshot(
+  productRef: DocumentReference<Product>,
+  id: string
+): Promise<DocumentSnapshot<Feedback>>;
+
+export async function getFeedbackSnapshot(
+  arg1: DocumentReference<Product> | string,
+  arg2: string,
+  id?: string
+): Promise<DocumentSnapshot<Feedback>> {
+  if (typeof arg1 === 'string') {
+    return await getDoc(getFeedbackRef(arg1, arg2, id!));
+  } else {
+    return await getDoc(getFeedbackRef(arg1, arg2));
+  }
+}
+
+export async function getFeedbacks(
+  productTypeId: string,
+  productId: string
+): Promise<Feedback[]>;
+
+export async function getFeedbacks(
+  productRef: DocumentReference<Product>
+): Promise<Feedback[]>;
+
+export async function getFeedbacks(
+  arg1: DocumentReference<Product> | string,
+  arg2?: string
+): Promise<Feedback[]> {
+  if (typeof arg1 === 'string') {
+    return (await getFeedbacksSnapshot(arg1, arg2!)).docs.map((doc) =>
+      doc.data()
     );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
+  } else {
+    return (await getFeedbacksSnapshot(arg1)).docs.map((doc) => doc.data());
   }
 }
 
-export {
-  createFeedback,
-  deleteFeedback,
-  getFeedbackById,
-  getFeedbacks,
-  updateFeedback,
-};
+export async function getFeedback(
+  productTypeId: string,
+  productId: string,
+  id: string
+): Promise<Feedback | undefined>;
+
+export async function getFeedback(
+  productRef: DocumentReference<Product>,
+  id: string
+): Promise<Feedback | undefined>;
+
+export async function getFeedback(
+  arg1: DocumentReference<Product> | string,
+  arg2: string,
+  id?: string
+): Promise<Feedback | undefined> {
+  if (typeof arg1 === 'string') {
+    return (await getFeedbackSnapshot(arg1, arg2, id!)).data();
+  } else {
+    return (await getFeedbackSnapshot(arg1, arg2)).data();
+  }
+}
+
+export async function updateFeedback(
+  productTypeId: string,
+  productId: string,
+  id: string,
+  data: Feedback
+): Promise<void>;
+
+export async function updateFeedback(
+  productRef: DocumentReference<Product>,
+  id: string,
+  data: Feedback
+): Promise<void>;
+
+export async function updateFeedback(
+  feedbackRef: DocumentReference<Feedback>,
+  data: Feedback
+): Promise<void>;
+
+export async function updateFeedback(
+  arg1: string | DocumentReference<Product> | DocumentReference<Feedback>,
+  arg2: string | Feedback,
+  arg3?: string | Feedback,
+  data?: Feedback
+): Promise<void> {
+  if (typeof arg1 === 'string') {
+    const productTypeId = arg1 as string;
+    const productId = arg2 as string;
+    const id = arg3 as string;
+    await updateDoc(getFeedbackRef(productTypeId, productId, id), data);
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const productRef = arg1 as DocumentReference<Product>;
+    const id = arg2 as string;
+    await updateDoc(getFeedbackRef(productRef, id), data);
+  } else {
+    const feedbackRef = arg1 as DocumentReference<Feedback>;
+    await updateDoc(feedbackRef, data);
+  }
+}
+
+export async function deleteFeedback(
+  productTypeId: string,
+  productId: string,
+  id: string
+): Promise<void>;
+
+export async function deleteFeedback(
+  productRef: DocumentReference<Product>,
+  id: string
+): Promise<void>;
+
+export async function deleteFeedback(
+  feedbackRef: DocumentReference<Feedback>
+): Promise<void>;
+
+export async function deleteFeedback(
+  arg1: string | DocumentReference<Product> | DocumentReference<Feedback>,
+  arg2?: string,
+  arg3?: string
+): Promise<void> {
+  if (typeof arg1 === 'string') {
+    const productTypeId = arg1 as string;
+    const productId = arg2 as string;
+    const id = arg3 as string;
+    await deleteDoc(getFeedbackRef(productTypeId, productId, id));
+  } else if (arg1 instanceof DocumentReference && typeof arg2 === 'string') {
+    const productRef = arg1 as DocumentReference<Product>;
+    const id = arg2 as string;
+    await deleteDoc(getFeedbackRef(productRef, id));
+  } else {
+    const feedbackRef = arg1 as DocumentReference<Feedback>;
+    await deleteDoc(feedbackRef);
+  }
+}

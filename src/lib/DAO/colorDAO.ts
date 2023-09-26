@@ -1,76 +1,70 @@
 import { db } from '@/firebase/config';
 import Color, { colorConverter } from '@/models/color';
 import {
+  QueryConstraint,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getColors() {
-  try {
-    const collectionRef = collection(db, COLLECTION_NAME.COLORS).withConverter(
-      colorConverter
-    );
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getColorsRef() {
+  return collection(db, COLLECTION_NAME.COLORS).withConverter(colorConverter);
 }
 
-async function getColorById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
-      colorConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export function getColorsRefWithQuery(...queryConstraints: QueryConstraint[]) {
+  return query(getColorsRef(), ...queryConstraints).withConverter(
+    colorConverter
+  );
 }
 
-async function updateColor(id: string, data: Color) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
-      colorConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export function getColorRefById(id: string) {
+  return doc(getColorsRef(), id).withConverter(colorConverter);
 }
 
-async function createColor(data: Color) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.COLORS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function getColorsSnapshot() {
+  return await getDocs(getColorsRef());
 }
 
-async function deleteColor(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.COLORS, id).withConverter(
-      colorConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getColorsSnapshotWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return await getDocs(getColorsRefWithQuery(...queryConstraints));
 }
 
-export { createColor, deleteColor, getColorById, getColors, updateColor };
+export async function getColorSnapshotById(id: string) {
+  return await getDoc(getColorRefById(id));
+}
+
+export async function getColors() {
+  return (await getColorsSnapshot()).docs.map((doc) => doc.data());
+}
+
+export async function getColorsWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return (await getColorsSnapshotWithQuery(...queryConstraints)).docs.map(
+    (doc) => doc.data()
+  );
+}
+
+export async function getColorById(id: string) {
+  return (await getColorSnapshotById(id)).data();
+}
+
+export async function updateColor(id: string, data: Color) {
+  await updateDoc(getColorRefById(id), data);
+}
+
+export async function createColor(data: Omit<Color, 'id'>) {
+  return await addDoc(getColorsRef(), data);
+}
+
+export async function deleteColor(id: string) {
+  await deleteDoc(getColorRefById(id));
+}

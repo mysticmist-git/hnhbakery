@@ -1,82 +1,70 @@
 import { db } from '@/firebase/config';
 import Material, { materialConverter } from '@/models/material';
 import {
+  QueryConstraint,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
-async function getMaterials() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.MATERIALS
-    ).withConverter(materialConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getMaterialsRef() {
+  return collection(db, COLLECTION_NAME.MATERIALS).withConverter(
+    materialConverter
+  );
 }
 
-async function getMaterialById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.MATERIALS, id).withConverter(
-      materialConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
-}
-async function updateMaterial(id: string, data: Material) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.MATERIALS, id).withConverter(
-      materialConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+export function getMaterialsRefWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return query(getMaterialsRef(), ...queryConstraints).withConverter(
+    materialConverter
+  );
 }
 
-async function createMaterial(data: Material) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.MATERIALS), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export function getMaterialRefById(id: string) {
+  return doc(getMaterialsRef(), id).withConverter(materialConverter);
 }
 
-async function deleteMaterial(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.MATERIALS, id).withConverter(
-      materialConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function getMaterialsSnapshot() {
+  return await getDocs(getMaterialsRef());
 }
 
-export {
-  createMaterial,
-  deleteMaterial,
-  getMaterialById,
-  getMaterials,
-  updateMaterial,
-};
+export async function getMaterialsSnapshotWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return await getDocs(getMaterialsRefWithQuery(...queryConstraints));
+}
+
+export async function getMaterialSnapshotById(id: string) {
+  return await getDoc(getMaterialRefById(id));
+}
+
+export async function getMaterials() {
+  return (await getMaterialsSnapshot()).docs.map((doc) => doc.data());
+}
+
+export async function getMaterialsWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return (await getMaterialsSnapshotWithQuery(...queryConstraints)).docs.map(
+    (doc) => doc.data()
+  );
+}
+
+export async function createMaterial(data: Omit<Material, 'id'>) {
+  return await addDoc(getMaterialsRef(), data);
+}
+
+export async function updateMaterial(id: string, data: Material) {
+  await updateDoc(getMaterialRefById(id), data);
+}
+
+export async function deleteMaterial(id: string) {
+  await deleteDoc(getMaterialRefById(id));
+}

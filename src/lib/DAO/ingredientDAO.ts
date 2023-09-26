@@ -22,13 +22,13 @@ export function getIngredientsRef() {
 export function getIngredientsRefWithQuery(
   ...queryConstraints: QueryConstraint[]
 ) {
-  return query(getIngredientsRef(), ...queryConstraints);
+  return query(getIngredientsRef(), ...queryConstraints).withConverter(
+    ingredientConverter
+  );
 }
 
 export function getIngredientRefById(id: string) {
-  return doc(db, COLLECTION_NAME.INGREDIENTS, id).withConverter(
-    ingredientConverter
-  );
+  return doc(getIngredientsRef(), id).withConverter(ingredientConverter);
 }
 
 export async function getIngredientsSnapshot() {
