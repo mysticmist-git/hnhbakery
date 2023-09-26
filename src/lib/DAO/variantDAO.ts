@@ -12,7 +12,6 @@ import {
   getDocs,
   updateDoc,
 } from 'firebase/firestore';
-import { productionBrowserSourceMaps } from '../../../next.config';
 import { COLLECTION_NAME } from '../constants';
 import { getProductRef } from './productDAO';
 
