@@ -698,8 +698,6 @@ export default function Manage() {
 
   //#endregion
 
-  console.log(state.mainDocs);
-
   return (
     <>
       <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>

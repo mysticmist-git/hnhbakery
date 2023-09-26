@@ -251,22 +251,20 @@ const ProductTypeForm = (
           </Box>
 
           {['update', 'create'].includes(mode) && (
-            <>
-              <RowModalLayoutButton
-                disabled={disabled}
-                variant="contained"
-                color="secondary"
-                // component={'label'}
-              >
-                Tải ảnh lên
-                <input
-                  hidden
-                  accept="image/*"
-                  type="file"
-                  onChange={handleUploadImage}
-                />
-              </RowModalLayoutButton>
-            </>
+            <RowModalLayoutButton
+              disabled={disabled}
+              variant="contained"
+              color="secondary"
+              component="label"
+            >
+              Tải ảnh lên
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={handleUploadImage}
+              />
+            </RowModalLayoutButton>
           )}
         </Stack>
       </Grid>

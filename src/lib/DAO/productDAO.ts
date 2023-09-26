@@ -1,210 +1,91 @@
-import { db } from '@/firebase/config';
 import Product, { productConverter } from '@/models/product';
 import {
-  QueryDocumentSnapshot,
+  QueryConstraint,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import {
-  getProductTypeSnapshotById,
-  getProductTypeSnapshots,
-} from './productTypeDAO';
+import { getProductTypesRef } from './productTypeDAO';
 
-export async function getProducts() {
-  try {
-    const productTypeSnapshots = await getProductTypeSnapshots();
-
-    if (!productTypeSnapshots) {
-      return [];
-    }
-
-    let data: Product[] = [];
-
-    for (const p of productTypeSnapshots) {
-      const productsRef = collection(
-        p.ref,
-        COLLECTION_NAME.PRODUCTS
-      ).withConverter(productConverter);
-      data.push(...(await getDocs(productsRef)).docs.map((doc) => doc.data()));
-    }
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export function getProductsRef(productTypeId: string) {
+  return collection(
+    getProductTypesRef(),
+    productTypeId,
+    COLLECTION_NAME.PRODUCTS
+  ).withConverter(productConverter);
 }
 
-export async function getProductSnapshots() {
-  try {
-    const productTypeSnapshots = await getProductTypeSnapshots();
-
-    if (!productTypeSnapshots) {
-      return [];
-    }
-
-    let data: QueryDocumentSnapshot<Product>[] = [];
-
-    for (const p of productTypeSnapshots) {
-      const productsRef = collection(
-        p.ref,
-        COLLECTION_NAME.PRODUCTS
-      ).withConverter(productConverter);
-      data.push(...(await getDocs(productsRef)).docs);
-    }
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
-
-export async function getProductsByProductType(productTypeId: string) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    if (!productTypeSnapshot) {
-      return [];
-    }
-    const collectionRef = collection(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS
-    );
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
-
-export async function getProductSnapshotsByProductType(productTypeId: string) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    if (!productTypeSnapshot) {
-      return [];
-    }
-    const collectionRef = collection(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS
-    );
-
-    const snapshot = await getDocs(collectionRef);
-
-    return snapshot.docs;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
-}
-
-export async function getProductById(productTypeId: string, productid: string) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    if (!productTypeSnapshot) {
-      return;
-    }
-
-    const docRef = doc(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS,
-      productid
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
-}
-
-export async function getProductSnapshotById(
+export function getProductsRefWithQuery(
   productTypeId: string,
-  productid: string
+  ...queryConstraints: QueryConstraint[]
 ) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    if (!productTypeSnapshot) {
-      return;
-    }
+  return query(
+    getProductsRef(productTypeId),
+    ...queryConstraints
+  ).withConverter(productConverter);
+}
 
-    const docRef = doc(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS,
-      productid
-    );
+export function getProductRef(productTypeId: string, id: string) {
+  return doc(getProductsRef(productTypeId), id).withConverter(productConverter);
+}
 
-    const snapshot = await getDoc(docRef);
+export async function getProductsSnapshot(productTypeId: string) {
+  return await getDocs(getProductsRef(productTypeId));
+}
 
-    return snapshot;
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export async function getProducts(productTypeId: string) {
+  return (await getProductsSnapshot(productTypeId)).docs.map((doc) =>
+    doc.data()
+  );
+}
+
+export async function getProductsSnapshotWithQuery(
+  productTypeId: string,
+  ...queryConstraints: QueryConstraint[]
+) {
+  return await getDocs(
+    getProductsRefWithQuery(productTypeId, ...queryConstraints)
+  );
+}
+
+export async function getProductsWithQuery(
+  productTypeId: string,
+  ...queryConstraints: QueryConstraint[]
+) {
+  return (
+    await getProductsSnapshotWithQuery(productTypeId, ...queryConstraints)
+  ).docs.map((doc) => doc.data());
+}
+
+export async function getProductSnapshot(productTypeId: string, id: string) {
+  return await getDoc(getProductRef(productTypeId, id));
+}
+
+export async function getProduct(productTypeId: string, id: string) {
+  return (await getProductSnapshot(productTypeId, id)).data();
 }
 
 export async function updateProduct(
   productTypeId: string,
-  productId: string,
+  id: string,
   data: Product
 ) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-
-    // TODO: check if productTypeSnapshot exists
-    if (!productTypeSnapshot) {
-      return;
-    }
-    const docRef = doc(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS,
-      productId
-    ).withConverter(productConverter);
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+  return await updateDoc(getProductRef(productTypeId, id), data);
 }
 
-export async function createProduct(productTypeId: string, data: Product) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    // TODO: check if productTypeSnapshot exists
-    if (!productTypeSnapshot) {
-      return;
-    }
-    await addDoc(
-      collection(productTypeSnapshot.ref, COLLECTION_NAME.PRODUCTS),
-      data
-    );
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function createProduct(
+  productTypeId: string,
+  data: Omit<Product, 'id'>
+) {
+  return await addDoc(getProductsRef(productTypeId), data);
 }
 
-export async function deleteProduct(productTypeId: string, productId: string) {
-  try {
-    const productTypeSnapshot = await getProductTypeSnapshotById(productTypeId);
-    // TODO: check if productTypeSnapshot exists
-    if (!productTypeSnapshot) {
-      return;
-    }
-
-    const docRef = doc(
-      productTypeSnapshot.ref,
-      COLLECTION_NAME.PRODUCTS,
-      productId
-    ).withConverter(productConverter);
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+export async function deleteProduct(productTypeId: string, id: string) {
+  return await deleteDoc(getProductRef(productTypeId, id));
 }

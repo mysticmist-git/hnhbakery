@@ -2,104 +2,74 @@ import { db } from '@/firebase/config';
 import ProductType, { productTypeConverter } from '@/models/productType';
 import {
   DocumentData,
+  QueryConstraint,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 
+export function getProductTypesRef() {
+  return collection(db, COLLECTION_NAME.PRODUCT_TYPES).withConverter(
+    productTypeConverter
+  );
+}
+
+export function getProductTypesRefWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return query(getProductTypesRef(), ...queryConstraints).withConverter(
+    productTypeConverter
+  );
+}
+
+export function getProductTypeRefById(id: string) {
+  return doc(getProductTypesRef(), id).withConverter(productTypeConverter);
+}
+
+export async function getProductTypesSnapshot() {
+  return await getDocs(getProductTypesRef());
+}
+
 export async function getProductTypes() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PRODUCT_TYPES
-    ).withConverter(productTypeConverter);
-
-    const snapshot = await getDocs(collectionRef);
-
-    const data = snapshot.docs.map((doc) => doc.data());
-
-    return data;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+  return (await getProductTypesSnapshot()).docs.map((doc) => doc.data());
 }
 
-export async function getProductTypeSnapshots() {
-  try {
-    const collectionRef = collection(
-      db,
-      COLLECTION_NAME.PRODUCT_TYPES
-    ).withConverter(productTypeConverter);
-
-    const snapshot = (await getDocs(collectionRef)).docs;
-
-    return snapshot;
-  } catch (error) {
-    console.log('[DAO] Fail to get collection', error);
-  }
+export async function getProductTypesSnapshotWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return await getDocs(getProductTypesRefWithQuery(...queryConstraints));
 }
 
-export async function getProductTypeById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
-      productTypeConverter
-    );
-
-    const snapshot = await getDoc(docRef);
-
-    return snapshot.data();
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export async function getProductTypesWithQuery(
+  ...queryConstraints: QueryConstraint[]
+) {
+  return (await getProductTypesSnapshotWithQuery(...queryConstraints)).docs.map(
+    (doc) => doc.data()
+  );
 }
 
 export async function getProductTypeSnapshotById(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
-      productTypeConverter
-    );
+  return await getDoc(getProductTypeRefById(id));
+}
 
-    const snapshot = await getDoc(docRef);
-
-    return snapshot;
-  } catch (error) {
-    console.log('[DAO] Fail to get doc', error);
-  }
+export async function getProductTypeById(id: string) {
+  return (await getProductTypeSnapshotById(id)).data();
 }
 
 export async function updateProductType(id: string, data: ProductType) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
-      productTypeConverter
-    );
-
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.log('[DAO] Fail to update doc', error);
-  }
+  await updateDoc(getProductTypeRefById(id), data);
 }
 
-export async function createProductType(data: ProductType) {
-  try {
-    await addDoc(collection(db, COLLECTION_NAME.PRODUCT_TYPES), data);
-  } catch (error) {
-    console.log('[DAO] Fail to create doc', error);
-  }
+export async function createProductType(data: Omit<ProductType, 'id'>) {
+  return await addDoc(getProductTypesRef(), data);
 }
 
 export async function deleteProductType(id: string) {
-  try {
-    const docRef = doc(db, COLLECTION_NAME.PRODUCT_TYPES, id).withConverter(
-      productTypeConverter
-    );
-
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.log('[DAO] Fail to delete doc', error);
-  }
+  await deleteDoc(getProductTypeRefById(id));
 }
