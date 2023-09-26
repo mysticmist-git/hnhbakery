@@ -18,10 +18,12 @@ import { getProductRef } from './productDAO';
 export function getVariantsRef(
   productRef: DocumentReference<Product>
 ): CollectionReference<Variant>;
+
 export function getVariantsRef(
   productTypeId: string,
   productId: string
 ): CollectionReference<Variant>;
+
 export function getVariantsRef(
   arg: DocumentReference<Product> | string,
   productId?: string
@@ -43,10 +45,12 @@ export function getVariantRef(
   productId: string,
   id: string
 ): DocumentReference<Variant>;
+
 export function getVariantRef(
   productRef: DocumentReference<Product>,
   id: string
 ): DocumentReference<Variant>;
+
 export function getVariantRef(
   arg1: DocumentReference<Product> | string,
   arg2: string,
@@ -135,7 +139,7 @@ export async function getVariant(
   if (typeof arg1 === 'string') {
     return (await getVariantSnapshot(arg1, arg2, id!)).data();
   } else {
-    return (await getVariantSnapshot(arg1, id!)).data();
+    return (await getVariantSnapshot(arg1, arg2)).data();
   }
 }
 
