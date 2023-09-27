@@ -1,7 +1,7 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
-import { Contact, contactConverter } from '@/lib/models';
+import Contact, { contactConverter } from '@/models/contact';
 import {
   ChatRounded,
   Check,

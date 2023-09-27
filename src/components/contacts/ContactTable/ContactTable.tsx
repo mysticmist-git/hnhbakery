@@ -1,4 +1,4 @@
-import { Contact } from '@/lib/models';
+import Contact from '@/models/contact';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -58,7 +58,7 @@ function ContactTable({
       flex: 1,
     },
     {
-      field: 'email',
+      field: 'mail',
       headerName: 'Email',
       align: 'left',
       headerAlign: 'center',
@@ -78,7 +78,7 @@ function ContactTable({
       flex: 1,
     },
     {
-      field: 'phone',
+      field: 'tel',
       headerName: 'Số điện thoại',
       align: 'center',
       headerAlign: 'center',
@@ -147,10 +147,6 @@ function ContactTable({
           name: false,
           tel: false,
           email: false,
-          address: false,
-          note: false,
-          startAt: false,
-          endAt: false,
         }}
         columns={columns}
         localeText={{

@@ -1,9 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
 import { ThongTin_Content } from '@/components/contacts';
+import { getContactById, updateContact } from '@/lib/DAO/contactDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import { Contact } from '@/lib/models';
+import Contact from '@/models/contact';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -164,14 +165,17 @@ function MyModal({
               variant="contained"
               color="secondary"
               onClick={async () => {
-                const data = (
-                  await getCollection<Contact>(COLLECTION_NAME.CONTACTS)
-                ).find((contact) => contact.id === modalContact?.id);
+                if (!modalContact) {
+                  return;
+                }
+                const data = await getContactById(modalContact!.id as string);
+
                 if (data) {
                   data.isRead = true;
-                  await updateDocToFirestore(data, COLLECTION_NAME.CONTACTS);
 
-                  handleSnackbarAlert('success', 'Đọc email thành công!');
+                  await updateContact(data.id as string, data);
+
+                  handleSnackbarAlert('success', 'Đọc thành công!');
                   handleContactDataChange({ ...data, isRead: true });
 
                   handleClose();
