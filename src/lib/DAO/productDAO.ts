@@ -1,5 +1,6 @@
 import Product, { productConverter } from '@/models/product';
 import {
+  DocumentSnapshot,
   QueryConstraint,
   addDoc,
   collection,
@@ -11,7 +12,11 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getProductTypesRef } from './productTypeDAO';
+import {
+  getProductTypes,
+  getProductTypesRef,
+  getProductTypesSnapshot,
+} from './productTypeDAO';
 
 export function getProductsRef(productTypeId: string) {
   return collection(
@@ -43,6 +48,34 @@ export async function getProducts(productTypeId: string) {
   return (await getProductsSnapshot(productTypeId)).docs.map((doc) =>
     doc.data()
   );
+}
+
+export async function getAllProductSnapshots(): Promise<
+  DocumentSnapshot<Product>[]
+> {
+  const productTypesQuerySnapshots = (await getProductTypesSnapshot()).docs;
+
+  const productSnapshots: DocumentSnapshot<Product>[] = [];
+
+  for (const productTypeQuerySnapshot of productTypesQuerySnapshots) {
+    productSnapshots.push(
+      ...(await getProductsSnapshot(productTypeQuerySnapshot.id)).docs
+    );
+  }
+
+  return productSnapshots;
+}
+
+export async function getAllProducts() {
+  const productTypes = await getProductTypes();
+
+  const allProducts: Product[] = [];
+
+  for (const type of productTypes) {
+    allProducts.push(...(await getProducts(type.id)));
+  }
+
+  return allProducts;
 }
 
 export async function getProductsSnapshotWithQuery(

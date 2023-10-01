@@ -1,5 +1,6 @@
 import { db } from '@/firebase/config';
 import Batch, { batchConverter } from '@/models/batch';
+import Variant from '@/models/variant';
 import {
   CollectionReference,
   DocumentReference,
@@ -14,8 +15,11 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import Variant from '@/models/variant';
-import { getVariantRef } from './variantDAO';
+import {
+  getAllVariantSnapshots,
+  getAllVariants,
+  getVariantRef,
+} from './variantDAO';
 
 export function getBatchesRef(
   variantRef: DocumentReference<Variant>
@@ -140,6 +144,20 @@ export async function getBatches(
   } else {
     return (await getBatchesSnapshot(arg1)).docs.map((doc) => doc.data());
   }
+}
+
+export async function getAllBatches() {
+  const allVariants = await getAllVariantSnapshots();
+
+  const allBatches: Batch[] = [];
+
+  for (const variant of allVariants) {
+    const batches = await getBatches(variant.ref);
+
+    allBatches.push(...batches);
+  }
+
+  return allBatches;
 }
 
 export async function getBatch(

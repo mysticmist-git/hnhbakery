@@ -277,13 +277,13 @@ export default function Manage() {
       let fetcher: StorageDocsFactory | null = null;
 
       switch (collectionName) {
-        case 'productTypes':
+        case COLLECTION_NAME.PRODUCT_TYPES:
           fetcher = new ProductTypeStorageDocsFetcher();
           break;
-        case 'products':
+        case COLLECTION_NAME.PRODUCTS:
           fetcher = new ProductStorageDocsFetcher();
           break;
-        case 'batches':
+        case COLLECTION_NAME.BATCHES:
           fetcher = new BatchStorageDocsFetcher();
           break;
         default:

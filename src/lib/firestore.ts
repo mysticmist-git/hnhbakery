@@ -1,4 +1,11 @@
 import { db, storage } from '@/firebase/config';
+import Batch from '@/models/batch';
+import Product from '@/models/product';
+import {
+  StorageBatch,
+  StorageProduct,
+  StorageProductType,
+} from '@/models/storageModels';
 import { withHashCache, withHashCacheAsync } from '@/utils/withHashCache';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -30,6 +37,8 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
+import { getAllProducts, getProductsRef } from './DAO/productDAO';
+import { getProductTypes } from './DAO/productTypeDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
   BaseObject,
@@ -426,11 +435,11 @@ export const countDocs = async (
 //#region Storage Page
 
 export const fetchProductTypesForStoragePage = async (): Promise<
-  StorageProductTypeObject[]
+  StorageProductType[]
 > => {
-  const productTypes = await getCollection<ProductTypeObject>(
-    COLLECTION_NAME.PRODUCT_TYPES
-  );
+  const productTypes = await getProductTypes();
+
+  console.log(productTypes);
 
   const storageProductTypes = await Promise.all(
     productTypes.map(async (type) => {
@@ -439,8 +448,8 @@ export const fetchProductTypesForStoragePage = async (): Promise<
 
       try {
         productCount = await countDocs(
-          COLLECTION_NAME.PRODUCTS,
-          where('productType_id', '==', type.id)
+          COLLECTION_NAME.PRODUCT_TYPES,
+          where('product_type_id', '==', type.id)
         );
 
         if (type.image)
@@ -448,11 +457,13 @@ export const fetchProductTypesForStoragePage = async (): Promise<
       } catch (error) {
         console.log(error);
       } finally {
-        return {
+        const storageProductType: StorageProductType = {
           ...type,
-          productCount,
-          imageURL,
-        } as StorageProductTypeObject;
+          productCount: productCount,
+          imageURL: imageURL,
+        };
+
+        return storageProductType;
       }
     })
   );
@@ -461,94 +472,45 @@ export const fetchProductTypesForStoragePage = async (): Promise<
 };
 
 export const fetchProductsForStoragePage = async (): Promise<
-  StorageProductObject[]
+  StorageProduct[]
 > => {
-  const products = await getCollection<ProductObject>(COLLECTION_NAME.PRODUCTS);
+  const products = await getAllProducts();
 
   const storageProducts = await Promise.all(
     products.map(async (product) => {
-      let productType: ProductTypeObject | null = null;
       let imageUrls: PathWithUrl[] = [];
 
       try {
-        productType = await getDocFromFirestore<ProductTypeObject>(
-          COLLECTION_NAME.PRODUCT_TYPES,
-          product.productType_id
-        );
-
         imageUrls = await Promise.all(
           product.images.map(async (image) => {
             const url = await getDownloadUrlFromFirebaseStorage(image);
 
-            return {
+            const pathWithUrl: PathWithUrl = {
               path: image,
-              url,
+              url: url,
             };
+
+            return pathWithUrl;
           })
         );
       } catch (error) {
         console.log(error);
       }
 
-      return {
+      const storageProduct: StorageProduct = {
         ...product,
         imageUrls: imageUrls,
-      } as StorageProductObject;
+      };
+
+      return storageProduct;
     })
   );
 
   return storageProducts;
 };
 
-export async function fetchBatchForStoragePage(batch: BatchObject) {
-  let product: ProductObject | null = null;
-
-  try {
-    product = await getDocFromFirestore<ProductObject>(
-      COLLECTION_NAME.PRODUCTS,
-      batch.product_id
-    );
-  } catch (error) {
-    console.log(error);
-    product = null;
-  }
-
-  let productType: ProductTypeObject | null = null;
-
-  if (product) {
-    try {
-      productType = await getDocFromFirestore<ProductTypeObject>(
-        COLLECTION_NAME.PRODUCT_TYPES,
-        product.productType_id
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const variant = product?.variants.find(
-    (variant) => variant.id === batch.variant_id
-  );
-
-  return {
-    ...batch,
-    productType_id: productType?.id ?? '',
-    material: variant?.material ?? '',
-    size: variant?.size ?? '',
-    price: variant?.price ?? 0,
-  } as StorageBatchObject;
-}
-
-export const fetchBatchesForStoragePage = async (): Promise<
-  StorageBatchObject[]
-> => {
-  const batches = await getBatches();
-
-  const storageBatches = await Promise.all(
-    batches.map(async (batch) => {
-      return await fetchBatchForStoragePage(batch);
-    })
-  );
+export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
+  const storageBatches: StorageBatch[] = [];
 
   return storageBatches;
 };

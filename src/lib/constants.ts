@@ -7,7 +7,7 @@ export const authMessages = {
 };
 
 export const COLLECTION_NAME = {
-  PRODUCT_TYPES: 'productTypes',
+  PRODUCT_TYPES: 'product_types',
   PRODUCTS: 'products',
   VARIANTS: 'variants',
   BATCHES: 'batches',

@@ -202,7 +202,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             hideable: false,
           },
           {
-            field: 'isActive',
+            field: 'active',
             headerName: 'Trạng thái',
             headerAlign: 'center',
             type: 'boolean',
@@ -245,7 +245,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             hideable: false,
           },
           {
-            field: 'productType_id',
+            field: 'product_type_id',
             headerName: 'Loại',
             type: 'singleSelect',
             valueOptions: productTypes.map((type) => type.id ?? ''),
@@ -284,7 +284,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             hideable: false,
           },
           {
-            field: 'isActive',
+            field: 'active',
             headerName: 'Trạng thái',
             headerAlign: 'center',
             type: 'boolean',
@@ -347,7 +347,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             hideable: false,
           },
           {
-            field: 'productType_id',
+            field: 'product_type_id',
             headerName: 'Loại',
             align: 'left',
             headerAlign: 'left',

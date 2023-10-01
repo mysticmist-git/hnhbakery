@@ -13,7 +13,11 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getProductRef } from './productDAO';
+import {
+  getAllProductSnapshots,
+  getAllProducts,
+  getProductRef,
+} from './productDAO';
 
 export function getVariantsRef(
   productRef: DocumentReference<Product>
@@ -120,6 +124,36 @@ export async function getVariants(
   } else {
     return (await getVariantsSnapshot(arg1)).docs.map((doc) => doc.data());
   }
+}
+
+export async function getAllVariantSnapshots(): Promise<
+  DocumentSnapshot<Variant>[]
+> {
+  const allProductSnapshots = await getAllProductSnapshots();
+
+  const allVariantSnapshots: DocumentSnapshot<Variant>[] = [];
+
+  for (const snapshot of allProductSnapshots) {
+    const variantsSnapshot = await getVariantsSnapshot(snapshot.ref);
+
+    allVariantSnapshots.push(...variantsSnapshot.docs);
+  }
+
+  return allVariantSnapshots;
+}
+
+export async function getAllVariants(): Promise<Variant[]> {
+  const allProducts = await getAllProductSnapshots();
+
+  const allVariants: Variant[] = [];
+
+  for (const product of allProducts) {
+    const variants = await getVariants(product.ref);
+
+    allVariants.push(...variants);
+  }
+
+  return allVariants;
 }
 
 export async function getVariant(
