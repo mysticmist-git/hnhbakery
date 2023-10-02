@@ -45,6 +45,10 @@ export async function getContactSnapshotById(id: string) {
   return await getDoc(getContactRefById(id));
 }
 
+export async function getContacts() {
+  return (await getContactsSnapshot()).docs.map((doc) => doc.data());
+}
+
 export async function getContactsWithQuery(
   ...queryConstraints: QueryConstraint[]
 ) {

@@ -18,6 +18,7 @@ type Contact = WithCreatedUpdated &
     tel: string;
     title: string;
     content: string;
+    isRead?: boolean;
   };
 
 const contactConverter: FirestoreDataConverter<Contact> = {

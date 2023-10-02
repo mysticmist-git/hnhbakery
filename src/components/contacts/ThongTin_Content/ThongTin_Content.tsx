@@ -27,20 +27,20 @@ function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Email"
-            value={modalContact?.email ?? 'Trống'}
+            value={modalContact?.mail ?? 'Trống'}
             InputProps={{
               readOnly: true,
               style: {
                 pointerEvents: 'auto',
                 borderRadius: '8px',
               },
-              endAdornment: modalContact?.email && (
+              endAdornment: modalContact?.mail && (
                 <InputAdornment position="end">
                   <CustomIconButton
                     edge="end"
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        modalContact?.email ?? 'Trống'
+                        modalContact?.mail ?? 'Trống'
                       );
                       handleSnackbarAlert(
                         'success',
@@ -78,7 +78,7 @@ function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Số điện thoại"
-            value={modalContact?.phone ?? 'Trống'}
+            value={modalContact?.tel ?? 'Trống'}
           />
         </Grid>
 

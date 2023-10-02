@@ -214,10 +214,10 @@ export interface Countable {
   count?: number;
 }
 
-export interface Contact extends BaseObject {
+interface Contact extends BaseObject {
   name: string;
-  email: string;
-  phone?: string;
+  mail: string;
+  tel?: string;
   title: string;
   content: string;
   isRead?: boolean;

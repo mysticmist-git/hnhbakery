@@ -1,10 +1,12 @@
 import { ContactTable, MyModal } from '@/components/contacts';
+import { getContacts } from '@/lib/DAO/contactDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection } from '@/lib/firestore';
 import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
-import { Contact } from '@/lib/models';
+
 import { Mail } from '@/lib/types/manage-contact';
+import Contact from '@/models/contact';
 import { Mail as MailIcon } from '@mui/icons-material';
 import {
   Box,
@@ -71,13 +73,14 @@ const Contacts: React.FC = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const contacts = await getCollection<Contact>(COLLECTION_NAME.CONTACTS);
-
-      setContacts(contacts || []);
+      const contacts = await getContacts();
+      setContacts(contacts);
     }
 
     fetchData();
   }, []);
+
+  console.log(contacts);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {
