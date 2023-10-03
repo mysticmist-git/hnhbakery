@@ -1,4 +1,7 @@
 import { COLLECTION_NAME } from '@/lib/constants';
+import Batch from '@/models/batch';
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
 import { BatchObject } from '../models';
 import {
   CrudTarget,
@@ -153,27 +156,34 @@ export function manageReducer(
 export function generateDefaultRow(collectionName: string) {
   switch (collectionName) {
     case COLLECTION_NAME.PRODUCT_TYPES:
-      return {
+      const productType: ProductType = {
         id: '',
         name: '',
         description: '',
         image: '',
-        isActive: true,
+        active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
       };
+
+      return productType;
     case COLLECTION_NAME.PRODUCTS:
-      return {
+      const product: Product = {
         id: '',
-        productType_id: '',
+        product_type_id: '',
         name: '',
         description: '',
         ingredients: [],
         colors: [],
-        variants: [],
-        howToUse: '',
+        how_to_use: '',
         preservation: '',
         images: [],
-        isActive: true,
+        active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
       };
+
+      return product;
     case COLLECTION_NAME.BATCHES:
       const MFG = new Date();
 
@@ -183,23 +193,26 @@ export function generateDefaultRow(collectionName: string) {
       const discountDate = new Date(EXP);
       discountDate.setHours(discountDate.getHours() - 3);
 
-      const batch: BatchObject = {
+      const batch: Batch = {
         id: '',
-        totalQuantity: 0,
-        soldQuantity: 0,
-        MFG: MFG,
-        EXP: EXP,
+        quantity: 0,
+        sold: 0,
+        mfg: MFG,
+        exp: EXP,
         discount: {
           percent: 0,
-          date: discountDate,
+          start_at: discountDate,
         },
+        product_type_id: '',
         product_id: '',
         variant_id: '',
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
       return batch;
     default:
-      return {};
+      return { id: '' };
   }
 }
 

@@ -1,35 +1,41 @@
-import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { Timestamp, collection, doc } from 'firebase/firestore';
+import {
+  BaseModel,
+  ModalProduct,
+  ModalProductType,
+  StorageBatch,
+  StorageProduct,
+  StorageProductType,
+} from '@/models/storageModels';
+import { doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
+import { createBatch, deleteBatch, updateBatch } from '../DAO/batchDAO';
+import {
+  createProduct,
+  deleteProduct,
+  getProduct,
+  getProductsRef,
+  updateProduct,
+} from '../DAO/productDAO';
+import {
+  createProductType,
+  deleteProductType,
+  getProductTypeById,
+  getProductTypesRef,
+  updateProductType,
+} from '../DAO/productTypeDAO';
+import { getVariant } from '../DAO/variantDAO';
 import {
   addDocToFirestore,
-  addDocToFirestoreWithRef,
-  deleteDocFromFirestore,
   deleteImageFromFirebaseStorage,
   deleteImagesFromFirebaseStorage,
-  getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
   updateDocToFirestore,
   uploadImageToFirebaseStorage,
   uploadImagesToFirebaseStorage,
 } from '../firestore';
-import {
-  BaseObject,
-  PathWithUrl,
-  ProductObject,
-  ProductTypeObject,
-  ProductVariant,
-  StorageBatchObject,
-  StorageProductObject,
-  StorageProductTypeObject,
-} from '../models';
-import {
-  FileWithUrl,
-  ManageAction,
-  ModalProductObject,
-  ModalProductTypeObject,
-} from '../types/manage';
+import { PathWithUrl } from '../models';
+import { FileWithUrl, ManageAction } from '../types/manage';
 import {
   createBatchObject,
   createProductObject,
@@ -40,12 +46,13 @@ export enum DataManagerErrorCode {
   NULL_FIELD = 'null-field',
   NULL_ADD_DATA = 'null-data-data',
   NULL_DATA = 'null-data',
+  NO_DOC_FOUND = 'no-doc-found',
 }
 
 //#region Add
 
 export type AddData = {
-  data: BaseObject;
+  data: BaseModel;
 };
 
 export type ProductTypeAddData = AddData & {
@@ -64,8 +71,8 @@ export type BatchAddData = AddData & {};
 //#region Update
 
 export type UpdateData = {
-  newData: BaseObject;
-  originalData: BaseObject;
+  newData: BaseModel;
+  originalData: BaseModel;
 };
 
 export type ProductTypeUpdateData = UpdateData & {
@@ -82,9 +89,9 @@ export type BatchUpdateData = UpdateData & {};
 
 export interface DataManagerStrategy {
   dispatch: React.Dispatch<ManageAction>;
-  addDoc(addData: AddData): Promise<BaseObject>;
-  updateDoc(updateData: UpdateData): Promise<BaseObject>;
-  deleteDoc(doc: BaseObject): void;
+  addDoc(addData: AddData): Promise<BaseModel>;
+  updateDoc(updateData: UpdateData): Promise<BaseModel>;
+  deleteDoc(doc: BaseModel): void;
 }
 
 export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
@@ -94,7 +101,7 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     this.dispatch = dispatch;
   }
 
-  async addDoc(addData: AddData): Promise<BaseObject> {
+  async addDoc(addData: AddData): Promise<BaseModel> {
     if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
 
     const productTypeAddData = addData as ProductTypeAddData;
@@ -104,42 +111,48 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
 
     const data = createProductTypeObject(productTypeAddData.data);
 
-    const ref = doc(collection(db, COLLECTION_NAME.PRODUCT_TYPES));
-
     let image: string = '';
+
+    const productTypeRef = doc(getProductTypesRef());
 
     if (productTypeAddData.imageFile)
       image = await uploadImageToFirebaseStorage(
-        `typeFeaturedImages/${ref.id}`,
+        `typeFeaturedImages/${productTypeRef.id}`,
         productTypeAddData.imageFile
       );
 
     data.image = image;
 
-    await addDocToFirestoreWithRef(ref, data);
+    await createProductType(productTypeRef, data);
 
-    const refetchData = await getDocFromFirestore<ProductTypeObject>(
-      COLLECTION_NAME.PRODUCT_TYPES,
-      ref.id
-    );
+    // const refetchData = await getDocFromFirestore<ProductTypeObject>(
+    //   COLLECTION_NAME.PRODUCT_TYPES,
+    //   ref.id
+    // );
 
-    let imageURL = '';
+    const refetchData = await getProductTypeById(productTypeRef.id);
 
-    if (refetchData.image)
-      imageURL = await getDownloadUrlFromFirebaseStorage(refetchData.image);
+    if (refetchData) {
+      let imageURL = '';
 
-    const refinedData: ModalProductTypeObject = {
-      ...refetchData,
-      productCount: 0,
-      imageURL: imageURL,
-    };
+      if (refetchData.image)
+        imageURL = await getDownloadUrlFromFirebaseStorage(refetchData.image);
 
-    console.log(refinedData);
+      const refinedData: ModalProductType = {
+        ...refetchData,
+        productCount: 0,
+        imageURL: imageURL,
+      };
 
-    return refinedData;
+      console.log(refinedData);
+
+      return refinedData;
+    } else {
+      throw new Error(DataManagerErrorCode.NO_DOC_FOUND);
+    }
   }
 
-  async updateDoc(updateData: UpdateData): Promise<BaseObject> {
+  async updateDoc(updateData: UpdateData): Promise<BaseModel> {
     const productTypeUpdateData = { ...updateData } as ProductTypeUpdateData;
 
     const data = createProductTypeObject(productTypeUpdateData.newData);
@@ -148,8 +161,8 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     );
 
     if (
-      (productTypeUpdateData.newData as ModalProductTypeObject).imageURL !==
-      (productTypeUpdateData.originalData as ModalProductTypeObject).imageURL
+      (productTypeUpdateData.newData as ModalProductType).imageURL !==
+      (productTypeUpdateData.originalData as ModalProductType).imageURL
     ) {
       let newImagePath = '';
 
@@ -173,8 +186,7 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     }
 
     try {
-      updateDocToFirestore(data, COLLECTION_NAME.PRODUCT_TYPES);
-      console.log('reach');
+      updateProductType(productTypeUpdateData.newData.id, data);
     } catch (error) {
       console.log(error);
     }
@@ -182,7 +194,7 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
     return data;
   }
 
-  deleteDoc(doc: BaseObject): void {
+  deleteDoc(doc: BaseModel): void {
     if (!doc) {
       console.log('Null doc');
       throw new Error('Null doc');
@@ -193,11 +205,11 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
       throw new Error('Null id');
     }
 
-    const castedDoc = doc as StorageProductTypeObject;
+    const castedDoc = doc as StorageProductType;
 
     if (castedDoc.image) deleteImageFromFirebaseStorage(castedDoc.image);
 
-    deleteDocFromFirestore(COLLECTION_NAME.PRODUCT_TYPES, doc.id);
+    deleteProductType(doc.id);
   }
 }
 
@@ -208,7 +220,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
     this.dispatch = dispatch;
   }
 
-  async addDoc(addData: AddData): Promise<BaseObject> {
+  async addDoc(addData: AddData): Promise<BaseModel> {
     if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
 
     const productAddData = addData as ProductAddData;
@@ -217,7 +229,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     const data = createProductObject(productAddData.data);
 
-    const ref = doc(collection(db, COLLECTION_NAME.PRODUCTS));
+    const ref = doc(getProductsRef(data.product_type_id));
 
     let images: string[] = [];
 
@@ -229,16 +241,15 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     data.images = images;
 
-    await addDocToFirestoreWithRef(ref, data);
+    await createProduct(ref, data);
 
-    const refetchData = await getDocFromFirestore<ProductObject>(
-      COLLECTION_NAME.PRODUCTS,
-      ref.id
-    );
+    const refetchedData = await getProduct(data.product_type_id, ref.id);
 
     let imageUrls: PathWithUrl[] = [];
 
-    if (refetchData.images)
+    if (!refetchedData) throw new Error(DataManagerErrorCode.NO_DOC_FOUND);
+
+    if (refetchedData.images)
       imageUrls = await Promise.all(
         images.map(async (image) => {
           let url = '';
@@ -256,15 +267,15 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
         })
       );
 
-    const refinedData: ModalProductObject = {
-      ...refetchData,
+    const refinedData: ModalProduct = {
+      ...refetchedData,
       imageUrls: imageUrls,
     };
 
     return refinedData;
   }
 
-  async updateDoc(updateData: UpdateData): Promise<BaseObject> {
+  async updateDoc(updateData: UpdateData): Promise<BaseModel> {
     const productUpdateData = { ...updateData } as ProductUpdateData;
 
     const data = createProductObject(updateData.newData);
@@ -272,15 +283,15 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     try {
       if (
-        (productUpdateData.newData as ModalProductObject).imageUrls !==
-        (productUpdateData.originalData as ModalProductObject).imageUrls
+        (productUpdateData.newData as ModalProduct).imageUrls !==
+        (productUpdateData.originalData as ModalProduct).imageUrls
       ) {
         let updatedPaths: string[] = [];
 
         updatedPaths = await deleteOldImagesAndAddNewImagesToFirebaseStorage(
           productUpdateData.newData.id ?? '',
-          (productUpdateData.originalData as ModalProductObject).imageUrls,
-          (productUpdateData.newData as ModalProductObject).imageUrls,
+          (productUpdateData.originalData as ModalProduct).imageUrls,
+          (productUpdateData.newData as ModalProduct).imageUrls,
           productUpdateData.imageFiles
         );
 
@@ -288,6 +299,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
       }
 
       updateDocToFirestore(data, COLLECTION_NAME.PRODUCTS);
+      updateProduct(data.product_type_id, data.id, data);
 
       return data;
     } catch (error: any) {
@@ -295,7 +307,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
     }
   }
 
-  deleteDoc(doc: BaseObject): void {
+  deleteDoc(doc: BaseModel): void {
     if (!doc) {
       console.log('Null doc');
       throw new Error('Null doc');
@@ -306,11 +318,11 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
       throw new Error('Null id');
     }
 
-    const castedDoc = doc as StorageProductObject;
+    const castedDoc = doc as StorageProduct;
 
     if (castedDoc.images) deleteImagesFromFirebaseStorage(castedDoc.images);
 
-    deleteDocFromFirestore(COLLECTION_NAME.PRODUCTS, doc.id);
+    deleteProduct(castedDoc.product_type_id, castedDoc.id);
   }
 }
 
@@ -321,7 +333,7 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
     this.dispatch = dispatch;
   }
 
-  async addDoc(addData: AddData): Promise<BaseObject> {
+  async addDoc(addData: AddData): Promise<BaseModel> {
     if (!addData) throw new Error(DataManagerErrorCode.NULL_ADD_DATA);
 
     const batchAddData = addData as BatchAddData;
@@ -333,41 +345,37 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
     const newDocRef = await addDocToFirestore(
       {
         ...data,
-        MFG: Timestamp.fromDate(data.MFG),
-        EXP: Timestamp.fromDate(data.EXP),
-        discount: {
-          ...data.discount,
-          date: Timestamp.fromDate(data.discount.date),
-        },
-      } as BaseObject,
+        mfg: data.mfg,
+        exp: data.exp,
+        discount: data.discount,
+      } as BaseModel,
       COLLECTION_NAME.BATCHES
     );
 
-    const product = await getDocFromFirestore<ProductObject>(
-      COLLECTION_NAME.PRODUCTS,
-      data.product_id
+    await createBatch(
+      data.product_type_id,
+      data.product_id,
+      data.variant_id,
+      data
     );
 
-    const variant: ProductVariant | undefined = product.variants.find(
-      (v) => v.id === data.variant_id
-    );
-
-    const type = await getDocFromFirestore<ProductTypeObject>(
-      COLLECTION_NAME.PRODUCT_TYPES,
-      product.productType_id
+    const productType = await getProductTypeById(data.product_type_id);
+    const product = await getProduct(data.product_type_id, data.product_id);
+    const variant = await getVariant(
+      data.product_type_id,
+      data.product_id,
+      data.variant_id
     );
 
     return {
       ...batchAddData.data,
       id: newDocRef.id,
-      productType_id: type.id,
       material: variant?.material,
       size: variant?.size,
       price: variant?.price,
-      variant_id: variant?.id,
-    } as StorageBatchObject;
+    } as StorageBatch;
   }
-  async updateDoc(updateData: UpdateData): Promise<BaseObject> {
+  async updateDoc(updateData: UpdateData): Promise<BaseModel> {
     const batchUpdateData = { ...updateData } as BatchUpdateData;
 
     const data = createBatchObject(batchUpdateData.newData);
@@ -375,14 +383,21 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
     console.log(data);
 
     try {
-      updateDocToFirestore(data, COLLECTION_NAME.BATCHES);
+      updateBatch(
+        data.product_type_id,
+        data.product_id,
+        data.variant_id,
+        data.id,
+        data
+      );
 
       return batchUpdateData.newData;
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
-  deleteDoc(doc: BaseObject): void {
+
+  deleteDoc(doc: BaseModel): void {
     if (!doc) {
       console.log('Null doc');
       throw new Error('Null doc');
@@ -393,7 +408,14 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
       throw new Error('Null id');
     }
 
-    deleteDocFromFirestore(COLLECTION_NAME.BATCHES, doc.id);
+    const castedDoc = doc as StorageBatch;
+
+    deleteBatch(
+      castedDoc.product_type_id,
+      castedDoc.product_id,
+      castedDoc.variant_id,
+      castedDoc.id
+    );
   }
 }
 

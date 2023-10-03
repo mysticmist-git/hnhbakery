@@ -1,5 +1,6 @@
 import Product, { productConverter } from '@/models/product';
 import {
+  DocumentReference,
   DocumentSnapshot,
   QueryConstraint,
   addDoc,
@@ -9,6 +10,7 @@ import {
   getDoc,
   getDocs,
   query,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
@@ -115,8 +117,20 @@ export async function updateProduct(
 export async function createProduct(
   productTypeId: string,
   data: Omit<Product, 'id'>
-) {
-  return await addDoc(getProductsRef(productTypeId), data);
+): Promise<DocumentReference<Omit<Product, 'id'>> | undefined>;
+export async function createProduct(
+  productRef: DocumentReference<Product>,
+  data: Omit<Product, 'id'>
+): Promise<DocumentReference<Omit<Product, 'id'>> | undefined>;
+export async function createProduct(
+  arg1: string | DocumentReference<Product>,
+  data: Omit<Product, 'id'>
+): Promise<DocumentReference<Omit<Product, 'id'>> | undefined> {
+  if (typeof arg1 === 'string') {
+    return await addDoc(getProductsRef(arg1), data);
+  } else {
+    await setDoc(arg1, data);
+  }
 }
 
 export async function deleteProduct(productTypeId: string, id: string) {

@@ -475,8 +475,11 @@ export default function Manage() {
         case DataManagerErrorCode.NULL_FIELD:
           handleSnackbarAlert('error', 'Vui lòng điền đầy đủ các trường');
           break;
+        // case DataManagerErrorCode.NO_DOC_FOUND:
+        // case DataManagerErrorCode.NULL_ADD_DATA:
+        // case DataManagerErrorCode.NULL_DATA:
         default:
-          console.log(error);
+          handleSnackbarAlert('error', 'Đã có lỗi xảy ra khi thêm mới!');
           break;
       }
     } finally {

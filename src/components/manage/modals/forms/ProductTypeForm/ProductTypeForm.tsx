@@ -1,11 +1,7 @@
 import placeholderImage from '@/assets/placeholder-image.png';
 import { RowModalLayoutButton } from '@/components/manage/modals/rowModals';
-import { BaseObject } from '@/lib/models';
-import {
-  ModalFormProps,
-  ModalProductTypeObject,
-  ProductTypeFormRef,
-} from '@/lib/types/manage';
+import { ModalFormProps, ProductTypeFormRef } from '@/lib/types/manage';
+import { BaseModel, ModalProductType } from '@/models/storageModels';
 import {
   Box,
   Divider,
@@ -23,13 +19,12 @@ import {
   ChangeEventHandler,
   ForwardedRef,
   forwardRef,
-  memo,
   useImperativeHandle,
   useState,
 } from 'react';
 
 interface ProductTypeFormProps extends ModalFormProps {
-  data: ModalProductTypeObject | null;
+  data: ModalProductType | null;
 }
 
 const ProductTypeForm = (
@@ -57,7 +52,7 @@ const ProductTypeForm = (
     onDataChange({
       ...data,
       name: event.target.value,
-    } as BaseObject);
+    } as BaseModel);
   };
 
   const handleDescriptionChange: ChangeEventHandler<HTMLInputElement> = (
@@ -66,7 +61,7 @@ const ProductTypeForm = (
     onDataChange({
       ...data,
       description: event.target.value,
-    } as BaseObject);
+    } as BaseModel);
   };
 
   const handleIsActiveChange: ChangeEventHandler<HTMLInputElement> = (
@@ -74,8 +69,8 @@ const ProductTypeForm = (
   ) => {
     onDataChange({
       ...data,
-      isActive: event.target.checked,
-    } as BaseObject);
+      active: event.target.checked,
+    } as BaseModel);
   };
 
   const handleUploadImage: ChangeEventHandler<HTMLInputElement> = (
@@ -91,7 +86,7 @@ const ProductTypeForm = (
     onDataChange({
       ...data,
       imageURL: URL.createObjectURL(file),
-    } as BaseObject);
+    } as BaseModel);
   };
 
   //#endregion
@@ -182,7 +177,7 @@ const ProductTypeForm = (
               <Switch
                 disabled={readOnly || disabled}
                 color="secondary"
-                checked={data.isActive}
+                checked={data.active}
                 onChange={handleIsActiveChange}
               />
             }
@@ -190,14 +185,14 @@ const ProductTypeForm = (
               <Typography
                 sx={{
                   color: (theme) =>
-                    data.isActive
+                    data.active
                       ? theme.palette.success.main
                       : theme.palette.error.main,
                 }}
                 variant="body1"
                 fontWeight="bold"
               >
-                {data.isActive ? 'Còn hoạt động' : 'Ngưng hoạt động'}
+                {data.active ? 'Còn hoạt động' : 'Ngưng hoạt động'}
               </Typography>
             }
             labelPlacement="end"

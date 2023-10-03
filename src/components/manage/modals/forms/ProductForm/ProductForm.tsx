@@ -12,9 +12,9 @@ import {
 import {
   FileWithUrl,
   ModalFormProps,
-  ModalProductObject,
   ProductFormRef,
 } from '@/lib/types/manage';
+import { ModalProduct } from '@/models/storageModels';
 import theme from '@/styles/themes/lightTheme';
 import {
   Autocomplete,
@@ -48,13 +48,8 @@ import ProductTypeAutocomplete from './ProductTypeAutoComplete';
 import TabPanel from './TabPanel';
 import VariantManager from './VariantManager';
 
-interface ProductTypeStateProps {
-  id: string;
-  name: string;
-}
-
 interface ProductFormProps extends ModalFormProps {
-  data: ModalProductObject;
+  data: ModalProduct;
 }
 
 function ProductForm(
@@ -77,7 +72,7 @@ function ProductForm(
   }
 
   function handleFieldChange(field: string, value: any) {
-    const newData: ModalProductObject = {
+    const newData: ModalProduct = {
       ...data,
       [field]: value,
     };
@@ -85,9 +80,9 @@ function ProductForm(
   }
 
   function handleProductTypeIdChange(value: ProductTypeObject) {
-    const newData: ModalProductObject = {
+    const newData: ModalProduct = {
       ...data,
-      productType_id: value.id ?? '',
+      product_type_id: value.id ?? '',
     };
     onDataChange(newData);
   }
@@ -187,7 +182,7 @@ function ProductForm(
       return {
         getProductTypeName() {
           return (
-            productTypes.find((i) => i.id === data.productType_id)?.name ??
+            productTypes.find((i) => i.id === data.product_type_id)?.name ??
             'Không tìm thấy'
           );
         },
@@ -196,7 +191,7 @@ function ProductForm(
         },
       };
     },
-    [data.productType_id, imageFiles, productTypes]
+    [data.product_type_id, imageFiles, productTypes]
   );
 
   //#endregion
@@ -205,11 +200,11 @@ function ProductForm(
 
   const selectedProductType = useMemo(() => {
     const selected = productTypes.find(
-      (type) => type.id === data.productType_id
+      (type) => type.id === data.product_type_id
     );
 
     return selected ?? null;
-  }, [data.productType_id, productTypes]);
+  }, [data.product_type_id, productTypes]);
 
   //#endregion
 
@@ -334,7 +329,7 @@ function ProductForm(
               }}
               multiline
               fullWidth
-              value={data.howToUse}
+              value={data.how_to_use}
               rows={3}
               onChange={(e) => handleFieldChange('howToUse', e.target.value)}
             />
@@ -368,23 +363,23 @@ function ProductForm(
                 <Switch
                   color="secondary"
                   disabled={readOnly}
-                  checked={data.isActive}
+                  checked={data.active}
                   onChange={(e, checked) =>
-                    handleFieldChange('isActive', checked)
+                    handleFieldChange('active', checked)
                   }
                 />
               }
               label={
                 <Typography
                   sx={{
-                    color: data.isActive
+                    color: data.active
                       ? theme.palette.success.main
                       : theme.palette.error.main,
                   }}
                   variant="body1"
                   fontWeight="bold"
                 >
-                  {statusTextResolver(data.isActive)}
+                  {statusTextResolver(data.active)}
                 </Typography>
               }
               labelPlacement="start"

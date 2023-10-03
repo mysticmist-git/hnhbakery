@@ -214,7 +214,7 @@ export interface Countable {
   count?: number;
 }
 
-interface Contact extends BaseObject {
+export interface Contact extends BaseObject {
   name: string;
   mail: string;
   tel?: string;

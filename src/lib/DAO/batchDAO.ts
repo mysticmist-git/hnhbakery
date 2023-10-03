@@ -12,6 +12,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
@@ -182,6 +183,41 @@ export async function getBatch(
     return (await getBatchSnapshot(arg1, arg2, arg3!, id!)).data();
   } else {
     return (await getBatchSnapshot(arg1, arg2)).data();
+  }
+}
+
+export async function createBatch(
+  productTypeId: string,
+  productId: string,
+  variantId: string,
+  data: Omit<Batch, 'id'>
+): Promise<DocumentReference<Omit<Batch, 'id'>>>;
+export async function createBatch(
+  variantRef: DocumentReference<Variant>,
+  data: Omit<Batch, 'id'>
+): Promise<DocumentReference<Omit<Batch, 'id'>>>;
+export async function createBatch(
+  batchRef: DocumentReference<Batch>,
+  data: Omit<Batch, 'id'>
+): Promise<DocumentReference<Omit<Batch, 'id'>>>;
+export async function createBatch(
+  arg1: string | DocumentReference<Variant> | DocumentReference<Batch>,
+  arg2: string | Omit<Batch, 'id'>,
+  arg3?: string,
+  arg4?: Omit<Batch, 'id'>
+): Promise<DocumentReference<Omit<Batch, 'id'>> | undefined> {
+  if (typeof arg1 === 'string') {
+    return await addDoc(
+      getBatchesRef(arg1, arg2 as string, arg3! as string),
+      arg4!
+    );
+  } else if (arg1 instanceof DocumentReference && typeof arg2 !== 'string') {
+    return await addDoc(
+      getBatchesRef(arg1 as DocumentReference<Variant>),
+      arg2 as Omit<Batch, 'id'>
+    );
+  } else {
+    await setDoc(arg1 as DocumentReference<Batch>, arg2 as Omit<Batch, 'id'>);
   }
 }
 

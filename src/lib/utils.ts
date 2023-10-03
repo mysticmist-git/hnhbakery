@@ -1,56 +1,63 @@
-import {
-  BaseObject,
-  BatchObject,
-  ProductObject,
-  ProductTypeObject,
-} from './models';
+import Batch from '@/models/batch';
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
+import { BaseModel } from '@/models/storageModels';
 
-export function createProductTypeObject(source: BaseObject): ProductTypeObject {
-  const convertedSourcee = { ...source } as ProductTypeObject;
+// TODO: move this to lib.
+export function createProductTypeObject(source: BaseModel): ProductType {
+  const convertedSource = { ...source } as ProductType;
 
-  const productTypeObject: ProductTypeObject = {
-    id: convertedSourcee.id,
-    name: convertedSourcee.name,
-    description: convertedSourcee.description,
-    image: convertedSourcee.image,
-    isActive: convertedSourcee.isActive,
+  const productTypeObject: ProductType = {
+    id: convertedSource.id,
+    name: convertedSource.name,
+    description: convertedSource.description,
+    image: convertedSource.image,
+    active: convertedSource.active,
+    created_at: convertedSource.created_at,
+    updated_at: convertedSource.updated_at,
   };
 
   return productTypeObject;
 }
 
-export function createBatchObject(source: BaseObject): BatchObject {
-  const convertedSourcee = { ...source } as BatchObject;
+// TODO: move this to lib.
+export function createBatchObject(source: BaseModel): Batch {
+  const convertedSourcee = { ...source } as Batch;
 
-  const batchObject: BatchObject = {
+  const batchObject: Batch = {
     id: convertedSourcee.id,
-    totalQuantity: convertedSourcee.totalQuantity,
-    soldQuantity: convertedSourcee.soldQuantity,
-    MFG: convertedSourcee.MFG,
-    EXP: convertedSourcee.EXP,
+    quantity: convertedSourcee.quantity,
+    sold: convertedSourcee.sold,
+    mfg: convertedSourcee.mfg,
+    exp: convertedSourcee.exp,
     discount: convertedSourcee.discount,
     variant_id: convertedSourcee.variant_id,
     product_id: convertedSourcee.product_id,
+    product_type_id: convertedSourcee.product_type_id,
+    created_at: convertedSourcee.created_at,
+    updated_at: convertedSourcee.updated_at,
   };
 
   return batchObject;
 }
 
-export function createProductObject(source: BaseObject): ProductObject {
-  const convertedSourcee = { ...source } as ProductObject;
+// TODO: move this to lib.
+export function createProductObject(source: BaseModel): Product {
+  const convertedSourcee = { ...source } as Product;
 
-  const productObject: ProductObject = {
+  const productObject: Product = {
     id: convertedSourcee.id,
-    productType_id: convertedSourcee.productType_id,
+    product_type_id: convertedSourcee.product_type_id,
     colors: convertedSourcee.colors,
     description: convertedSourcee.description,
-    howToUse: convertedSourcee.howToUse,
+    how_to_use: convertedSourcee.how_to_use,
     images: convertedSourcee.images,
-    isActive: convertedSourcee.isActive,
+    active: convertedSourcee.active,
     ingredients: convertedSourcee.ingredients,
     name: convertedSourcee.name,
     preservation: convertedSourcee.preservation,
-    variants: convertedSourcee.variants,
+    created_at: convertedSourcee.created_at,
+    updated_at: convertedSourcee.updated_at,
   };
 
   return productObject;

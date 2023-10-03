@@ -3,18 +3,27 @@ import Batch from './batch';
 import Product from './product';
 import ProductType from './productType';
 
-type StorageProductType = {
+export type BaseModel = {
+  id: string;
+};
+
+export type StorageProductType = {
   productCount: number;
   imageURL: string;
 } & ProductType;
 
-type StorageProduct = { imageUrls: PathWithUrl[] } & Product;
+export type StorageProduct = { imageUrls: PathWithUrl[] } & Product;
 
-type StorageBatch = {
-  productType_id: string;
+export type StorageBatch = {
   material: string;
   size: string;
   price: number;
 } & Batch;
 
-export type { StorageBatch, StorageProduct, StorageProductType };
+export type ModalProductType = StorageProductType;
+export type ModalProduct = StorageProduct;
+export type ModalBatch = StorageBatch;
+
+export interface ProductTypeWithCount extends ProductType {
+  count: number;
+}

@@ -7,6 +7,11 @@ import {
   ProductFormRef,
   ProductTypeFormRef,
 } from '@/lib/types/manage';
+import {
+  ModalBatch,
+  ModalProduct,
+  ModalProductType,
+} from '@/models/storageModels';
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 import { BatchForm, ProductForm, ProductTypeForm } from '..';
 import { FormProps } from '../../rowModals/RowModal/RowModal';
@@ -57,7 +62,7 @@ const Form = (
       return (
         <ProductTypeForm
           {...props}
-          data={data as ModalProductTypeObject}
+          data={data as ModalProductType}
           ref={productTypeFormRef}
         />
       );
@@ -66,11 +71,11 @@ const Form = (
         <ProductForm
           {...props}
           ref={productFormRef}
-          data={data as ModalProductObject}
+          data={data as ModalProduct}
         />
       );
     case COLLECTION_NAME.BATCHES:
-      return <BatchForm {...props} data={data as ModalBatchObject} />;
+      return <BatchForm {...props} data={data as ModalBatch} />;
     default:
       return <div>Error</div>;
   }

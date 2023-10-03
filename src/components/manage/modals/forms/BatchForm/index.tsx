@@ -1,4 +1,6 @@
 import { CustomTextFieldWithLabel } from '@/components/inputs/textFields';
+import { getProduct } from '@/lib/DAO/productDAO';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
   getCollectionWithQuery,
@@ -7,14 +9,12 @@ import {
   getProductTypeWithCountById,
   getProductsByType,
 } from '@/lib/firestore';
-import {
-  ProductObject,
-  ProductTypeObject,
-  ProductTypeWithCount,
-  ProductVariant,
-} from '@/lib/models';
+import { ProductObject, ProductTypeObject, ProductVariant } from '@/lib/models';
 import { ModalBatchObject, ModalFormProps } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
+import Product from '@/models/product';
+import { ModalBatch, ProductTypeWithCount } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import {
   Autocomplete,
   Divider,
@@ -31,7 +31,7 @@ import ProductTypeRenderOption from './ProductTypeRenderOption';
 import ProductVariantRenderOption from './ProductVariantRenderOption';
 
 interface BatchFormProps extends ModalFormProps {
-  data: ModalBatchObject | null;
+  data: ModalBatch | null;
 }
 
 export default memo(function BatchForm(props: BatchFormProps) {
@@ -41,13 +41,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
   const [selectedProductType, setSelectedProductType] =
     useState<ProductTypeWithCount | null>(null);
 
-  const [products, setProducts] = useState<ProductObject[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<ProductObject | null>(
-    null
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [selectedProductVariant, setSelectedProductVariant] =
-    useState<ProductVariant | null>(null);
+    useState<Variant | null>(null);
 
   const [discountAmount, setDiscountAmount] = useState<number>(0);
 
@@ -62,13 +60,13 @@ export default memo(function BatchForm(props: BatchFormProps) {
   }, [props.data, selectedProductVariant]);
 
   const handleFieldChange = useCallback(
-    <Property extends keyof ModalBatchObject>(
+    <Property extends keyof ModalBatch>(
       property: Property,
-      value: ModalBatchObject[Property]
+      value: ModalBatch[Property]
     ) => {
       if (!props.data) return;
 
-      const newData: ModalBatchObject = {
+      const newData: ModalBatch = {
         ...props.data,
         [property]: value,
       };
@@ -84,7 +82,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
     const shouldDisabled =
-      day.isBefore(props.data?.MFG) || day.isAfter(props.data?.EXP);
+      day.isBefore(props.data?.mfg) || day.isAfter(props.data?.exp);
     return shouldDisabled;
   }
 
@@ -97,9 +95,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
       let productTypes: ProductTypeWithCount[] = [];
 
       try {
-        const docs = await getCollectionWithQuery<ProductTypeObject>(
-          COLLECTION_NAME.PRODUCT_TYPES
-        );
+        const docs = await getProductTypes();
 
         productTypes = await Promise.all(
           docs.map(async (doc) => await getProductTypeWithCount(doc))
@@ -117,13 +113,14 @@ export default memo(function BatchForm(props: BatchFormProps) {
       if (!props.data) return;
       if (!props.data.product_id) return;
 
-      let product: ProductObject | null = null;
+      let product: Product | null = null;
 
       try {
-        product = await getDocFromFirestore<ProductObject>(
-          COLLECTION_NAME.PRODUCTS,
-          props.data.product_id
-        );
+        product =
+          (await getProduct(
+            props.data.product_type_id,
+            props.data.product_id
+          )) ?? null;
       } catch (error) {
         console.log(error);
       }
@@ -133,7 +130,9 @@ export default memo(function BatchForm(props: BatchFormProps) {
       let productType: ProductTypeWithCount | null = null;
 
       try {
-        productType = await getProductTypeWithCountById(product.productType_id);
+        productType = await getProductTypeWithCountById(
+          product.product_type_id
+        );
       } catch (error) {
         console.log(error);
       }
@@ -141,7 +140,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
       setSelectedProductType(() => productType);
 
       if (product) {
-        setSelectedProduct(() => product);
+        setSelectedProduct(product);
         setSelectedProductVariant(
           () =>
             product?.variants.find(
@@ -258,7 +257,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
               value={selectedProductVariant}
               onChange={(e, value) => handleSelectedProductVariantChange(value)}
               getOptionLabel={(productVariant) =>
-                `${productVariant.material} - ${productVariant.size
+                `${productVariant.material} - ${
+                  productVariant.size
                 } - ${formatPrice(productVariant.price)}`
               }
               renderInput={(params) => (

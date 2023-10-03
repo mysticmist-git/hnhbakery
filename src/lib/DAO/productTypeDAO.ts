@@ -2,6 +2,7 @@ import { db } from '@/firebase/config';
 import ProductType, { productTypeConverter } from '@/models/productType';
 import {
   DocumentData,
+  DocumentReference,
   QueryConstraint,
   addDoc,
   collection,
@@ -10,6 +11,7 @@ import {
   getDoc,
   getDocs,
   query,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
@@ -66,8 +68,27 @@ export async function updateProductType(id: string, data: ProductType) {
   await updateDoc(getProductTypeRefById(id), data);
 }
 
-export async function createProductType(data: Omit<ProductType, 'id'>) {
-  return await addDoc(getProductTypesRef(), data);
+export async function createProductType(
+  ref: DocumentReference<ProductType>,
+  data: Omit<ProductType, 'id'>
+): Promise<DocumentReference<ProductType>>;
+export async function createProductType(
+  data: Omit<ProductType, 'id'>
+): Promise<DocumentReference<ProductType>>;
+export async function createProductType(
+  arg1: DocumentReference<ProductType> | Omit<ProductType, 'id'>,
+  arg2?: Omit<ProductType, 'id'>
+): Promise<DocumentReference<Omit<ProductType, 'id'>> | undefined> {
+  if (arg1 instanceof DocumentReference) {
+    const ref = arg1;
+    const data = arg2 as Omit<ProductType, 'id'>;
+
+    await setDoc(ref, data);
+  } else {
+    const data = arg1;
+
+    return addDoc(getProductTypesRef(), data);
+  }
 }
 
 export async function deleteProductType(id: string) {

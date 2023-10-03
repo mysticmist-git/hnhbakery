@@ -1,12 +1,12 @@
 import { db, storage } from '@/firebase/config';
-import Batch from '@/models/batch';
-import Product from '@/models/product';
+import ProductType from '@/models/productType';
 import {
+  ProductTypeWithCount,
   StorageBatch,
   StorageProduct,
   StorageProductType,
 } from '@/models/storageModels';
-import { withHashCache, withHashCacheAsync } from '@/utils/withHashCache';
+import { withHashCacheAsync } from '@/utils/withHashCache';
 import { FirebaseError } from 'firebase/app';
 import {
   DocumentData,
@@ -37,8 +37,8 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
-import { getAllProducts, getProductsRef } from './DAO/productDAO';
-import { getProductTypes } from './DAO/productTypeDAO';
+import { getAllProducts } from './DAO/productDAO';
+import { getProductTypeById, getProductTypes } from './DAO/productTypeDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
   BaseObject,
@@ -47,11 +47,6 @@ import {
   PathWithUrl,
   ProductObject,
   ProductTypeObject,
-  ProductTypeWithCount,
-  ProductVariant,
-  StorageBatchObject,
-  StorageProductObject,
-  StorageProductTypeObject,
 } from './models';
 import { AssembledProduct } from './types/products';
 import { filterDuplicates } from './utils';
@@ -448,8 +443,7 @@ export const fetchProductTypesForStoragePage = async (): Promise<
 
       try {
         productCount = await countDocs(
-          COLLECTION_NAME.PRODUCT_TYPES,
-          where('product_type_id', '==', type.id)
+          `${COLLECTION_NAME.PRODUCT_TYPES}/${type.id}/${COLLECTION_NAME.PRODUCTS}`
         );
 
         if (type.image)
@@ -519,12 +513,12 @@ export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
 
 //#region Product Types
 
-export async function getProductTypeWithCount(type: ProductTypeObject) {
+export async function getProductTypeWithCount(type: ProductType) {
   const typeWithCount: ProductTypeWithCount = {
     ...type,
     count: await countDocs(
-      COLLECTION_NAME.PRODUCTS,
-      where('productType_id', '==', type.id)
+      `${COLLECTION_NAME.PRODUCT_TYPES}/${type.id}/${COLLECTION_NAME.PRODUCTS}`,
+      where('product_type_id', '==', type.id)
     ),
   };
 
@@ -534,16 +528,15 @@ export async function getProductTypeWithCount(type: ProductTypeObject) {
 export async function getProductTypeWithCountById(id: string) {
   if (!id) throw new Error('Null ID');
 
-  const productType = await getDocFromFirestore<ProductTypeObject>(
-    COLLECTION_NAME.PRODUCT_TYPES,
-    id
-  );
+  const productType = await getProductTypeById(id);
+
+  if (!productType) throw new Error('Product type not found');
 
   const typeWithCount: ProductTypeWithCount = {
     ...productType,
     count: await countDocs(
       COLLECTION_NAME.PRODUCTS,
-      where('productType_id', '==', productType.id)
+      where('product_type_id', '==', productType.id)
     ),
   };
 

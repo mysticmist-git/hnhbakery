@@ -3,11 +3,7 @@ import {
   fetchBatchesForStoragePage,
   fetchProductsForStoragePage,
 } from '@/lib/firestore';
-import { BaseObject } from '../models';
-
-type BaseModel = {
-  id: string;
-};
+import { BaseModel } from '@/models/storageModels';
 
 export interface StorageDocsFactory {
   createDocs(): Promise<BaseModel[]>;

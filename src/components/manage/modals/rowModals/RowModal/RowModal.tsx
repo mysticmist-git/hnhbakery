@@ -10,6 +10,7 @@ import {
   ModalMode,
   UpdateRowHandler,
 } from '@/lib/types/manage';
+import { BaseModel } from '@/models/storageModels';
 import { Backdrop, CircularProgress } from '@mui/material';
 import React, { forwardRef, memo, useEffect, useState } from 'react';
 import { Form } from '../../forms/';
@@ -20,11 +21,11 @@ interface RowModalProps extends CommonRowModalProps {
   handleUpdateRow: UpdateRowHandler;
   handleDeleteRow: DeleteRowHandler;
   onDataChange: ModalFormDataChangeHandler;
-  data: BaseObject | null;
+  data: BaseModel | null;
 }
 
 export interface FormProps {
-  data: BaseObject | null;
+  data: BaseModel | null;
   collectionName: string;
   onDataChange: ModalFormDataChangeHandler;
   readOnly: boolean;

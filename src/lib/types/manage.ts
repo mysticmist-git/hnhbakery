@@ -1,5 +1,5 @@
+import { BaseModel } from '@/models/storageModels';
 import {
-  BaseObject,
   StorageBatchObject,
   StorageProductObject,
   StorageProductTypeObject,
@@ -8,15 +8,15 @@ import {
 export type ModalMode = 'create' | 'update' | 'view' | 'none';
 
 export type ManageState = {
-  modalData: BaseObject | null;
-  originalModalData: BaseObject | null;
-  mainDocs: BaseObject[] | null;
+  modalData: BaseModel | null;
+  originalModalData: BaseModel | null;
+  mainDocs: BaseModel[] | null;
   searchText: string;
   selectedTarget: CrudTarget | null;
   crudModalOpen: boolean;
   crudModalMode: ModalMode;
   isDisplayActiveOnly: boolean;
-  deleteDoc: BaseObject | null;
+  deleteDoc: BaseModel | null;
   loading: boolean;
 };
 
@@ -29,7 +29,7 @@ export type VoidHandler = () => void;
 
 export type ViewRowHandler = (rowId: string) => void;
 
-export type DeleteRowHandler = (doc: BaseObject) => void;
+export type DeleteRowHandler = (doc: BaseModel) => void;
 
 export type ModalDeleteHandler = VoidHandler;
 
@@ -60,7 +60,7 @@ export type ModalProductTypeObject = StorageProductTypeObject & {};
 export type ModalProductObject = StorageProductObject & {};
 export type ModalBatchObject = StorageBatchObject & {};
 
-export type ModalFormDataChangeHandler = (newData: BaseObject) => void;
+export type ModalFormDataChangeHandler = (newData: BaseModel) => void;
 
 export type ModalFormProps = {
   mode: ModalMode;
@@ -106,7 +106,7 @@ declare enum DataManagerErrorCode {
 //#region Add
 
 export type AddData = {
-  data: BaseObject;
+  data: BaseModel;
 };
 
 export type ProductTypeAddData = AddData & {
@@ -125,8 +125,8 @@ export type BatchAddData = AddData & {};
 //#region Update
 
 export type UpdateData = {
-  newData: BaseObject;
-  originalData: BaseObject;
+  newData: BaseModel;
+  originalData: BaseModel;
 };
 
 export type ProductTypeUpdateData = UpdateData & {
@@ -143,9 +143,9 @@ export type BatchUpdateData = UpdateData & {};
 
 export type DataManagerStrategy = {
   dispatch: React.Dispatch<ManageAction>;
-  addDoc(addData: AddData): Promise<BaseObject>;
-  updateDoc(updateData: UpdateData): Promise<BaseObject>;
-  deleteDoc(doc: BaseObject): void;
+  addDoc(addData: AddData): Promise<BaseModel>;
+  updateDoc(updateData: UpdateData): Promise<BaseModel>;
+  deleteDoc(doc: BaseModel): void;
 };
 
 export enum ManageActionType {
