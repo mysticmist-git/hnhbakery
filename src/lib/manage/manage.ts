@@ -215,7 +215,6 @@ export function generateDefaultRow(collectionName: string) {
       return { id: '' };
   }
 }
-
 export const validateCollectionNameParams = (
   collectionName: string
 ): boolean => {

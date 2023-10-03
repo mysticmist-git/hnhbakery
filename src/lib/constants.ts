@@ -49,6 +49,7 @@ export const ROUTES = {
   MANAGER: '/manager',
   CART: '/cart',
   PAYMENT: '/payment',
+  STORAGE: 'manager/storage',
 } as const;
 
 type ObjectValues<T> = T[keyof T];

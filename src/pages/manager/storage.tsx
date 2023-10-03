@@ -2,7 +2,7 @@ import { TableActionButton } from '@/components/buttons';
 import SimpleDialog from '@/components/dialogs/SimpleDialog';
 import { RowModal } from '@/components/manage/modals/rowModals';
 import CustomDataTable from '@/components/manage/tables/CustomDataTable';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { COLLECTION_NAME, ROUTES } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   ProductSearchBarNamesFactory,
@@ -48,6 +48,7 @@ import {
   ManageState,
   ModalProductTypeObject,
 } from '@/lib/types/manage';
+import { BaseModel } from '@/models/storageModels';
 import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,
@@ -61,8 +62,6 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
-import { reauthenticateWithCredential } from 'firebase/auth';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, {
   useCallback,
@@ -93,11 +92,25 @@ export default function Manage() {
 
   const [justLoaded, setJustLoaded] = useState(true);
 
-  const [dataManager, setDataManager] = useState<DataManagerStrategy | null>(
-    null
-  );
+  // NOTE: Remove this when the data manager is refactored
+  // const [dataManager, setDataManager] = useState<DataManagerStrategy | null>(
+  //   null
+  // );
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
+  const dataManager: DataManagerStrategy | null = useMemo(() => {
+    switch (state.selectedTarget?.collectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        return new ProductTypeDataManagerStrategy(dispatch);
+      case COLLECTION_NAME.PRODUCTS:
+        return new ProductDataManagerStrategy(dispatch);
+      case COLLECTION_NAME.BATCHES:
+        return new BatchDataManagerStrategy(dispatch);
+      default:
+        return null;
+    }
+  }, [state.selectedTarget]);
 
   //#endregion
 
@@ -122,38 +135,6 @@ export default function Manage() {
       payload: value,
     });
   }
-
-  const updateSelectedCRUDTargetToMatch = useCallback(() => {
-    if (!justLoaded) return;
-
-    if (!router.query.collectionName) return;
-
-    dispatch({
-      type: ManageActionType.SET_SELECTED_TARGET,
-      payload: crudTargets.find(
-        (t) => t.collectionName === router.query.collectionName
-      ),
-    });
-
-    setJustLoaded(false);
-  }, [justLoaded, router.query.collectionName]);
-
-  const updateDataManagerStrategy = useCallback(() => {
-    switch (router.query.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        setDataManager(() => new ProductTypeDataManagerStrategy(dispatch));
-        break;
-      case COLLECTION_NAME.PRODUCTS:
-        setDataManager(() => new ProductDataManagerStrategy(dispatch));
-        break;
-      case COLLECTION_NAME.BATCHES:
-        setDataManager(() => new BatchDataManagerStrategy(dispatch));
-        break;
-      default:
-        setDataManager(() => null);
-        break;
-    }
-  }, [router.query.collectionName]);
 
   function createAddData(): AddData | null {
     let addData: AddData | null = null;
@@ -248,27 +229,35 @@ export default function Manage() {
 
   //#region UseEffects
 
+  // Update state.selected target first time when page load with predefined
+  // collection name.
+  useEffect(() => {
+    if (
+      !router.query.collectionName ||
+      !validateCollectionNameParams(router.query.collectionName as string)
+    ) {
+      router.replace({
+        href: ROUTES.STORAGE,
+        query: {
+          collectionName: COLLECTION_NAME.PRODUCT_TYPES,
+        },
+      });
+      dispatch({
+        type: ManageActionType.SET_SELECTED_TARGET,
+        payload: crudTargets.find(
+          (t) => t.collectionName === COLLECTION_NAME.PRODUCT_TYPES
+        ),
+      });
+      return;
+    }
+  }, [router, router.query.collectionName]);
+
   useEffect(() => {
     const fetchData = async () => {
-      // Extract the collection name from the query parameter of the URL.
-      const collectionName: string | undefined = router.query.collectionName as
-        | string
-        | undefined;
-
-      if (!collectionName) {
-        router.replace(
-          `/manager/storage?collectionName=${COLLECTION_NAME.PRODUCT_TYPES}`
-        );
-        return;
-      }
-
-      const isCollectionNameValid: boolean =
-        validateCollectionNameParams(collectionName);
-
-      if (!isCollectionNameValid) {
-        router.replace(
-          `/manager/storage?collectionName=${COLLECTION_NAME.PRODUCT_TYPES}`
-        );
+      if (
+        !router.query.collectionName ||
+        !validateCollectionNameParams(router.query.collectionName as string)
+      ) {
         return;
       }
 
@@ -276,7 +265,7 @@ export default function Manage() {
       // const mainDocs = await getCollection<BaseObject>(collectionName);
       let fetcher: StorageDocsFactory | null = null;
 
-      switch (collectionName) {
+      switch (router.query.collectionName) {
         case COLLECTION_NAME.PRODUCT_TYPES:
           fetcher = new ProductTypeStorageDocsFetcher();
           break;
@@ -295,7 +284,7 @@ export default function Manage() {
         return;
       }
 
-      let mainDocs: BaseObject[] = [];
+      let mainDocs: BaseModel[] = [];
 
       try {
         mainDocs = await fetcher.createDocs();
@@ -305,36 +294,24 @@ export default function Manage() {
 
       if (!mainDocs) return;
 
-      console.log(mainDocs);
-
       dispatch({
         type: ManageActionType.SET_MAIN_DOCS,
         payload: mainDocs,
       });
     };
 
-    fetchData();
-  }, [handleSnackbarAlert, router, state.selectedTarget]);
-
-  useEffect(() => {
-    if (!state.selectedTarget) return;
-
-    const collectionName = state.selectedTarget.collectionName;
-
-    if (collectionName === router.query.collectionName) return;
-
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
       payload: null,
     });
+    fetchData();
+  }, [handleSnackbarAlert, router, router.query.collectionName]);
 
-    router.replace(`${PATH}?collectionName=${collectionName}`);
-  }, [router, state.selectedTarget]);
-
-  useEffect(() => {
-    updateSelectedCRUDTargetToMatch();
-    updateDataManagerStrategy();
-  }, [updateDataManagerStrategy, updateSelectedCRUDTargetToMatch]);
+  // TODO: Remove this when DataManager is refactored / fix.
+  // useEffect(() => {
+  //   updateSelectedCRUDTargetToMatch();
+  //   updateDataManagerStrategy();
+  // }, [updateDataManagerStrategy, updateSelectedCRUDTargetToMatch]);
 
   //#endregion
 
@@ -352,34 +329,6 @@ export default function Manage() {
         return 'Lỗi khi load text';
     }
   }, [state.selectedTarget]);
-
-  const isTableEmpty = useMemo(() => {
-    return state.mainDocs?.length === 0;
-  }, [state.mainDocs]);
-
-  const namesForSearchBar = useMemo(() => {
-    if (!state.mainDocs) return [];
-
-    let namesFactory: SearchBarNamesFactory | null = null;
-
-    switch (router.query.collectionName) {
-      case 'productTypes':
-        namesFactory = new ProductTypeSearchBarNamesFactory();
-        break;
-      case 'products':
-        namesFactory = new ProductSearchBarNamesFactory();
-        break;
-      case 'batches':
-      default:
-        break;
-    }
-
-    if (!namesFactory) return [];
-
-    const names = namesFactory.generate(state.mainDocs);
-
-    return names;
-  }, [router.query.collectionName, state.mainDocs]);
 
   // #endregion
 
@@ -727,7 +676,19 @@ export default function Manage() {
               exclusive
             >
               {crudTargets.map((target) => (
-                <ToggleButton key={target.collectionName} value={target}>
+                <ToggleButton
+                  key={target.collectionName}
+                  value={target}
+                  onClick={() =>
+                    router.replace({
+                      pathname: router.pathname,
+                      query: {
+                        ...router.query,
+                        collectionName: target.collectionName,
+                      },
+                    })
+                  }
+                >
                   {target.label}
                 </ToggleButton>
               ))}

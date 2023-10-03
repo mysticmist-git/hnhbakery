@@ -144,8 +144,6 @@ export class ProductTypeDataManagerStrategy implements DataManagerStrategy {
         imageURL: imageURL,
       };
 
-      console.log(refinedData);
-
       return refinedData;
     } else {
       throw new Error(DataManagerErrorCode.NO_DOC_FOUND);
