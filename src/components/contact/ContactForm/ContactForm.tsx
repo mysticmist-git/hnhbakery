@@ -3,6 +3,7 @@ import CustomTextarea from '@/components/inputs/TextArea/CustomTextArea';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import { useSnackbarService } from '@/lib/contexts';
 import { sendContact } from '@/lib/firestore';
+import Contact from '@/models/contact';
 import theme from '@/styles/themes/lightTheme';
 import * as material from '@mui/material';
 import { useRouter } from 'next/router';
@@ -61,14 +62,18 @@ const ContactForm = () => {
       return;
     }
 
-    await sendContact({
+    const contactForm: Omit<Contact, 'id'> = {
       name: nameRef.current!.value,
-      email: emailRef.current!.value,
-      phone: phoneRef.current!.value,
+      mail: emailRef.current!.value,
+      tel: phoneRef.current!.value,
       title: titleRef.current!.value,
       content: contentRef.current!.value,
       isRead: false,
-    });
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    await sendContact(contactForm);
 
     handleSnackbarAlert('success', 'Gửi thành công');
     router.push('/thank-you-for-your-contact');

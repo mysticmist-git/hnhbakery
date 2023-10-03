@@ -1,4 +1,5 @@
 import { db, storage } from '@/firebase/config';
+import Contact from '@/models/contact';
 import ProductType from '@/models/productType';
 import {
   ProductTypeWithCount,
@@ -37,13 +38,13 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
+import { createContact } from './DAO/contactDAO';
 import { getAllProducts } from './DAO/productDAO';
 import { getProductTypeById, getProductTypes } from './DAO/productTypeDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
   BaseObject,
   BatchObject,
-  Contact,
   PathWithUrl,
   ProductObject,
   ProductTypeObject,
@@ -374,12 +375,11 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
 
 // #region Contact
 
-export const sendContact = async (form: Contact) => {
+export const sendContact = async (form: Omit<Contact, 'id'>) => {
   if (!form) return;
 
   try {
-    const contacts = collection(db, 'contacts');
-    await addDoc(contacts, form);
+    await createContact(form);
   } catch (error) {
     console.log(error);
   }
