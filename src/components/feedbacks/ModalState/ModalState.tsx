@@ -1,7 +1,6 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { deleteDocFromFirestore, getCollection } from '@/lib/firestore';
-import { FeedbackObject, SuperDetail_FeedbackObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -15,6 +14,8 @@ import {
   useTheme,
 } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import { FeedbackTableRow } from '@/models/feedback';
+import { deleteFeedback } from '@/lib/DAO/feedbackDAO';
 
 export default function ModalState({
   open,
@@ -25,9 +26,9 @@ export default function ModalState({
 }: {
   open: boolean;
   handleClose: () => void;
-  feedbackState: SuperDetail_FeedbackObject | null;
+  feedbackState: FeedbackTableRow | null;
   setFeedbackState: React.Dispatch<
-    React.SetStateAction<SuperDetail_FeedbackObject | null>
+    React.SetStateAction<FeedbackTableRow | null>
   >;
   handleFeedbackDataChange: any;
 }) {
@@ -110,9 +111,10 @@ export default function ModalState({
                 onClick={async () => {
                   if (feedbackState) {
                     try {
-                      await deleteDocFromFirestore(
-                        COLLECTION_NAME.FEEDBACKS,
-                        feedbackState.id!
+                      await deleteFeedback(
+                        feedbackState.product!.product_type_id,
+                        feedbackState.product_id,
+                        feedbackState.id
                       );
                       handleSnackbarAlert(
                         'success',

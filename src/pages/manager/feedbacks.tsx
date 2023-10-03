@@ -1,14 +1,14 @@
 import FeedbackTable from '@/components/feedbacks/FeedbackTable';
 import ModalState from '@/components/feedbacks/ModalState';
 import MyModal from '@/components/feedbacks/MyModal';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
-import {
-  FeedbackObject,
-  ProductObject,
-  SuperDetail_FeedbackObject,
-  UserObject,
-} from '@/lib/models';
+import { getFeedbacks } from '@/lib/DAO/feedbackDAO';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
+import { getProducts, getProductsRef } from '@/lib/DAO/productDAO';
+import { getProductTypes, getProductTypesRef } from '@/lib/DAO/productTypeDAO';
+import { getUser } from '@/lib/DAO/userDAO';
+
+import { FeedbackTableRow } from '@/models/feedback';
+
 import {
   Box,
   Divider,
@@ -27,41 +27,35 @@ const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Feedbacks = () => {
-  const [feedbacks, setFeedbacks] = useState<SuperDetail_FeedbackObject[]>([]);
+  const [feedbacks, setFeedbacks] = useState<FeedbackTableRow[]>([]);
   const theme = useTheme();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const feedbacks = await getCollection<FeedbackObject>(
-          COLLECTION_NAME.FEEDBACKS
+        const finalFeedbacks: FeedbackTableRow[] = [];
+        const productTypes = await getProductTypes();
+
+        for (let p of productTypes) {
+          const products = await getProducts(p.id);
+          for (let product of products) {
+            const feedbacks = await getFeedbacks(p.id, product.id);
+            for (let feedback of feedbacks) {
+              finalFeedbacks.push({
+                ...feedback,
+                product: product,
+                user: await getUser(DEFAULT_GROUP_ID, feedback.user_id),
+              });
+            }
+          }
+        }
+
+        setFeedbacks(
+          () =>
+            finalFeedbacks.sort((a, b) =>
+              a.created_at > b.created_at ? -1 : 1
+            ) || []
         );
-        const products = await getCollection<ProductObject>(
-          COLLECTION_NAME.PRODUCTS
-        );
-        const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
-
-        const finalFeedbacks: SuperDetail_FeedbackObject[] = feedbacks
-          .map((feedback) => {
-            const user = users.find((user) => user.id === feedback.user_id);
-            const product = products.find(
-              (product) => product.id === feedback.product_id
-            );
-
-            return {
-              ...feedback,
-              userObject: user,
-              productObject: product,
-            };
-          })
-          .sort((a, b) => {
-            return (
-              new Date(b.time ?? '').getTime() -
-              new Date(a.time ?? '').getTime()
-            );
-          });
-
-        setFeedbacks(() => finalFeedbacks || []);
       } catch (error) {
         console.log(error);
       }
@@ -70,10 +64,14 @@ const Feedbacks = () => {
     fetchData();
   }, []);
 
-  const handleFeedbackDataChange = (value: SuperDetail_FeedbackObject) => {
+  const handleFeedbackDataChange = (value: FeedbackTableRow) => {
     setFeedbacks(() => {
       return feedbacks.filter((feedback) => {
-        return feedback.id !== value.id;
+        return !(
+          feedback.id == value.id &&
+          feedback.product_id == value.product_id &&
+          feedback.product?.product_type_id == value.product?.product_type_id
+        );
       });
     });
   };
@@ -81,14 +79,12 @@ const Feedbacks = () => {
   //#region Modal chi tiết
   const [openModalChiTiet, setOpenModalChiTiet] = useState(false);
   const [currentViewFeedback, setCurrentViewFeedback] =
-    useState<SuperDetail_FeedbackObject | null>(null);
+    useState<FeedbackTableRow | null>(null);
 
   const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
   const handleCloseModalChiTiet = () => setOpenModalChiTiet(false);
 
-  const handleViewFeedbackModalChiTiet = (
-    value: SuperDetail_FeedbackObject
-  ) => {
+  const handleViewFeedbackModalChiTiet = (value: FeedbackTableRow) => {
     handleOpenModalChiTiet();
     setCurrentViewFeedback(() => value);
   };
@@ -99,12 +95,11 @@ const Feedbacks = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [feedbackState, setFeedbackState] =
-    useState<SuperDetail_FeedbackObject | null>(null);
+  const [feedbackState, setFeedbackState] = useState<FeedbackTableRow | null>(
+    null
+  );
 
-  const handleViewFeedbackModalState = (
-    feedback: SuperDetail_FeedbackObject
-  ) => {
+  const handleViewFeedbackModalState = (feedback: FeedbackTableRow) => {
     handleOpenModalState();
     setFeedbackState(() => feedback);
   };

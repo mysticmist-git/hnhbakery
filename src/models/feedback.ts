@@ -7,6 +7,8 @@ import {
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
+import User from './user';
+import Product from './product';
 
 /**
  * Feedback
@@ -18,7 +20,13 @@ type Feedback = WithCreatedUpdated &
     rating: number;
     product_id: string;
     user_id: string;
+    created_at: Date;
   };
+
+type FeedbackTableRow = Feedback & {
+  product?: Product;
+  user?: User;
+};
 
 const feedbackConverter: FirestoreDataConverter<Feedback> = {
   toFirestore: function (modelObject: WithFieldValue<Feedback>): DocumentData {
@@ -39,4 +47,5 @@ const feedbackConverter: FirestoreDataConverter<Feedback> = {
 };
 
 export default Feedback;
+export type { Feedback, FeedbackTableRow };
 export { feedbackConverter };

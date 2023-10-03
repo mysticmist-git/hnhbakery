@@ -1,5 +1,5 @@
-import { SuperDetail_FeedbackObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
+import { FeedbackTableRow } from '@/models/feedback';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -17,13 +17,13 @@ export default function FeedbackTable({
   handleViewFeedback,
   handleViewFeedbackModalState,
 }: {
-  feedbackData: SuperDetail_FeedbackObject[];
-  handleViewFeedback: (value: SuperDetail_FeedbackObject) => void;
-  handleViewFeedbackModalState: (value: SuperDetail_FeedbackObject) => void;
+  feedbackData: FeedbackTableRow[];
+  handleViewFeedback: (value: FeedbackTableRow) => void;
+  handleViewFeedbackModalState: (value: FeedbackTableRow) => void;
 }) {
   const theme = useTheme();
 
-  const [rows, setRows] = useState<SuperDetail_FeedbackObject[]>(feedbackData);
+  const [rows, setRows] = useState<FeedbackTableRow[]>(feedbackData);
 
   useEffect(() => {
     setRows(() => feedbackData);
@@ -41,7 +41,7 @@ export default function FeedbackTable({
       flex: 1,
     },
     {
-      field: 'time',
+      field: 'created_at',
       headerName: 'Thời gian',
       align: 'center',
       headerAlign: 'center',
@@ -54,7 +54,7 @@ export default function FeedbackTable({
       },
     },
     {
-      field: 'productName',
+      field: 'product_name',
       headerName: 'Tên sản phẩm',
       align: 'center',
       headerAlign: 'center',
@@ -63,7 +63,7 @@ export default function FeedbackTable({
       hideable: false,
       flex: 1,
       valueGetter(params) {
-        return params.row.productObject.name;
+        return params.row.product.name;
       },
     },
     {

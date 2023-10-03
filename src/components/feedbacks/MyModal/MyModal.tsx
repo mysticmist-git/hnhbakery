@@ -1,6 +1,5 @@
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_FeedbackObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { Close, ContentCopyRounded } from '@mui/icons-material';
 import {
@@ -17,6 +16,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
+import { FeedbackTableRow } from '@/models/feedback';
 
 export default function MyModal({
   open,
@@ -25,7 +25,7 @@ export default function MyModal({
 }: {
   open: boolean;
   handleClose: () => void;
-  feedback: SuperDetail_FeedbackObject | null;
+  feedback: FeedbackTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -54,8 +54,9 @@ export default function MyModal({
     fontFamily: theme.typography.body2.fontFamily,
   };
 
-  const [modalFeedback, setModalFeedback] =
-    useState<SuperDetail_FeedbackObject | null>(feedback);
+  const [modalFeedback, setModalFeedback] = useState<FeedbackTableRow | null>(
+    feedback
+  );
 
   useEffect(() => {
     setModalFeedback(() => feedback);
@@ -201,7 +202,8 @@ export default function MyModal({
                           textStyle={textStyle}
                           label="Thời gian"
                           value={
-                            formatDateString(modalFeedback?.time) ?? 'Trống'
+                            formatDateString(modalFeedback?.created_at) ??
+                            'Trống'
                           }
                         />
                       </Grid>
@@ -259,7 +261,7 @@ export default function MyModal({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Mã sản phẩm"
-                          value={modalFeedback?.productObject?.id ?? 'Trống'}
+                          value={modalFeedback?.product?.id ?? 'Trống'}
                           InputProps={{
                             readOnly: true,
                             style: {
@@ -272,8 +274,7 @@ export default function MyModal({
                                   edge="end"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      modalFeedback?.productObject?.id ??
-                                        'Trống'
+                                      modalFeedback?.product?.id ?? 'Trống'
                                     );
                                     handleSnackbarAlert(
                                       'success',
@@ -294,7 +295,7 @@ export default function MyModal({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Mã người dùng"
-                          value={modalFeedback?.userObject?.id ?? 'Trống'}
+                          value={modalFeedback?.user?.id ?? 'Trống'}
                           InputProps={{
                             readOnly: true,
                             style: {
@@ -307,7 +308,7 @@ export default function MyModal({
                                   edge="end"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      modalFeedback?.userObject?.id ?? 'Trống'
+                                      modalFeedback?.user?.id ?? 'Trống'
                                     );
                                     handleSnackbarAlert(
                                       'success',
@@ -328,7 +329,7 @@ export default function MyModal({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Tên sản phẩm"
-                          value={modalFeedback?.productObject?.name ?? '0'}
+                          value={modalFeedback?.product?.name ?? '0'}
                         />
                       </Grid>
                     </Grid>
