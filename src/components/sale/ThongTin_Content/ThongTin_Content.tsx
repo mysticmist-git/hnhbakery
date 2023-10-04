@@ -1,11 +1,12 @@
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
+import { updateSale } from '@/lib/DAO/saleDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { updateDocToFirestore } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
-import { SaleObject, SuperDetail_SaleObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
+import Sale, { SaleTableRow } from '@/models/sale';
 import {
   Close,
   ContentCopyRounded,
@@ -30,7 +31,7 @@ type EditType = {
   description?: string;
 };
 
-function ResetEditContent(sale: SuperDetail_SaleObject | null) {
+function ResetEditContent(sale: SaleTableRow | null) {
   return {
     name: sale?.name ?? 'Trống',
     end_at: sale?.end_at ?? new Date(),
@@ -43,7 +44,7 @@ export default function ThongTin_Content({
   modalSale,
 }: {
   textStyle: any;
-  modalSale: SuperDetail_SaleObject | null;
+  modalSale: SaleTableRow | null;
 }) {
   const theme = useTheme();
   const StyleCuaCaiBox = {
@@ -90,16 +91,15 @@ export default function ThongTin_Content({
       name: editContent?.name,
       code: modalSale?.code,
       percent: modalSale?.percent,
-      maxSalePrice: modalSale?.maxSalePrice,
+      limit: modalSale?.limit,
       description: editContent?.description,
       start_at: modalSale?.start_at,
       end_at: editContent?.end_at,
       image: modalSale?.image,
-      isActive: modalSale?.isActive,
-    } as SaleObject;
+      active: modalSale?.active,
+    } as Sale;
     try {
-      await updateDocToFirestore(data, COLLECTION_NAME.SALES);
-
+      await updateSale(data.id, data);
       handleSnackbarAlert('success', 'Thay đổi thành công!');
       setEditMode(false);
     } catch (error) {
@@ -108,12 +108,12 @@ export default function ThongTin_Content({
     }
   };
 
-  function getGiaKhuyenMai(value: SuperDetail_SaleObject | null) {
+  function getGiaKhuyenMai(value: SaleTableRow | null) {
     const result =
       'Giảm ' +
       value?.percent +
       '% (Tối đa: ' +
-      formatPrice(value?.maxSalePrice) +
+      formatPrice(value?.limit) +
       ')';
     return result ?? 'Trống';
   }
@@ -141,7 +141,7 @@ export default function ThongTin_Content({
             Thông tin cá nhân
           </Typography>
 
-          {modalSale?.isActive && (
+          {modalSale?.active && (
             <Box
               sx={{
                 display: 'flex',
@@ -336,7 +336,7 @@ export default function ThongTin_Content({
                 textStyle={textStyle}
                 label="Trạng thái"
                 value={
-                  statusTextResolver(modalSale?.isActive ?? false) ?? 'Trống'
+                  statusTextResolver(modalSale?.active ?? false) ?? 'Trống'
                 }
               />
             </Grid>

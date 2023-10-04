@@ -50,6 +50,8 @@ export default function FeedbackTable({
       hideable: false,
       width: 150,
       valueFormatter(params) {
+        console.log(params.value);
+
         return formatDateString(params.value);
       },
     },

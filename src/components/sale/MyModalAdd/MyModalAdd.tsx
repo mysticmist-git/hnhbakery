@@ -2,7 +2,6 @@ import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { addDocToFirestore } from '@/lib/firestore';
-import { SaleObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -21,6 +20,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
+import Sale from '@/models/sale';
+import { createSale, getSales } from '@/lib/DAO/saleDAO';
 
 export default function MyModalAdd({
   open,
@@ -29,7 +30,7 @@ export default function MyModalAdd({
 }: {
   open: boolean;
   handleClose: () => void;
-  sale: SaleObject | null;
+  sale: Sale | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -58,22 +59,25 @@ export default function MyModalAdd({
     fontFamily: theme.typography.body2.fontFamily,
   };
 
-  const defaultSale: SaleObject = useMemo(
+  const defaultSale: Sale = useMemo(
     () => ({
+      id: '',
       name: '',
       code: '',
       percent: 0,
-      maxSalePrice: 0,
       description: '',
       start_at: new Date(),
       end_at: new Date(new Date().getTime() + 24 * 36000),
       image: '',
-      isActive: true,
+      limit: 0,
+      active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
     }),
     []
   );
 
-  const [modalSale, setModalSale] = useState<SaleObject>(defaultSale);
+  const [modalSale, setModalSale] = useState<Sale>(defaultSale);
 
   useEffect(() => {
     setModalSale(() => defaultSale);
@@ -89,15 +93,35 @@ export default function MyModalAdd({
 
   const handleAdd = async () => {
     try {
-      const data: SaleObject = { ...modalSale };
+      if (
+        !modalSale.code ||
+        !modalSale.name ||
+        !modalSale.start_at ||
+        !modalSale.end_at ||
+        !modalSale.percent ||
+        !modalSale.limit
+      ) {
+        throw new Error('Vui lòng điền đầy đủ thông tin');
+      }
 
-      await addDocToFirestore(data, COLLECTION_NAME.SALES);
-    } catch (error) {
-      console.log(error);
-      handleSnackbarAlert('error', 'Lỗi khi thêm mới');
+      const sales = await getSales();
+      sales.find((sale) => {
+        if (sale.code === modalSale.code) {
+          modalSale.code = '';
+          throw new Error('Code khuyến mãi đã tạo');
+        }
+      });
+
+      let data: Sale = { ...modalSale };
+      data.start_at.setHours(0, 0, 0, 0);
+      data.end_at.setHours(0, 0, 0, 0);
+      await createSale(data);
+    } catch (error: any) {
+      handleSnackbarAlert('error', error.message);
       return;
     }
 
+    setModalSale(() => defaultSale);
     handleSnackbarAlert('success', 'Thêm khuyến mãi thành công');
     handleClose();
   };
@@ -211,11 +235,11 @@ export default function MyModalAdd({
                   textStyle={textStyle}
                   label="Giảm tối đa"
                   type="number"
-                  value={modalSale?.maxSalePrice}
+                  value={modalSale?.limit}
                   onChange={(e: any) => {
                     setModalSale({
                       ...modalSale,
-                      maxSalePrice: e.target.value,
+                      limit: e.target.value,
                     });
                   }}
                   InputProps={{

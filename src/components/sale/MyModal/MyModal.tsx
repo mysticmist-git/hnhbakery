@@ -1,7 +1,6 @@
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_SaleObject } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { Close } from '@mui/icons-material';
 import {
@@ -16,6 +15,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import ThongTin_Content from '../ThongTin_Content';
+import { SaleTableRow } from '@/models/sale';
 
 export default function MyModal({
   open,
@@ -24,7 +24,7 @@ export default function MyModal({
 }: {
   open: boolean;
   handleClose: () => void;
-  sale: SuperDetail_SaleObject | null;
+  sale: SaleTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -53,9 +53,7 @@ export default function MyModal({
     fontFamily: theme.typography.body2.fontFamily,
   };
 
-  const [modalSale, setModalSale] = useState<SuperDetail_SaleObject | null>(
-    sale
-  );
+  const [modalSale, setModalSale] = useState<SaleTableRow | null>(sale);
 
   useEffect(() => {
     setModalSale(() => sale);
@@ -171,7 +169,7 @@ export default function MyModal({
                           textStyle={textStyle}
                           label="Số tiền đã giảm"
                           value={
-                            formatPrice(modalSale?.totalSaleAmount) ?? 'Trống'
+                            formatPrice(modalSale?.totalSalePrice) ?? 'Trống'
                           }
                         />
                       </Grid>

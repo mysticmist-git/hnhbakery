@@ -1,6 +1,6 @@
 import { statusTextResolver } from '@/lib/manage/manage';
-import { SaleObject, SuperDetail_SaleObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
+import { SaleTableRow } from '@/models/sale';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -18,13 +18,13 @@ export default function SaleTable({
   handleViewSale,
   handleViewSaleModalState,
 }: {
-  saleData: SuperDetail_SaleObject[];
+  saleData: SaleTableRow[];
   handleViewSale: any;
   handleViewSaleModalState: any;
 }) {
   const theme = useTheme();
 
-  const [rows, setRows] = useState<SuperDetail_SaleObject[]>(saleData);
+  const [rows, setRows] = useState<SaleTableRow[]>(saleData);
 
   useEffect(() => {
     setRows(() => saleData);
@@ -81,7 +81,7 @@ export default function SaleTable({
       },
     },
     {
-      field: 'maxSalePrice',
+      field: 'limit',
       headerName: 'Giảm tối đa',
       align: 'left',
       headerAlign: 'center',
@@ -130,7 +130,7 @@ export default function SaleTable({
       width: 110,
     },
     {
-      field: 'totalSaleAmount',
+      field: 'totalSalePrice',
       headerName: 'Đã giảm',
       align: 'center',
       headerAlign: 'center',
@@ -156,7 +156,7 @@ export default function SaleTable({
       },
     },
     {
-      field: 'isActive',
+      field: 'active',
       headerName: 'Trạng thái',
       align: 'center',
       headerAlign: 'center',
@@ -207,7 +207,7 @@ export default function SaleTable({
               variant="contained"
               color={'error'}
               size="small"
-              disabled={!params.row.isActive}
+              disabled={!params.row.active}
               onClick={() => {
                 handleViewSaleModalState(params.row);
               }}

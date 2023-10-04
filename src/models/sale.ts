@@ -25,6 +25,11 @@ type Sale = WithCreatedUpdated &
     end_at: Date;
   };
 
+type SaleTableRow = Sale & {
+  numberOfUse?: number;
+  totalSalePrice?: number;
+};
+
 const saleConverter: FirestoreDataConverter<Sale> = {
   toFirestore: function (modelObject: WithFieldValue<Sale>): DocumentData {
     const { id, ...obj } = modelObject;
@@ -44,4 +49,5 @@ const saleConverter: FirestoreDataConverter<Sale> = {
 };
 
 export default Sale;
+export type { Sale, SaleTableRow };
 export { saleConverter };
