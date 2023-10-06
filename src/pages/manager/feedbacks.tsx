@@ -3,8 +3,8 @@ import ModalState from '@/components/feedbacks/ModalState';
 import MyModal from '@/components/feedbacks/MyModal';
 import { getFeedbacks } from '@/lib/DAO/feedbackDAO';
 import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
-import { getProducts, getProductsRef } from '@/lib/DAO/productDAO';
-import { getProductTypes, getProductTypesRef } from '@/lib/DAO/productTypeDAO';
+import { getProducts } from '@/lib/DAO/productDAO';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getUser } from '@/lib/DAO/userDAO';
 
 import { FeedbackTableRow } from '@/models/feedback';
@@ -19,12 +19,6 @@ import {
   useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-
-const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
-  [`& .MuiLinearProgress-bar`]: {
-    backgroundColor: theme.palette.secondary.main,
-  },
-}));
 
 const Feedbacks = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackTableRow[]>([]);

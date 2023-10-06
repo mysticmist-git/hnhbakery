@@ -1,7 +1,6 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import { SaleObject, SuperDetail_SaleObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -15,6 +14,8 @@ import {
   useTheme,
 } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import Sale, { SaleTableRow } from '@/models/sale';
+import { getSaleById, getSales, updateSale } from '@/lib/DAO/saleDAO';
 
 export default function ModalState({
   open,
@@ -24,10 +25,8 @@ export default function ModalState({
 }: {
   open: boolean;
   handleClose: () => void;
-  saleState: SuperDetail_SaleObject | null;
-  setSaleState: React.Dispatch<
-    React.SetStateAction<SuperDetail_SaleObject | null>
-  >;
+  saleState: SaleTableRow | null;
+  setSaleState: React.Dispatch<React.SetStateAction<SaleTableRow | null>>;
 }) {
   const clearData = () => {
     setSaleState(() => null);
@@ -105,12 +104,10 @@ export default function ModalState({
               variant="contained"
               color={'error'}
               onClick={async () => {
-                const data = (
-                  await getCollection<SaleObject>(COLLECTION_NAME.SALES)
-                ).find((sale) => sale.id === saleState?.id);
+                const data = await getSaleById(saleState!.id);
                 if (data) {
-                  data.isActive = !data.isActive;
-                  await updateDocToFirestore(data, COLLECTION_NAME.SALES);
+                  data.active = !data.active;
+                  await updateSale(data.id, data);
                   handleSnackbarAlert('success', 'Hủy khuyến mãi thành công!');
                   handleClose();
                 } else {

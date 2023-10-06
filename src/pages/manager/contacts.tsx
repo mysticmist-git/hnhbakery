@@ -1,8 +1,6 @@
 import { ContactTable, MyModal } from '@/components/contacts';
 import { getContacts } from '@/lib/DAO/contactDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getCollection } from '@/lib/firestore';
 import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
 
 import { Mail } from '@/lib/types/manage-contact';
@@ -79,8 +77,6 @@ const Contacts: React.FC = () => {
 
     fetchData();
   }, []);
-
-  console.log(contacts);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {

@@ -1,9 +1,9 @@
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { Contact } from '@/lib/models';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import Contact from '@/models/contact';
 
 function ThongTin_Content({
   textStyle,
