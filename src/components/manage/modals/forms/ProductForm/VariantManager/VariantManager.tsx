@@ -1,15 +1,14 @@
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollectionWithQuery } from '@/lib/firestore';
-import { ProductVariant, ReferenceObject } from '@/lib/models';
-import { Button, List, ListItem, ListItemText, styled } from '@mui/material';
-import { where } from 'firebase/firestore';
-import { nanoid } from 'nanoid';
+import { getSizes } from '@/lib/DAO/sizeDAO';
+import { updateVariant } from '@/lib/DAO/variantDAO';
+import Size from '@/models/size';
+import Variant from '@/models/variant';
+import { Button, List, ListItem } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import VariantItem from '../VariantItem';
 
 type VariantManagerProps = {
-  variants: ProductVariant[];
-  onChange: (variants: ProductVariant[]) => void;
+  variants: Omit<Variant, 'id'>[];
+  onVariantsChange: (variants: Omit<Variant, 'id'>[]) => void;
   readOnly?: boolean;
   disabled?: boolean;
 };
@@ -21,11 +20,9 @@ type VariantManagerProps = {
  * @returns
  */
 function VariantManager(props: VariantManagerProps) {
-  console.log(props.variants);
-
   //#region States
 
-  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<Size[]>([]);
 
   //#endregion
 
@@ -33,24 +30,31 @@ function VariantManager(props: VariantManagerProps) {
 
   useEffect(() => {
     async function fetchSizes() {
-      let sizes: string[] = [];
+      // TODO: Remove this later
+      // let sizes: string[] = [];
+
+      // try {
+      //   const sizesRef: ReferenceObject[] = await getCollectionWithQuery(
+      //     COLLECTION_NAME.REFERENCES,
+      //     where('name', '==', 'sizes')
+      //   );
+
+      //   if (!sizesRef || !sizesRef.length) throw new Error('Sizes not found');
+
+      //   sizes = sizesRef[0].values;
+
+      //   setSizes(() => sizes);
+      // } catch (error: any) {
+      //   console.log(error);
+
+      //   setSizes(() => []);
+      // }
 
       try {
-        const sizesRef: ReferenceObject[] = await getCollectionWithQuery(
-          COLLECTION_NAME.REFERENCES,
-          where('name', '==', 'sizes')
-        );
+        const sizes = await getSizes();
 
-        if (!sizesRef || !sizesRef.length) throw new Error('Sizes not found');
-
-        sizes = sizesRef[0].values;
-
-        setSizes(() => sizes);
-      } catch (error: any) {
-        console.log(error);
-
-        setSizes(() => []);
-      }
+        setSizes(sizes);
+      } catch (error) {}
     }
 
     fetchSizes();
@@ -60,34 +64,67 @@ function VariantManager(props: VariantManagerProps) {
 
   //#region handlers
 
-  function handleAdd(variant: ProductVariant) {
-    props.onChange([...props.variants, variant]);
+  function handleAdd(variant: Omit<Variant, 'id'>) {
+    if (variant) {
+      props.onVariantsChange(props.variants.concat(variant));
+    }
   }
 
-  function handleRemove(variant: ProductVariant) {
-    props.onChange(props.variants.filter((p) => p.id !== variant.id));
+  function handleRemove(index: number) {
+    props.onVariantsChange(props.variants.filter((_, i) => i !== index));
   }
 
-  function handleUpdate(variant: ProductVariant) {
+  function handleUpdate(index: number, variant: Omit<Variant, 'id'>) {
     // update variant
-    props.onChange(
-      props.variants.map((p) => {
-        if (p.id === variant.id) {
+
+    props.onVariantsChange(
+      props.variants.map((v, i) => {
+        if (i === index) {
+          const withIdVariant: Variant = variant as Variant;
+
+          console.log(withIdVariant);
+
+          if (withIdVariant.id) {
+            updateVariant(
+              withIdVariant.product_type_id,
+              withIdVariant.product_id,
+              withIdVariant.id,
+              withIdVariant
+            );
+          }
+
           return variant;
+        } else {
+          return v;
         }
-        return p;
       })
     );
+  }
+
+  function handleAddClick() {
+    const newVariant: Omit<Variant, 'id'> = {
+      material: 'Mặc định',
+      size: sizes.length > 0 ? sizes[0].id : '',
+      price: 0,
+      active: true,
+      product_id: '',
+      product_type_id: '',
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    handleAdd(newVariant);
   }
 
   //#endregion
 
   return (
     <List>
-      {props.variants.map((variant) => (
+      {props.variants.map((variant, index) => (
         <VariantItem
+          index={index}
           variant={variant}
-          key={variant.id}
+          key={index}
           references={{
             sizes: sizes,
           }}
@@ -107,15 +144,7 @@ function VariantManager(props: VariantManagerProps) {
           <Button
             variant="contained"
             sx={{ paddingX: 3 }}
-            onClick={() =>
-              handleAdd({
-                id: nanoid(2),
-                material: 'Mặc định',
-                size: sizes[0],
-                price: 0,
-                isActive: true,
-              } as ProductVariant)
-            }
+            onClick={handleAddClick}
           >
             Thêm
           </Button>

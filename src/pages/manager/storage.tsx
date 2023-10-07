@@ -49,6 +49,7 @@ import {
   ModalProductTypeObject,
 } from '@/lib/types/manage';
 import { BaseModel } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,
@@ -169,10 +170,14 @@ export default function Manage() {
           rowModalRef.current?.getProductFormRef()?.getProductTypeName() ??
           'Lỗi';
 
+        const variants: Omit<Variant, 'id'>[] =
+          rowModalRef.current?.getProductFormRef()?.getVariants() ?? [];
+
         addData = {
           data: state.modalData!,
           productTypeName: productTypeName,
           imageFiles: imageFiles?.map((f) => f.file) ?? [],
+          variants: variants,
         } as ProductAddData;
         break;
       case COLLECTION_NAME.BATCHES:

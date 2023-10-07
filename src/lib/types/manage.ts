@@ -1,4 +1,5 @@
 import { BaseModel } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import {
   StorageBatchObject,
   StorageProductObject,
@@ -83,6 +84,7 @@ export type ProductTypeFormRef = {
 export type ProductFormRef = {
   getProductTypeName(): string;
   getImageFiles(): FileWithUrl[] | null;
+  getVariants(): Omit<Variant, 'id'>[];
 };
 
 export type DialogResult = 'close' | 'confirm';

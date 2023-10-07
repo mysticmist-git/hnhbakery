@@ -202,9 +202,11 @@ const ProductTypeForm = (
           />
         </Box>
       </Grid>
+
       <Grid item xs={1}>
         <Divider orientation="vertical" />
       </Grid>
+
       <Grid item xs={5.5}>
         <Stack spacing={1}>
           <Box

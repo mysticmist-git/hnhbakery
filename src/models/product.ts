@@ -11,7 +11,8 @@ import WithId from './withId';
 /**
  * Product
  * Sub-Collections: variants, feedbacks
- * Foreign Keys: ingredients, colors, product_type_id
+ * Foreign Keys: colors, product_type_id
+ * Old foreign keys that I deleted: ingredients
  */
 type Product = WithCreatedUpdated &
   WithActive &

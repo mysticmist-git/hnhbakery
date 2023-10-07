@@ -7,6 +7,7 @@ import {
   StorageProduct,
   StorageProductType,
 } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import { doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
 import { createBatch, deleteBatch, updateBatch } from '../DAO/batchDAO';
@@ -24,7 +25,7 @@ import {
   getProductTypesRef,
   updateProductType,
 } from '../DAO/productTypeDAO';
-import { getVariant } from '../DAO/variantDAO';
+import { createVariant, getVariant } from '../DAO/variantDAO';
 import {
   addDocToFirestore,
   deleteImageFromFirebaseStorage,
@@ -62,6 +63,7 @@ export type ProductTypeAddData = AddData & {
 export type ProductAddData = AddData & {
   productTypeName: string;
   imageFiles: File[];
+  variants: Omit<Variant, 'id'>[];
 };
 
 export type BatchAddData = AddData & {};
@@ -241,6 +243,11 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
     await createProduct(ref, data);
 
+    for (const variant of productAddData.variants) {
+      variant.product_id = ref.id;
+      await createVariant(data.product_type_id, ref.id, variant);
+    }
+
     const refetchedData = await getProduct(data.product_type_id, ref.id);
 
     let imageUrls: PathWithUrl[] = [];
@@ -268,6 +275,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
     const refinedData: ModalProduct = {
       ...refetchedData,
       imageUrls: imageUrls,
+      variantCount: productAddData.variants.length,
     };
 
     return refinedData;
@@ -295,10 +303,7 @@ export class ProductDataManagerStrategy implements DataManagerStrategy {
 
         data.images = updatedPaths;
       }
-
-      updateDocToFirestore(data, COLLECTION_NAME.PRODUCTS);
-      updateProduct(data.product_type_id, data.id, data);
-
+      await updateProduct(data.product_type_id, data.id, data);
       return data;
     } catch (error: any) {
       throw new Error(error);

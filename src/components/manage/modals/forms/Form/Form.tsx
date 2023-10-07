@@ -36,7 +36,7 @@ const Form = (
   useImperativeHandle(
     ref,
     () => {
-      return {
+      const ref: FormRef = {
         getProductTypeFormRef() {
           return productTypeFormRef.current;
         },
@@ -44,6 +44,8 @@ const Form = (
           return productFormRef.current;
         },
       };
+
+      return ref;
     },
     [productTypeFormRef, productFormRef]
   );

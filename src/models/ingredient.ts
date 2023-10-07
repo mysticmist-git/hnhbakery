@@ -6,6 +6,8 @@ import {
 } from 'firebase/firestore';
 import WithId from './withId';
 
+//TODO - Remove this
+
 /**
  * Product
  */

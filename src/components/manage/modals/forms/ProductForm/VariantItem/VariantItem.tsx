@@ -1,7 +1,7 @@
-import { MyMultiValuePickerInput } from '@/components/inputs/MultiValue';
-import { ProductVariant } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
-import { Delete, Edit, Remove } from '@mui/icons-material';
+import Size from '@/models/size';
+import Variant from '@/models/variant';
+import { Delete, Edit } from '@mui/icons-material';
 import {
   Button,
   ListItem,
@@ -15,13 +15,14 @@ import {
 import { useState } from 'react';
 
 type VariantItemReferences = {
-  sizes: string[];
+  sizes: Size[];
 };
 
 type VariantItemProps = {
-  variant: ProductVariant;
-  onRemove: (variant: ProductVariant) => void;
-  onUpdate: (variant: ProductVariant) => void;
+  index: number;
+  variant: Omit<Variant, 'id'>;
+  onRemove: (index: number) => void;
+  onUpdate: (index: number, variant: Omit<Variant, 'id'>) => void;
   references: VariantItemReferences;
   readOnly?: boolean;
   disabled?: boolean;
@@ -41,9 +42,10 @@ const EditableTextField = styled(TextField)({
 });
 
 function VariantItem(props: VariantItemProps) {
-  const { variant, onRemove, onUpdate } = props;
+  const { index, variant, references, onRemove, onUpdate } = props;
   const [isEditing, setIsEditing] = useState(false);
-  const [editedVariant, setEditedVariant] = useState(variant);
+  const [editedVariant, setEditedVariant] =
+    useState<Omit<Variant, 'id'>>(variant);
 
   function handleEdit() {
     setIsEditing(true);
@@ -52,7 +54,7 @@ function VariantItem(props: VariantItemProps) {
 
   function handleSave() {
     setIsEditing(false);
-    onUpdate(editedVariant);
+    onUpdate(index, editedVariant);
   }
 
   function handleCancel() {
@@ -105,9 +107,9 @@ function VariantItem(props: VariantItemProps) {
               value={editedVariant.size}
               aria-label="product-variant-sizes"
             >
-              {props.references.sizes.map((size) => (
-                <ToggleButton key={size} value={size}>
-                  {size}
+              {references.sizes.map((size) => (
+                <ToggleButton key={size.id} value={size.id}>
+                  {size.name}
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
@@ -138,7 +140,10 @@ function VariantItem(props: VariantItemProps) {
       ) : (
         <>
           <ListItemText
-            primary={`${variant.material} - ${variant.size}`}
+            primary={`${variant.material} - ${
+              references.sizes.find((size) => size.id === variant.size)?.name ??
+              'Không'
+            }`}
             secondary={formatPrice(variant.price)}
             sx={{
               fontWeight: 'bold',
@@ -159,7 +164,7 @@ function VariantItem(props: VariantItemProps) {
               </Button>
               <RemoveButton
                 variant="contained"
-                onClick={() => onRemove(variant)}
+                onClick={() => onRemove(index)}
                 startIcon={<Delete />}
               >
                 Xóa

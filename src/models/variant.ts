@@ -21,6 +21,7 @@ type Variant = WithCreatedUpdated &
     size: string;
     price: number;
     product_id: string;
+    product_type_id: string;
   };
 
 const variantConverter: FirestoreDataConverter<Variant> = {

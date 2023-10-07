@@ -1,20 +1,19 @@
 import placeholderImage from '@/assets/placeholder-image.png';
 import { MyMultiValueInput } from '@/components/inputs/MultiValue';
+import { getColors } from '@/lib/DAO/colorDAO';
+import { getVariants } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollectionWithQuery } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
-import {
-  PathWithUrl,
-  ProductTypeObject,
-  ProductVariant,
-  ReferenceObject,
-} from '@/lib/models';
+import { PathWithUrl, ProductTypeObject, ReferenceObject } from '@/lib/models';
 import {
   FileWithUrl,
   ModalFormProps,
   ProductFormRef,
 } from '@/lib/types/manage';
+import Color from '@/models/color';
 import { ModalProduct } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import theme from '@/styles/themes/lightTheme';
 import {
   Autocomplete,
@@ -60,8 +59,10 @@ function ProductForm(
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
   const [imageFiles, setImageFiles] = useState<FileWithUrl[]>([]);
+
+  const [variants, setVariants] = useState<Omit<Variant, 'id'>[]>([]);
 
   //#endregion
 
@@ -125,8 +126,8 @@ function ProductForm(
     }
   }
 
-  function handleVariantsChange(variants: ProductVariant[]) {
-    handleFieldChange('variants', [...variants]);
+  function handleVariantsChange(variants: Omit<Variant, 'id'>[]) {
+    setVariants(variants);
   }
 
   //#endregion
@@ -149,28 +150,31 @@ function ProductForm(
     }
 
     async function fetchColors() {
-      let colors: string[] = [];
+      try {
+        const colors = await getColors();
+        setColors(colors);
+      } catch (error) {
+        console.log('Fail to fetch colors for product type form', error);
+        setColors([]);
+      }
+    }
+
+    async function fetchVariants() {
+      if (mode !== 'view') return;
 
       try {
-        const colorsRef: ReferenceObject[] = await getCollectionWithQuery(
-          COLLECTION_NAME.REFERENCES,
-          where('name', '==', 'colors')
-        );
+        const variants = await getVariants(data.product_type_id, data.id);
 
-        if (!colorsRef || !colorsRef.length)
-          throw new Error('Colors not found');
-
-        colors = colorsRef[0].values;
-
-        setColors(() => colors);
-      } catch (error: any) {
-        console.log(error);
+        setVariants(variants);
+      } catch (error) {
+        console.log('Fail to fetch variants of current product.');
       }
     }
 
     fetchProductTypes();
     fetchColors();
-  }, []);
+    fetchVariants();
+  }, [data.id, data.product_type_id, mode]);
 
   //#endregion
 
@@ -189,9 +193,12 @@ function ProductForm(
         getImageFiles() {
           return imageFiles;
         },
+        getVariants() {
+          return variants;
+        },
       };
     },
-    [data.product_type_id, imageFiles, productTypes]
+    [data.product_type_id, imageFiles, productTypes, variants]
   );
 
   //#endregion
@@ -331,7 +338,7 @@ function ProductForm(
               fullWidth
               value={data.how_to_use}
               rows={3}
-              onChange={(e) => handleFieldChange('howToUse', e.target.value)}
+              onChange={(e) => handleFieldChange('how_to_use', e.target.value)}
             />
             <TextField
               label="Cách bảo quản"
@@ -419,8 +426,8 @@ function ProductForm(
                 onChange={handleColorsChange}
               >
                 {colors.map((color) => (
-                  <ToggleButton key={color} value={color}>
-                    {color}
+                  <ToggleButton key={color.id} value={color.id}>
+                    {color.name}
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
@@ -446,8 +453,8 @@ function ProductForm(
           />
 
           <VariantManager
-            variants={data.variants}
-            onChange={handleVariantsChange}
+            variants={variants}
+            onVariantsChange={handleVariantsChange}
             readOnly={readOnly}
             disabled={disabled}
           />

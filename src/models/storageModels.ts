@@ -12,7 +12,10 @@ export type StorageProductType = {
   imageURL: string;
 } & ProductType;
 
-export type StorageProduct = { imageUrls: PathWithUrl[] } & Product;
+export type StorageProduct = {
+  imageUrls: PathWithUrl[];
+  variantCount: number;
+} & Product;
 
 export type StorageBatch = {
   material: string;

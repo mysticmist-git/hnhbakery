@@ -41,6 +41,7 @@ import { nanoid } from 'nanoid';
 import { createContact } from './DAO/contactDAO';
 import { getAllProducts } from './DAO/productDAO';
 import { getProductTypeById, getProductTypes } from './DAO/productTypeDAO';
+import { getVariantsRef } from './DAO/variantDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
   BaseObject,
@@ -491,9 +492,15 @@ export const fetchProductsForStoragePage = async (): Promise<
         console.log(error);
       }
 
+      // Get variant count
+      const variantCount = await countDocs(
+        getVariantsRef(product.product_type_id, product.id).path
+      );
+
       const storageProduct: StorageProduct = {
         ...product,
         imageUrls: imageUrls,
+        variantCount: variantCount,
       };
 
       return storageProduct;

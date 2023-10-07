@@ -5,6 +5,7 @@ import {
   DocumentReference,
   DocumentSnapshot,
   QuerySnapshot,
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -214,6 +215,14 @@ export async function updateVariant(
 
     await updateDoc(variantRef, data);
   }
+}
+
+export async function createVariant(
+  productTypeId: string,
+  productId: string,
+  data: Omit<Variant, 'id'>
+): Promise<DocumentReference<Omit<Variant, 'id'>>> {
+  return await addDoc(getVariantsRef(productTypeId, productId), data);
 }
 
 export async function deleteVariant(

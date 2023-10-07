@@ -275,12 +275,11 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             hideable: false,
           },
           {
-            field: 'variants',
+            field: 'variantCount',
             type: 'number',
             headerName: 'Biến thể',
             align: 'left',
             headerAlign: 'left',
-            valueGetter: (params) => params.value?.length ?? 0,
             hideable: false,
           },
           {
