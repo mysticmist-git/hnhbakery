@@ -7,6 +7,12 @@ import {
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
+import PaymentMethod from './paymentMethod';
+import User from './user';
+import Sale from './sale';
+import Delivery, { DeliveryTableRow } from './delivery';
+import { BillItemTableRow } from './billItem';
+import { Theme, useTheme } from '@mui/material';
 
 /**
  * State of a bill
@@ -35,8 +41,17 @@ type Bill = WithCreatedUpdated &
     payment_method_id: string;
     sale_id: string;
     customer_id: string;
+    delivery_id: string;
     paid_time: Date;
   };
+
+type BillTableRow = Bill & {
+  paymentMethod?: PaymentMethod;
+  customer?: User;
+  sale?: Sale;
+  deliveryTableRow?: DeliveryTableRow;
+  billItems?: BillItemTableRow[];
+};
 
 const billConverter: FirestoreDataConverter<Bill> = {
   toFirestore: function (modelObject: WithFieldValue<Bill>): DocumentData {
@@ -56,5 +71,47 @@ const billConverter: FirestoreDataConverter<Bill> = {
   },
 };
 
+export function billStateContentParse(params: BillState | undefined) {
+  switch (params) {
+    case 'issued':
+      return 'Lỗi';
+    case 'pending':
+      return 'Chưa thanh toán';
+    case 'paid':
+      return 'Đã thanh toán';
+    case 'overdue':
+      return 'Quá hạn';
+    case 'cancelled':
+      return 'Đã hủy';
+    case 'refunded':
+      return 'Hoàn tiền';
+    default:
+      return 'Lỗi';
+  }
+}
+
+export function billStateColorParse(
+  theme: Theme,
+  value: BillState | undefined
+) {
+  switch (value) {
+    case 'issued':
+      return theme.palette.error.main;
+    case 'pending':
+      return theme.palette.text.secondary;
+    case 'paid':
+      return theme.palette.success.main;
+    case 'overdue':
+      return theme.palette.text.secondary;
+    case 'cancelled':
+      return theme.palette.error.main;
+    case 'refunded':
+      return theme.palette.secondary.main;
+    default:
+      return theme.palette.error.main;
+  }
+}
+
 export default Bill;
+export type { Bill, BillTableRow, BillState };
 export { billConverter };

@@ -1,18 +1,19 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_BillObject } from '@/lib/models';
+
 import { formatDateString } from '@/lib/utils';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import { InputAdornment, Tooltip, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Outlined_TextField from '../Outlined_TextField';
+import { BillTableRow } from '@/models/bill';
 
 export default function ThongTin_Content({
   textStyle,
   modalBill,
 }: {
   textStyle: any;
-  modalBill: SuperDetail_BillObject | null;
+  modalBill: BillTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -31,7 +32,7 @@ export default function ThongTin_Content({
       >
         <Outlined_TextField
           label="Người đặt"
-          value={modalBill?.userObject?.name ?? 'GUEST'}
+          value={modalBill?.customer?.name ?? 'GUEST'}
           textStyle={textStyle}
           InputProps={{
             readOnly: true,
@@ -39,13 +40,13 @@ export default function ThongTin_Content({
               pointerEvents: 'auto',
               borderRadius: '8px',
             },
-            endAdornment: modalBill?.userObject && (
+            endAdornment: modalBill?.customer && (
               <InputAdornment position="end">
                 <CustomIconButton
                   edge="end"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      modalBill?.userObject?.id ?? 'GUEST'
+                      modalBill?.customer?.id ?? 'GUEST'
                     );
                     handleSnackbarAlert(
                       'success',
@@ -74,12 +75,12 @@ export default function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Thanh toán lúc"
-            value={formatDateString(modalBill?.paymentTime ?? new Date())}
+            value={formatDateString(modalBill?.paid_time ?? new Date())}
           />
           <Outlined_TextField
             textStyle={textStyle}
             label="Thanh toán qua"
-            value={modalBill?.paymentObject?.name ?? 'Trống'}
+            value={modalBill?.paymentMethod?.name ?? 'Trống'}
           />
         </Box>
 

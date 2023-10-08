@@ -1,6 +1,5 @@
 import Bill from '@/models/bill';
 import BillItem, { billItemConverter } from '@/models/billItem';
-import { promises } from 'dns';
 import {
   CollectionReference,
   DocumentReference,
@@ -94,7 +93,7 @@ export async function getBillItemsSnapshot(
   arg1: string | DocumentReference<Bill>,
   arg2?: string,
   arg3?: string
-) {
+): Promise<QuerySnapshot<BillItem>> {
   if (typeof arg1 === 'string') {
     const groupId = arg1;
     const userId = arg2 as string;
@@ -126,15 +125,13 @@ export async function getBillItems(
     const userId = arg2 as string;
     const billId = arg3 as string;
 
-    return (await getDocs(getBillItemsRef(groupId, userId, billId))).docs.map(
+    return (await getBillItemsSnapshot(groupId, userId, billId)).docs.map(
       (doc) => doc.data()
     );
   } else {
     const billRef = arg1 as DocumentReference<Bill>;
 
-    return (await getDocs(getBillItemsRef(billRef))).docs.map((doc) =>
-      doc.data()
-    );
+    return (await getBillItemsSnapshot(billRef)).docs.map((doc) => doc.data());
   }
 }
 
@@ -191,12 +188,12 @@ export async function getBillItem(
     const billId = arg3 as string;
     const id = arg4 as string;
 
-    return (await getDoc(getBillItemRef(groupId, userId, billId, id))).data();
+    return (await getBillItemSnapshot(groupId, userId, billId, id)).data();
   } else {
     const billRef = arg1 as DocumentReference<Bill>;
     const id = arg2 as string;
 
-    return (await getDoc(getBillItemRef(billRef, id))).data();
+    return (await getBillItemSnapshot(billRef, id)).data();
   }
 }
 

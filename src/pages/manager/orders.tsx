@@ -1,16 +1,21 @@
 import MyModal from '@/components/order/MyModal';
 import ModalState from '@/components/order/MyModal/ModalState';
 import BillTable from '@/components/order/MyTable/BillTable';
+import { getAddress } from '@/lib/DAO/addressDAO';
+import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
+import { getBills } from '@/lib/DAO/billDAO';
+import { getBillItems } from '@/lib/DAO/billItemDAO';
+import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
+import { getPaymentMethodById } from '@/lib/DAO/paymentMethodDAO';
+import { getProduct } from '@/lib/DAO/productDAO';
+import { getProductTypeById } from '@/lib/DAO/productTypeDAO';
+import { getSaleById } from '@/lib/DAO/saleDAO';
+import { getUsers } from '@/lib/DAO/userDAO';
+import { getVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
-import {
-  BillObject,
-  DeliveryObject,
-  PaymentObject,
-  SaleObject,
-  SuperDetail_BillObject,
-  UserObject,
-} from '@/lib/models';
+import { BillTableRow } from '@/models/bill';
 import {
   Box,
   Divider,
@@ -30,24 +35,25 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Order = () => {
-  const [billsData, setBillsData] = useState<SuperDetail_BillObject[]>([]);
+  const [billsData, setBillsData] = useState<BillTableRow[]>([]);
 
   //#region Modal chi tiết
   const [openModalChiTiet, setOpenModalChiTiet] = React.useState(false);
-  const [currentViewBill, setCurrentViewBill] =
-    useState<SuperDetail_BillObject | null>(null);
+  const [currentViewBill, setCurrentViewBill] = useState<BillTableRow | null>(
+    null
+  );
 
   const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
   const handleCloseModalChiTiet = () => setOpenModalChiTiet(false);
 
-  const handleViewBillModalChiTiet = (value: SuperDetail_BillObject) => {
+  const handleViewBillModalChiTiet = (value: BillTableRow) => {
     handleOpenModalChiTiet();
     setCurrentViewBill(() => value);
   };
 
   //#endregion
 
-  const handleBillDataChange = (value: SuperDetail_BillObject) => {
+  const handleBillDataChange = (value: BillTableRow) => {
     setBillsData(() => {
       return billsData.map((bill) => {
         if (bill.id === value.id) {
@@ -64,11 +70,9 @@ const Order = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [billState, setBillState] = useState<SuperDetail_BillObject | null>(
-    null
-  );
+  const [billState, setBillState] = useState<BillTableRow | null>(null);
 
-  const handleViewBillModalState = (bill: SuperDetail_BillObject) => {
+  const handleViewBillModalState = (bill: BillTableRow) => {
     handleOpenModalState();
     setBillState(() => bill);
   };
@@ -77,44 +81,56 @@ const Order = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-        const payments = await getCollection<PaymentObject>(
-          COLLECTION_NAME.PAYMENTS
-        );
-        const users = await getCollection<UserObject>(COLLECTION_NAME.USERS);
-        const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
-        const deliveries = await getCollection<DeliveryObject>(
-          COLLECTION_NAME.DELIVERIES
-        );
+        const finalBills: BillTableRow[] = [];
+        const customers = await getUsers(DEFAULT_GROUP_ID);
 
-        const finalBills: SuperDetail_BillObject[] = bills
-          .map((bill: BillObject) => {
-            const finalBill: SuperDetail_BillObject = {
-              ...bill,
-              paymentObject: payments.find((payment: PaymentObject) => {
-                return payment.id === bill.payment_id;
-              }),
-              userObject: users.find((user: UserObject) => {
-                return user.id === bill.user_id;
-              }),
-              saleObject: sales.find((sale: SaleObject) => {
-                return sale.id === bill.sale_id;
-              }),
-              deliveryObject: deliveries.find((delivery: DeliveryObject) => {
-                return delivery.bill_id === bill.id;
-              }),
-            };
+        for (let c of customers) {
+          const bills = await getBills(c.group_id, c.id);
 
-            return {
-              ...finalBill,
-            };
-          })
-          .sort((a, b) => {
-            return (
-              new Date(b.created_at ?? '').getTime() -
-              new Date(a.created_at ?? '').getTime()
-            );
-          });
+          for (let b of bills) {
+            const billitems = await getBillItems(c.group_id, c.id, b.id);
+
+            const billItems: BillTableRow['billItems'] = [];
+            for (let bi of billitems) {
+              const batch = await getBatchById(bi.batch_id);
+              billItems.push({
+                ...bi,
+                batch: batch,
+                productType: await getProductTypeById(batch!.product_type_id),
+                product: await getProduct(
+                  batch!.product_type_id,
+                  batch!.product_id
+                ),
+                variant: await getVariant(
+                  batch!.product_type_id,
+                  batch!.product_id,
+                  batch!.variant_id
+                ),
+              });
+            }
+
+            const sale =
+              b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+            const delivery = await getDeliveryById(b.delivery_id);
+
+            finalBills.push({
+              ...b,
+              paymentMethod: await getPaymentMethodById(b.payment_method_id),
+              customer: { ...c },
+              sale: sale,
+              deliveryTableRow: {
+                ...delivery!,
+                address: await getAddress(
+                  c.group_id,
+                  c.id,
+                  delivery!.address_id
+                ),
+              },
+              billItems: billItems,
+            });
+          }
+        }
 
         setBillsData(() => finalBills || []);
       } catch (error) {
@@ -123,6 +139,7 @@ const Order = () => {
     };
     fetchData();
   }, []);
+  console.log('billsData', billsData);
 
   const theme = useTheme();
 

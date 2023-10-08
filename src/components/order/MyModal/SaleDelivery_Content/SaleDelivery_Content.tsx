@@ -1,18 +1,18 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_BillObject } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import { InputAdornment, Tooltip, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Outlined_TextField from '../Outlined_TextField';
+import { BillTableRow } from '@/models/bill';
 
 export default function SaleDelivery_Content({
   textStyle,
   modalBill,
 }: {
   textStyle: any;
-  modalBill: SuperDetail_BillObject | null;
+  modalBill: BillTableRow | null;
 }) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
@@ -35,30 +35,31 @@ export default function SaleDelivery_Content({
           label="Khuyến mãi áp dụng"
           multiline
           value={
-            modalBill?.saleObject
-              ? modalBill?.saleObject?.name +
+            modalBill?.sale
+              ? modalBill?.sale?.name +
                 ' | Mã code: ' +
-                modalBill?.saleObject?.code +
+                modalBill?.sale?.code +
                 ' | Giảm ' +
-                modalBill?.saleObject?.percent +
+                modalBill?.sale?.percent +
                 '% (Tối đa ' +
-                formatPrice(modalBill?.saleObject?.maxSalePrice ?? 0) +
+                formatPrice(modalBill?.sale?.limit ?? 0) +
                 ')\nÁp dụng: ' +
                 new Date(
-                  modalBill?.saleObject?.start_at ?? new Date()
+                  modalBill?.sale?.start_at ?? new Date()
                 ).toLocaleString('vi-VI', {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
                 }) +
                 ' - ' +
-                new Date(
-                  modalBill?.saleObject?.end_at ?? new Date()
-                ).toLocaleString('vi-VI', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                })
+                new Date(modalBill?.sale?.end_at ?? new Date()).toLocaleString(
+                  'vi-VI',
+                  {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  }
+                )
               : 'Không áp dụng'
           }
           InputProps={{
@@ -67,13 +68,13 @@ export default function SaleDelivery_Content({
               pointerEvents: 'auto',
               borderRadius: '8px',
             },
-            endAdornment: modalBill?.saleObject && (
+            endAdornment: modalBill?.sale && (
               <InputAdornment position="end">
                 <CustomIconButton
                   edge="end"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      modalBill?.saleObject?.id ?? 'Trống'
+                      modalBill?.sale?.id ?? 'Trống'
                     );
                     handleSnackbarAlert(
                       'success',
@@ -95,12 +96,12 @@ export default function SaleDelivery_Content({
           label="Vận chuyển"
           multiline
           value={
-            modalBill?.deliveryObject
+            modalBill?.deliveryTableRow
               ? 'Mã vận chuyển: ' +
-                modalBill?.deliveryObject?.id +
+                modalBill?.deliveryTableRow?.id +
                 '\nGhi chú cho shipper: ' +
-                (modalBill?.deliveryObject?.shipperNote !== ''
-                  ? modalBill?.deliveryObject?.shipperNote
+                (modalBill?.deliveryTableRow?.delivery_note !== ''
+                  ? modalBill?.deliveryTableRow?.delivery_note
                   : 'Trống')
               : 'Trống'
           }
@@ -110,13 +111,13 @@ export default function SaleDelivery_Content({
               pointerEvents: 'auto',
               borderRadius: '8px',
             },
-            endAdornment: modalBill?.deliveryObject && (
+            endAdornment: modalBill?.deliveryTableRow && (
               <InputAdornment position="end">
                 <CustomIconButton
                   edge="end"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      modalBill?.deliveryObject?.id ?? 'Trống'
+                      modalBill?.deliveryTableRow?.id ?? 'Trống'
                     );
                     handleSnackbarAlert(
                       'success',

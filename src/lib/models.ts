@@ -235,12 +235,12 @@ export interface CustomBill extends BillObject {
   salePercent?: number;
 }
 
-export type AssembledBillDetail = BillDetailObject & {
+type AssembledBillDetail = BillDetailObject & {
   batchObject?: BatchObject;
   productObject?: ProductObject;
 };
 
-export interface SuperDetail_BillObject extends BillObject {
+interface SuperDetail_BillObject extends BillObject {
   paymentObject?: PaymentObject;
   userObject?: UserObject;
   saleObject?: SaleObject;
