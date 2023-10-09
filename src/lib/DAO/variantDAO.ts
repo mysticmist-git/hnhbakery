@@ -182,22 +182,22 @@ export async function updateVariant(
   productTypeId: string,
   productId: string,
   id: string,
-  data: Variant
+  data: Omit<Variant, 'id'>
 ): Promise<void>;
 export async function updateVariant(
   productRef: DocumentReference<Product>,
   id: string,
-  data: Variant
+  data: Omit<Variant, 'id'>
 ): Promise<void>;
 export async function updateVariant(
   variantRef: DocumentReference<Variant>,
-  data: Variant
+  data: Omit<Variant, 'id'>
 ): Promise<void>;
 export async function updateVariant(
   arg1: string | DocumentReference<Product> | DocumentReference<Variant>,
-  arg2: string | Variant,
-  arg3?: string | Variant,
-  data?: Variant
+  arg2: string | Omit<Variant, 'id'>,
+  arg3?: string | Omit<Variant, 'id'>,
+  data?: Omit<Variant, 'id'>
 ): Promise<void> {
   if (typeof arg1 === 'string') {
     const productTypeId = arg1 as string;

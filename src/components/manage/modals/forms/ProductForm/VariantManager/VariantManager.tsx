@@ -1,14 +1,21 @@
 import { getSizes } from '@/lib/DAO/sizeDAO';
-import { updateVariant } from '@/lib/DAO/variantDAO';
 import Size from '@/models/size';
 import Variant from '@/models/variant';
 import { Button, List, ListItem } from '@mui/material';
+import { DocumentReference } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import VariantItem from '../VariantItem';
 
 type VariantManagerProps = {
-  variants: Omit<Variant, 'id'>[];
-  onVariantsChange: (variants: Omit<Variant, 'id'>[]) => void;
+  variants: Variant[];
+  onAddVariant: (
+    variant: Omit<Variant, 'id'>
+  ) => Promise<DocumentReference<Omit<Variant, 'id'>> | undefined>;
+  onUpdateVariant: (
+    idOrIndex: string | number,
+    data: Omit<Variant, 'id'>
+  ) => Promise<void>;
+  onDeleteVariant: (idOrIndex: string | number) => Promise<void>;
   readOnly?: boolean;
   disabled?: boolean;
 };
@@ -30,26 +37,6 @@ function VariantManager(props: VariantManagerProps) {
 
   useEffect(() => {
     async function fetchSizes() {
-      // TODO: Remove this later
-      // let sizes: string[] = [];
-
-      // try {
-      //   const sizesRef: ReferenceObject[] = await getCollectionWithQuery(
-      //     COLLECTION_NAME.REFERENCES,
-      //     where('name', '==', 'sizes')
-      //   );
-
-      //   if (!sizesRef || !sizesRef.length) throw new Error('Sizes not found');
-
-      //   sizes = sizesRef[0].values;
-
-      //   setSizes(() => sizes);
-      // } catch (error: any) {
-      //   console.log(error);
-
-      //   setSizes(() => []);
-      // }
-
       try {
         const sizes = await getSizes();
 
@@ -64,44 +51,28 @@ function VariantManager(props: VariantManagerProps) {
 
   //#region handlers
 
-  function handleAdd(variant: Omit<Variant, 'id'>) {
+  async function handleAdd(variant: Omit<Variant, 'id'>) {
     if (variant) {
-      props.onVariantsChange(props.variants.concat(variant));
+      await props.onAddVariant(variant);
     }
   }
 
-  function handleRemove(index: number) {
-    props.onVariantsChange(props.variants.filter((_, i) => i !== index));
+  async function handleUpdate(
+    idOrIndex: string | number,
+    variant: Omit<Variant, 'id'>
+  ) {
+    if (variant) {
+      await props.onUpdateVariant(idOrIndex, variant);
+    }
   }
 
-  function handleUpdate(index: number, variant: Omit<Variant, 'id'>) {
-    // update variant
-
-    props.onVariantsChange(
-      props.variants.map((v, i) => {
-        if (i === index) {
-          const withIdVariant: Variant = variant as Variant;
-
-          console.log(withIdVariant);
-
-          if (withIdVariant.id) {
-            updateVariant(
-              withIdVariant.product_type_id,
-              withIdVariant.product_id,
-              withIdVariant.id,
-              withIdVariant
-            );
-          }
-
-          return variant;
-        } else {
-          return v;
-        }
-      })
-    );
+  async function handleDelete(idOrIndex: string | number) {
+    if (idOrIndex) {
+      await props.onDeleteVariant(idOrIndex);
+    }
   }
 
-  function handleAddClick() {
+  async function handleAddClick() {
     const newVariant: Omit<Variant, 'id'> = {
       material: 'Mặc định',
       size: sizes.length > 0 ? sizes[0].id : '',
@@ -113,7 +84,7 @@ function VariantManager(props: VariantManagerProps) {
       updated_at: new Date(),
     };
 
-    handleAdd(newVariant);
+    await handleAdd(newVariant);
   }
 
   //#endregion
@@ -128,7 +99,7 @@ function VariantManager(props: VariantManagerProps) {
           references={{
             sizes: sizes,
           }}
-          onRemove={handleRemove}
+          onRemove={handleDelete}
           onUpdate={handleUpdate}
           readOnly={props.readOnly}
           disabled={props.disabled}

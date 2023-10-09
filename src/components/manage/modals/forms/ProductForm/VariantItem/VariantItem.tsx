@@ -20,9 +20,12 @@ type VariantItemReferences = {
 
 type VariantItemProps = {
   index: number;
-  variant: Omit<Variant, 'id'>;
-  onRemove: (index: number) => void;
-  onUpdate: (index: number, variant: Omit<Variant, 'id'>) => void;
+  variant: Variant;
+  onRemove: (idOrIndex: string | number) => Promise<void>;
+  onUpdate: (
+    idOrIndex: string | number,
+    variant: Omit<Variant, 'id'>
+  ) => Promise<void>;
   references: VariantItemReferences;
   readOnly?: boolean;
   disabled?: boolean;
@@ -54,7 +57,7 @@ function VariantItem(props: VariantItemProps) {
 
   function handleSave() {
     setIsEditing(false);
-    onUpdate(index, editedVariant);
+    onUpdate(variant.id || index, editedVariant);
   }
 
   function handleCancel() {
@@ -164,7 +167,7 @@ function VariantItem(props: VariantItemProps) {
               </Button>
               <RemoveButton
                 variant="contained"
-                onClick={() => onRemove(index)}
+                onClick={() => onRemove(variant.id || index)}
                 startIcon={<Delete />}
               >
                 Xóa

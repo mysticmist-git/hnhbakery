@@ -1,8 +1,14 @@
 import placeholderImage from '@/assets/placeholder-image.png';
 import { MyMultiValueInput } from '@/components/inputs/MultiValue';
 import { getColors } from '@/lib/DAO/colorDAO';
-import { getVariants } from '@/lib/DAO/variantDAO';
+import {
+  createVariant,
+  deleteVariant,
+  getVariants,
+  updateVariant,
+} from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
 import { getCollectionWithQuery } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
 import { PathWithUrl, ProductTypeObject, ReferenceObject } from '@/lib/models';
@@ -31,7 +37,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { where } from 'firebase/firestore';
+import { DocumentReference, where } from 'firebase/firestore';
 import {
   ForwardedRef,
   forwardRef,
@@ -55,6 +61,12 @@ function ProductForm(
   { data, disabled, mode, readOnly, onDataChange }: ProductFormProps,
   ref: ForwardedRef<ProductFormRef>
 ) {
+  //#region Hooks
+
+  const snackbarAlert = useSnackbarService();
+
+  //#endregion
+
   //#region States
 
   const [tabValue, setTabValue] = useState<number>(0);
@@ -62,7 +74,7 @@ function ProductForm(
   const [colors, setColors] = useState<Color[]>([]);
   const [imageFiles, setImageFiles] = useState<FileWithUrl[]>([]);
 
-  const [variants, setVariants] = useState<Omit<Variant, 'id'>[]>([]);
+  const [variants, setVariants] = useState<Variant[]>([]);
 
   //#endregion
 
@@ -126,8 +138,99 @@ function ProductForm(
     }
   }
 
-  function handleVariantsChange(variants: Omit<Variant, 'id'>[]) {
-    setVariants(variants);
+  async function handleAddVariant(
+    variant: Omit<Variant, 'id'>
+  ): Promise<DocumentReference<Omit<Variant, 'id'>> | undefined> {
+    if (!variant) {
+      snackbarAlert('info', 'Không tìm thấy biến thể!');
+      return;
+    }
+
+    if (mode === 'create') {
+      setVariants((prev) => [...prev, { ...variant, id: '' }]);
+    } else {
+      try {
+        variant.product_type_id = data.product_type_id;
+        variant.product_id = data.id;
+
+        const ref = await createVariant(data.product_type_id, data.id, variant);
+
+        return ref;
+      } catch (error) {
+        snackbarAlert('info', 'Thêm biến thể thất bại!');
+        return;
+      }
+    }
+  }
+
+  async function handleUpdateVariant(
+    idOrIndex: string | number,
+    variantData: Omit<Variant, 'id'>
+  ): Promise<void> {
+    console.log(idOrIndex);
+
+    if (!variantData) {
+      snackbarAlert('info', 'Không có dữ liệu cập nhật!');
+      return;
+    }
+
+    if (mode === 'create') {
+      setVariants((prev) => {
+        const index =
+          typeof idOrIndex === 'number' ? idOrIndex : parseInt(idOrIndex);
+        console.log(index);
+        return prev.map((v, i) =>
+          i === index ? { ...variantData, id: '' } : v
+        );
+      });
+    } else {
+      try {
+        await updateVariant(
+          data.product_type_id,
+          data.id,
+          idOrIndex as string,
+          variantData
+        );
+        setVariants((prev) =>
+          prev.map((v) =>
+            v.id === idOrIndex ? { ...variantData, id: idOrIndex } : v
+          )
+        );
+        snackbarAlert('success', 'Cập nhật biến thể thành công!');
+      } catch (error) {
+        snackbarAlert('info', 'Cập nhật biến thể thất bại!');
+        return;
+      }
+    }
+  }
+
+  async function handleDeleteVariant(
+    idOrIndex: string | number
+  ): Promise<void> {
+    if (!idOrIndex) {
+      snackbarAlert('info', 'Id sai!');
+      return;
+    }
+
+    if (mode === 'create') {
+      const index =
+        typeof idOrIndex === 'number' ? idOrIndex : parseInt(idOrIndex);
+
+      setVariants((prev) => prev.filter((v, i) => i !== index));
+    } else {
+      if (typeof idOrIndex === 'number') return;
+
+      const id = idOrIndex as string;
+
+      try {
+        await deleteVariant(data.product_type_id, data.id, id);
+        setVariants((prev) => prev.filter((v) => v.id !== id));
+        snackbarAlert('success', 'Xóa biến thể thành công!');
+      } catch (error) {
+        snackbarAlert('info', 'Xóa biến thể thất bại!');
+        return;
+      }
+    }
   }
 
   //#endregion
@@ -454,7 +557,9 @@ function ProductForm(
 
           <VariantManager
             variants={variants}
-            onVariantsChange={handleVariantsChange}
+            onAddVariant={handleAddVariant}
+            onUpdateVariant={handleUpdateVariant}
+            onDeleteVariant={handleDeleteVariant}
             readOnly={readOnly}
             disabled={disabled}
           />
