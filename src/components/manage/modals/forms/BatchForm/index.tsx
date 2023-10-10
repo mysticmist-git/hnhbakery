@@ -1,16 +1,12 @@
 import { CustomTextFieldWithLabel } from '@/components/inputs/textFields';
-import { getProduct } from '@/lib/DAO/productDAO';
+import { getProduct, getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { getVariants } from '@/lib/DAO/variantDAO';
 import {
-  getCollectionWithQuery,
-  getDocFromFirestore,
   getProductTypeWithCount,
   getProductTypeWithCountById,
-  getProductsByType,
 } from '@/lib/firestore';
-import { ProductObject, ProductTypeObject, ProductVariant } from '@/lib/models';
-import { ModalBatchObject, ModalFormProps } from '@/lib/types/manage';
+import { ModalFormProps } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
 import Product from '@/models/product';
 import { ModalBatch, ProductTypeWithCount } from '@/models/storageModels';
@@ -44,8 +40,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const [selectedProductVariant, setSelectedProductVariant] =
-    useState<Variant | null>(null);
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
 
   const [discountAmount, setDiscountAmount] = useState<number>(0);
 
@@ -54,10 +50,10 @@ export default memo(function BatchForm(props: BatchFormProps) {
   //#region Methods
 
   const calculateDiscountMoney = useCallback((): number => {
-    if (!selectedProductVariant || !props.data) return 0;
+    if (!selectedVariant || !props.data) return 0;
 
-    return (selectedProductVariant.price * props.data.discount.percent) / 100;
-  }, [props.data, selectedProductVariant]);
+    return (selectedVariant.price * props.data.discount.percent) / 100;
+  }, [props.data, selectedVariant]);
 
   const handleFieldChange = useCallback(
     <Property extends keyof ModalBatch>(
@@ -141,12 +137,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
       if (product) {
         setSelectedProduct(product);
-        setSelectedProductVariant(
-          () =>
-            product?.variants.find(
-              (variant) => variant.id === props.data?.variant_id
-            ) ?? null
-        );
+
+        const variants = await getVariants(product.product_type_id, product.id);
+
+        setVariants(variants);
+        setSelectedVariant(variants.length > 0 ? variants[0] : null);
       }
     }
 
@@ -158,10 +153,10 @@ export default memo(function BatchForm(props: BatchFormProps) {
     async function fetchProducts() {
       if (!selectedProductType) return;
 
-      let products: ProductObject[] = [];
+      let products: Product[] = [];
 
       try {
-        products = await getProductsByType(selectedProductType.id ?? '');
+        products = await getProducts(selectedProductType.id);
       } catch (error) {
         console.log(error);
       }
@@ -170,23 +165,40 @@ export default memo(function BatchForm(props: BatchFormProps) {
     }
 
     fetchProducts();
-  }, [selectedProductType]);
+    handleFieldChange('product_type_id', selectedProductType?.id ?? '');
+  }, [handleFieldChange, selectedProductType]);
+
+  useEffect(() => {
+    async function fetchVariants() {
+      if (!selectedProduct) return;
+
+      let variants: Variant[] = [];
+
+      try {
+        variants = await getVariants(
+          selectedProduct.product_type_id,
+          selectedProduct.id
+        );
+      } catch (error) {
+        console.log(error);
+      }
+
+      setVariants(variants);
+    }
+
+    fetchVariants();
+    handleFieldChange('product_id', selectedProduct?.id ?? '');
+  }, [handleFieldChange, selectedProduct]);
 
   useEffect(() => {
     setDiscountAmount(() => calculateDiscountMoney());
   }, [calculateDiscountMoney, props.data?.discount.percent]);
 
   useEffect(() => {
-    if (!selectedProduct) return;
+    if (!selectedVariant) return;
 
-    handleFieldChange('product_id', selectedProduct.id);
-  }, [handleFieldChange, selectedProduct]);
-
-  useEffect(() => {
-    if (!selectedProductVariant) return;
-
-    handleFieldChange('variant_id', selectedProductVariant.id);
-  }, [handleFieldChange, selectedProductVariant]);
+    handleFieldChange('variant_id', selectedVariant.id);
+  }, [handleFieldChange, selectedVariant]);
 
   //#endregion
 
@@ -195,16 +207,16 @@ export default memo(function BatchForm(props: BatchFormProps) {
   function handleProductTypeChange(value: ProductTypeWithCount | null) {
     setSelectedProductType(() => value);
     setSelectedProduct(() => null);
-    setSelectedProductVariant(() => null);
+    setSelectedVariant(() => null);
   }
 
-  function handleSelectedProductChange(value: ProductObject | null) {
-    setSelectedProduct(() => value);
-    setSelectedProductVariant(() => null);
+  function handleSelectedProductChange(value: Product | null) {
+    setSelectedProduct(value);
+    setSelectedVariant(null);
   }
 
-  function handleSelectedProductVariantChange(value: ProductVariant | null) {
-    setSelectedProductVariant(() => value);
+  function handleSelectedProductVariantChange(value: Variant | null) {
+    setSelectedVariant(value);
   }
 
   //#endregion
@@ -253,8 +265,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
             <Autocomplete
               title="Biến thể"
               placeholder="Chọn biến thể"
-              options={selectedProduct?.variants ?? []}
-              value={selectedProductVariant}
+              options={variants}
+              value={selectedVariant}
               onChange={(e, value) => handleSelectedProductVariantChange(value)}
               getOptionLabel={(productVariant) =>
                 `${productVariant.material} - ${
@@ -281,13 +293,10 @@ export default memo(function BatchForm(props: BatchFormProps) {
             <Divider />
             <CustomTextFieldWithLabel
               label="Số sản phẩm"
-              value={props.data?.totalQuantity.toString()}
+              value={props.data?.quantity.toString()}
               type="number"
               onChange={(e) =>
-                handleFieldChange(
-                  'totalQuantity',
-                  parseInt(e.target.value) || 0
-                )
+                handleFieldChange('quantity', parseInt(e.target.value) || 0)
               }
               disabled={props.disabled}
               InputProps={{
@@ -297,10 +306,10 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
             <CustomDateTimePicker
               label="Sản xuất lúc"
-              value={dayjs(props.data?.MFG)}
+              value={dayjs(props.data?.mfg)}
               disablePast
               onChange={(value) => {
-                if (value) handleFieldChange('MFG', value.toDate());
+                if (value) handleFieldChange('mfg', value.toDate());
               }}
               readOnly={props.readOnly}
               disabled={props.disabled}
@@ -313,10 +322,10 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
             <CustomDateTimePicker
               label="Hết hạn lúc"
-              value={dayjs(props.data?.EXP)}
-              shouldDisableDate={(day) => day.isBefore(props.data?.MFG)}
+              value={dayjs(props.data?.exp)}
+              shouldDisableDate={(day) => day.isBefore(props.data?.mfg)}
               onChange={(value) => {
-                if (value) handleFieldChange('EXP', value.toDate());
+                if (value) handleFieldChange('exp', value.toDate());
               }}
               readOnly={props.readOnly}
               disabled={props.disabled}
@@ -373,13 +382,13 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
             <CustomDateTimePicker
               label="Bắt đầu từ"
-              value={dayjs(props.data?.discount.date)}
+              value={dayjs(props.data?.discount.start_at)}
               shouldDisableDate={checkShouldDisableDiscountDate}
               onChange={(value) => {
                 if (props.data && value)
                   handleFieldChange('discount', {
                     ...props.data.discount,
-                    date: value.toDate(),
+                    start_at: value.toDate(),
                   });
               }}
               readOnly={props.readOnly}

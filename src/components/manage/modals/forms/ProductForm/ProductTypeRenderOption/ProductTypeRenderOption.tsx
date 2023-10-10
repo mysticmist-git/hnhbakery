@@ -27,7 +27,7 @@ function ProductTypeRenderOption<T extends Nameable & IsActivable>({
         justifyContent="space-between"
       >
         <Typography>{option.name}</Typography>
-        {option.isActive ? (
+        {option.active ? (
           <Check sx={{ color: 'green' }} />
         ) : (
           <Close sx={{ color: 'red' }} />

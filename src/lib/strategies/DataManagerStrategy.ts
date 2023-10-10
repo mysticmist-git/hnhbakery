@@ -345,25 +345,13 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
 
     if (!batchAddData.data) throw new Error(DataManagerErrorCode.NULL_DATA);
 
-    const newDocRef = await addDocToFirestore(
-      {
-        ...data,
-        mfg: data.mfg,
-        exp: data.exp,
-        discount: data.discount,
-      } as BaseModel,
-      COLLECTION_NAME.BATCHES
-    );
-
-    await createBatch(
+    const newDocRef = await createBatch(
       data.product_type_id,
       data.product_id,
       data.variant_id,
       data
     );
 
-    const productType = await getProductTypeById(data.product_type_id);
-    const product = await getProduct(data.product_type_id, data.product_id);
     const variant = await getVariant(
       data.product_type_id,
       data.product_id,

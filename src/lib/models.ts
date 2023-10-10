@@ -1,3 +1,5 @@
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
 import {
   DocumentData,
   FirestoreDataConverter,
@@ -23,7 +25,7 @@ export interface StorageProductTypeObject extends ProductTypeObject {
   imageURL: string;
 }
 
-export interface ProductTypeWithCount extends ProductTypeObject {
+export interface ProductTypeWithCount extends ProductType {
   count: number;
 }
 
@@ -203,7 +205,7 @@ export interface Nameable {
 }
 
 export interface IsActivable {
-  isActive?: boolean;
+  active?: boolean;
 }
 
 export interface Identifiable {

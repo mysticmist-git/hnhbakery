@@ -1,3 +1,5 @@
+import { getProducts } from '@/lib/DAO/productDAO';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
@@ -9,7 +11,14 @@ import {
 } from '@/lib/models';
 import { DeleteRowHandler, ViewRowHandler } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
-import { Delete, Visibility } from '@mui/icons-material';
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
+import { StorageBatch } from '@/models/storageModels';
+import {
+  ConnectingAirportsOutlined,
+  Delete,
+  Visibility,
+} from '@mui/icons-material';
 import {
   Checkbox,
   LinearProgress,
@@ -108,9 +117,9 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   //#region States
 
-  const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
 
-  const [products, setProducts] = useState<ProductObject[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   //#endregion
 
@@ -118,29 +127,29 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
 
   useEffect(() => {
     async function fetchTypes() {
-      let productTypes: ProductTypeObject[] = [];
-
       try {
-        productTypes = await getCollection<ProductTypeObject>(
-          COLLECTION_NAME.PRODUCT_TYPES
-        );
+        const types = await getProductTypes();
+        setProductTypes(types);
       } catch (error) {
         console.log(error);
       }
-
-      setProductTypes(() => productTypes);
     }
 
-    async function fetchProducts() {
-      let products: ProductObject[] = [];
-
+    async function fetchTypesAndProducts() {
       try {
-        products = await getCollection<ProductObject>(COLLECTION_NAME.PRODUCTS);
+        const types = await getProductTypes();
+
+        const fetchedProducts: Product[] = [];
+
+        for (const type of types) {
+          fetchedProducts.push(...(await getProducts(type.id)));
+        }
+
+        setProductTypes(types);
+        setProducts(fetchedProducts);
       } catch (error) {
         console.log(error);
       }
-
-      setProducts(() => products);
     }
 
     switch (props.collectionName) {
@@ -150,8 +159,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
         fetchTypes();
         break;
       case COLLECTION_NAME.BATCHES:
-        fetchTypes();
-        fetchProducts();
+        fetchTypesAndProducts();
         break;
       default:
         break;
@@ -395,8 +403,8 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
             headerName: 'Số lượng',
             type: 'string',
             valueGetter: (params) => {
-              const batch = params.row as StorageBatchObject;
-              return `${batch.soldQuantity}/${batch.totalQuantity}`;
+              const batch = params.row as StorageBatch;
+              return `${batch.sold}/${batch.quantity}`;
             },
           },
           {

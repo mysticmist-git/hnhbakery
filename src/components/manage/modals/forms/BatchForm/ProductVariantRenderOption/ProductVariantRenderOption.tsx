@@ -1,4 +1,5 @@
 import { ProductVariant } from '@/lib/models';
+import Variant from '@/models/variant';
 import { Box, Stack, Typography } from '@mui/material';
 import React from 'react';
 
@@ -32,5 +33,5 @@ export function ProductVariantListItem({
 }
 export type ProductVariantRenderOptionProps = {
   props: React.HTMLAttributes<HTMLLIElement>;
-  option: ProductVariant;
+  option: Variant;
 };

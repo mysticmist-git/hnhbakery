@@ -1,5 +1,7 @@
 import { db, storage } from '@/firebase/config';
+import Batch from '@/models/batch';
 import Contact from '@/models/contact';
+import Product from '@/models/product';
 import ProductType from '@/models/productType';
 import {
   ProductTypeWithCount,
@@ -38,10 +40,12 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
+import { getBatches, getBatchesWithQuery } from './DAO/batchDAO';
 import { createContact } from './DAO/contactDAO';
 import { getAllProducts } from './DAO/productDAO';
 import { getProductTypeById, getProductTypes } from './DAO/productTypeDAO';
-import { getVariantsRef } from './DAO/variantDAO';
+import { getSizes } from './DAO/sizeDAO';
+import { getVariant, getVariantsRef } from './DAO/variantDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
   BaseObject,
@@ -347,13 +351,13 @@ export async function getBestSellterProducts(): Promise<ProductObject[]> {
   const queryLimit = 7;
 
   const batches = await getBatchesWithQuery(
-    where('soldQuantity', '>=', minSoldQuantity),
-    orderBy('soldQuantity', 'desc'),
+    where('sold', '>=', minSoldQuantity),
+    orderBy('quantity', 'desc'),
     limit(queryLimit)
   );
 
   const filterExpireBatchs = batches.filter(
-    (batch) => new Date(batch.EXP).getTime() > new Date().getTime()
+    (batch) => new Date(batch.exp).getTime() > new Date().getTime()
   );
 
   const productIds = filterDuplicates<string>(
@@ -513,6 +517,37 @@ export const fetchProductsForStoragePage = async (): Promise<
 export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
   const storageBatches: StorageBatch[] = [];
 
+  try {
+    const batches = await getBatches();
+    const sizes = await getSizes();
+
+    console.log(batches);
+    console.log(sizes);
+
+    for (const b of batches) {
+      const variant = await getVariant(
+        b.product_type_id,
+        b.product_id,
+        b.variant_id
+      );
+
+      console.log(variant);
+
+      const storageBatch: StorageBatch = {
+        ...b,
+        size: sizes.find((s) => s.id === variant?.size)?.name ?? 'không',
+        material: variant?.material ?? 'không',
+        price: variant?.price ?? 0,
+      };
+
+      storageBatches.push(storageBatch);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  console.log(storageBatches);
+
   return storageBatches;
 };
 
@@ -572,15 +607,13 @@ export async function getProductsByType(id: string): Promise<ProductObject[]> {
 
 //#region Local Functions
 
-export async function fetchAvailableBatches(): Promise<BatchObject[]> {
+export async function fetchAvailableBatches(): Promise<Batch[]> {
   try {
     let batches = await getBatchesWithQuery(
       where('EXP', '>=', Timestamp.now())
     );
 
-    batches = batches.filter(
-      (batch) => batch.soldQuantity < batch.totalQuantity
-    );
+    batches = batches.filter((batch) => batch.sold < batch.quantity);
 
     return batches;
   } catch (error) {
@@ -605,8 +638,8 @@ export function calculateTotalSoldQuantity(batches: BatchObject[]): number {
 
 type GetBelongBatchesStrategy = (
   productId: string,
-  batches?: BatchObject[]
-) => Promise<BatchObject[]>;
+  batches?: Batch[]
+) => Promise<Batch[]>;
 
 const getBelongBatchesWithExistedBatches: GetBelongBatchesStrategy = async (
   productId,
@@ -614,7 +647,7 @@ const getBelongBatchesWithExistedBatches: GetBelongBatchesStrategy = async (
 ) => {
   if (!productId || !batches) return [];
 
-  const belongBatches = (batches as BatchObject[]).filter(
+  const belongBatches = (batches as Batch[]).filter(
     (b) => b.product_id === productId
   );
 
@@ -634,8 +667,8 @@ const getBelongBatchesWithProductId: GetBelongBatchesStrategy = async (
 
   // Combine the results
   belongBatches = belongBatches
-    .filter((b) => b.EXP.getTime() > new Date().getTime())
-    .filter((b) => b.totalQuantity > b.soldQuantity);
+    .filter((b) => b.exp.getTime() > new Date().getTime())
+    .filter((b) => b.quantity > b.sold);
 
   return belongBatches;
 };
@@ -645,61 +678,63 @@ export function checkBatchDiscounted(batch: BatchObject): boolean {
 }
 
 export async function assembleProduct(
-  product: ProductObject,
-  batches?: BatchObject[]
+  product: Product,
+  batches?: Batch[]
 ): Promise<AssembledProduct> {
-  const type = await getDocFromFirestore<ProductTypeObject>(
-    COLLECTION_NAME.PRODUCT_TYPES,
-    product.productType_id
-  );
+  throw new Error('Not implemented');
+  // const type = await getDocFromFirestore<ProductTypeObject>(
+  //   COLLECTION_NAME.PRODUCT_TYPES,
+  //   product.product_type_id
+  // );
 
-  const getBelongBatches: GetBelongBatchesStrategy = batches
-    ? getBelongBatchesWithExistedBatches
-    : getBelongBatchesWithProductId;
+  // const getBelongBatches: GetBelongBatchesStrategy = batches
+  //   ? getBelongBatchesWithExistedBatches
+  //   : getBelongBatchesWithProductId;
 
-  let discounted = false;
+  // let discounted = false;
 
-  let belongBatches = await getBelongBatches(product.id, batches);
+  // let belongBatches = await getBelongBatches(product.id, batches);
 
-  console.log(belongBatches);
+  // console.log(belongBatches);
 
-  const checkedBelongBatches = belongBatches.map((b) => {
-    const batchDiscounted = checkBatchDiscounted(b);
+  // const checkedBelongBatches = belongBatches.map((b) => {
+  //   const batchDiscounted = checkBatchDiscounted(b);
 
-    if (batchDiscounted) discounted = true;
+  //   if (batchDiscounted) discounted = true;
 
-    return {
-      ...b,
-      discounted: batchDiscounted,
-    };
-  });
+  //   return {
+  //     ...b,
+  //     discounted: batchDiscounted,
+  //   };
+  // });
 
-  const belongBatchesIds = belongBatches.map((b) => b.variant_id);
+  // const belongBatchesIds = belongBatches.map((b) => b.variant_id);
 
-  const assembledProduct: AssembledProduct = {
-    ...product,
-    type: type,
-    batches: checkedBelongBatches,
-    totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),
-    variants: product.variants.filter((v) => belongBatchesIds.includes(v.id)),
-    href: `/${DETAIL_PATH}?id=${product.id}`,
-    hasDiscounted: discounted,
-  };
+  // const assembledProduct: AssembledProduct = {
+  //   ...product,
+  //   type: type,
+  //   batches: checkedBelongBatches,
+  //   totalSoldQuantity: calculateTotalSoldQuantity(belongBatches),
+  //   variants: product.variants.filter((v) => belongBatchesIds.includes(v.id)),
+  //   href: `/${DETAIL_PATH}?id=${product.id}`,
+  //   hasDiscounted: discounted,
+  // };
 
-  return assembledProduct;
+  // return assembledProduct;
 }
 
 export const fetchAssembledProduct = async (
   id: string
 ): Promise<AssembledProduct> => {
-  const product = await getDocFromFirestore<ProductObject>(
-    COLLECTION_NAME.PRODUCTS,
-    id
-  );
+  // const product = await getDocFromFirestore<ProductObject>(
+  //   COLLECTION_NAME.PRODUCTS,
+  //   id
+  // );
 
-  const assembledProduct = await assembleProduct(product);
+  // const assembledProduct = await assembleProduct(product);
 
-  return assembledProduct;
+  // return assembledProduct;
+  throw new Error('Not implemented');
 };
 
 /**
@@ -714,61 +749,5 @@ export async function getTotalSoldOfProduct(id: string): Promise<number> {
 
   return await calculateTotalSoldQuantity(batches);
 }
-
-//#endregion
-
-//#region Batch
-
-export async function getBatch(id: string): Promise<BatchObject> {
-  const batch = await getDocFromFirestore<BatchObject>(
-    COLLECTION_NAME.BATCHES,
-    id
-  );
-
-  return {
-    ...batch,
-    discount: {
-      ...batch.discount,
-      date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
-    },
-  };
-}
-
-export const getBatches = async (): Promise<BatchObject[]> => {
-  let batches = await getCollection<BatchObject>(COLLECTION_NAME.BATCHES);
-
-  batches = batches.map((batch) => {
-    return {
-      ...batch,
-      discount: {
-        ...batch.discount,
-        date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
-      },
-    };
-  });
-
-  return batches;
-};
-
-export const getBatchesWithQuery = async (
-  ...queryConstraints: QueryConstraint[]
-): Promise<BatchObject[]> => {
-  let batches = await getCollectionWithQuery<BatchObject>(
-    COLLECTION_NAME.BATCHES,
-    ...queryConstraints
-  );
-
-  batches = batches.map((batch) => {
-    return {
-      ...batch,
-      discount: {
-        ...batch.discount,
-        date: new Date((batch.discount.date as unknown as Timestamp).toDate()),
-      },
-    };
-  });
-
-  return batches;
-};
 
 //#endregion
