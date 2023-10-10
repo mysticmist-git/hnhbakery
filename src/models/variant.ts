@@ -34,12 +34,16 @@ const variantConverter: FirestoreDataConverter<Variant> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Variant {
-    const data: Variant = {
+    const data = snapshot.data(options);
+
+    const convertedData: Variant = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Variant;
 
-    return data;
+    return convertedData;
   },
 };
 

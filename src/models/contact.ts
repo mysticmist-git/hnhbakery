@@ -31,11 +31,15 @@ const contactConverter: FirestoreDataConverter<Contact> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Contact {
-    const data: Contact = {
-      id: snapshot.id,
+    const data = snapshot.data(options);
+
+    const convertedData: Contact = {
       ...snapshot.data(options),
+      id: snapshot.id,
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Contact;
-    return data;
+    return convertedData;
   },
 };
 

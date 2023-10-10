@@ -31,11 +31,15 @@ const groupConverter: FirestoreDataConverter<Group> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Group {
-    const data: Group = {
+    const data = snapshot.data(options);
+
+    const convertedData: Group = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Group;
-    return data;
+    return convertedData;
   },
 };
 

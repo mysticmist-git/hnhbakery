@@ -1,3 +1,4 @@
+import { Theme } from '@mui/material';
 import {
   DocumentData,
   FirestoreDataConverter,
@@ -5,10 +6,9 @@ import {
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
+import Address from './address';
 import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
-import Address from './address';
-import { Theme } from '@mui/material';
 
 type DeliveryState = 'issued' | 'delivering' | 'delivered' | 'cancelled';
 
@@ -47,11 +47,18 @@ const deliveryConverter: FirestoreDataConverter<Delivery> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Delivery {
-    const data: Delivery = {
+    const data = snapshot.data(options);
+
+    const convertedData: Delivery = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      start_at: data.start_at.toDate(),
+      end_at: data.end_at.toDate(),
+      ship_date: data.ship_date.toDate(),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Delivery;
-    return data;
+    return convertedData;
   },
 };
 
@@ -89,5 +96,5 @@ export function deliveryStateColorParse(
 }
 
 export default Delivery;
-export type { Delivery, DeliveryTableRow };
 export { deliveryConverter };
+export type { Delivery, DeliveryTableRow };

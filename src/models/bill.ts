@@ -1,3 +1,4 @@
+import { Theme, useTheme } from '@mui/material';
 import {
   DocumentData,
   FirestoreDataConverter,
@@ -5,14 +6,13 @@ import {
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
-import WithCreatedUpdated from './created_updated';
-import WithId from './withId';
-import PaymentMethod from './paymentMethod';
-import User from './user';
-import Sale from './sale';
-import Delivery, { DeliveryTableRow } from './delivery';
 import { BillItemTableRow } from './billItem';
-import { Theme, useTheme } from '@mui/material';
+import WithCreatedUpdated from './created_updated';
+import Delivery, { DeliveryTableRow } from './delivery';
+import PaymentMethod from './paymentMethod';
+import Sale from './sale';
+import User from './user';
+import WithId from './withId';
 
 /**
  * State of a bill
@@ -63,11 +63,16 @@ const billConverter: FirestoreDataConverter<Bill> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Bill {
-    const data: Bill = {
+    const data = snapshot.data(options);
+
+    const convertedData: Bill = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      paid_time: data.paid_time.toDate(),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Bill;
-    return data;
+    return convertedData;
   },
 };
 
@@ -113,5 +118,5 @@ export function billStateColorParse(
 }
 
 export default Bill;
-export type { Bill, BillTableRow, BillState };
 export { billConverter };
+export type { Bill, BillState, BillTableRow };

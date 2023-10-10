@@ -35,14 +35,24 @@ const batchConverter: FirestoreDataConverter<Batch> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Batch {
-    const data: Batch = {
+    const data = snapshot.data(options);
+
+    const convertedData: Batch = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      mfg: data.mfg.toDate(),
+      exp: data.exp.toDate(),
+      discount: {
+        ...data.discount,
+        start_at: data.discount.start_at.toDate(),
+      },
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Batch;
-    return data;
+
+    return convertedData;
   },
 };
 
 export default Batch;
 export { batchConverter };
-

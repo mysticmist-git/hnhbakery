@@ -6,9 +6,9 @@ import {
   WithFieldValue,
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
-import WithId from './withId';
-import User from './user';
 import Product from './product';
+import User from './user';
+import WithId from './withId';
 
 /**
  * Feedback
@@ -37,14 +37,18 @@ const feedbackConverter: FirestoreDataConverter<Feedback> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Feedback {
-    const data: Feedback = {
+    const data = snapshot.data(options);
+
+    const convertedData: Feedback = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Feedback;
-    return data;
+    return convertedData;
   },
 };
 
 export default Feedback;
-export type { Feedback, FeedbackTableRow };
 export { feedbackConverter };
+export type { Feedback, FeedbackTableRow };

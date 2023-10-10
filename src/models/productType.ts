@@ -35,6 +35,8 @@ const productTypeConverter: FirestoreDataConverter<ProductType> = {
     const object = {
       ...data,
       id: snapshot.id,
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as ProductType;
 
     return object;

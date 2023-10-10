@@ -129,6 +129,7 @@ export default memo(function CustomDataTable(props: CustomDataTableProps) {
     async function fetchTypes() {
       try {
         const types = await getProductTypes();
+        console.log(types);
         setProductTypes(types);
       } catch (error) {
         console.log(error);

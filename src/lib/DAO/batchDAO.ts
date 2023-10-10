@@ -4,6 +4,7 @@ import {
   CollectionReference,
   DocumentReference,
   DocumentSnapshot,
+  QueryConstraint,
   QuerySnapshot,
   addDoc,
   collection,

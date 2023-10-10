@@ -28,11 +28,15 @@ const addressConverter: FirestoreDataConverter<Address> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Address {
-    const data: Address = {
+    const data = snapshot.data(options);
+
+    const convertedData: Address = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Address;
-    return data;
+    return convertedData;
   },
 };
 

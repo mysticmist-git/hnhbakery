@@ -40,14 +40,20 @@ const saleConverter: FirestoreDataConverter<Sale> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): Sale {
-    const data: Sale = {
+    const data = snapshot.data(options);
+
+    const convertedData: Sale = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      start_at: data.start_at.toDate(),
+      end_at: data.end_at.toDate(),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as Sale;
-    return data;
+    return convertedData;
   },
 };
 
 export default Sale;
-export type { Sale, SaleTableRow };
 export { saleConverter };
+export type { Sale, SaleTableRow };

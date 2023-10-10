@@ -37,11 +37,15 @@ const userConverter: FirestoreDataConverter<User> = {
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
   ): User {
-    const data: User = {
+    const data = snapshot.data(options);
+
+    const convertedData: User = {
+      ...data,
       id: snapshot.id,
-      ...snapshot.data(options),
+      created_at: data.created_at.toDate(),
+      updated_at: data.updated_at.toDate(),
     } as User;
-    return data;
+    return convertedData;
   },
 };
 
