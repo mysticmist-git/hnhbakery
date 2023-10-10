@@ -92,7 +92,10 @@ const Sales = () => {
   );
 
   const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
-  const handleCloseModalChiTiet = () => setOpenModalChiTiet(false);
+  const handleCloseModalChiTiet = () => {
+    setOpenModalChiTiet(false);
+    fetchData();
+  };
 
   const handleViewSaleModalChiTiet = (value: SaleTableRow) => {
     handleOpenModalChiTiet();

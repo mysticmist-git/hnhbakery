@@ -1,7 +1,10 @@
 import { db } from '@/firebase/config';
 import Batch, { batchConverter } from '@/models/batch';
 import {
-  QueryConstraint,
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,

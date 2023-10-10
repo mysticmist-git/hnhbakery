@@ -6,20 +6,32 @@ import {
   WithFieldValue,
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
+import Batch from './batch';
+import WithId from './withId';
+import ProductType from './productType';
+import Product from './product';
+import Variant from './variant';
 
 /**
  * Bill item which belongs to a bill
  */
-type BillItem = WithCreatedUpdated & {
-  id: string;
-  price: number;
-  amount: number;
-  discount: number;
-  total_price: number;
-  total_discount: number;
-  final_price: number;
-  batch_id: string;
-  bill_id: string;
+type BillItem = WithCreatedUpdated &
+  WithId & {
+    price: number;
+    amount: number;
+    discount: number;
+    total_price: number;
+    total_discount: number;
+    final_price: number;
+    batch_id: string;
+    bill_id: string;
+  };
+
+type BillItemTableRow = BillItem & {
+  batch?: Batch;
+  productType?: ProductType;
+  product?: Product;
+  variant?: Variant;
 };
 
 const billItemConverter: FirestoreDataConverter<BillItem> = {
@@ -41,4 +53,5 @@ const billItemConverter: FirestoreDataConverter<BillItem> = {
 };
 
 export default BillItem;
+export type { BillItem, BillItemTableRow };
 export { billItemConverter };

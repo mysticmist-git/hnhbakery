@@ -221,36 +221,6 @@ export const validateCollectionNameParams = (
   return manageCollections.includes(collectionName);
 };
 
-export function billStatusParse(state: number | undefined) {
-  switch (state) {
-    case -1:
-      return 'Đã hủy';
-    case 0:
-      return 'Chưa thanh toán';
-    case 1:
-      return 'Đã thanh toán';
-    default:
-      return 'Lỗi';
-  }
-}
-
-export function deliveryStatusParse(state: string | undefined) {
-  switch (state) {
-    case 'cancel':
-      return 'Đã hủy';
-    case 'fail':
-      return 'Giao thất bại';
-    case 'success':
-      return 'Giao thành công';
-    case 'inProcress':
-      return 'Đang xử lý';
-    case 'inTransit':
-      return 'Trên đường giao';
-    default:
-      return 'Lỗi';
-  }
-}
-
 export function userAccountTypeParse(type: string) {
   switch (type) {
     case 'google':

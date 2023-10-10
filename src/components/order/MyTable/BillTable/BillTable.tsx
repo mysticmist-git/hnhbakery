@@ -1,5 +1,3 @@
-import { billStatusParse } from '@/lib/manage/manage';
-import { SuperDetail_BillObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -12,13 +10,18 @@ import {
 } from '@mui/x-data-grid';
 import React, { useEffect, useState } from 'react';
 import { CustomLinearProgres } from '../../../../pages/manager/orders';
+import {
+  BillTableRow,
+  billStateColorParse,
+  billStateContentParse,
+} from '@/models/bill';
 
 export default function BillTable({
   billsData,
   handleViewBill,
   handleViewBillModalState,
 }: {
-  billsData: SuperDetail_BillObject[];
+  billsData: BillTableRow[];
   handleViewBill: any;
   handleViewBillModalState: any;
 }) {
@@ -34,9 +37,6 @@ export default function BillTable({
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
-      // valueFormatter: (params: any) => {
-      //   return stringHash(params.value);
-      // },
     },
     {
       field: 'created_at',
@@ -51,7 +51,7 @@ export default function BillTable({
       },
     },
     {
-      field: 'totalPrice',
+      field: 'final_price',
       headerName: 'Tổng tiền',
       flex: 1,
       align: 'center',
@@ -72,14 +72,14 @@ export default function BillTable({
               gap: 0.2,
             }}
           >
-            {params.row.saleAmount > 0 && (
+            {(params.row.sale_price > 0 || params.row.total_discount > 0) && (
               <span
                 style={{
                   color: theme.palette.text.secondary,
                   textDecoration: 'line-through',
                 }}
               >
-                {formatPrice(params.row.originalPrice)}
+                {formatPrice(params.row.total_price)}
               </span>
             )}
 
@@ -103,21 +103,16 @@ export default function BillTable({
       disableColumnMenu: true,
       hideable: false,
       valueFormatter: (params: any) => {
-        return billStatusParse(params.value);
+        return billStateContentParse(params.value);
       },
       renderCell: (params: any) => {
         return (
           <span
             style={{
-              color:
-                params.value === 1
-                  ? theme.palette.success.main
-                  : params.value === 0
-                  ? theme.palette.text.secondary
-                  : theme.palette.error.main,
+              color: billStateColorParse(theme, params.value),
             }}
           >
-            {billStatusParse(params.value)}
+            {billStateContentParse(params.value)}
           </span>
         );
       },
@@ -159,33 +154,33 @@ export default function BillTable({
       },
     },
     {
-      field: 'payment_id',
+      field: 'payment_method_id',
       headerName: 'Mã HTTT',
       align: 'left',
       headerAlign: 'center',
     },
     {
-      field: 'payment_name',
+      field: 'payment_method_name',
       headerName: 'Tên HTTT',
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.paymentObject?.name ?? '';
+        return params.row.paymentMethod?.name ?? '';
       },
     },
     {
-      field: 'user_id',
+      field: 'customer_id',
       headerName: 'Mã khách hàng',
       align: 'left',
       headerAlign: 'center',
     },
     {
-      field: 'user_name',
+      field: 'customer_name',
       headerName: 'Tên khách hàng',
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.userObject?.name ?? 'GUEST';
+        return params.row.customer?.name ?? 'GUEST';
       },
     },
     {
@@ -200,7 +195,7 @@ export default function BillTable({
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.saleObject?.name ?? '';
+        return params.row.sale?.name ?? '';
       },
     },
     {
@@ -208,9 +203,6 @@ export default function BillTable({
       headerName: 'Mã giao hàng',
       align: 'left',
       headerAlign: 'center',
-      valueGetter(params) {
-        return params.row.deliveryObject?.id ?? '';
-      },
     },
     {
       field: 'delivery_name',
@@ -218,7 +210,7 @@ export default function BillTable({
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.deliveryObject?.name ?? '';
+        return params.row.deliveryTableRow?.name ?? '';
       },
     },
     {
@@ -227,12 +219,12 @@ export default function BillTable({
       align: 'left',
       headerAlign: 'center',
       valueGetter(params) {
-        return params.row.deliveryObject?.tel ?? '';
+        return params.row.deliveryTableRow?.tel ?? '';
       },
     },
   ];
 
-  const [rows, setRows] = useState<SuperDetail_BillObject[]>(billsData);
+  const [rows, setRows] = useState<BillTableRow[]>(billsData);
 
   useEffect(() => {
     setRows(() => billsData);
@@ -245,10 +237,10 @@ export default function BillTable({
         rowHeight={64}
         loading={false}
         columnVisibilityModel={{
-          payment_id: false,
-          payment_name: false,
-          user_id: false,
-          user_name: false,
+          payment_method_id: false,
+          payment_method_name: false,
+          customer_id: false,
+          customer_name: false,
           sale_id: false,
           sale_name: false,
           delivery_id: false,

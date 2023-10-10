@@ -1,22 +1,5 @@
 import { CustomButton, CustomIconButton } from '@/components/buttons';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import {
-  getBatch,
-  getCollectionWithQuery,
-  getDocFromFirestore,
-  updateDocToFirestore,
-} from '@/lib/firestore';
-import { deliveryStatusParse } from '@/lib/manage/manage';
-import {
-  AssembledBillDetail,
-  BatchObject,
-  BillDetailObject,
-  CustomBill,
-  DeliveryObject,
-  ProductObject,
-  SuperDetail_BillObject,
-} from '@/lib/models';
 import { isVNPhoneNumber, validateEmail } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
@@ -34,31 +17,35 @@ import {
 import { Box, alpha } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { where } from 'firebase/firestore';
-import { get } from 'http';
 import { memo, useEffect, useRef, useState } from 'react';
 import Outlined_TextField from './Outlined_TextField';
 import SaleDelivery_Content from './SaleDelivery_Content';
 import SanPham_Content from './SanPham_Content';
 import ThongTin_Content from './ThongTin_Content';
+import { BillTableRow } from '@/models/bill';
+import Delivery, {
+  deliveryStateColorParse,
+  deliveryStateParse,
+} from '@/models/delivery';
+import { updateDelivery } from '@/lib/DAO/deliveryDAO';
 
 type EditType = {
   name?: string;
   tel?: string;
-  email?: string;
-  address?: string;
-  date?: Date;
-  time?: string;
+  mail?: string;
+  // address?: string;
+  ship_date?: Date;
+  ship_time?: string;
 };
 
-function ResetEditContent(bill: SuperDetail_BillObject | null) {
+function ResetEditContent(bill: BillTableRow | null) {
   return {
-    name: bill?.deliveryObject?.name ?? 'Trống',
-    tel: bill?.deliveryObject?.tel ?? 'Trống',
-    email: bill?.deliveryObject?.email ?? 'Trống',
-    address: bill?.deliveryObject?.address ?? 'Trống',
-    date: bill?.deliveryObject?.date ?? new Date(),
-    time: bill?.deliveryObject?.time ?? 'Trống',
+    name: bill?.deliveryTableRow?.name ?? 'Trống',
+    tel: bill?.deliveryTableRow?.tel ?? 'Trống',
+    mail: bill?.deliveryTableRow?.mail ?? 'Trống',
+    // address: bill?.deliveryTableRow?.address?.address ?? 'Trống',
+    ship_date: bill?.deliveryTableRow?.ship_date ?? new Date(),
+    ship_time: bill?.deliveryTableRow?.ship_time ?? 'Trống',
   };
 }
 
@@ -70,8 +57,8 @@ const MyModal = ({
 }: {
   open: boolean;
   handleClose: () => void;
-  bill: SuperDetail_BillObject | null;
-  handleBillDataChange: (newBill: SuperDetail_BillObject) => void;
+  bill: BillTableRow | null;
+  handleBillDataChange: (newBill: BillTableRow) => void;
 }) => {
   const handleSnackbarAlert = useSnackbarService();
 
@@ -104,9 +91,7 @@ const MyModal = ({
   };
   //#endregion
 
-  const [modalBill, setModalBill] = useState<SuperDetail_BillObject | null>(
-    bill
-  );
+  const [modalBill, setModalBill] = useState<BillTableRow | null>(bill);
 
   //#region Modal Chi tiết
   const clearData = () => {
@@ -122,9 +107,7 @@ const MyModal = ({
   };
 
   const [editMode, setEditMode] = useState(false);
-  const [editContent, setEditContent] = useState<EditType | null>(
-    ResetEditContent(bill)
-  );
+  const [editContent, setEditContent] = useState<EditType | null>(null);
   const handleCancelEdit = () => {
     setEditMode(false);
     setEditContent(() => ResetEditContent(bill));
@@ -132,7 +115,7 @@ const MyModal = ({
   };
 
   const handleSaveEdit = async () => {
-    if (editContent?.email && !validateEmail(editContent?.email)) {
+    if (editContent?.mail && !validateEmail(editContent?.mail)) {
       handleSnackbarAlert('warning', 'Email thay đổi không hợp lệ.');
       return;
     }
@@ -140,63 +123,32 @@ const MyModal = ({
       handleSnackbarAlert('warning', 'Số điện thoại thay đổi không hợp lệ.');
       return;
     }
+    const delivery = { ...bill!.deliveryTableRow };
+    delete delivery?.address;
     const data = {
-      ...bill?.deliveryObject,
+      ...delivery,
       ...editContent,
-    } as DeliveryObject;
-    await updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
+    } as Delivery;
+    await updateDelivery(data.id, data);
+
     handleSnackbarAlert('success', 'Thay đổi thành công!');
     setEditMode(false);
-    handleBillDataChange({
+
+    const updatedDelivery: BillTableRow = {
       ...bill!,
-      deliveryObject: data!,
-    });
+      deliveryTableRow: {
+        ...bill!.deliveryTableRow!,
+        ...editContent,
+      },
+    };
+    handleBillDataChange(updatedDelivery);
+    handleClose();
   };
   //#endregion
 
   useEffect(() => {
-    const getData = async (bill: SuperDetail_BillObject) => {
-      try {
-        const billDetails = await getCollectionWithQuery<BillDetailObject>(
-          COLLECTION_NAME.BILL_DETAILS,
-          where('bill_id', '==', bill.id)
-        );
-
-        const assembledBillDetails = await Promise.all(
-          billDetails.map(async (detail) => {
-            const batch = await getBatch(detail.batch_id);
-            const product = (await getDocFromFirestore(
-              COLLECTION_NAME.PRODUCTS,
-              batch.product_id
-            )) as ProductObject;
-            return {
-              ...detail,
-              batchObject: batch,
-              productObject: product,
-            } as AssembledBillDetail;
-          })
-        );
-
-        setModalBill(() => {
-          return {
-            ...bill,
-            billDetailObjects: assembledBillDetails,
-          };
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    if (!bill) {
-      // handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
-      handleClose();
-      return;
-    }
     setModalBill(() => bill);
     setEditContent(() => ResetEditContent(bill));
-
-    getData(bill);
   }, [bill, handleClose]);
 
   return (
@@ -328,8 +280,7 @@ const MyModal = ({
                       Người nhận
                     </Typography>
 
-                    {modalBill?.deliveryObject?.state === 'fail' ||
-                    modalBill?.deliveryObject?.state === 'inProcress' ? (
+                    {modalBill?.deliveryTableRow?.state === 'issued' ? (
                       <Box
                         sx={{
                           display: 'flex',
@@ -381,10 +332,12 @@ const MyModal = ({
                           label="Tên"
                           value={editContent?.name}
                           onChange={(event: any) => {
-                            setEditContent({
-                              ...editContent,
-                              name: event.target.value,
-                            });
+                            if (editMode) {
+                              setEditContent({
+                                ...editContent,
+                                name: event.target.value,
+                              });
+                            }
                           }}
                           InputProps={{
                             readOnly: !editMode,
@@ -402,10 +355,12 @@ const MyModal = ({
                           label="Số điện thoại"
                           value={editContent?.tel}
                           onChange={(event: any) => {
-                            setEditContent({
-                              ...editContent,
-                              tel: event.target.value,
-                            });
+                            if (editMode) {
+                              setEditContent({
+                                ...editContent,
+                                tel: event.target.value,
+                              });
+                            }
                           }}
                           InputProps={{
                             readOnly: !editMode,
@@ -422,12 +377,14 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Email"
-                          value={editContent?.email}
+                          value={editContent?.mail}
                           onChange={(event: any) => {
-                            setEditContent({
-                              ...editContent,
-                              email: event.target.value,
-                            });
+                            if (editMode) {
+                              setEditContent({
+                                ...editContent,
+                                mail: event.target.value,
+                              });
+                            }
                           }}
                           InputProps={{
                             readOnly: !editMode,
@@ -444,13 +401,13 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Địa chỉ giao hàng"
-                          value={editContent?.address}
-                          onChange={(event: any) => {
-                            setEditContent({
-                              ...editContent,
-                              address: event.target.value,
-                            });
-                          }}
+                          value={modalBill?.deliveryTableRow?.address?.address}
+                          // onChange={(event: any) => {
+                          //   setEditContent({
+                          //     ...editContent,
+                          //     address: event.target.value,
+                          //   });
+                          // }}
                           InputProps={{
                             readOnly: true,
                             style: {
@@ -472,12 +429,14 @@ const MyModal = ({
                           sx={{
                             width: '100%',
                           }}
-                          value={dayjs(editContent?.date)}
+                          value={dayjs(editContent?.ship_date)}
                           onChange={(day: any) => {
-                            setEditContent({
-                              ...editContent,
-                              date: new Date(day),
-                            });
+                            if (editMode) {
+                              setEditContent({
+                                ...editContent,
+                                ship_date: new Date(day),
+                              });
+                            }
                           }}
                           format="DD/MM/YYYY"
                           slotProps={{
@@ -503,12 +462,14 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Giờ muốn nhận"
-                          value={editContent?.time}
+                          value={editContent?.ship_time}
                           onChange={(event: any) => {
-                            setEditContent({
-                              ...editContent,
-                              time: event.target.value,
-                            });
+                            if (editMode) {
+                              setEditContent({
+                                ...editContent,
+                                ship_time: event.target.value,
+                              });
+                            }
                           }}
                           InputProps={{
                             readOnly: !editMode,
@@ -524,8 +485,8 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Trạng thái giao hàng"
-                          value={deliveryStatusParse(
-                            modalBill?.deliveryObject?.state ?? 'Trống'
+                          value={deliveryStateParse(
+                            modalBill?.deliveryTableRow?.state
                           )}
                           InputProps={{
                             readOnly: true,
@@ -536,25 +497,10 @@ const MyModal = ({
                           }}
                           inputProps={{
                             sx: {
-                              color: () => {
-                                switch (
-                                  modalBill?.deliveryObject?.state ??
-                                  'Trống'
-                                ) {
-                                  case 'cancel':
-                                    return theme.palette.error.dark;
-                                  case 'fail':
-                                    return theme.palette.error.main;
-                                  case 'success':
-                                    return theme.palette.success.main;
-                                  case 'inProcress':
-                                    return theme.palette.text.secondary;
-                                  case 'inTransit':
-                                    return theme.palette.secondary.main;
-                                  default:
-                                    return theme.palette.common.black;
-                                }
-                              },
+                              color: deliveryStateColorParse(
+                                theme,
+                                modalBill?.deliveryTableRow?.state
+                              ),
                             },
                           }}
                         />

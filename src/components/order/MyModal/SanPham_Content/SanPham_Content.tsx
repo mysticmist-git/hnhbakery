@@ -1,36 +1,37 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { AssembledBillDetail, SuperDetail_BillObject } from '@/lib/models';
+
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { InputAdornment, Tooltip, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Outlined_TextField from '../Outlined_TextField';
+import { BillItemTableRow } from '@/models/billItem';
+import { BillTableRow } from '@/models/bill';
 
 export default function SanPham_Content({
   textStyle,
   modalBill,
 }: {
   textStyle: any;
-  modalBill: SuperDetail_BillObject | null;
+  modalBill: BillTableRow | null;
 }) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
 
-  const getLabel = (item: AssembledBillDetail): string => {
-    const name = item?.productObject?.name ?? 'Trống';
-    const variants = item?.productObject?.variants.find(
-      (variant) => variant.id === item?.batchObject?.variant_id
-    );
+  const getLabel = (item: BillItemTableRow): string => {
+    const name = item?.product?.name ?? 'Trống';
+    const variants = item?.variant;
     return name + ' - ' + variants?.material + ' - Size: ' + variants?.size;
   };
 
-  const getValue = (item: AssembledBillDetail): string => {
-    const batch = item?.batchObject;
+  const getValue = (item: BillItemTableRow): string => {
+    const batch = item?.batch;
 
     var price: string = ' | ';
-    price += formatPrice(item?.price - item?.discountAmount) + '/bánh';
-    if (item?.discountAmount > 0) {
+    price +=
+      formatPrice(item?.price - (item?.discount * item.price) / 100) + '/bánh';
+    if (item?.total_discount > 0) {
       price += ' (Giảm ' + item?.discount + '%/bánh)';
     }
 
@@ -38,15 +39,15 @@ export default function SanPham_Content({
       'Lô: ' +
       batch?.id +
       ' | Ngày sản xuất: ' +
-      formatDateString(batch?.MFG ?? new Date()) +
+      formatDateString(batch?.mfg ?? new Date()) +
       ' | Hạn sử dụng: ' +
-      formatDateString(batch?.EXP ?? new Date()) +
+      formatDateString(batch?.exp ?? new Date()) +
       '\nSố lượng: ' +
       item?.amount +
       ' bánh' +
       price +
       '\nThành tiền: ' +
-      formatPrice((item?.price - item?.discountAmount) * item?.amount)
+      formatPrice(item?.final_price)
     );
   };
 
@@ -63,7 +64,7 @@ export default function SanPham_Content({
           gap: 3,
         }}
       >
-        {modalBill?.billDetailObjects?.map((item, index) => {
+        {modalBill?.billItems?.map((item, index) => {
           return (
             <>
               <Outlined_TextField
@@ -78,13 +79,13 @@ export default function SanPham_Content({
                     pointerEvents: 'auto',
                     borderRadius: '8px',
                   },
-                  endAdornment: modalBill?.deliveryObject && (
+                  endAdornment: modalBill?.deliveryTableRow && (
                     <InputAdornment position="end">
                       <CustomIconButton
                         edge="end"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            item?.batchObject?.id ?? 'Trống'
+                            item?.batch?.id ?? 'Trống'
                           );
                           handleSnackbarAlert(
                             'success',
