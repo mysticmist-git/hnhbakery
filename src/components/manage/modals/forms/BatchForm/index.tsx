@@ -1,16 +1,15 @@
 import { CustomTextFieldWithLabel } from '@/components/inputs/textFields';
-import { getProduct, getProducts } from '@/lib/DAO/productDAO';
+import { getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getVariants } from '@/lib/DAO/variantDAO';
-import {
-  getProductTypeWithCount,
-  getProductTypeWithCountById,
-} from '@/lib/firestore';
+import { useSnackbarService } from '@/lib/contexts';
+import { getProductTypeWithCount } from '@/lib/firestore';
 import { ModalFormProps } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
 import Product from '@/models/product';
 import { ModalBatch, ProductTypeWithCount } from '@/models/storageModels';
 import Variant from '@/models/variant';
+import { withHashCacheAsync } from '@/utils/withHashCache';
 import {
   Autocomplete,
   Divider,
@@ -30,7 +29,50 @@ interface BatchFormProps extends ModalFormProps {
   data: ModalBatch | null;
 }
 
+//#region Local Services
+
+async function fetchProducts(productTypeId: string) {
+  if (!productTypeId) {
+    console.log('[Batch form] Cannot find selected product type');
+    return [];
+  }
+
+  try {
+    const products = await getProducts(productTypeId);
+    return products;
+  } catch (error) {
+    console.log('[Batch form] Cannot re-fetch products', error);
+    return [];
+  }
+}
+async function fetchVariants(productTypeId: string, productId: string) {
+  if (!productTypeId || !productId) {
+    console.log('[Batch form] Cannot find selected product or product type');
+    return [];
+  }
+
+  try {
+    const variants = await getVariants(productTypeId, productId);
+
+    return variants;
+  } catch (error) {
+    console.log('[Batch form] Cannot re-fetch variants', error);
+    return [];
+  }
+}
+
+const cacheFetchProducts = withHashCacheAsync(fetchProducts);
+const cacheFetchVariants = withHashCacheAsync(fetchVariants);
+
+//#endregion
+
 export default memo(function BatchForm(props: BatchFormProps) {
+  //#region Hooks
+
+  // const snackbarAlert = useSnackbarService();
+
+  //#endregion
+
   //#region States
 
   const [productTypes, setProductTypes] = useState<ProductTypeWithCount[]>([]);
@@ -45,9 +87,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   const [discountAmount, setDiscountAmount] = useState<number>(0);
 
+  const [firstTime, setFirstTime] = useState(true);
+
   //#endregion
 
-  //#region Methods
+  //#region Functions
 
   const calculateDiscountMoney = useCallback((): number => {
     if (!selectedVariant || !props.data) return 0;
@@ -72,10 +116,6 @@ export default memo(function BatchForm(props: BatchFormProps) {
     [props]
   );
 
-  //#endregion
-
-  //#region Functions
-
   function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
     const shouldDisabled =
       day.isBefore(props.data?.mfg) || day.isAfter(props.data?.exp);
@@ -87,106 +127,102 @@ export default memo(function BatchForm(props: BatchFormProps) {
   //#region UseEffects
 
   useEffect(() => {
-    async function fetchProductTypes() {
-      let productTypes: ProductTypeWithCount[] = [];
+    async function fetchInitial() {
+      if (!firstTime) return;
 
       try {
-        const docs = await getProductTypes();
-
-        productTypes = await Promise.all(
-          docs.map(async (doc) => await getProductTypeWithCount(doc))
+        const productTypes = await getProductTypes();
+        const productTypesWithCount = await Promise.all(
+          productTypes.map(async (type) => await getProductTypeWithCount(type))
         );
-      } catch (error) {
-        console.log(error);
-      }
+        setProductTypes(productTypesWithCount);
 
-      const haveProductTypes = productTypes.filter((type) => type.count > 0);
+        if (props.mode === 'create') return;
 
-      setProductTypes(() => haveProductTypes);
-    }
-
-    async function fetchNeededDataForView() {
-      if (!props.data) return;
-      if (!props.data.product_id) return;
-
-      let product: Product | null = null;
-
-      try {
-        product =
-          (await getProduct(
-            props.data.product_type_id,
-            props.data.product_id
-          )) ?? null;
-      } catch (error) {
-        console.log(error);
-      }
-
-      if (!product) return;
-
-      let productType: ProductTypeWithCount | null = null;
-
-      try {
-        productType = await getProductTypeWithCountById(
-          product.product_type_id
+        const selectedProductType = productTypesWithCount.find(
+          (type) => type.id === props.data?.product_type_id
         );
-      } catch (error) {
-        console.log(error);
-      }
 
-      setSelectedProductType(() => productType);
+        if (!selectedProductType) {
+          console.log('[Batch Form] Cannot find product type');
+          return;
+        }
 
-      if (product) {
-        setSelectedProduct(product);
+        const products = await getProducts(selectedProductType?.id);
+        const selectedProduct = products.find(
+          (product) => product.id === props.data?.product_id
+        );
 
-        const variants = await getVariants(product.product_type_id, product.id);
+        if (!selectedProduct) {
+          console.log('[Batch Form] Cannot find product');
+          return;
+        }
 
+        const variants = await getVariants(
+          selectedProductType.id,
+          selectedProduct.id
+        );
+
+        const selectedVariant = variants.find(
+          (variant) => variant.id === props.data?.variant_id
+        );
+
+        if (!selectedVariant) {
+          console.log('[Batch Form] Cannot find variant');
+          return;
+        }
+
+        setProducts(products);
         setVariants(variants);
-        setSelectedVariant(variants.length > 0 ? variants[0] : null);
+
+        setSelectedProductType(selectedProductType);
+        setSelectedProduct(selectedProduct);
+        setSelectedVariant(selectedVariant);
+
+        setFirstTime(false);
+      } catch (error) {
+        console.log(error);
       }
     }
 
-    fetchProductTypes();
-    fetchNeededDataForView();
-  }, [props.data]);
+    fetchInitial();
+  }, [firstTime, props.data?.product_id, props.data?.product_type_id, props.data?.variant_id, props.mode]);
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchProductsOnChanges() {
       if (!selectedProductType) return;
 
-      let products: Product[] = [];
-
       try {
-        products = await getProducts(selectedProductType.id);
-      } catch (error) {
-        console.log(error);
-      }
+        const products = await cacheFetchProducts(selectedProductType.id);
 
-      setProducts(() => products);
+        setProducts(products);
+      } catch (error) {
+        console.log('[Batch form] Cannot re-fetch products');
+        setProducts([]);
+      }
     }
 
-    fetchProducts();
+    fetchProductsOnChanges();
     handleFieldChange('product_type_id', selectedProductType?.id ?? '');
   }, [handleFieldChange, selectedProductType]);
 
   useEffect(() => {
-    async function fetchVariants() {
+    async function fetchVariantsOnChanges() {
       if (!selectedProduct) return;
 
-      let variants: Variant[] = [];
-
       try {
-        variants = await getVariants(
+        const variants = await cacheFetchVariants(
           selectedProduct.product_type_id,
           selectedProduct.id
         );
+        setVariants(variants);
       } catch (error) {
-        console.log(error);
+        console.log('[Batch form] Cannot re-fetch variants', error);
+        setVariants([]);
       }
-
-      setVariants(variants);
     }
 
-    fetchVariants();
+    fetchVariantsOnChanges();
     handleFieldChange('product_id', selectedProduct?.id ?? '');
   }, [handleFieldChange, selectedProduct]);
 
@@ -194,20 +230,14 @@ export default memo(function BatchForm(props: BatchFormProps) {
     setDiscountAmount(() => calculateDiscountMoney());
   }, [calculateDiscountMoney, props.data?.discount.percent]);
 
-  useEffect(() => {
-    if (!selectedVariant) return;
-
-    handleFieldChange('variant_id', selectedVariant.id);
-  }, [handleFieldChange, selectedVariant]);
-
   //#endregion
 
   //#region Handlers
 
   function handleProductTypeChange(value: ProductTypeWithCount | null) {
-    setSelectedProductType(() => value);
-    setSelectedProduct(() => null);
-    setSelectedVariant(() => null);
+    setSelectedProductType(value);
+    setSelectedProduct(null);
+    setSelectedVariant(null);
   }
 
   function handleSelectedProductChange(value: Product | null) {
@@ -216,10 +246,16 @@ export default memo(function BatchForm(props: BatchFormProps) {
   }
 
   function handleSelectedProductVariantChange(value: Variant | null) {
-    setSelectedVariant(value);
+    if (value) {
+      setSelectedVariant(value);
+      handleFieldChange('variant_id', value.id);
+      console.log(value);
+    }
   }
 
   //#endregion
+
+  console.log(props.data);
 
   return (
     <>
@@ -259,7 +295,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
                 <CustomTextFieldWithLabel {...params} label="Sản phẩm" />
               )}
               readOnly={props.readOnly}
-              disabled={props.disabled}
+              disabled={props.disabled || !selectedProductType}
             />
 
             <Autocomplete
@@ -280,7 +316,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
                 <ProductVariantRenderOption props={props} option={option} />
               )}
               readOnly={props.readOnly}
-              disabled={props.disabled}
+              disabled={props.disabled || !selectedProduct}
             />
           </Stack>
         </Grid>
@@ -307,7 +343,6 @@ export default memo(function BatchForm(props: BatchFormProps) {
             <CustomDateTimePicker
               label="Sản xuất lúc"
               value={dayjs(props.data?.mfg)}
-              disablePast
               onChange={(value) => {
                 if (value) handleFieldChange('mfg', value.toDate());
               }}

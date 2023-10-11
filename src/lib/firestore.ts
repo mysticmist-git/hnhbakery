@@ -9,6 +9,7 @@ import {
   StorageProduct,
   StorageProductType,
 } from '@/models/storageModels';
+import Variant from '@/models/variant';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -521,17 +522,18 @@ export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
     const batches = await getBatches();
     const sizes = await getSizes();
 
-    console.log(batches);
-    console.log(sizes);
-
     for (const b of batches) {
-      const variant = await getVariant(
-        b.product_type_id,
-        b.product_id,
-        b.variant_id
-      );
+      let variant: Variant | undefined;
 
-      console.log(variant);
+      try {
+        variant = await getVariant(
+          b.product_type_id,
+          b.product_id,
+          b.variant_id
+        );
+      } catch (error) {
+        console.log('[Docs Factory]', error);
+      }
 
       const storageBatch: StorageBatch = {
         ...b,
@@ -546,8 +548,6 @@ export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
     console.log(error);
   }
 
-  console.log(storageBatches);
-
   return storageBatches;
 };
 
@@ -559,8 +559,7 @@ export async function getProductTypeWithCount(type: ProductType) {
   const typeWithCount: ProductTypeWithCount = {
     ...type,
     count: await countDocs(
-      `${COLLECTION_NAME.PRODUCT_TYPES}/${type.id}/${COLLECTION_NAME.PRODUCTS}`,
-      where('product_type_id', '==', type.id)
+      `${COLLECTION_NAME.PRODUCT_TYPES}/${type.id}/${COLLECTION_NAME.PRODUCTS}`
     ),
   };
 
@@ -577,8 +576,7 @@ export async function getProductTypeWithCountById(id: string) {
   const typeWithCount: ProductTypeWithCount = {
     ...productType,
     count: await countDocs(
-      COLLECTION_NAME.PRODUCTS,
-      where('product_type_id', '==', productType.id)
+      `${COLLECTION_NAME.PRODUCT_TYPES}/${productType.id}/${COLLECTION_NAME.PRODUCTS}`
     ),
   };
 

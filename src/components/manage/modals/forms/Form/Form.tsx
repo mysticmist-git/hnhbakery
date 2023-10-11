@@ -12,7 +12,13 @@ import {
   ModalProduct,
   ModalProductType,
 } from '@/models/storageModels';
-import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from 'react';
 import { BatchForm, ProductForm, ProductTypeForm } from '..';
 import { FormProps } from '../../rowModals/RowModal/RowModal';
 
@@ -52,12 +58,15 @@ const Form = (
 
   //#endregion
 
-  const props = {
-    mode,
-    readOnly,
-    disabled,
-    onDataChange,
-  };
+  const props = useMemo(
+    () => ({
+      mode,
+      readOnly,
+      disabled,
+      onDataChange,
+    }),
+    [disabled, mode, onDataChange, readOnly]
+  );
 
   switch (collectionName) {
     case COLLECTION_NAME.PRODUCT_TYPES:
