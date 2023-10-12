@@ -212,10 +212,16 @@ export default function Manage() {
         } as ProductUpdateData;
         break;
       case COLLECTION_NAME.BATCHES:
+        console.log(state.modalData);
+        console.log(state.originalModalData);
+
         updateData = {
           newData: state.modalData,
           originalData: state.originalModalData,
         } as BatchUpdateData;
+
+        console.log(updateData);
+
         break;
       default:
         break;

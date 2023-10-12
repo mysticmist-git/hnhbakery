@@ -2,7 +2,6 @@ import { COLLECTION_NAME } from '@/lib/constants';
 import Batch from '@/models/batch';
 import Product from '@/models/product';
 import ProductType from '@/models/productType';
-import { BatchObject } from '../models';
 import {
   CrudTarget,
   ManageAction,

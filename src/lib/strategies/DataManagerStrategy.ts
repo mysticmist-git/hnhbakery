@@ -345,12 +345,7 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
 
     if (!batchAddData.data) throw new Error(DataManagerErrorCode.NULL_DATA);
 
-    const newDocRef = await createBatch(
-      data.product_type_id,
-      data.product_id,
-      data.variant_id,
-      data
-    );
+    const newDocRef = await createBatch(data);
 
     const variant = await getVariant(
       data.product_type_id,
@@ -371,16 +366,8 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
 
     const data = createBatchObject(batchUpdateData.newData);
 
-    console.log(data);
-
     try {
-      updateBatch(
-        data.product_type_id,
-        data.product_id,
-        data.variant_id,
-        data.id,
-        data
-      );
+      updateBatch(data.id, data);
 
       return batchUpdateData.newData;
     } catch (error: any) {
@@ -401,12 +388,7 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
 
     const castedDoc = doc as StorageBatch;
 
-    deleteBatch(
-      castedDoc.product_type_id,
-      castedDoc.product_id,
-      castedDoc.variant_id,
-      castedDoc.id
-    );
+    deleteBatch(castedDoc.id);
   }
 }
 
