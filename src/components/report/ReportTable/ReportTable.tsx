@@ -1,8 +1,3 @@
-import {
-  BatchObject,
-  SanPhamDoanhThu,
-  SuperDetail_ReportObject,
-} from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Checkbox, useTheme } from '@mui/material';
@@ -22,6 +17,9 @@ import {
   All_So_So,
   So_So_So,
 } from '../HamXuLy/HamXuLy';
+import ReportTableRow from '@/models/report';
+import Batch from '@/models/batch';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 
 export type dataRow = {
   id: string;
@@ -42,36 +40,39 @@ export default function ReportTable({
   handleSpDoanhThuChange,
   handleSpHaoHutChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
-  handleSpHaoHutChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
+  handleSpHaoHutChange: (value: SanPhamDoanhThuType[]) => void;
 }) {
   const theme = useTheme();
 
   const [rows, setRows] = useState<dataRow[]>([]);
 
   const handle = useCallback(
-    (batches_HaoHut: BatchObject[]) => {
-      var spHaoHut: SanPhamDoanhThu[] = [];
+    (batches_HaoHut: Batch[]) => {
+      var spHaoHut: SanPhamDoanhThuType[] = [];
       batches_HaoHut.forEach((batch) => {
-        const productObject = reportData.products.find(
-          (product) => product.id == batch.product_id
+        const productType = reportData.productTypes?.find(
+          (item) => item.id == batch.product_type_id
         );
-        if (productObject) {
+        const product = productType?.products?.find(
+          (item) => item.id == batch.product_id
+        );
+        if (productType) {
           spHaoHut.push({
             ...batch,
             revenue: 0,
             percentage: 0,
-            productObject: productObject,
+            product: product!,
           });
         }
       });
       handleSpHaoHutChange(spHaoHut);
     },
-    [handleSpHaoHutChange, reportData.products]
+    [handleSpHaoHutChange, reportData.productTypes]
   );
 
   useEffect(() => {
@@ -91,10 +92,10 @@ export default function ReportTable({
         })
       );
 
-      const batches_HaoHut = reportData.batches.filter((batch) => {
-        return new Date(batch.EXP) <= new Date();
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        return new Date(batch.exp) <= new Date();
       });
-      handle(batches_HaoHut);
+      handle(batches_HaoHut ? batches_HaoHut : []);
     }
 
     if (isDayAll && !isMonthAll && isYearAll) {
@@ -109,13 +110,13 @@ export default function ReportTable({
         })
       );
 
-      const batches_HaoHut = reportData.batches.filter((batch) => {
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
         return (
-          new Date(batch.EXP) <= new Date() &&
-          new Date(batch.EXP).getMonth() + 1 == reportDate.month
+          new Date(batch.exp) <= new Date() &&
+          new Date(batch.exp).getMonth() + 1 == reportDate.month
         );
       });
-      handle(batches_HaoHut);
+      handle(batches_HaoHut ? batches_HaoHut : []);
     }
 
     if (isDayAll && isMonthAll && !isYearAll) {
@@ -130,17 +131,17 @@ export default function ReportTable({
         })
       );
 
-      const batches_HaoHut = reportData.batches.filter((batch) => {
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
         if (new Date() <= new Date(reportDate.year, 12, 0)) {
           return (
-            new Date(batch.EXP) <= new Date() &&
-            new Date(batch.EXP).getFullYear() == reportDate.year
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getFullYear() == reportDate.year
           );
         } else {
-          return new Date(batch.EXP).getFullYear() == reportDate.year;
+          return new Date(batch.exp).getFullYear() == reportDate.year;
         }
       });
-      handle(batches_HaoHut);
+      handle(batches_HaoHut ? batches_HaoHut : []);
     }
 
     if (isDayAll && !isMonthAll && !isYearAll) {
@@ -155,21 +156,21 @@ export default function ReportTable({
         })
       );
 
-      const batches_HaoHut = reportData.batches.filter((batch) => {
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
         if (new Date() <= new Date(reportDate.year, reportDate.month, 0)) {
           return (
-            new Date(batch.EXP) <= new Date() &&
-            new Date(batch.EXP).getMonth() + 1 == reportDate.month &&
-            new Date(batch.EXP).getFullYear() == reportDate.year
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
           );
         } else {
           return (
-            new Date(batch.EXP).getMonth() + 1 == reportDate.month &&
-            new Date(batch.EXP).getFullYear() == reportDate.year
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
           );
         }
       });
-      handle(batches_HaoHut);
+      handle(batches_HaoHut ? batches_HaoHut : []);
     }
 
     if (!isDayAll && !isMonthAll && !isYearAll) {
@@ -184,7 +185,7 @@ export default function ReportTable({
         })
       );
 
-      const batches_HaoHut = reportData.batches.filter((batch) => {
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
         if (
           new Date() <=
           new Date(
@@ -197,20 +198,20 @@ export default function ReportTable({
           )
         ) {
           return (
-            new Date(batch.EXP) <= new Date() &&
-            new Date(batch.EXP).getDate() == reportDate.day &&
-            new Date(batch.EXP).getMonth() + 1 == reportDate.month &&
-            new Date(batch.EXP).getFullYear() == reportDate.year
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getDate() == reportDate.day &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
           );
         } else {
           return (
-            new Date(batch.EXP).getDate() == reportDate.day &&
-            new Date(batch.EXP).getMonth() + 1 == reportDate.month &&
-            new Date(batch.EXP).getFullYear() == reportDate.year
+            new Date(batch.exp).getDate() == reportDate.day &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
           );
         }
       });
-      handle(batches_HaoHut);
+      handle(batches_HaoHut ? batches_HaoHut : []);
     }
   }, [
     handle,

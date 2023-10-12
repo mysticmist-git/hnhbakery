@@ -1,4 +1,4 @@
-import Bill, { billConverter } from '@/models/bill';
+import Bill, { BillTableRow, billConverter } from '@/models/bill';
 import User from '@/models/user';
 import {
   CollectionReference,
@@ -17,7 +17,17 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getUserRef } from './userDAO';
+import { getUserRef, getUsers } from './userDAO';
+import { getAddress } from './addressDAO';
+import { getBatchById } from './batchDAO';
+import { getBillItems } from './billItemDAO';
+import { getDeliveryById } from './deliveryDAO';
+import { DEFAULT_GROUP_ID } from './groupDAO';
+import { getPaymentMethodById } from './paymentMethodDAO';
+import { getProduct } from './productDAO';
+import { getProductTypeById } from './productTypeDAO';
+import { getSaleById } from './saleDAO';
+import { getVariant } from './variantDAO';
 
 export function getBillsRef(
   groupId: string,
@@ -387,4 +397,50 @@ export async function deleteBill(
 
     await deleteDoc(billRef);
   }
+}
+
+export async function getBillTableRows() {
+  const finalBills: BillTableRow[] = [];
+  const customers = await getUsers(DEFAULT_GROUP_ID);
+  for (let c of customers) {
+    const bills = await getBills(c.group_id, c.id);
+
+    for (let b of bills) {
+      const billitems = await getBillItems(c.group_id, c.id, b.id);
+
+      const billItems: BillTableRow['billItems'] = [];
+      for (let bi of billitems) {
+        const batch = await getBatchById(bi.batch_id);
+        billItems.push({
+          ...bi,
+          batch: batch,
+          productType: await getProductTypeById(batch!.product_type_id),
+          product: await getProduct(batch!.product_type_id, batch!.product_id),
+          variant: await getVariant(
+            batch!.product_type_id,
+            batch!.product_id,
+            batch!.variant_id
+          ),
+        });
+      }
+
+      const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+      const delivery = await getDeliveryById(b.delivery_id);
+
+      finalBills.push({
+        ...b,
+        paymentMethod: await getPaymentMethodById(b.payment_method_id),
+        customer: { ...c },
+        sale: sale,
+        deliveryTableRow: {
+          ...delivery!,
+          address: await getAddress(c.group_id, c.id, delivery!.address_id),
+        },
+        billItems: billItems,
+      });
+    }
+  }
+
+  return finalBills;
 }

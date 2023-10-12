@@ -2,8 +2,9 @@ import defaultAva from '@/assets/defaultAva.jpg';
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_UserObject } from '@/lib/models';
+// import { SuperDetail_UserObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
+import { UserTableRow } from '@/models/user';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Box, Grid, InputAdornment, Tooltip, useTheme } from '@mui/material';
 import Image from 'next/image';
@@ -14,7 +15,7 @@ export default function ThongTin_Content({
   modalUser,
 }: {
   textStyle: any;
-  modalUser: SuperDetail_UserObject | null;
+  modalUser: UserTableRow | null;
 }) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
@@ -114,7 +115,7 @@ export default function ThongTin_Content({
               textStyle={textStyle}
               label="Ngày sinh"
               value={
-                formatDateString(modalUser?.birthday, 'DD/MM/YYYY') ?? 'Trống'
+                formatDateString(modalUser?.birth, 'DD/MM/YYYY') ?? 'Trống'
               }
             />
           </Box>
@@ -143,7 +144,7 @@ export default function ThongTin_Content({
             <Outlined_TextField
               textStyle={textStyle}
               label="Trạng thái tài khoản"
-              value={modalUser?.isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
+              value={modalUser?.active ? 'Hoạt động' : 'Vô hiệu hóa'}
             />
           </Box>
         </Grid>

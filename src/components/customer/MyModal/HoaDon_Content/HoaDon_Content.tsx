@@ -1,9 +1,11 @@
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { billStatusParse } from '@/lib/manage/manage';
-import { SuperDetail_BillObject, SuperDetail_UserObject } from '@/lib/models';
+// import { billStatusParse } from '@/lib/manage/manage';
+// import { SuperDetail_BillObject, SuperDetail_UserObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
+import { BillTableRow, billStateContentParse } from '@/models/bill';
+import { UserTableRow } from '@/models/user';
 import { ContentCopyRounded } from '@mui/icons-material';
 import {
   Grid,
@@ -19,23 +21,23 @@ export default function HoaDon_Content({
   modalUser,
 }: {
   textStyle: any;
-  modalUser: SuperDetail_UserObject | null;
+  modalUser: UserTableRow | null;
 }) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
 
-  const getValueFromBill = (bill: SuperDetail_BillObject) => {
+  const getValueFromBill = (bill: BillTableRow) => {
     var result = '';
     result += 'Thời gian đặt: ' + formatDateString(bill.created_at) + ' | ';
     if (bill.note != '') {
       result += 'Ghi chú: ' + bill.note + ' | ';
     }
-    if (bill.state == 1) {
+    if (bill.state == 'paid') {
       result +=
-        'Thời gian thanh toán: ' + formatDateString(bill.paymentTime) + ' | ';
+        'Thời gian thanh toán: ' + formatDateString(bill.paid_time) + ' | ';
     }
-    result += 'Tổng tiền: ' + formatPrice(bill.totalPrice) + '\n';
-    result += 'Trạng thái hóa đơn: ' + billStatusParse(bill.state);
+    result += 'Tổng tiền: ' + formatPrice(bill.final_price) + '\n';
+    result += 'Trạng thái hóa đơn: ' + billStateContentParse(bill.state);
 
     return result;
   };
@@ -49,8 +51,8 @@ export default function HoaDon_Content({
         alignItems="center"
         spacing={3}
       >
-        {modalUser?.billObjects && modalUser?.billObjects?.length > 0 ? (
-          modalUser?.billObjects.map((bill, index) => (
+        {modalUser?.bills && modalUser?.bills?.length > 0 ? (
+          modalUser?.bills.map((bill, index) => (
             <Grid item xs={12} alignSelf={'stretch'} key={index}>
               <Outlined_TextField
                 textStyle={textStyle}

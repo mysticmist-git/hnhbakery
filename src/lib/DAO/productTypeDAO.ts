@@ -1,5 +1,8 @@
 import { db } from '@/firebase/config';
-import ProductType, { productTypeConverter } from '@/models/productType';
+import ProductType, {
+  ProductTypeTableRow,
+  productTypeConverter,
+} from '@/models/productType';
 import {
   DocumentData,
   DocumentReference,
@@ -15,6 +18,10 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { ProductTableRow } from '@/models/product';
+import { getProducts } from './productDAO';
+import { getVariants } from './variantDAO';
+import { getFeedbacks } from './feedbackDAO';
 
 export function getProductTypesRef() {
   return collection(db, COLLECTION_NAME.PRODUCT_TYPES).withConverter(
@@ -93,4 +100,28 @@ export async function createProductType(
 
 export async function deleteProductType(id: string) {
   await deleteDoc(getProductTypeRefById(id));
+}
+
+// Hàm cho quản lý
+export async function getProductTypeTableRows() {
+  const productTypeTableRows: ProductTypeTableRow[] = [];
+  const productTypes = await getProductTypes();
+  for (let pro of productTypes) {
+    const productTableRows: ProductTableRow[] = [];
+    const products = await getProducts(pro.id);
+    for (let p of products) {
+      const variants = await getVariants(pro.id, p.id);
+      const feedbacks = await getFeedbacks(pro.id, p.id);
+      productTableRows.push({
+        ...p,
+        variants: variants,
+        feedbacks: feedbacks,
+      });
+    }
+    productTypeTableRows.push({
+      ...pro,
+      products: productTableRows,
+    });
+  }
+  return productTypeTableRows;
 }

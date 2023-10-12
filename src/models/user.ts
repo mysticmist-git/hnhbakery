@@ -8,6 +8,9 @@ import {
 import WithCreatedUpdated from './created_updated';
 import WithActive from './withActive';
 import WithId from './withId';
+import { BillTableRow } from './bill';
+import { FeedbackTableRow } from './feedback';
+import Address from './address';
 
 /**
  * Stores data about a User
@@ -26,6 +29,12 @@ type User = WithCreatedUpdated &
     group_id: string;
     type: 'google' | 'mail';
   };
+
+type UserTableRow = User & {
+  bills?: BillTableRow[];
+  addresses?: Address[];
+  feedbacks?: FeedbackTableRow[];
+};
 
 const userConverter: FirestoreDataConverter<User> = {
   toFirestore: function (modelObject: WithFieldValue<User>): DocumentData {
@@ -50,4 +59,5 @@ const userConverter: FirestoreDataConverter<User> = {
 };
 
 export default User;
+export type { User, UserTableRow };
 export { userConverter };

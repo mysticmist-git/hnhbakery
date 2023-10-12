@@ -6,21 +6,47 @@ import {
   SanPhamDoanhThu as SanPhamDoanhThu_Component,
   SanPhamHaoHut,
 } from '@/components/report';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
+import { getAddress } from '@/lib/DAO/addressDAO';
+import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
+import { getBillTableRows, getBills } from '@/lib/DAO/billDAO';
+import { getBillItems } from '@/lib/DAO/billItemDAO';
+import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
+import { getFeedbacks } from '@/lib/DAO/feedbackDAO';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 import {
-  BatchObject,
-  BillDetailObject,
-  BillObject,
-  DeliveryObject,
-  FeedbackObject,
-  PaymentObject,
-  ProductObject,
-  SaleObject,
-  SanPhamDoanhThu,
-  SuperDetail_ReportObject,
-} from '@/lib/models';
+  getPaymentMethodById,
+  getPaymentMethods,
+} from '@/lib/DAO/paymentMethodDAO';
+import { getProduct, getProducts } from '@/lib/DAO/productDAO';
+import {
+  getProductTypeById,
+  getProductTypeTableRows,
+  getProductTypes,
+} from '@/lib/DAO/productTypeDAO';
+import { getSaleById, getSales } from '@/lib/DAO/saleDAO';
+import { getUsers } from '@/lib/DAO/userDAO';
+import { getVariant, getVariants } from '@/lib/DAO/variantDAO';
+// import { COLLECTION_NAME } from '@/lib/constants';
+// import { getCollection } from '@/lib/firestore';
+// import {
+//   BatchObject,
+//   BillDetailObject,
+//   BillObject,
+//   DeliveryObject,
+//   FeedbackObject,
+//   PaymentObject,
+//   ProductObject,
+//   SaleObject,
+//   SuperDetail_ReportObject,
+// } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
+import Batch from '@/models/batch';
+import { BillTableRow } from '@/models/bill';
+import PaymentMethod from '@/models/paymentMethod';
+import { ProductTableRow } from '@/models/product';
+import { ProductTypeTableRow } from '@/models/productType';
+import ReportTableRow from '@/models/report';
+import Sale from '@/models/sale';
 import { SearchRounded } from '@mui/icons-material';
 import {
   Box,
@@ -40,43 +66,35 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
+export type SanPhamDoanhThuType = Batch & {
+  revenue: number;
+  percentage: number;
+  product: ProductTableRow;
+};
+
 const Report = () => {
-  const [reportData, setReportData] = useState<SuperDetail_ReportObject>();
+  const [reportData, setReportData] = useState<ReportTableRow>();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const products = await getCollection<ProductObject>(
-          COLLECTION_NAME.PRODUCTS
-        );
-        const batches = await getCollection<BatchObject>(
-          COLLECTION_NAME.BATCHES
-        );
-        const feedbacks = await getCollection<FeedbackObject>(
-          COLLECTION_NAME.FEEDBACKS
-        );
-        const billDetails = await getCollection<BillDetailObject>(
-          COLLECTION_NAME.BILL_DETAILS
-        );
-        const deliveries = await getCollection<DeliveryObject>(
-          COLLECTION_NAME.DELIVERIES
-        );
-        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
-        const payments = await getCollection<PaymentObject>(
-          COLLECTION_NAME.PAYMENTS
-        );
-        const sales = await getCollection<SaleObject>(COLLECTION_NAME.SALES);
+        const finalData: ReportTableRow = {};
 
-        const finalData: SuperDetail_ReportObject = {
-          products: products,
-          batches: batches,
-          feedbacks: feedbacks,
-          billDetails: billDetails,
-          deliveries: deliveries,
-          bills: bills,
-          payments: payments,
-          sales: sales,
-        };
+        const billTableRows: BillTableRow[] = await getBillTableRows();
+
+        const productTypeTableRows: ProductTypeTableRow[] =
+          await getProductTypeTableRows();
+
+        const batches: Batch[] = await getBatches();
+
+        const sales: Sale[] = await getSales();
+        const paymentMethods: PaymentMethod[] = await getPaymentMethods();
+
+        finalData.productTypes = productTypeTableRows;
+        finalData.bills = billTableRows;
+        finalData.batches = batches;
+        finalData.sales = sales;
+        finalData.paymentMethods = paymentMethods;
 
         setReportData(() => finalData);
       } catch (error) {
@@ -121,17 +139,16 @@ const Report = () => {
     setRealRevenue(() => value);
   };
 
-  const [spDoanhThu, setSpDoanhThu] = useState<SanPhamDoanhThu[]>([]);
-  const handleSpDoanhThuChange = (value: SanPhamDoanhThu[]) => {
+  const [spDoanhThu, setSpDoanhThu] = useState<SanPhamDoanhThuType[]>([]);
+  const handleSpDoanhThuChange = (value: SanPhamDoanhThuType[]) => {
     setSpDoanhThu(() => value);
   };
   const [spDoanhThuSearch, setSpDoanhThuSearch] = useState('');
 
-  const [spHaoHut, setSpHaoHut] = useState<SanPhamDoanhThu[]>([]);
-  const handleSpHaoHutChange = (value: SanPhamDoanhThu[]) => {
+  const [spHaoHut, setSpHaoHut] = useState<SanPhamDoanhThuType[]>([]);
+  const handleSpHaoHutChange = (value: SanPhamDoanhThuType[]) => {
     setSpHaoHut(() => value);
   };
-
   const [spHaoHutSearch, setSpHaoHutSearch] = useState('');
 
   const theme = useTheme();

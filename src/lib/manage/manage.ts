@@ -225,7 +225,7 @@ export function userAccountTypeParse(type: string) {
   switch (type) {
     case 'google':
       return 'Google';
-    case 'email_n_password':
+    case 'mail':
       return 'Đăng ký';
     default:
       return 'Lỗi';

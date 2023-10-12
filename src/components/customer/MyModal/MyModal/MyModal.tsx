@@ -1,6 +1,6 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_UserObject } from '@/lib/models';
+// import { SuperDetail_UserObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import FeedBack_Content from '../FeedBack_Content';
 import HoaDon_Content from '../HoaDon_Content';
 import ThongTin_Content from '../ThongTin_Content';
+import { UserTableRow } from '@/models/user';
 
 export default function MyModal({
   open,
@@ -25,8 +26,8 @@ export default function MyModal({
 }: {
   open: boolean;
   handleClose: () => void;
-  user: SuperDetail_UserObject | null;
-  handleUserDataChange: (newUser: SuperDetail_UserObject) => void;
+  user: UserTableRow | null;
+  handleUserDataChange: (newUser: UserTableRow) => void;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -54,9 +55,7 @@ export default function MyModal({
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const [modalUser, setModalUser] = useState<SuperDetail_UserObject | null>(
-    user
-  );
+  const [modalUser, setModalUser] = useState<UserTableRow | null>(user);
 
   useEffect(() => {
     setModalUser(() => user);

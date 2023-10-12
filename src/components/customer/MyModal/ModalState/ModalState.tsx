@@ -1,8 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
+import { getUser, updateUser } from '@/lib/DAO/userDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import { SuperDetail_UserObject, UserObject } from '@/lib/models';
+import { UserTableRow } from '@/models/user';
+// import { SuperDetail_UserObject, UserObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -26,11 +28,9 @@ export default function ModalState({
 }: {
   open: boolean;
   handleClose: () => void;
-  userState: SuperDetail_UserObject | null;
-  setUserState: React.Dispatch<
-    React.SetStateAction<SuperDetail_UserObject | null>
-  >;
-  handleUserDataChange: (value: SuperDetail_UserObject) => void;
+  userState: UserTableRow | null;
+  setUserState: React.Dispatch<React.SetStateAction<UserTableRow | null>>;
+  handleUserDataChange: (value: UserTableRow) => void;
 }) {
   const clearData = () => {
     setUserState(() => null);
@@ -81,7 +81,7 @@ export default function ModalState({
             }}
             color={theme.palette.common.black}
           >
-            {userState?.isActive
+            {userState?.active
               ? 'Xác nhận vô hiệu tài khoản?'
               : 'Xác nhận kích hoạt tài khoản?'}
           </Typography>
@@ -108,15 +108,14 @@ export default function ModalState({
             </Button>
             <Button
               variant="contained"
-              color={userState?.isActive ? 'error' : 'success'}
+              color={userState?.active ? 'error' : 'success'}
               onClick={async () => {
-                const data = (
-                  await getCollection<UserObject>(COLLECTION_NAME.USERS)
-                ).find((user) => user.id === userState?.id);
+                const data = await getUser(userState!.group_id, userState!.id);
                 if (data) {
-                  data.isActive = !data.isActive;
-                  await updateDocToFirestore(data, COLLECTION_NAME.USERS);
-                  if (data.isActive) {
+                  data.active = !data.active;
+                  userState!.active = data.active;
+                  await updateUser(userState!.group_id, userState!.id, data);
+                  if (data.active) {
                     handleSnackbarAlert(
                       'success',
                       'Kích hoạt tài khoản thành công!'
@@ -125,8 +124,7 @@ export default function ModalState({
                     handleSnackbarAlert('success', 'Vô hiệu khoản thành công!');
                   }
                   handleUserDataChange({
-                    ...userState,
-                    ...data,
+                    ...userState!,
                   });
                   handleClose();
                 } else {
@@ -135,7 +133,7 @@ export default function ModalState({
                 }
               }}
             >
-              {userState?.isActive ? 'Vô hiệu' : 'Kích hoạt'}
+              {userState?.active ? 'Vô hiệu' : 'Kích hoạt'}
             </Button>
           </Box>
         </DialogActions>

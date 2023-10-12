@@ -1,21 +1,20 @@
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { AssembledBillDetail, SuperDetail_DeliveryObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import { BillTableRow } from '@/models/bill';
+import { BillItemTableRow } from '@/models/billItem';
 
 export default function ChiTietDonHang_Content({
   textStyle,
   modalDelivery,
 }: {
   textStyle: any;
-  modalDelivery: SuperDetail_DeliveryObject | null;
+  modalDelivery: BillTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
-
-  console.log(modalDelivery?.billDetailObjects);
 
   return (
     <>
@@ -26,7 +25,7 @@ export default function ChiTietDonHang_Content({
         alignItems="center"
         spacing={3}
       >
-        {modalDelivery?.billDetailObjects?.map((item, index) => {
+        {modalDelivery?.billItems?.map((item, index) => {
           return (
             <Grid key={index} item xs={12} alignSelf={'stretch'}>
               <Outlined_TextField
@@ -40,13 +39,13 @@ export default function ChiTietDonHang_Content({
                     pointerEvents: 'auto',
                     borderRadius: '8px',
                   },
-                  endAdornment: item?.batchObject?.id && (
+                  endAdornment: item?.batch?.id && (
                     <InputAdornment position="end">
                       <CustomIconButton
                         edge="end"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            item?.batchObject?.id ?? 'Trống'
+                            item?.batch?.id ?? 'Trống'
                           );
                           handleSnackbarAlert(
                             'success',
@@ -69,30 +68,28 @@ export default function ChiTietDonHang_Content({
     </>
   );
 
-  function getValue(item: AssembledBillDetail | null) {
+  function getValue(item: BillItemTableRow | null) {
     if (!item) {
       return 'Trống';
     }
 
     var result = '';
-    result += 'Mã lô bánh: ' + item.batchObject?.id;
-    result += '\nMã sản phẩm: ' + item.productObject?.id;
+    result += 'Mã lô bánh: ' + item.batch?.id;
+    result += '\nMã sản phẩm: ' + item.product?.id;
     result += '\nSố lượng: ' + item.amount + ' bánh';
-    result += '\nNgày sản xuất: ' + formatDateString(item.batchObject?.MFG);
-    result += '\nNgày hết hạn: ' + formatDateString(item.batchObject?.EXP);
+    result += '\nNgày sản xuất: ' + formatDateString(item.batch?.mfg);
+    result += '\nNgày hết hạn: ' + formatDateString(item.batch?.exp);
 
     return result;
   }
 
-  function getLabel(item: AssembledBillDetail | null) {
+  function getLabel(item: BillItemTableRow | null) {
     if (!item) {
       return 'Trống';
     }
-    const variant = item?.productObject?.variants.find(
-      (a) => a.id === item?.batchObject?.variant_id
-    );
+    const variant = item?.variant;
     return (
-      item?.productObject?.name +
+      item?.product?.name +
       ' - ' +
       variant?.material +
       ' - Size: ' +

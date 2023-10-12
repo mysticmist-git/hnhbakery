@@ -1,6 +1,6 @@
-import { deliveryStatusParse } from '@/lib/manage/manage';
-import { SuperDetail_DeliveryObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
+import { BillTableRow } from '@/models/bill';
+import { deliveryStateColorParse, deliveryStateParse } from '@/models/delivery';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -18,13 +18,13 @@ export default function DeliveryTable({
   handleViewDelivery,
   handleViewDeliveryModalState,
 }: {
-  deliveryData: SuperDetail_DeliveryObject[];
+  deliveryData: BillTableRow[];
   handleViewDelivery: any;
   handleViewDeliveryModalState: any;
 }) {
   const theme = useTheme();
 
-  const [rows, setRows] = useState<SuperDetail_DeliveryObject[]>(deliveryData);
+  const [rows, setRows] = useState<BillTableRow[]>(deliveryData);
 
   useEffect(() => {
     setRows(() => deliveryData);
@@ -32,7 +32,7 @@ export default function DeliveryTable({
 
   const columns: GridColDef[] = [
     {
-      field: 'id',
+      field: 'delivery_id',
       headerName: 'Mã giao hàng',
       align: 'left',
       headerAlign: 'center',
@@ -40,9 +40,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.id;
+      },
     },
     {
-      field: 'name',
+      field: 'delivery_name',
       headerName: 'Người nhận',
       align: 'left',
       headerAlign: 'center',
@@ -50,9 +53,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.name;
+      },
     },
     {
-      field: 'tel',
+      field: 'delivery_tel',
       headerName: 'SĐT người nhận',
       align: 'left',
       headerAlign: 'center',
@@ -60,9 +66,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.tel;
+      },
     },
     {
-      field: 'email',
+      field: 'delivery_mail',
       headerName: 'Email người nhận',
       align: 'left',
       headerAlign: 'center',
@@ -70,9 +79,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.mail;
+      },
     },
     {
-      field: 'address',
+      field: 'delivery_address',
       headerName: 'Địa chỉ giao hàng',
       align: 'left',
       headerAlign: 'center',
@@ -80,9 +92,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.address.address;
+      },
     },
     {
-      field: 'note',
+      field: 'delivery_note',
       headerName: 'Ghi chú giao hàng',
       align: 'left',
       headerAlign: 'center',
@@ -90,9 +105,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.delivery_note;
+      },
     },
     {
-      field: 'date',
+      field: 'delivery_shipdate',
       headerName: 'Ngày giao hàng',
       align: 'center',
       headerAlign: 'center',
@@ -100,12 +118,15 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       width: 120,
-      valueFormatter(params) {
-        return formatDateString(params.value, 'DD/MM/YYYY');
+      valueGetter: (params) => {
+        return formatDateString(
+          params.row.deliveryTableRow.ship_date,
+          'DD/MM/YYYY'
+        );
       },
     },
     {
-      field: 'time',
+      field: 'delivery_shiptime',
       headerName: 'Thời gian giao hàng',
       align: 'center',
       headerAlign: 'center',
@@ -113,9 +134,12 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       width: 220,
+      valueGetter: (params) => {
+        return params.row.deliveryTableRow.ship_time;
+      },
     },
     {
-      field: 'startAt',
+      field: 'delivery_startAt',
       headerName: 'Bắt đầu giao',
       align: 'left',
       headerAlign: 'center',
@@ -123,12 +147,15 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
-      valueFormatter(params) {
-        return formatDateString(params.value);
+      valueGetter: (params) => {
+        return formatDateString(
+          params.row.deliveryTableRow.start_at,
+          'DD/MM/YYYY'
+        );
       },
     },
     {
-      field: 'endAt',
+      field: 'delivery_endAt',
       headerName: 'Kết thúc giao',
       align: 'left',
       headerAlign: 'center',
@@ -136,12 +163,15 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
-      valueFormatter(params) {
-        return formatDateString(params.value);
+      valueGetter: (params) => {
+        return formatDateString(
+          params.row.deliveryTableRow.end_at,
+          'DD/MM/YYYY'
+        );
       },
     },
     {
-      field: 'bill_id',
+      field: 'id',
       headerName: 'Mã hóa đơn',
       align: 'left',
       headerAlign: 'center',
@@ -151,7 +181,7 @@ export default function DeliveryTable({
       flex: 1,
     },
     {
-      field: 'state',
+      field: 'delivery_state',
       headerName: 'Trạng thái',
       align: 'center',
       headerAlign: 'center',
@@ -159,32 +189,20 @@ export default function DeliveryTable({
       disableColumnMenu: true,
       hideable: false,
       width: 120,
-      valueFormatter(params) {
-        return deliveryStatusParse(params.value);
+      valueGetter: (params) => {
+        return deliveryStateParse(params.row.deliveryTableRow.state);
       },
       renderCell(params) {
         return (
           <Box
             sx={{
-              color: () => {
-                switch (params.value) {
-                  case 'cancel':
-                    return theme.palette.error.dark;
-                  case 'fail':
-                    return theme.palette.error.main;
-                  case 'success':
-                    return theme.palette.success.main;
-                  case 'inProcress':
-                    return theme.palette.text.secondary;
-                  case 'inTransit':
-                    return theme.palette.secondary.main;
-                  default:
-                    return theme.palette.common.black;
-                }
-              },
+              color: deliveryStateColorParse(
+                theme,
+                params.row.deliveryTableRow.state
+              ),
             }}
           >
-            {deliveryStatusParse(params.value)}
+            {deliveryStateParse(params.row.deliveryTableRow.state)}
           </Box>
         );
       },
@@ -216,9 +234,8 @@ export default function DeliveryTable({
               color={'error'}
               size="small"
               disabled={
-                params.row.state === 'success' ||
-                params.row.state === 'inTransit' ||
-                params.row.state === 'cancel'
+                params.row.deliveryTableRow.state === 'delivered' ||
+                params.row.deliveryTableRow.state === 'cancelled'
               }
               onClick={() => {
                 handleViewDeliveryModalState(params.row);
@@ -238,13 +255,13 @@ export default function DeliveryTable({
         rowHeight={64}
         loading={false}
         columnVisibilityModel={{
-          name: false,
-          tel: false,
-          email: false,
-          address: false,
-          note: false,
-          startAt: false,
-          endAt: false,
+          delivery_name: false,
+          delivery_tel: false,
+          delivery_mail: false,
+          delivery_address: false,
+          delivery_note: false,
+          delivery_startAt: false,
+          delivery_endAt: false,
         }}
         columns={columns}
         localeText={{

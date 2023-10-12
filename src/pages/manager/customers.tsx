@@ -1,14 +1,22 @@
 import { ModalState, MyModal } from '@/components/customer/MyModal';
 import CustomerTable from '@/components/customer/MyTable';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
-import {
-  BillObject,
-  FeedbackObject,
-  Role,
-  SuperDetail_UserObject,
-  UserObject,
-} from '@/lib/models';
+import { getAddress, getAddresses } from '@/lib/DAO/addressDAO';
+import { getBatchById } from '@/lib/DAO/batchDAO';
+import { getBills } from '@/lib/DAO/billDAO';
+import { getBillItems } from '@/lib/DAO/billItemDAO';
+import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
+import { getFeedbacks } from '@/lib/DAO/feedbackDAO';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
+import { getPaymentMethodById } from '@/lib/DAO/paymentMethodDAO';
+import { getProduct, getProducts } from '@/lib/DAO/productDAO';
+import { getProductTypeById, getProductTypes } from '@/lib/DAO/productTypeDAO';
+import { getSaleById } from '@/lib/DAO/saleDAO';
+import { getUsers } from '@/lib/DAO/userDAO';
+import { getVariant } from '@/lib/DAO/variantDAO';
+
+import { BillTableRow } from '@/models/bill';
+import { FeedbackTableRow } from '@/models/feedback';
+import { UserTableRow } from '@/models/user';
 import {
   Box,
   Divider,
@@ -27,47 +35,91 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Customer = () => {
-  const [usersData, setUsersData] = useState<SuperDetail_UserObject[]>([]);
+  const [usersData, setUsersData] = useState<UserTableRow[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const users = (
-          await getCollection<UserObject>(COLLECTION_NAME.USERS)
-        ).filter(
-          (user) => user.role_id === 'customer' || user.role_id === 'manager'
-        );
+        const finalUsers: UserTableRow[] = [];
+        const customers = await getUsers(DEFAULT_GROUP_ID);
 
-        const bills = await getCollection<BillObject>(COLLECTION_NAME.BILLS);
+        for (let c of customers) {
+          const billTableRows: BillTableRow[] = [];
+          const bills = await getBills(c.group_id, c.id);
+          for (let b of bills) {
+            const billitems = await getBillItems(c.group_id, c.id, b.id);
 
-        const feedbacks = await getCollection<FeedbackObject>(
-          COLLECTION_NAME.FEEDBACKS
-        );
+            const billItems: BillTableRow['billItems'] = [];
+            for (let bi of billitems) {
+              const batch = await getBatchById(bi.batch_id);
+              billItems.push({
+                ...bi,
+                batch: batch,
+                productType: await getProductTypeById(batch!.product_type_id),
+                product: await getProduct(
+                  batch!.product_type_id,
+                  batch!.product_id
+                ),
+                variant: await getVariant(
+                  batch!.product_type_id,
+                  batch!.product_id,
+                  batch!.variant_id
+                ),
+              });
+            }
 
-        const finalUsers: SuperDetail_UserObject[] = users
-          .map((user) => {
-            const finalUser: SuperDetail_UserObject = {
-              ...user,
-              billObjects: bills.filter((bill) => bill.user_id === user.id),
-              feedbackObjects: feedbacks.filter(
-                (feedback) => feedback.user_id === user.id
-              ),
-            };
-            return {
-              ...finalUser,
-            };
-          })
-          .sort((a, b) => {
-            var totalA = 0;
-            var totalB = 0;
-            a.billObjects?.forEach((bill) => {
-              totalA += bill.totalPrice ?? 0;
+            const sale =
+              b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+            const delivery = await getDeliveryById(b.delivery_id);
+
+            billTableRows.push({
+              ...b,
+              paymentMethod: await getPaymentMethodById(b.payment_method_id),
+              customer: { ...c },
+              sale: sale,
+              deliveryTableRow: {
+                ...delivery!,
+                address: await getAddress(
+                  c.group_id,
+                  c.id,
+                  delivery!.address_id
+                ),
+              },
+              billItems: billItems,
             });
-            b.billObjects?.forEach((bill) => {
-              totalB += bill.totalPrice ?? 0;
-            });
-            return totalB - totalA;
+          }
+
+          const addresses = await getAddresses(c.group_id, c.id);
+
+          const feedbackTableRows: FeedbackTableRow[] = [];
+          const productTypes = await getProductTypes();
+
+          for (let p of productTypes) {
+            const products = await getProducts(p.id);
+            for (let product of products) {
+              const feedbacks = await getFeedbacks(p.id, product.id);
+              for (let feedback of feedbacks) {
+                if (feedback.user_id != c.id) {
+                  continue;
+                }
+                feedbackTableRows.push({
+                  ...feedback,
+                  product: product,
+                  user: { ...c },
+                });
+              }
+            }
+          }
+
+          finalUsers.push({
+            ...c,
+            bills: billTableRows,
+            addresses: addresses,
+            feedbacks: feedbackTableRows,
           });
+        }
+
         setUsersData(() => finalUsers || []);
       } catch (error) {
         console.log(error);
@@ -79,7 +131,7 @@ const Customer = () => {
 
   //#region Phần phụ
   const theme = useTheme();
-  const handleUserDataChange = (value: SuperDetail_UserObject) => {
+  const handleUserDataChange = (value: UserTableRow) => {
     setUsersData(() => {
       return usersData.map((user) => {
         if (user.id === value.id) {
@@ -94,13 +146,14 @@ const Customer = () => {
 
   //#region Modal chi tiết
   const [openModalChiTiet, setOpenModalChiTiet] = React.useState(false);
-  const [currentViewUser, setCurrentViewUser] =
-    useState<SuperDetail_UserObject | null>(null);
+  const [currentViewUser, setCurrentViewUser] = useState<UserTableRow | null>(
+    null
+  );
 
   const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
   const handleCloseModalChiTiet = () => setOpenModalChiTiet(false);
 
-  const handleViewUserModalChiTiet = (value: SuperDetail_UserObject) => {
+  const handleViewUserModalChiTiet = (value: UserTableRow) => {
     handleOpenModalChiTiet();
     setCurrentViewUser(() => value);
   };
@@ -111,11 +164,9 @@ const Customer = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [userState, setUserState] = useState<SuperDetail_UserObject | null>(
-    null
-  );
+  const [userState, setUserState] = useState<UserTableRow | null>(null);
 
-  const handleViewUserModalState = (user: SuperDetail_UserObject) => {
+  const handleViewUserModalState = (user: UserTableRow) => {
     handleOpenModalState();
     setUserState(() => user);
   };

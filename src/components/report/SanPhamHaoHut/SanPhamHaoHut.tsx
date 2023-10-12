@@ -1,17 +1,17 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { SanPhamDoanhThu } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { InputAdornment, Tooltip, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Outlined_TextField from '../../order/MyModal/Outlined_TextField';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 
 export default function SanPhamHaoHut({
   spHaoHut,
   spHaoHutSearch,
 }: {
-  spHaoHut: SanPhamDoanhThu[];
+  spHaoHut: SanPhamDoanhThuType[];
   spHaoHutSearch: string;
 }) {
   const theme = useTheme();
@@ -26,26 +26,26 @@ export default function SanPhamHaoHut({
   useEffect(() => {
     setData(() => spHaoHut);
   }, [spHaoHut]);
-  const getValue = (item: SanPhamDoanhThu) => {
+  const getValue = (item: SanPhamDoanhThuType) => {
     var result = '';
     result += 'Mã lô: ' + item.id;
-    result += '\nMã sản phẩm: ' + item.productObject.id;
-    result += '\nNgày hết hạn: ' + formatDateString(item.EXP);
-    result += '\nSố lượng hết hạn: ' + (item.totalQuantity - item.soldQuantity);
+    result += '\nMã sản phẩm: ' + item.product.id;
+    result += '\nNgày hết hạn: ' + formatDateString(item.exp);
+    result += '\nSố lượng hết hạn: ' + (item.quantity - item.sold);
 
     result +=
       '\nTrạng thái: ' +
-      (item.productObject.isActive ? 'Còn sản xuất' : 'Ngưng sản xuất');
+      (item.product.active ? 'Còn sản xuất' : 'Ngưng sản xuất');
 
     return result;
   };
 
-  const getLabel = (item: SanPhamDoanhThu) => {
-    const variant = item.productObject.variants.find(
+  const getLabel = (item: SanPhamDoanhThuType) => {
+    const variant = item.product?.variants?.find(
       (variant) => variant.id === item.variant_id
     );
     return (
-      item.productObject.name +
+      item.product.name +
       ' - ' +
       variant?.material +
       ' - Size: ' +
@@ -82,14 +82,12 @@ export default function SanPhamHaoHut({
                 pointerEvents: 'auto',
                 borderRadius: '8px',
               },
-              endAdornment: item.productObject.id && (
+              endAdornment: item.product.id && (
                 <InputAdornment position="end">
                   <CustomIconButton
                     edge="end"
                     onClick={() => {
-                      navigator.clipboard.writeText(
-                        item.productObject.id ?? 'Trống'
-                      );
+                      navigator.clipboard.writeText(item.product.id ?? 'Trống');
                       handleSnackbarAlert(
                         'success',
                         'Đã sao chép mã sản phẩm vào clipboard!'
