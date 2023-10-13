@@ -26,19 +26,6 @@ import {
 import { getSaleById, getSales } from '@/lib/DAO/saleDAO';
 import { getUsers } from '@/lib/DAO/userDAO';
 import { getVariant, getVariants } from '@/lib/DAO/variantDAO';
-// import { COLLECTION_NAME } from '@/lib/constants';
-// import { getCollection } from '@/lib/firestore';
-// import {
-//   BatchObject,
-//   BillDetailObject,
-//   BillObject,
-//   DeliveryObject,
-//   FeedbackObject,
-//   PaymentObject,
-//   ProductObject,
-//   SaleObject,
-//   SuperDetail_ReportObject,
-// } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import Batch from '@/models/batch';
 import { BillTableRow } from '@/models/bill';
@@ -75,6 +62,16 @@ export type SanPhamDoanhThuType = Batch & {
 const Report = () => {
   const [reportData, setReportData] = useState<ReportTableRow>();
 
+  const [reportDate, setReportDate] = useState<{
+    day: number;
+    month: number;
+    year: number;
+  }>({
+    day: 0,
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -96,24 +93,13 @@ const Report = () => {
         finalData.sales = sales;
         finalData.paymentMethods = paymentMethods;
 
-        setReportData(() => finalData);
+        setReportData(finalData);
       } catch (error) {
         console.log(error);
       }
     };
-
     fetchData();
   }, []);
-
-  const [reportDate, setReportDate] = useState<{
-    day: number;
-    month: number;
-    year: number;
-  }>({
-    day: 0,
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  });
 
   const handleReportDateChange = (
     day = 0,
@@ -176,6 +162,7 @@ const Report = () => {
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
+
   return (
     <>
       <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>

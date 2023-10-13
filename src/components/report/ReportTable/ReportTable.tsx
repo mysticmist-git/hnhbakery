@@ -214,10 +214,10 @@ export default function ReportTable({
       handle(batches_HaoHut ? batches_HaoHut : []);
     }
   }, [
-    handle,
-    handleRealRevenueChange,
-    handleRevenueChange,
-    handleSpDoanhThuChange,
+    // handle,
+    // handleRealRevenueChange,
+    // handleRevenueChange,
+    // handleSpDoanhThuChange,
     reportData,
     reportDate,
   ]);
