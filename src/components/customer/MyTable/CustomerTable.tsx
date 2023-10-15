@@ -1,9 +1,5 @@
-import {
-  billStatusParse,
-  statusTextResolver,
-  userAccountTypeParse,
-} from '@/lib/manage/manage';
-import { SuperDetail_UserObject } from '@/lib/models';
+import { statusTextResolver, userAccountTypeParse } from '@/lib/manage/manage';
+// import { SuperDetail_UserObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -16,13 +12,14 @@ import {
 } from '@mui/x-data-grid';
 import React, { useEffect, useState } from 'react';
 import { CustomLinearProgres } from '../../../pages/manager/customers';
+import { UserTableRow } from '@/models/user';
 
 export default function CustomerTable({
   usersData,
   handleViewUser,
   handleViewUserModalState,
 }: {
-  usersData: SuperDetail_UserObject[];
+  usersData: UserTableRow[];
   handleViewUser: any;
   handleViewUserModalState: any;
 }) {
@@ -54,7 +51,7 @@ export default function CustomerTable({
       flex: 1,
     },
     {
-      field: 'birthday',
+      field: 'birth',
       headerName: 'Ngày sinh',
       align: 'left',
       headerAlign: 'center',
@@ -74,7 +71,6 @@ export default function CustomerTable({
       align: 'center',
       headerAlign: 'center',
       width: 120,
-
       sortable: false,
       disableColumnMenu: true,
       hideable: false,
@@ -91,16 +87,16 @@ export default function CustomerTable({
       },
       valueGetter(params) {
         var total = 0;
-        params.row.billObjects.forEach((item: any) => {
-          if (item.state == 1) {
-            return (total += item.totalPrice);
+        params.row.bills.forEach((item: any) => {
+          if (item.state == 'paid') {
+            return (total += item.final_price);
           }
         });
         return total;
       },
     },
     {
-      field: 'isActive',
+      field: 'active',
       headerName: 'Trạng thái',
       align: 'center',
       headerAlign: 'center',
@@ -126,7 +122,7 @@ export default function CustomerTable({
       },
     },
     {
-      field: 'accountType',
+      field: 'type',
       headerName: 'Kiểu tài khoản',
       align: 'left',
       headerAlign: 'center',
@@ -159,13 +155,13 @@ export default function CustomerTable({
             </Button>
             <Button
               variant="contained"
-              color={params.row.isActive ? 'error' : 'success'}
+              color={params.row.active ? 'error' : 'success'}
               size="small"
               onClick={() => {
                 handleViewUserModalState(params.row);
               }}
             >
-              {params.row.isActive ? 'Vô hiệu' : 'Kích hoạt'}
+              {params.row.active ? 'Vô hiệu' : 'Kích hoạt'}
             </Button>
           </Box>
         );
@@ -173,7 +169,7 @@ export default function CustomerTable({
     },
   ];
 
-  const [rows, setRows] = useState<SuperDetail_UserObject[]>(usersData);
+  const [rows, setRows] = useState<UserTableRow[]>(usersData);
 
   useEffect(() => {
     setRows(() => usersData);
@@ -187,8 +183,8 @@ export default function CustomerTable({
         loading={false}
         columnVisibilityModel={{
           mail: false,
-          birthday: false,
-          accountType: false,
+          birth: false,
+          type: false,
         }}
         columns={columns}
         localeText={{

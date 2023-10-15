@@ -7,6 +7,7 @@ import {
 import WithCreatedUpdated from './created_updated';
 import WithActive from './withActive';
 import WithId from './withId';
+import { ProductTableRow } from './product';
 
 /**
  * Product type
@@ -19,6 +20,10 @@ type ProductType = WithCreatedUpdated &
     description: string;
     image: string;
   };
+
+type ProductTypeTableRow = ProductType & {
+  products?: ProductTableRow[];
+};
 
 const productTypeConverter: FirestoreDataConverter<ProductType> = {
   toFirestore: (obj: ProductType) => {
@@ -44,5 +49,5 @@ const productTypeConverter: FirestoreDataConverter<ProductType> = {
 };
 
 export default ProductType;
-
+export type { ProductType, ProductTypeTableRow };
 export { productTypeConverter };

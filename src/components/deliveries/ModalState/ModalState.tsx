@@ -1,7 +1,6 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import { DeliveryObject, SuperDetail_DeliveryObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -15,6 +14,9 @@ import {
   useTheme,
 } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import Bill, { BillTableRow } from '@/models/bill';
+import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
+import { updateBill } from '@/lib/DAO/billDAO';
 
 export default function ModalState({
   open,
@@ -25,10 +27,8 @@ export default function ModalState({
 }: {
   open: boolean;
   handleClose: any;
-  deliveryState: SuperDetail_DeliveryObject | null;
-  setDeliveryState: React.Dispatch<
-    React.SetStateAction<SuperDetail_DeliveryObject | null>
-  >;
+  deliveryState: BillTableRow | null;
+  setDeliveryState: React.Dispatch<React.SetStateAction<BillTableRow | null>>;
   handleDeliveryDataChange: any;
 }) {
   const clearData = () => {
@@ -107,26 +107,36 @@ export default function ModalState({
               variant="contained"
               color={'error'}
               onClick={async () => {
-                const data = (
-                  await getCollection<DeliveryObject>(
-                    COLLECTION_NAME.DELIVERIES
-                  )
-                ).find((delivery) => delivery.id === deliveryState?.id);
+                const data = await getDeliveryById(
+                  deliveryState!.deliveryTableRow!.id
+                );
                 if (data) {
-                  data.state = 'cancel';
-                  await updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
+                  data.state = 'cancelled';
+                  deliveryState!.deliveryTableRow!.state = 'cancelled';
+                  await updateDelivery(data.id, data);
 
-                  if (deliveryState?.billObject?.state == 0) {
-                    var bill = deliveryState.billObject;
-                    bill.state = -1;
-                    await updateDocToFirestore(bill, COLLECTION_NAME.BILLS);
-                    deliveryState.billObject = bill;
+                  var billState = deliveryState!.state;
+                  if (billState == 'pending' || billState == 'paid') {
+                    var bill = { ...deliveryState };
+                    bill.state = billState == 'paid' ? 'refunded' : 'cancelled';
+                    delete bill.paymentMethod;
+                    delete bill.customer;
+                    delete bill.sale;
+                    delete bill.deliveryTableRow;
+                    delete bill.billItems;
+                    await updateBill(
+                      deliveryState!.customer!.group_id,
+                      deliveryState!.customer!.id,
+                      deliveryState!.id,
+                      { ...bill } as Bill
+                    );
+                    deliveryState!.state =
+                      billState == 'paid' ? 'refunded' : 'cancelled';
                   }
 
                   handleSnackbarAlert('success', 'Hủy giao hàng thành công!');
                   handleDeliveryDataChange({
                     ...deliveryState,
-                    ...data,
                   });
 
                   handleClose();

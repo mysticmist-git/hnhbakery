@@ -1,18 +1,18 @@
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { deliveryStatusParse } from '@/lib/manage/manage';
-import { SuperDetail_DeliveryObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import { BillTableRow } from '@/models/bill';
+import { deliveryStateParse } from '@/models/delivery';
 
 export default function ThongTin_Content({
   textStyle,
   modalDelivery,
 }: {
   textStyle: any;
-  modalDelivery: SuperDetail_DeliveryObject | null;
+  modalDelivery: BillTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
 
@@ -64,7 +64,7 @@ export default function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Tên người nhận"
-            value={modalDelivery?.name ?? 'Trống'}
+            value={modalDelivery?.deliveryTableRow?.name ?? 'Trống'}
           />
         </Grid>
 
@@ -72,7 +72,7 @@ export default function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Số điện thoại người nhận"
-            value={modalDelivery?.tel ?? 'Trống'}
+            value={modalDelivery?.deliveryTableRow?.tel ?? 'Trống'}
           />
         </Grid>
 
@@ -80,7 +80,7 @@ export default function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Email người nhận"
-            value={modalDelivery?.email ?? 'Trống'}
+            value={modalDelivery?.deliveryTableRow?.mail ?? 'Trống'}
           />
         </Grid>
 
@@ -96,7 +96,10 @@ export default function ThongTin_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Trạng thái giao hàng"
-            value={deliveryStatusParse(modalDelivery?.state) ?? 'Trống'}
+            value={
+              deliveryStateParse(modalDelivery?.deliveryTableRow?.state) ??
+              'Trống'
+            }
           />
         </Grid>
 
@@ -105,7 +108,7 @@ export default function ThongTin_Content({
             textStyle={textStyle}
             multiline
             label="Địa chỉ giao hàng"
-            value={modalDelivery?.address ?? 'Trống'}
+            value={modalDelivery?.deliveryTableRow?.address?.address ?? 'Trống'}
           />
         </Grid>
 
@@ -121,14 +124,17 @@ export default function ThongTin_Content({
     </>
   );
 
-  function getThoiGianGiao(modalDelivery: SuperDetail_DeliveryObject | null) {
+  function getThoiGianGiao(modalDelivery: BillTableRow | null) {
     if (!modalDelivery) {
       return 'Trống';
     }
     return (
-      formatDateString(modalDelivery?.date, 'DD/MM/YYYY') +
+      formatDateString(
+        modalDelivery?.deliveryTableRow?.ship_date,
+        'DD/MM/YYYY'
+      ) +
       ' - ' +
-      modalDelivery?.time
+      modalDelivery?.deliveryTableRow?.ship_time
     );
   }
 }

@@ -1,37 +1,43 @@
-import {
-  BillDetailObject,
-  BillObject,
-  SanPhamDoanhThu,
-  SuperDetail_ReportObject,
-} from '@/lib/models';
+// import { BillDetailObject, BillObject } from '@/lib/models';
 import { dataRow } from '../ReportTable/ReportTable';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
+import ReportTableRow from '@/models/report';
+import { BillTableRow } from '@/models/bill';
+import { BillItemTableRow } from '@/models/billItem';
 
-function getRevenue(bills: BillObject[]) {
-  return bills.reduce((total, bill) => total + bill.originalPrice, 0);
+function getRevenue(bills: BillTableRow[] | undefined) {
+  if (!bills) {
+    return 0;
+  }
+  return bills.reduce((total, bill) => total + bill.total_price, 0);
 }
 
-function getRealRevenue(bills: BillObject[]) {
-  return bills.reduce((total, bill) => total + bill.totalPrice, 0);
+function getRealRevenue(bills: BillTableRow[] | undefined) {
+  if (!bills) {
+    return 0;
+  }
+  return bills.reduce((total, bill) => total + bill.final_price, 0);
 }
 
-function getBillDetails(billDetails: BillDetailObject[], bills: BillObject[]) {
-  return billDetails.filter((billDetail) => {
-    return bills.findIndex((bill) => bill.id == billDetail.bill_id) != -1;
+function getNumberProducts(bills: BillTableRow[] | undefined) {
+  if (!bills) {
+    return 0;
+  }
+  var result = 0;
+  bills.forEach((bill) => {
+    bill.billItems?.forEach((billItem) => {
+      result += billItem.amount;
+    });
   });
-}
-function getNumberProducts(billDetails: BillDetailObject[]) {
-  return billDetails.reduce(
-    (total, billDetail) => total + billDetail.amount,
-    0
-  );
+  return result;
 }
 
 function handle(
   rows: dataRow[],
-  spDoanhThu: SanPhamDoanhThu[],
+  spDoanhThu: SanPhamDoanhThuType[],
   handleRevenueChange: (value: number) => void,
   handleRealRevenueChange: (value: number) => void,
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void
 ) {
   const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
   handleRevenueChange(totalRevenue);
@@ -55,6 +61,42 @@ function handle(
   handleSpDoanhThuChange(spDoanhThu);
 }
 
+var spDoanhThu: SanPhamDoanhThuType[] = [];
+var rows: dataRow[] = [];
+
+function xuly(reportData: ReportTableRow, bills: BillTableRow[] | undefined) {
+  bills?.forEach((bill) => {
+    bill.billItems?.forEach((billDetail) => {
+      var exist = spDoanhThu.findIndex((spDoanhThu) => {
+        return spDoanhThu.id == billDetail.batch_id;
+      });
+
+      if (exist == -1) {
+        const batch = reportData.batches?.find(
+          (batch) => batch.id == billDetail.batch_id
+        );
+        const productType = reportData.productTypes?.find(
+          (item) => item.id == batch?.product_type_id
+        );
+        const product = productType?.products?.find((product) => {
+          return product.id == batch?.product_id;
+        });
+        if (product && batch) {
+          spDoanhThu.push({
+            ...batch,
+            revenue: billDetail.final_price,
+            percentage: 0,
+            product: product,
+          });
+        }
+      } else {
+        spDoanhThu[exist].revenue =
+          spDoanhThu[exist].revenue + billDetail.final_price;
+      }
+    });
+  });
+}
+
 export function All_All_All({
   reportData,
   reportDate,
@@ -62,28 +104,29 @@ export function All_All_All({
   handleRealRevenueChange,
   handleSpDoanhThuChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
 }): dataRow[] {
   var minYear = new Date().getFullYear();
   var maxYear = new Date().getFullYear();
-  reportData.bills.forEach((bill) => {
-    if (bill.state == 1) {
-      var year = new Date(bill.paymentTime).getFullYear();
+  reportData.bills?.forEach((bill) => {
+    if (bill.state == 'paid') {
+      var year = new Date(bill.paid_time).getFullYear();
       minYear = year < minYear ? year : minYear;
     }
   });
 
-  var rows: dataRow[] = [];
-  var spDoanhThu: SanPhamDoanhThu[] = [];
+  rows = [];
+  spDoanhThu = [];
   for (var i = minYear; i <= maxYear; i++) {
-    const bills = reportData.bills.filter(
-      (bill) => bill.state == 1 && new Date(bill.paymentTime).getFullYear() == i
+    const bills = reportData.bills?.filter(
+      (bill) =>
+        bill.state == 'paid' && new Date(bill.paid_time).getFullYear() == i
     );
-    const sales = reportData.sales.filter(
+    const sales = reportData.sales?.filter(
       (sale) => new Date(sale.start_at).getFullYear() == i
     );
 
@@ -91,45 +134,16 @@ export function All_All_All({
 
     const realRevenue = getRealRevenue(bills);
 
-    const billDetails = getBillDetails(reportData.billDetails, bills);
+    xuly(reportData, bills);
 
-    billDetails.forEach((billDetail) => {
-      var exist = spDoanhThu.findIndex((spDoanhThu) => {
-        return spDoanhThu.id == billDetail.batch_id;
-      });
-
-      if (exist == -1) {
-        const batch = reportData.batches.find(
-          (batch) => batch.id == billDetail.batch_id
-        );
-        const productObject = reportData.products.find((product) => {
-          return product.id == batch?.product_id;
-        });
-        if (productObject && batch) {
-          spDoanhThu.push({
-            ...batch,
-            revenue:
-              billDetail.amount *
-              (billDetail.price - billDetail.discountAmount),
-            percentage: 0,
-            productObject: productObject,
-          });
-        }
-      } else {
-        spDoanhThu[exist].revenue =
-          spDoanhThu[exist].revenue +
-          billDetail.amount * (billDetail.price - billDetail.discountAmount);
-      }
-    });
-
-    const numberProducts = getNumberProducts(billDetails);
+    const numberProducts = getNumberProducts(bills);
 
     rows.push({
       id: i.toString(),
       time: i.toString(),
-      numberBills: bills.length,
+      numberBills: bills ? bills.length : 0,
       numberProducts: numberProducts,
-      numberSales: sales.length,
+      numberSales: sales ? sales.length : 0,
       revenue: revenue,
       realRevenue: realRevenue,
       percentage: 0,
@@ -154,32 +168,32 @@ export function All_So_All({
   handleRealRevenueChange,
   handleSpDoanhThuChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
 }): dataRow[] {
   var minYear = new Date().getFullYear();
   var maxYear = new Date().getFullYear();
-  reportData.bills.forEach((bill) => {
-    if (bill.state == 1) {
-      var year = new Date(bill.paymentTime).getFullYear();
+  reportData.bills?.forEach((bill) => {
+    if (bill.state == 'paid') {
+      var year = new Date(bill.paid_time).getFullYear();
       minYear = year < minYear ? year : minYear;
     }
   });
 
-  var rows: dataRow[] = [];
-  var spDoanhThu: SanPhamDoanhThu[] = [];
+  rows = [];
+  spDoanhThu = [];
   for (var i = minYear; i <= maxYear; i++) {
-    const bills = reportData.bills.filter(
+    const bills = reportData.bills?.filter(
       (bill) =>
-        bill.state == 1 &&
-        new Date(bill.paymentTime).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paymentTime).getFullYear() == i
+        bill.state == 'paid' &&
+        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time).getFullYear() == i
     );
 
-    const sales = reportData.sales.filter(
+    const sales = reportData.sales?.filter(
       (sale) =>
         new Date(sale.start_at).getMonth() + 1 == reportDate.month &&
         new Date(sale.start_at).getFullYear() == i
@@ -188,38 +202,9 @@ export function All_So_All({
     const revenue = getRevenue(bills);
     const realRevenue = getRealRevenue(bills);
 
-    const billDetails = getBillDetails(reportData.billDetails, bills);
+    xuly(reportData, bills);
 
-    billDetails.forEach((billDetail) => {
-      var exist = spDoanhThu.findIndex((spDoanhThu) => {
-        return spDoanhThu.id == billDetail.batch_id;
-      });
-
-      if (exist == -1) {
-        const batch = reportData.batches.find(
-          (batch) => batch.id == billDetail.batch_id
-        );
-        const productObject = reportData.products.find((product) => {
-          return product.id == batch?.product_id;
-        });
-        if (productObject && batch) {
-          spDoanhThu.push({
-            ...batch,
-            revenue:
-              billDetail.amount *
-              (billDetail.price - billDetail.discountAmount),
-            percentage: 0,
-            productObject: productObject,
-          });
-        }
-      } else {
-        spDoanhThu[exist].revenue =
-          spDoanhThu[exist].revenue +
-          billDetail.amount * (billDetail.price - billDetail.discountAmount);
-      }
-    });
-
-    const numberProducts = getNumberProducts(billDetails);
+    const numberProducts = getNumberProducts(bills);
 
     rows.push({
       id:
@@ -232,9 +217,9 @@ export function All_So_All({
         reportDate.month.toString() +
         '/' +
         i.toString(),
-      numberBills: bills.length,
+      numberBills: bills ? bills.length : 0,
       numberProducts: numberProducts,
-      numberSales: sales.length,
+      numberSales: sales ? sales.length : 0,
       revenue: revenue,
       realRevenue: realRevenue,
       percentage: 0,
@@ -259,26 +244,26 @@ export function All_All_So({
   handleRealRevenueChange,
   handleSpDoanhThuChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
 }): dataRow[] {
   var minMonth = 1;
   var maxMonth = 12;
 
-  var rows: dataRow[] = [];
-  var spDoanhThu: SanPhamDoanhThu[] = [];
+  rows = [];
+  spDoanhThu = [];
   for (var i = minMonth; i <= maxMonth; i++) {
-    const bills = reportData.bills.filter(
+    const bills = reportData.bills?.filter(
       (bill) =>
-        bill.state == 1 &&
-        new Date(bill.paymentTime).getMonth() + 1 == i &&
-        new Date(bill.paymentTime).getFullYear() == reportDate.year
+        bill.state == 'paid' &&
+        new Date(bill.paid_time).getMonth() + 1 == i &&
+        new Date(bill.paid_time).getFullYear() == reportDate.year
     );
 
-    const sales = reportData.sales.filter(
+    const sales = reportData.sales?.filter(
       (sale) =>
         new Date(sale.start_at).getMonth() + 1 == i &&
         new Date(sale.start_at).getFullYear() == reportDate.year
@@ -287,46 +272,17 @@ export function All_All_So({
     const revenue = getRevenue(bills);
     const realRevenue = getRealRevenue(bills);
 
-    const billDetails = getBillDetails(reportData.billDetails, bills);
+    xuly(reportData, bills);
 
-    billDetails.forEach((billDetail) => {
-      var exist = spDoanhThu.findIndex((spDoanhThu) => {
-        return spDoanhThu.id == billDetail.batch_id;
-      });
-
-      if (exist == -1) {
-        const batch = reportData.batches.find(
-          (batch) => batch.id == billDetail.batch_id
-        );
-        const productObject = reportData.products.find((product) => {
-          return product.id == batch?.product_id;
-        });
-        if (productObject && batch) {
-          spDoanhThu.push({
-            ...batch,
-            revenue:
-              billDetail.amount *
-              (billDetail.price - billDetail.discountAmount),
-            percentage: 0,
-            productObject: productObject,
-          });
-        }
-      } else {
-        spDoanhThu[exist].revenue =
-          spDoanhThu[exist].revenue +
-          billDetail.amount * (billDetail.price - billDetail.discountAmount);
-      }
-    });
-
-    const numberProducts = getNumberProducts(billDetails);
+    const numberProducts = getNumberProducts(bills);
 
     rows.push({
       id: (i < 10 ? '0' : '') + i.toString() + '/' + reportDate.year.toString(),
       time:
         (i < 10 ? '0' : '') + i.toString() + '/' + reportDate.year.toString(),
-      numberBills: bills.length,
+      numberBills: bills ? bills.length : 0,
       numberProducts: numberProducts,
-      numberSales: sales.length,
+      numberSales: sales ? sales.length : 0,
       revenue: revenue,
       realRevenue: realRevenue,
       percentage: 0,
@@ -351,27 +307,27 @@ export function All_So_So({
   handleRealRevenueChange,
   handleSpDoanhThuChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
 }): dataRow[] {
   var minDay = 1;
   var maxDay = new Date(reportDate.year, reportDate.month, 0).getDate();
 
-  var rows: dataRow[] = [];
-  var spDoanhThu: SanPhamDoanhThu[] = [];
+  rows = [];
+  spDoanhThu = [];
   for (var i = minDay; i <= maxDay; i++) {
-    const bills = reportData.bills.filter(
+    const bills = reportData.bills?.filter(
       (bill) =>
-        bill.state == 1 &&
-        new Date(bill.paymentTime).getDate() == i &&
-        new Date(bill.paymentTime).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paymentTime).getFullYear() == reportDate.year
+        bill.state == 'paid' &&
+        new Date(bill.paid_time).getDate() == i &&
+        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time).getFullYear() == reportDate.year
     );
 
-    const sales = reportData.sales.filter(
+    const sales = reportData.sales?.filter(
       (sale) =>
         new Date(sale.start_at).getDate() == i &&
         new Date(sale.start_at).getMonth() + 1 == reportDate.month &&
@@ -381,38 +337,9 @@ export function All_So_So({
     const revenue = getRevenue(bills);
     const realRevenue = getRealRevenue(bills);
 
-    const billDetails = getBillDetails(reportData.billDetails, bills);
+    xuly(reportData, bills);
 
-    billDetails.forEach((billDetail) => {
-      var exist = spDoanhThu.findIndex((spDoanhThu) => {
-        return spDoanhThu.id == billDetail.batch_id;
-      });
-
-      if (exist == -1) {
-        const batch = reportData.batches.find(
-          (batch) => batch.id == billDetail.batch_id
-        );
-        const productObject = reportData.products.find((product) => {
-          return product.id == batch?.product_id;
-        });
-        if (productObject && batch) {
-          spDoanhThu.push({
-            ...batch,
-            revenue:
-              billDetail.amount *
-              (billDetail.price - billDetail.discountAmount),
-            percentage: 0,
-            productObject: productObject,
-          });
-        }
-      } else {
-        spDoanhThu[exist].revenue =
-          spDoanhThu[exist].revenue +
-          billDetail.amount * (billDetail.price - billDetail.discountAmount);
-      }
-    });
-
-    const numberProducts = getNumberProducts(billDetails);
+    const numberProducts = getNumberProducts(bills);
 
     rows.push({
       id:
@@ -431,9 +358,9 @@ export function All_So_So({
         reportDate.month.toString() +
         '/' +
         reportDate.year.toString(),
-      numberBills: bills.length,
+      numberBills: bills ? bills.length : 0,
       numberProducts: numberProducts,
-      numberSales: sales.length,
+      numberSales: sales ? sales.length : 0,
       revenue: revenue,
       realRevenue: realRevenue,
       percentage: 0,
@@ -458,27 +385,27 @@ export function So_So_So({
   handleRealRevenueChange,
   handleSpDoanhThuChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: { day: number; month: number; year: number };
   handleRevenueChange: (value: number) => void;
   handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThu[]) => void;
+  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
 }): dataRow[] {
   var minDay = reportDate.day;
   var maxDay = reportDate.day;
 
-  var rows: dataRow[] = [];
-  var spDoanhThu: SanPhamDoanhThu[] = [];
+  rows = [];
+  spDoanhThu = [];
   for (var i = minDay; i <= maxDay; i++) {
-    const bills = reportData.bills.filter(
+    const bills = reportData.bills?.filter(
       (bill) =>
-        bill.state == 1 &&
-        new Date(bill.paymentTime).getDate() == i &&
-        new Date(bill.paymentTime).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paymentTime).getFullYear() == reportDate.year
+        bill.state == 'paid' &&
+        new Date(bill.paid_time).getDate() == i &&
+        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time).getFullYear() == reportDate.year
     );
 
-    const sales = reportData.sales.filter(
+    const sales = reportData.sales?.filter(
       (sale) =>
         new Date(sale.start_at).getDate() == i &&
         new Date(sale.start_at).getMonth() + 1 == reportDate.month &&
@@ -488,38 +415,9 @@ export function So_So_So({
     const revenue = getRevenue(bills);
     const realRevenue = getRealRevenue(bills);
 
-    const billDetails = getBillDetails(reportData.billDetails, bills);
+    xuly(reportData, bills);
 
-    billDetails.forEach((billDetail) => {
-      var exist = spDoanhThu.findIndex((spDoanhThu) => {
-        return spDoanhThu.id == billDetail.batch_id;
-      });
-
-      if (exist == -1) {
-        const batch = reportData.batches.find(
-          (batch) => batch.id == billDetail.batch_id
-        );
-        const productObject = reportData.products.find((product) => {
-          return product.id == batch?.product_id;
-        });
-        if (productObject && batch) {
-          spDoanhThu.push({
-            ...batch,
-            revenue:
-              billDetail.amount *
-              (billDetail.price - billDetail.discountAmount),
-            percentage: 0,
-            productObject: productObject,
-          });
-        }
-      } else {
-        spDoanhThu[exist].revenue =
-          spDoanhThu[exist].revenue +
-          billDetail.amount * (billDetail.price - billDetail.discountAmount);
-      }
-    });
-
-    const numberProducts = getNumberProducts(billDetails);
+    const numberProducts = getNumberProducts(bills);
 
     rows.push({
       id:
@@ -538,9 +436,9 @@ export function So_So_So({
         reportDate.month.toString() +
         '/' +
         reportDate.year.toString(),
-      numberBills: bills.length,
+      numberBills: bills ? bills.length : 0,
       numberProducts: numberProducts,
-      numberSales: sales.length,
+      numberSales: sales ? sales.length : 0,
       revenue: revenue,
       realRevenue: realRevenue,
       percentage: 0,

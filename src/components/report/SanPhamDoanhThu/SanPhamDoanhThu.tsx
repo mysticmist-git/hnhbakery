@@ -1,17 +1,17 @@
 import { useSnackbarService } from '@/lib/contexts';
-import { SanPhamDoanhThu } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { InputAdornment, Tooltip, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
 import Outlined_TextField from '../../order/MyModal/Outlined_TextField';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 
 export default function SanPhamDoanhThu({
   spDoanhThu,
   spDoanhThuSearch,
 }: {
-  spDoanhThu: SanPhamDoanhThu[];
+  spDoanhThu: SanPhamDoanhThuType[];
   spDoanhThuSearch: string;
 }) {
   const theme = useTheme();
@@ -28,26 +28,26 @@ export default function SanPhamDoanhThu({
     setData(() => spDoanhThu);
   }, [spDoanhThu]);
 
-  const getValue = (item: SanPhamDoanhThu) => {
+  const getValue = (item: SanPhamDoanhThuType) => {
     var result = '';
     result += 'Mã lô: ' + item.id;
-    result += '\nMã sản phẩm: ' + item.productObject.id;
-    result += '\nĐã bán: ' + item.soldQuantity;
+    result += '\nMã sản phẩm: ' + item.product.id;
+    result += '\nĐã bán: ' + item.sold;
     result += '\nDoanh thu: ' + formatPrice(item.revenue);
     result += '\nChiểm tỉ lệ: ' + item.percentage + '%';
     result +=
       '\nTrạng thái: ' +
-      (item.productObject.isActive ? 'Còn sản xuất' : 'Ngưng sản xuất');
+      (item.product.active ? 'Còn sản xuất' : 'Ngưng sản xuất');
 
     return result;
   };
 
-  const getLabel = (item: SanPhamDoanhThu) => {
-    const variant = item.productObject.variants.find(
+  const getLabel = (item: SanPhamDoanhThuType) => {
+    const variant = item.product?.variants?.find(
       (variant) => variant.id === item.variant_id
     );
     return (
-      item.productObject.name +
+      item.product.name +
       ' - ' +
       variant?.material +
       ' - Size: ' +
@@ -84,14 +84,12 @@ export default function SanPhamDoanhThu({
                 pointerEvents: 'auto',
                 borderRadius: '8px',
               },
-              endAdornment: item.productObject.id && (
+              endAdornment: item.product.id && (
                 <InputAdornment position="end">
                   <CustomIconButton
                     edge="end"
                     onClick={() => {
-                      navigator.clipboard.writeText(
-                        item.productObject.id ?? 'Trống'
-                      );
+                      navigator.clipboard.writeText(item.product.id ?? 'Trống');
                       handleSnackbarAlert(
                         'success',
                         'Đã sao chép mã sản phẩm vào clipboard!'

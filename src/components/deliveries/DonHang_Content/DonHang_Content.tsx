@@ -1,17 +1,17 @@
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { SuperDetail_DeliveryObject } from '@/lib/models';
 import { formatPrice } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
+import { BillTableRow } from '@/models/bill';
 
 export default function DonHang_Content({
   textStyle,
   modalDelivery,
 }: {
   textStyle: any;
-  modalDelivery: SuperDetail_DeliveryObject | null;
+  modalDelivery: BillTableRow | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
 
@@ -28,20 +28,20 @@ export default function DonHang_Content({
           <Outlined_TextField
             textStyle={textStyle}
             label="Mã đơn hàng"
-            value={modalDelivery?.billObject?.id ?? 'Trống'}
+            value={modalDelivery?.id ?? 'Trống'}
             InputProps={{
               readOnly: true,
               style: {
                 pointerEvents: 'auto',
                 borderRadius: '8px',
               },
-              endAdornment: modalDelivery?.billObject?.id && (
+              endAdornment: modalDelivery?.id && (
                 <InputAdornment position="end">
                   <CustomIconButton
                     edge="end"
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        modalDelivery?.billObject?.id ?? 'Trống'
+                        modalDelivery?.id ?? 'Trống'
                       );
                       handleSnackbarAlert(
                         'success',
@@ -70,10 +70,10 @@ export default function DonHang_Content({
     </>
   );
 
-  function getSoTienCanThu(modalDelivery: SuperDetail_DeliveryObject | null) {
+  function getSoTienCanThu(modalDelivery: BillTableRow | null) {
     var result = 0;
-    if (modalDelivery?.billObject?.state === 0) {
-      result = modalDelivery?.billObject?.totalPrice ?? 0;
+    if (modalDelivery?.state === 'pending') {
+      result = modalDelivery?.final_price ?? 0;
     }
     return formatPrice(result);
   }

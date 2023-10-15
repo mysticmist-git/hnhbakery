@@ -1,14 +1,14 @@
-import { SuperDetail_ReportObject } from '@/lib/models';
 import { Box, MenuItem, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Outlined_TextField from '../../order/MyModal/Outlined_TextField';
+import ReportTableRow from '@/models/report';
 
 export default function ChonNgayThangNam({
   reportData,
   reportDate,
   handleReportDateChange,
 }: {
-  reportData: SuperDetail_ReportObject;
+  reportData: ReportTableRow;
   reportDate: {
     day: number;
     month: number;
@@ -32,9 +32,9 @@ export default function ChonNgayThangNam({
     var minYear = new Date().getFullYear();
     var maxYear = new Date().getFullYear();
 
-    reportData.bills.forEach((bill) => {
-      if (bill.state == 1) {
-        var year = new Date(bill.paymentTime).getUTCFullYear();
+    reportData.bills!.forEach((bill) => {
+      if (bill.state == 'paid') {
+        var year = new Date(bill.paid_time).getUTCFullYear();
         minYear = year < minYear ? year : minYear;
       }
     });

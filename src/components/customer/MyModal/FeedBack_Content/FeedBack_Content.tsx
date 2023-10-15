@@ -1,8 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
-import { FeedbackObject, SuperDetail_UserObject } from '@/lib/models';
+// import { FeedbackObject, SuperDetail_UserObject } from '@/lib/models';
 import { formatDateString } from '@/lib/utils';
+import { FeedbackTableRow } from '@/models/feedback';
+import { UserTableRow } from '@/models/user';
 import { ContentCopyRounded } from '@mui/icons-material';
 import {
   Grid,
@@ -18,16 +20,16 @@ export default function FeedBack_Content({
   modalUser,
 }: {
   textStyle: any;
-  modalUser: SuperDetail_UserObject | null;
+  modalUser: UserTableRow | null;
 }) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
 
-  const getValueFromFeedBack = (feedback: FeedbackObject) => {
+  const getValueFromFeedBack = (feedback: FeedbackTableRow) => {
     var result = '';
     result += 'Mã sản phẩm: ' + feedback.product_id + '\n';
     result += 'Đánh giá: ' + feedback.rating + '/5\n';
-    result += 'Thời gian: ' + formatDateString(feedback.time) + '\n';
+    // result += 'Thời gian: ' + formatDateString(feedback.time) + '\n';
     result += 'Bình luận: ' + feedback.comment;
     return result;
   };
@@ -41,9 +43,8 @@ export default function FeedBack_Content({
         alignItems="center"
         spacing={3}
       >
-        {modalUser?.feedbackObjects &&
-        modalUser?.feedbackObjects?.length > 0 ? (
-          modalUser?.feedbackObjects.map((feedback, index) => (
+        {modalUser?.feedbacks && modalUser?.feedbacks?.length > 0 ? (
+          modalUser?.feedbacks.map((feedback, index) => (
             <Grid item xs={12} alignSelf={'stretch'} key={index}>
               <Outlined_TextField
                 textStyle={textStyle}

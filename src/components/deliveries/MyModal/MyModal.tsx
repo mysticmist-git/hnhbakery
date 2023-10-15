@@ -1,7 +1,6 @@
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import { DeliveryObject, SuperDetail_DeliveryObject } from '@/lib/models';
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -20,6 +19,9 @@ import { CustomIconButton } from '../../buttons';
 import ChiTietDonHang_Content from '../ChiTietDonHang_Content';
 import DonHang_Content from '../DonHang_Content';
 import ThongTin_Content from '../ThongTin_Content';
+import { BillTableRow } from '@/models/bill';
+import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
+import { updateBill } from '@/lib/DAO/billDAO';
 
 export default function MyModal({
   open,
@@ -29,7 +31,7 @@ export default function MyModal({
 }: {
   open: boolean;
   handleClose: any;
-  delivery: SuperDetail_DeliveryObject | null;
+  delivery: BillTableRow | null;
   handleDeliveryDataChange: any;
 }) {
   const handleSnackbarAlert = useSnackbarService();
@@ -58,8 +60,9 @@ export default function MyModal({
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const [modalDelivery, setModalDelivery] =
-    useState<SuperDetail_DeliveryObject | null>(delivery);
+  const [modalDelivery, setModalDelivery] = useState<BillTableRow | null>(
+    delivery
+  );
 
   useEffect(() => {
     setModalDelivery(() => delivery);
@@ -235,45 +238,86 @@ export default function MyModal({
 
         <DialogActions>
           <Box sx={{ width: '100%' }} textAlign={'center'}>
-            <Button
-              onClick={async () => {
-                const data = (
-                  await getCollection<DeliveryObject>(
-                    COLLECTION_NAME.DELIVERIES
-                  )
-                ).find((delivery) => delivery.id === modalDelivery?.id);
-                if (data) {
-                  data.state = 'success';
-                  await updateDocToFirestore(data, COLLECTION_NAME.DELIVERIES);
+            {modalDelivery?.deliveryTableRow?.state === 'delivering' && (
+              <Button
+                onClick={async () => {
+                  const data = await getDeliveryById(
+                    modalDelivery!.deliveryTableRow!.id
+                  );
+                  if (data) {
+                    data.state = 'delivered';
+                    modalDelivery!.deliveryTableRow!.state = 'delivered';
+                    await updateDelivery(data.id, data);
 
-                  if (modalDelivery?.billObject?.state == 0) {
-                    var bill = modalDelivery.billObject;
-                    bill.state = 1;
-                    await updateDocToFirestore(bill, COLLECTION_NAME.BILLS);
-                    modalDelivery.billObject = bill;
+                    if (modalDelivery?.state == 'pending') {
+                      var bill = { ...modalDelivery };
+                      bill.state = 'paid';
+                      delete bill?.paymentMethod;
+                      delete bill?.customer;
+                      delete bill?.sale;
+                      delete bill?.deliveryTableRow;
+                      delete bill?.billItems;
+
+                      await updateBill(
+                        modalDelivery.customer!.group_id,
+                        modalDelivery.customer!.id,
+                        bill.id,
+                        bill
+                      );
+                      modalDelivery.state = 'paid';
+                    }
+
+                    handleSnackbarAlert('success', 'Giao hàng thành công!');
+                    handleDeliveryDataChange({
+                      ...modalDelivery,
+                    });
+
+                    handleClose();
+                  } else {
+                    handleSnackbarAlert('error', 'Lỗi.');
+                    handleClose();
                   }
+                }}
+                color="success"
+                variant="contained"
+              >
+                Giao hàng thành công
+              </Button>
+            )}
 
-                  handleSnackbarAlert('success', 'Giao hàng thành công!');
-                  handleDeliveryDataChange({
-                    ...modalDelivery,
-                    state: 'success',
-                  });
+            {modalDelivery?.deliveryTableRow?.state === 'issued' &&
+              (modalDelivery?.state === 'pending' ||
+                modalDelivery?.state === 'paid') && (
+                <Button
+                  onClick={async () => {
+                    const data = await getDeliveryById(
+                      modalDelivery!.deliveryTableRow!.id
+                    );
+                    if (data) {
+                      data.state = 'delivering';
+                      modalDelivery!.deliveryTableRow!.state = 'delivering';
+                      await updateDelivery(data.id, data);
 
-                  handleClose();
-                } else {
-                  handleSnackbarAlert('error', 'Lỗi.');
-                  handleClose();
-                }
-              }}
-              color="success"
-              variant="contained"
-              disabled={
-                modalDelivery?.state === 'success' ||
-                modalDelivery?.state === 'cancel'
-              }
-            >
-              Giao hàng thành công
-            </Button>
+                      handleSnackbarAlert(
+                        'success',
+                        'Bắt đầu giao hàng thành công!'
+                      );
+                      handleDeliveryDataChange({
+                        ...modalDelivery,
+                      });
+
+                      handleClose();
+                    } else {
+                      handleSnackbarAlert('error', 'Lỗi.');
+                      handleClose();
+                    }
+                  }}
+                  color="secondary"
+                  variant="contained"
+                >
+                  Bắt đầu giao hàng
+                </Button>
+              )}
           </Box>
         </DialogActions>
       </Dialog>

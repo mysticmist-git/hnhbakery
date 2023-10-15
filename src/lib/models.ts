@@ -271,7 +271,7 @@ export interface PermissionObject extends BaseObject {
   isActive: boolean;
 }
 
-export interface SuperDetail_ReportObject {
+interface SuperDetail_ReportObject {
   products: ProductObject[];
   batches: BatchObject[];
   feedbacks: FeedbackObject[];
@@ -282,7 +282,7 @@ export interface SuperDetail_ReportObject {
   sales: SaleObject[];
 }
 
-export type SanPhamDoanhThu = BatchObject & {
+type SanPhamDoanhThu = BatchObject & {
   revenue: number;
   percentage: number;
   productObject: ProductObject;

@@ -3,7 +3,7 @@ import ModalState from '@/components/order/MyModal/ModalState';
 import BillTable from '@/components/order/MyTable/BillTable';
 import { getAddress } from '@/lib/DAO/addressDAO';
 import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
-import { getBills } from '@/lib/DAO/billDAO';
+import { getBillTableRows, getBills } from '@/lib/DAO/billDAO';
 import { getBillItems } from '@/lib/DAO/billItemDAO';
 import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
 import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
@@ -56,7 +56,7 @@ const Order = () => {
   const handleBillDataChange = (value: BillTableRow) => {
     setBillsData(() => {
       return billsData.map((bill) => {
-        if (bill.id === value.id) {
+        if (bill.id === value.id && bill.customer_id === value.customer_id) {
           return value;
         } else {
           return bill;
@@ -81,57 +81,7 @@ const Order = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const finalBills: BillTableRow[] = [];
-        const customers = await getUsers(DEFAULT_GROUP_ID);
-
-        for (let c of customers) {
-          const bills = await getBills(c.group_id, c.id);
-
-          for (let b of bills) {
-            const billitems = await getBillItems(c.group_id, c.id, b.id);
-
-            const billItems: BillTableRow['billItems'] = [];
-            for (let bi of billitems) {
-              const batch = await getBatchById(bi.batch_id);
-              billItems.push({
-                ...bi,
-                batch: batch,
-                productType: await getProductTypeById(batch!.product_type_id),
-                product: await getProduct(
-                  batch!.product_type_id,
-                  batch!.product_id
-                ),
-                variant: await getVariant(
-                  batch!.product_type_id,
-                  batch!.product_id,
-                  batch!.variant_id
-                ),
-              });
-            }
-
-            const sale =
-              b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-            const delivery = await getDeliveryById(b.delivery_id);
-
-            finalBills.push({
-              ...b,
-              paymentMethod: await getPaymentMethodById(b.payment_method_id),
-              customer: { ...c },
-              sale: sale,
-              deliveryTableRow: {
-                ...delivery!,
-                address: await getAddress(
-                  c.group_id,
-                  c.id,
-                  delivery!.address_id
-                ),
-              },
-              billItems: billItems,
-            });
-          }
-        }
-
+        const finalBills: BillTableRow[] = await getBillTableRows();
         setBillsData(() => finalBills || []);
       } catch (error) {
         console.log(error);
@@ -139,7 +89,6 @@ const Order = () => {
     };
     fetchData();
   }, []);
-  console.log('billsData', billsData);
 
   const theme = useTheme();
 
