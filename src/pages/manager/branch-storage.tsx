@@ -1,100 +1,62 @@
 import { TableActionButton } from '@/components/buttons';
 import DialogButton from '@/components/buttons/DialogButton';
-import SimpleDialog from '@/components/dialogs/SimpleDialog';
+import { SimpleDialog } from '@/components/dialogs';
 import { RowModal } from '@/components/manage/modals/rowModals';
 import CustomDataTable from '@/components/manage/tables/CustomDataTable';
-import { COLLECTION_NAME, ROUTES } from '@/lib/constants';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
   BatchStorageDocsFetcher,
-  ProductStorageDocsFetcher,
-  ProductTypeStorageDocsFetcher,
   StorageDocsFactory,
 } from '@/lib/factories/StorageDocsFactory';
-import { isDataChanged } from '@/lib/manage';
-import {
-  crudTargets,
-  generateDefaultRow,
-  initManageState,
-  manageReducer,
-  validateCollectionNameParams,
-} from '@/lib/manage/manage';
+import { isDataChanged, manageReducer } from '@/lib/manage';
+import { generateDefaultRow, initManageState } from '@/lib/manage/manage';
 import { BaseObject } from '@/lib/models';
 import {
-  AddData,
   BatchDataManagerStrategy,
-  BatchUpdateData,
   DataManagerErrorCode,
-  DataManagerStrategy,
-  ProductAddData,
-  ProductDataManagerStrategy,
-  ProductTypeAddData,
-  ProductTypeDataManagerStrategy,
-  ProductTypeUpdateData,
-  ProductUpdateData,
   UpdateData,
 } from '@/lib/strategies/DataManagerStrategy';
 import {
-  CrudTarget,
+  AddData,
+  DataManagerStrategy,
   DialogResult,
   FormRef,
   ManageAction,
   ManageActionType,
   ManageState,
-  ModalProductTypeObject,
 } from '@/lib/types/manage';
 import { BaseModel } from '@/models/storageModels';
-import Variant from '@/models/variant';
 import { Add, RestartAlt } from '@mui/icons-material';
+import { Box, Divider, Grid, Typography } from '@mui/material';
 import {
-  Box,
-  Divider,
-  Grid,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+  FunctionComponent,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
-//#endregion
+interface BranchStorageProps {}
 
-export default function Manage() {
+const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   //#region States
 
   const [state, dispatch] = useReducer<
     React.Reducer<ManageState, ManageAction>
   >(manageReducer, initManageState);
 
-  const [justLoaded, setJustLoaded] = useState(true);
-
-  // NOTE: Remove this when the data manager is refactored
-  // const [dataManager, setDataManager] = useState<DataManagerStrategy | null>(
-  //   null
-  // );
-
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-  const dataManager: DataManagerStrategy | null = useMemo(() => {
-    switch (state.selectedTarget?.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        return new ProductTypeDataManagerStrategy(dispatch);
-      case COLLECTION_NAME.PRODUCTS:
-        return new ProductDataManagerStrategy(dispatch);
-      case COLLECTION_NAME.BATCHES:
-        return new BatchDataManagerStrategy(dispatch);
-      default:
-        return null;
-    }
-  }, [state.selectedTarget]);
+  const dataManager: DataManagerStrategy = useMemo(() => {
+    return new BatchDataManagerStrategy(dispatch);
+  }, []);
 
   //#endregion
 
   //#region Hooks
 
-  const theme = useTheme();
-  const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
@@ -114,94 +76,22 @@ export default function Manage() {
   }
 
   function createAddData(): AddData | null {
-    let addData: AddData | null = null;
-
-    switch (router.query.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        const imageFile = rowModalRef.current
-          ?.getProductTypeFormRef()
-          ?.getImageFile();
-
-        const productTypeData = state.modalData as ModalProductTypeObject;
-
-        if (!productTypeData) return null;
-
-        if (!productTypeData.name) {
-          handleSnackbarAlert('error', 'Vui lòng nhập tên sản phẩm');
-          return null;
-        }
-
-        addData = {
-          data: productTypeData,
-          imageFile: imageFile ?? undefined,
-        } as ProductTypeAddData;
-
-        break;
-      case COLLECTION_NAME.PRODUCTS:
-        const imageFiles = rowModalRef.current
-          ?.getProductFormRef()
-          ?.getImageFiles();
-
-        const productTypeName =
-          rowModalRef.current?.getProductFormRef()?.getProductTypeName() ??
-          'Lỗi';
-
-        const variants: Omit<Variant, 'id'>[] =
-          rowModalRef.current?.getProductFormRef()?.getVariants() ?? [];
-
-        addData = {
-          data: state.modalData!,
-          productTypeName: productTypeName,
-          imageFiles: imageFiles?.map((f) => f.file) ?? [],
-          variants: variants,
-        } as ProductAddData;
-        break;
-      case COLLECTION_NAME.BATCHES:
-        addData = {
-          data: state.modalData!,
-        };
-        break;
-    }
+    const addData: AddData = {
+      data: state.modalData!,
+    };
 
     return addData;
   }
 
   function createUpdateData(): UpdateData | null {
-    let updateData: UpdateData | null = null;
-
-    switch (router.query.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        updateData = {
-          newData: state.modalData,
-          originalData: state.originalModalData,
-          imageFile: rowModalRef.current
-            ?.getProductTypeFormRef()
-            ?.getImageFile() as File,
-        } as ProductTypeUpdateData;
-        break;
-      case COLLECTION_NAME.PRODUCTS:
-        updateData = {
-          newData: state.modalData,
-          originalData: state.originalModalData,
-          imageFiles:
-            rowModalRef.current?.getProductFormRef()?.getImageFiles() ?? [],
-        } as ProductUpdateData;
-        break;
-      case COLLECTION_NAME.BATCHES:
-        console.log(state.modalData);
-        console.log(state.originalModalData);
-
-        updateData = {
-          newData: state.modalData,
-          originalData: state.originalModalData,
-        } as BatchUpdateData;
-
-        console.log(updateData);
-
-        break;
-      default:
-        break;
+    if (!state.modalData || !state.originalModalData) {
+      return null;
     }
+
+    const updateData: UpdateData = {
+      newData: state.modalData,
+      originalData: state.originalModalData,
+    };
 
     return updateData;
   }
@@ -216,60 +106,9 @@ export default function Manage() {
 
   //#region UseEffects
 
-  // Update state.selected target first time when page load with predefined
-  // collection name.
-  useEffect(() => {
-    if (
-      !router.query.collectionName ||
-      !validateCollectionNameParams(router.query.collectionName as string)
-    ) {
-      router.replace({
-        href: ROUTES.STORAGE,
-        query: {
-          collectionName: COLLECTION_NAME.PRODUCT_TYPES,
-        },
-      });
-      dispatch({
-        type: ManageActionType.SET_SELECTED_TARGET,
-        payload: crudTargets.find(
-          (t) => t.collectionName === COLLECTION_NAME.PRODUCT_TYPES
-        ),
-      });
-      return;
-    }
-  }, [router, router.query.collectionName]);
-
   useEffect(() => {
     const fetchData = async () => {
-      if (
-        !router.query.collectionName ||
-        !validateCollectionNameParams(router.query.collectionName as string)
-      ) {
-        return;
-      }
-
-      // Get the documents from the specified collection.
-      // const mainDocs = await getCollection<BaseObject>(collectionName);
-      let fetcher: StorageDocsFactory | null = null;
-
-      switch (router.query.collectionName) {
-        case COLLECTION_NAME.PRODUCT_TYPES:
-          fetcher = new ProductTypeStorageDocsFetcher();
-          break;
-        case COLLECTION_NAME.PRODUCTS:
-          fetcher = new ProductStorageDocsFetcher();
-          break;
-        case COLLECTION_NAME.BATCHES:
-          fetcher = new BatchStorageDocsFetcher();
-          break;
-        default:
-          break;
-      }
-
-      if (!fetcher) {
-        handleSnackbarAlert('error', 'Đã có lỗi xảy ra khi tải dữ liệu');
-        return;
-      }
+      const fetcher = new BatchStorageDocsFetcher();
 
       let mainDocs: BaseModel[] = [];
 
@@ -292,7 +131,7 @@ export default function Manage() {
       payload: null,
     });
     fetchData();
-  }, [handleSnackbarAlert, router, router.query.collectionName]);
+  }, [handleSnackbarAlert]);
 
   // TODO: Remove this when DataManager is refactored / fix.
   // useEffect(() => {
@@ -304,42 +143,14 @@ export default function Manage() {
 
   //#region useMemos
 
-  const addRowText = useMemo(() => {
-    switch (state.selectedTarget?.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        return 'Thêm loại sản phẩm';
-      case COLLECTION_NAME.PRODUCTS:
-        return 'Thêm sản phẩm';
-      case COLLECTION_NAME.BATCHES:
-        return 'Thêm lô hàng';
-      default:
-        return 'Lỗi khi load text';
-    }
-  }, [state.selectedTarget]);
-
   // #endregion
 
   //#region Handlers
 
-  function handleCrudTargetChanged(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    newTarget: CrudTarget
-  ) {
-    if (!newTarget) {
-      console.log('Null Crud target');
-      return;
-    }
-
-    dispatch({
-      type: ManageActionType.SET_SELECTED_TARGET,
-      payload: newTarget,
-    });
-  }
-
   function handleNewRow() {
     dispatch({
       type: ManageActionType.NEW_ROW,
-      payload: router.query.collectionName,
+      payload: COLLECTION_NAME.BATCHES,
     });
   }
 
@@ -483,7 +294,7 @@ export default function Manage() {
   function handleResetForm() {
     dispatch({
       type: ManageActionType.SET_MODAL_DATA,
-      payload: generateDefaultRow(router.query.collectionName as string),
+      payload: generateDefaultRow(COLLECTION_NAME.BATCHES),
     });
   }
 
@@ -601,19 +412,7 @@ export default function Manage() {
 
     let factory: StorageDocsFactory | null = null;
 
-    switch (router.query.collectionName) {
-      case COLLECTION_NAME.PRODUCT_TYPES:
-        factory = new ProductTypeStorageDocsFetcher();
-        break;
-      case COLLECTION_NAME.PRODUCTS:
-        factory = new ProductStorageDocsFetcher();
-        break;
-      case COLLECTION_NAME.BATCHES:
-        factory = new BatchStorageDocsFetcher();
-        break;
-      default:
-        break;
-    }
+    factory = new BatchStorageDocsFetcher();
 
     if (!factory) {
       handleSnackbarAlert('error', 'Lỗi khi tải lại');
@@ -647,8 +446,8 @@ export default function Manage() {
           spacing={2}
         >
           <Grid item xs={12}>
-            <Typography sx={{ color: theme.palette.common.black }} variant="h4">
-              Quản lý kho
+            <Typography sx={{ color: 'common.black' }} variant="h4">
+              Quản lý kho chi nhánh
             </Typography>
           </Grid>
 
@@ -657,29 +456,7 @@ export default function Manage() {
           </Grid>
 
           <Grid item xs={12}>
-            <ToggleButtonGroup
-              value={state.selectedTarget}
-              onChange={handleCrudTargetChanged}
-              exclusive
-            >
-              {crudTargets.map((target) => (
-                <ToggleButton
-                  key={target.collectionName}
-                  value={target}
-                  onClick={() =>
-                    router.replace({
-                      pathname: router.pathname,
-                      query: {
-                        ...router.query,
-                        collectionName: target.collectionName,
-                      },
-                    })
-                  }
-                >
-                  {target.label}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
+            <Typography>Quản lý lô bánh</Typography>
           </Grid>
 
           <Grid item xs={12}>
@@ -713,7 +490,7 @@ export default function Manage() {
                 variant="contained"
                 onClick={handleNewRow}
               >
-                {addRowText}
+                Thêm mới
               </TableActionButton>
             </Box>
           </Grid>
@@ -721,7 +498,7 @@ export default function Manage() {
           <Grid item xs={12}>
             <CustomDataTable
               mainDocs={state.mainDocs}
-              collectionName={router.query.collectionName as string}
+              collectionName={COLLECTION_NAME.BATCHES}
               handleViewRow={handleViewRow}
               handleDeleteRow={handleDeleteRow}
             />
@@ -772,7 +549,7 @@ export default function Manage() {
           handleCancelUpdateData={handleCancelUpdateData}
           onDataChange={handleOnDataChange}
           data={state.modalData}
-          collectionName={router.query.collectionName as string}
+          collectionName={COLLECTION_NAME.BATCHES}
           handleAddRow={handleAddRow}
           handleUpdateRow={handleUpdateRow}
           handleResetForm={handleResetForm}
@@ -783,4 +560,6 @@ export default function Manage() {
       )}
     </>
   );
-}
+};
+
+export default BranchStorage;
