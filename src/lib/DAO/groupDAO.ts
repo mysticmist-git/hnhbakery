@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Group, { groupConverter } from '@/models/group';
+import Group, { GroupTableRow, groupConverter } from '@/models/group';
 import {
   CollectionReference,
   DocumentReference,
@@ -17,6 +17,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getUsers } from './userDAO';
 
 export const DEFAULT_GROUP_ID = 'default';
 
@@ -111,3 +112,21 @@ export async function deleteGroup(
 export async function deleteGroup(arg: string | DocumentReference<Group>) {
   await deleteDoc(typeof arg == 'string' ? getGroupRefById(arg) : arg);
 }
+
+export const getGroupTableRows = async () => {
+  try {
+    const finalData: GroupTableRow[] = [];
+    const grs = await getGroups();
+    for (let g of grs) {
+      const users = await getUsers(g.id);
+      finalData.push({
+        ...g,
+        users,
+      });
+    }
+    return finalData;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};

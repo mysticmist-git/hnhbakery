@@ -6,28 +6,21 @@ import {
   WithFieldValue,
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
-import WithActive from './withActive';
 import WithId from './withId';
-import User from './user';
 
 /**
- * User Group
- * Sub-Collections: users
- * Foreign Keys: permissions
+ * A branch;
+ * Foreign Keys: manager_id
  */
-type Group = WithCreatedUpdated &
-  WithActive &
+type Branch = WithCreatedUpdated &
   WithId & {
+    address: string;
+    manager_id: string;
     name: string;
-    permissions: string[];
   };
 
-type GroupTableRow = Group & {
-  users?: User[];
-};
-
-const groupConverter: FirestoreDataConverter<Group> = {
-  toFirestore: function (modelObject: WithFieldValue<Group>): DocumentData {
+const branchConverter: FirestoreDataConverter<Branch> = {
+  toFirestore: function (modelObject: WithFieldValue<Branch>): DocumentData {
     const { id, ...obj } = modelObject;
 
     return obj;
@@ -35,19 +28,18 @@ const groupConverter: FirestoreDataConverter<Group> = {
   fromFirestore: function (
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
-  ): Group {
+  ): Branch {
     const data = snapshot.data(options);
 
-    const convertedData: Group = {
+    const convertedData: Branch = {
       ...data,
       id: snapshot.id,
       created_at: data.created_at.toDate(),
       updated_at: data.updated_at.toDate(),
-    } as Group;
+    } as Branch;
     return convertedData;
   },
 };
 
-export default Group;
-export type { Group, GroupTableRow };
-export { groupConverter };
+export default Branch;
+export { branchConverter };

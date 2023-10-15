@@ -1,7 +1,6 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { UserGroup, UserObject } from '@/lib/models';
 import {
   AuthorizeContext,
   AuthorizeContextType,
@@ -26,57 +25,66 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import React, { Key, useContext, useMemo, useState } from 'react';
+import React, { Key, useContext, useEffect, useMemo, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 import UserSearchDialog from '../UserSearchDialog';
 import ViewUserGroupDialog from '../ViewUserGroupDialog.tsx/ViewUserGroupDialog';
+import User from '@/models/user';
+import { GroupTableRow } from '@/models/group';
+import { deleteUser, getUser } from '@/lib/DAO/userDAO';
 
 function UserGroupItem({
   key,
   group,
-  users,
-  allUsers,
   handleDeleteGroup,
-  fallbackTitle = '',
-  noGroup = false,
+  handleChangeUserGroupItem,
 }: {
   key: Key;
-  users: UserObject[];
-  allUsers: UserObject[];
-  handleDeleteGroup: (group: UserGroup) => void;
-  group?: UserGroup;
-  fallbackTitle?: string;
-  noGroup?: boolean;
+  group?: GroupTableRow;
+  handleDeleteGroup: (group: GroupTableRow) => void;
+  handleChangeUserGroupItem: (
+    action: 'add' | 'update' | 'delete',
+    group: GroupTableRow
+  ) => void;
 }) {
-  const [open, setOpen] = useState<boolean>(false);
-  const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
-  const [deleteUser, setDeleteUser] = useState<UserObject | null>(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
-
   const handleSnackbarAlert = useSnackbarService();
 
-  function viewUser(user: UserObject) {
-    // Place your 'View User' action logic here
-  }
+  const [userData, setUserData] = useState<User[]>([]);
 
+  useEffect(() => {
+    if (group?.users) {
+      setUserData(group.users);
+    }
+  }, [group]);
+
+  //#region Xóa người dùng
+  const [deleteUserObject, setDeleteUser] = useState<User | null>(null);
   async function handleRemoveUser() {
-    if (!deleteUser || !group) {
+    if (!deleteUserObject || !group) {
       return;
     }
 
     // Place your 'Quick Remove' action logic here
-    const ref = doc(collection(db, COLLECTION_NAME.USER_GROUPS), group.id);
-
     try {
-      await updateDoc(ref, { users: arrayRemove(deleteUser.id) });
+      await deleteUser(group.id, deleteUserObject.id);
     } catch (error) {
       console.log(error);
     }
 
-    handleSnackbarAlert('success', 'Loại người dùng thành công');
+    handleChangeUserGroupItem('update', {
+      ...group,
+      users: group.users?.filter((u) => u.id !== deleteUserObject.id) ?? [],
+    });
+
+    handleSnackbarAlert('success', 'Xóa người dùng thành công');
     setDeleteUser(null);
   }
+  const handleCancelDelete = () => {
+    setDeleteUser(null);
+  };
+  //#endregion
 
+  //#region Bảng người dùng
   const columns: GridColDef[] = [
     {
       field: 'id',
@@ -97,7 +105,7 @@ function UserGroupItem({
       hideable: false,
     },
     {
-      field: 'birthday',
+      field: 'birth',
       headerName: 'Ngày sinh',
       width: 130,
       type: 'date',
@@ -126,15 +134,15 @@ function UserGroupItem({
         return (
           <Box sx={{ display: 'flex', gap: 1 }}>
             {/* <Button
-              variant="contained"
-              size="small"
-              color="secondary"
-              onClick={() => {
-                viewUser(params.row);
-              }}
-            >
-              Chi tiết
-            </Button> */}
+            variant="contained"
+            size="small"
+            color="secondary"
+            onClick={() => {
+              viewUser(params.row);
+            }}
+          >
+            Chi tiết
+          </Button> */}
             <Button
               variant="contained"
               color="error"
@@ -151,8 +159,13 @@ function UserGroupItem({
       },
     },
   ];
+  //#endregion
 
-  const handleOpenDialog = (group: UserGroup) => {
+  //#region Dialog thêm người dùng
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  const handleOpenDialog = (group: GroupTableRow) => {
     setOpen(true);
   };
 
@@ -160,52 +173,34 @@ function UserGroupItem({
     setOpen(false);
   };
 
+  const handleAddUser = (user: User) => {
+    setUserData([...userData, user]);
+    if (group && group.users) {
+      handleChangeUserGroupItem('update', {
+        ...group,
+        users: [...group.users, user],
+      });
+    }
+  };
+
+  //#endregion
+
+  //#region Dialog xem nhóm người dùng
+  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
+
+  const handleViewUserGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setViewDialogOpen(true);
+  };
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
   };
 
-  const handleAddUsers = async () => {
+  const handleChangePermissions = (group: GroupTableRow) => {
     if (!group) return;
-
-    // Firestore reference to the user group
-    const userGroupRef = doc(
-      collection(db, COLLECTION_NAME.USER_GROUPS),
-      group.id
-    );
-
-    try {
-      await updateDoc(userGroupRef, {
-        users: arrayUnion(...selectedUsers),
-      });
-    } catch (error) {
-      console.log(error);
-      handleSnackbarAlert('error', 'Lỗi khi thêm nhóm người dùng');
-    }
+    handleChangeUserGroupItem('update', group);
   };
-
-  const handleCheckUser = (userId: string) => {
-    setSelectedUsers((prevSelectedUsers) =>
-      prevSelectedUsers.includes(userId)
-        ? prevSelectedUsers.filter((id) => id !== userId)
-        : [...prevSelectedUsers, userId]
-    );
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteUser(null);
-  };
-
-  const availableToAddUsers = useMemo(() => {
-    if (!group) return [];
-
-    return allUsers.filter((user) => !group.users.includes(user.id!));
-  }, [allUsers, group]);
-
-  const handleViewUserGroup = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-
-    setViewDialogOpen(true);
-  };
+  //#endregion
 
   const { permissions } = useContext<AuthorizeContextType>(AuthorizeContext);
 
@@ -217,64 +212,58 @@ function UserGroupItem({
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography width={'20%'}>{group?.name || fallbackTitle}</Typography>
-          {!noGroup && (
-            <Stack
-              direction="row"
-              justifyContent={'end'}
-              width={'80%'}
-              gap={1}
-              pr={1}
-            >
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={handleViewUserGroup}
-              >
-                Chi tiết
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  if (!group) return;
-
-                  handleDeleteGroup(group);
-                }}
-              >
-                Xóa
-              </Button>
-            </Stack>
-          )}
-        </AccordionSummary>
-        <AccordionDetails>
-          {!noGroup && (
+          <Typography width={'20%'}>{group?.name}</Typography>
+          <Stack
+            direction="row"
+            justifyContent={'end'}
+            width={'80%'}
+            gap={1}
+            pr={1}
+          >
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => {
+              size="small"
+              onClick={handleViewUserGroup}
+            >
+              Chi tiết
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
                 if (!group) return;
-                handleOpenDialog(group);
+                handleDeleteGroup(group);
               }}
             >
-              Thêm người dùng
+              Xóa
             </Button>
-          )}
+          </Stack>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              if (!group) return;
+              handleOpenDialog(group);
+            }}
+          >
+            Thêm người dùng
+          </Button>
 
           <Divider sx={{ my: 1 }} />
 
           <Box p={2} m={1}>
-            {users && users.length > 0 ? (
+            {userData && userData.length > 0 ? (
               <DataGrid
-                rows={users ?? []}
+                rows={userData ?? []}
                 columns={columns}
                 pageSizeOptions={[5, 10]}
                 columnVisibilityModel={{
-                  actions: !noGroup,
+                  actions: true,
                 }}
               />
             ) : (
@@ -294,19 +283,17 @@ function UserGroupItem({
 
       {/* Dialog Thêm người dùng */}
       <UserSearchDialog
-        userOptions={availableToAddUsers}
         open={open}
         onCloseDialog={handleCloseDialog}
-        handleAddUsers={handleAddUsers}
-        handleCheckUser={handleCheckUser}
-        selectedUsers={selectedUsers}
+        group={group}
+        handleAddUser={handleAddUser}
       />
 
       {/* Xóa người dùng khỏi nhóm Dialog */}
       <DeleteDialog
         title={'Xóa người dùng'}
         confirmString={'Bạn có chắc muốn xóa người dùng khỏi nhóm?'}
-        deleteTarget={deleteUser}
+        deleteTarget={deleteUserObject}
         handleCancelDelete={handleCancelDelete}
         handleConfirmDelete={handleRemoveUser}
       />
@@ -316,8 +303,9 @@ function UserGroupItem({
         <ViewUserGroupDialog
           open={viewDialogOpen}
           group={group}
-          handleDialogClose={handleViewDialogClose}
           permissionOptions={permissions}
+          handleDialogClose={handleViewDialogClose}
+          handleChangePermissions={handleChangePermissions}
         />
       )}
     </>

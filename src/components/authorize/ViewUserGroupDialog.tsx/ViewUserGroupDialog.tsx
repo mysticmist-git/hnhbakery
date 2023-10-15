@@ -1,6 +1,9 @@
 import { db } from '@/firebase/config';
+import { getGroupById, updateGroup } from '@/lib/DAO/groupDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { PermissionObject, UserGroup } from '@/lib/models';
+import { useSnackbarService } from '@/lib/contexts';
+import Group, { GroupTableRow } from '@/models/group';
+import Permission from '@/models/permission';
 import {
   Button,
   Checkbox,
@@ -21,9 +24,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 interface ViewUserGroupDialogProps {
   open: boolean;
-  group: UserGroup | null;
-  permissionOptions: PermissionObject[];
+  group: GroupTableRow | null;
+  permissionOptions: Permission[];
   handleDialogClose: () => void;
+  handleChangePermissions: (group: GroupTableRow) => void;
 }
 
 const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
@@ -31,8 +35,11 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
   group,
   permissionOptions,
   handleDialogClose,
+  handleChangePermissions,
 }) => {
-  const [value, setValue] = useState<UserGroup | null>(
+  const handleSnackbarAlert = useSnackbarService();
+
+  const [value, setValue] = useState<GroupTableRow | null>(
     group ? { ...group } : null
   );
 
@@ -62,13 +69,13 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
     if (checked) {
       setValue({
         ...value,
-        permission: [...value.permission, event.target.value],
+        permissions: [...value.permissions, event.target.value],
       });
     } else {
       setValue({
         ...value,
-        permission: [
-          ...value.permission.filter((p) => p !== event.target.value),
+        permissions: [
+          ...value.permissions.filter((p) => p !== event.target.value),
         ],
       });
     }
@@ -79,14 +86,12 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
       return;
     }
 
-    const ref = doc(collection(db, COLLECTION_NAME.USER_GROUPS), group.id);
-
-    delete value.id;
+    const { users, ...item } = value;
 
     try {
-      await updateDoc(ref, {
-        ...value,
-      });
+      await updateGroup(value.id, item as Group);
+      handleChangePermissions(value);
+      handleSnackbarAlert('success', 'Cập nhật nhóm người dùng thành công');
     } catch (error) {
       console.log(error);
     }
@@ -133,8 +138,8 @@ const ViewUserGroupDialog: React.FC<ViewUserGroupDialogProps> = ({
                 <Typography variant="body2">{p.name}</Typography>
                 <Checkbox
                   color="secondary"
-                  name="permission"
-                  checked={value ? value.permission.includes(p.id!) : false}
+                  name="permissions"
+                  checked={value ? value.permissions.includes(p.id!) : false}
                   value={p.id}
                   onChange={handlePermissionChange}
                 />

@@ -19,10 +19,16 @@ import {
   HomeCardDisplayItem,
   HomeContext,
 } from '@/lib/contexts/homeContext';
-import { getBestSellterProducts, getCollection } from '@/lib/firestore';
-import { ProductObject, ProductTypeObject } from '@/lib/models';
+// import { getBestSellterProducts as getBestSellerProducts, getCollection } from '@/lib/firestore';
+// import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { alpha } from '@mui/system';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
+import ProductType from '@/models/productType';
+import Product from '@/models/product';
+import { getBatches } from '@/lib/DAO/batchDAO';
+import Batch from '@/models/batch';
+import { getProduct } from '@/lib/DAO/productDAO';
 
 function Home() {
   //#region States
@@ -32,8 +38,8 @@ function Home() {
 
   //#endregion
 
-  const [productTypes, setProductTypes] = useState<ProductTypeObject[]>([]);
-  const [bestSellers, setBestSellers] = useState<ProductObject[]>([]);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
 
   //#region Hooks
 
@@ -48,8 +54,8 @@ function Home() {
       try {
         const [productTypesPromise, bestSellersPromise] =
           await Promise.allSettled([
-            await getProductTypes(),
-            await getBestSellers(),
+            await getHomeProductTypes(),
+            await getHomeBestSellers(),
           ]);
 
         const productTypes =
@@ -70,9 +76,9 @@ function Home() {
     };
 
     fetchData();
-  }, []);
 
-  useEffect(() => {
+    //--------------
+
     const importImages = async () => {
       const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
@@ -199,10 +205,8 @@ function Home() {
   );
 }
 
-const getProductTypes = async () => {
-  const productTypes = await getCollection<ProductTypeObject>(
-    COLLECTION_NAME.PRODUCT_TYPES
-  );
+const getHomeProductTypes = async () => {
+  const productTypes: ProductType[] = await getProductTypes();
 
   return (
     productTypes.map((type) => ({
@@ -212,8 +216,8 @@ const getProductTypes = async () => {
   );
 };
 
-const getBestSellers = async () => {
-  const bestSellers = await getBestSellterProducts();
+const getHomeBestSellers = async () => {
+  const bestSellers = await getBestSellerProducts();
 
   console.log(bestSellers);
 
@@ -225,5 +229,42 @@ const getBestSellers = async () => {
     })) ?? []
   );
 };
+
+async function getBestSellerProducts(): Promise<Product[]> {
+  // Constants
+  const minSoldQuantity = 0;
+  const queryLimit = 7;
+
+  const batchesResult: Batch[] = [];
+  const batches = (await getBatches()).filter(
+    (batch) => new Date(batch.exp).getTime() > new Date().getTime()
+  );
+
+  for (let batch of batches) {
+    if (batch.sold >= minSoldQuantity) {
+      const exist = batchesResult.findIndex(
+        (item) =>
+          item.product_type_id === batch.product_type_id &&
+          item.product_id === batch.product_id
+      );
+      if (exist === -1) {
+        batchesResult.push(batch);
+      } else if (batchesResult[exist].sold < batch.sold) {
+        batchesResult[exist] = batch;
+      }
+    }
+  }
+  batchesResult.sort((a, b) => b.sold - a.sold).slice(0, queryLimit);
+
+  const productResult: Product[] = [];
+  for (let batch of batchesResult) {
+    const product = await getProduct(batch.product_type_id, batch.product_id);
+    if (product) {
+      productResult.push(product);
+    }
+  }
+
+  return productResult;
+}
 
 export default Home;

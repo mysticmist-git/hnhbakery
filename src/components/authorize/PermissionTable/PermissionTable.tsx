@@ -1,6 +1,3 @@
-import { db } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { PermissionObject } from '@/lib/models';
 import {
   Box,
   Button,
@@ -19,29 +16,45 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
+import Permission from '@/models/permission';
+import {
+  createPermission,
+  deletePermission,
+  getPermissions,
+  updatePermission,
+} from '@/lib/DAO/permissionDAO';
+import { useSnackbarService } from '@/lib/contexts';
 
 interface PermissionTableProps {
-  permissions: PermissionObject[];
+  permissions: Permission[];
 }
 
-const newPermissionDefault = {
+const newPermissionDefault: Permission = {
+  id: '',
   name: '',
   code: '',
   description: '',
-  isActive: true,
 };
 
 const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
+  const handleSnackbarAlert = useSnackbarService();
+
+  const [permissionData, setPermissionData] = useState<Permission[]>([]);
+
+  useEffect(() => {
+    setPermissionData(permissions);
+  }, [permissions]);
+
   const [openDialog, setOpenDialog] = useState(false);
-  const [deletePermission, setDeletePermission] =
-    useState<PermissionObject | null>(null);
+  const [deletePermissionObject, setDeletePermission] =
+    useState<Permission | null>(null);
   const [newPermission, setNewPermission] =
-    useState<PermissionObject>(newPermissionDefault);
+    useState<Permission>(newPermissionDefault);
 
   const [update, setUpdate] = useState<boolean>(false);
-  const [cache, setCache] = useState<PermissionObject | null>(null);
+  const [cache, setCache] = useState<Permission | null>(null);
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
@@ -82,10 +95,10 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
   const handleAddPermission = useCallback(async () => {
     // Implement the logic to add the new permission
 
-    const permissionRef = collection(db, COLLECTION_NAME.PERMISSIONS);
-
     try {
-      await addDoc(permissionRef, newPermission);
+      await createPermission(newPermission);
+      handleSnackbarAlert('success', 'Thêm quyền thành công');
+      setPermissionData(await getPermissions());
     } catch (error) {
       console.log(error);
     }
@@ -99,18 +112,12 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
     if (!cache) return;
 
-    const permissionRef = doc(
-      collection(db, COLLECTION_NAME.PERMISSIONS),
-      cache?.id
-    );
-
-    const { id: string, ...data } = cache;
-
-    console.log(data);
-    console.log(cache);
-
     try {
-      await updateDoc(permissionRef, { ...data });
+      await updatePermission(cache.id, cache);
+      handleSnackbarAlert('success', 'Chỉnh sửa thành công');
+      setPermissionData([
+        ...permissionData.map((p) => (p.id === cache.id ? cache : p)),
+      ]);
     } catch (error) {
       console.log(error);
     }
@@ -119,22 +126,23 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     handleCloseDialog();
   }, [cache]);
 
-  const handleViewDetail = (permission: PermissionObject) => {
+  const handleViewDetail = (permission: Permission) => {
     setCache(permission);
     handleOpenDialog();
   };
 
-  const handleRemovePermission = (permission: PermissionObject) => {
+  const handleRemovePermission = (permission: Permission) => {
     setDeletePermission(permission);
   };
 
   const handleConfirmDelete = async () => {
-    if (deletePermission) {
-      const collectionRef = collection(db, COLLECTION_NAME.PERMISSIONS);
-
+    if (deletePermissionObject) {
       try {
-        await deleteDoc(doc(collectionRef, deletePermission.id));
-        console.log('Permission deleted successfully');
+        await deletePermission(deletePermissionObject.id);
+        handleSnackbarAlert('success', 'Xóa thành công');
+        setPermissionData(
+          permissionData.filter((p) => p.id !== deletePermissionObject.id)
+        );
       } catch (error) {
         console.log(error);
       }
@@ -189,7 +197,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
     },
   ];
 
-  const rows = permissions.map((permission) => ({
+  const rows = permissionData.map((permission) => ({
     id: permission.id,
     name: permission.name,
     code: permission.code,
@@ -283,7 +291,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
       <DeleteDialog
         title="Xóa quyền"
         confirmString="Bạn có chắc muốn xóa quyền?"
-        deleteTarget={deletePermission}
+        deleteTarget={deletePermissionObject}
         handleCancelDelete={handleCancelDelete}
         handleConfirmDelete={handleConfirmDelete}
       />

@@ -51,6 +51,7 @@ const userConverter: FirestoreDataConverter<User> = {
     const convertedData: User = {
       ...data,
       id: snapshot.id,
+      birth: data.birth.toDate(),
       created_at: data.created_at.toDate(),
       updated_at: data.updated_at.toDate(),
     } as User;

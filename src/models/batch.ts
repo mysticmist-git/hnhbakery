@@ -23,6 +23,7 @@ export type Batch = WithCreatedUpdated &
     variant_id: string;
     product_id: string;
     product_type_id: string;
+    branch_id: string;
   };
 
 const batchConverter: FirestoreDataConverter<Batch> = {

@@ -12,6 +12,7 @@ export const COLLECTION_NAME = {
   VARIANTS: 'variants',
   BATCHES: 'batches',
   BRANDS: 'brands',
+  BRANCHES: 'branches',
   FEEDBACKS: 'feedbacks',
   BILL_DETAILS: 'bill_details',
   DELIVERIES: 'deliveries',

@@ -1,5 +1,15 @@
-import { db } from '@/firebase/config';
-import { PermissionObject, UserGroup, UserObject } from '@/lib/models';
+import CustomTextFieldPassWord from '@/components/inputs/textFields/CustomTextFieldPassword';
+import { auth2, db } from '@/firebase/config';
+import {
+  DEFAULT_GROUP_ID,
+  getGroupTableRows,
+  getGroups,
+} from '@/lib/DAO/groupDAO';
+import { createUser } from '@/lib/DAO/userDAO';
+import { useSnackbarService } from '@/lib/contexts';
+import { isVNPhoneNumber } from '@/lib/utils';
+import { GroupTableRow } from '@/models/group';
+import User from '@/models/user';
 import {
   Button,
   Checkbox,
@@ -8,12 +18,16 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  Grid,
   List,
   ListItem,
   ListItemText,
   TextField,
   Typography,
 } from '@mui/material';
+import { Stack } from '@mui/system';
+import { DatePicker } from '@mui/x-date-pickers';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { set } from 'nprogress';
 import { availableParallelism } from 'os';
@@ -22,133 +36,181 @@ import React, { useEffect, useMemo, useState } from 'react';
 interface UserSearchDialogProps {
   open: boolean;
   onCloseDialog: () => void;
-  userOptions: UserObject[];
-  selectedUsers: string[];
-  handleCheckUser: (userId: string) => void;
-  handleAddUsers: () => void;
+  group: GroupTableRow | undefined;
+  handleAddUser: (user: User) => void;
 }
+
+type UserWithPassword = User & {
+  password: string;
+};
+
+const data: UserWithPassword = {
+  id: '',
+  uid: '',
+  name: '',
+  mail: '',
+  password: '',
+  tel: '',
+  birth: new Date(),
+  avatar: '',
+  type: 'mail',
+  active: true,
+  group_id: DEFAULT_GROUP_ID,
+  created_at: new Date(),
+  updated_at: new Date(),
+};
 
 const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
   open,
   onCloseDialog,
-  userOptions,
-  selectedUsers,
-  handleCheckUser,
-  handleAddUsers,
+  group,
+  handleAddUser,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  // const [permissions, setPermissions] = useState<Permission[]>([]);
-  // const [checkedPermissions, setCheckedPermissions] = useState<string[]>([]);
+  const handleSnackbarAlert = useSnackbarService();
 
-  // useEffect(() => {
-  //   const fetchPermissions = async () => {
-  //     const permissionsCollectionRef = collection(db, 'permissions');
-  //     const permissionsSnapshot = await getDocs(permissionsCollectionRef);
-  //     const permissionsData = permissionsSnapshot.docs.map(
-  //       (doc) => doc.data() as Permission
-  //     );
-  //     setPermissions(permissionsData);
-  //   };
+  const handleAddButtonClick = async () => {
+    const groups = await getGroupTableRows();
 
-  //   if (open) {
-  //     fetchPermissions();
-  //   }
-  // }, [open]);
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setSearchTerm(value);
-  };
-
-  const filteredUsers = useMemo(() => {
-    const normalizedValue = searchTerm
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-
-    const filtered = userOptions.filter(
-      (user) =>
-        user.id?.toLowerCase().includes(normalizedValue) ||
-        user.name
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .includes(normalizedValue)
+    const mails = groups.flatMap((item) =>
+      item.users?.map((user) => user.mail)
     );
+    if (newUser) {
+      if (mails.includes(newUser.mail)) {
+        handleSnackbarAlert('error', 'Email đã tồn tại trong hệ thống!');
+        return;
+      }
 
-    return filtered;
-  }, [userOptions, searchTerm]);
+      if (newUser.name.length < 1) {
+        handleSnackbarAlert('error', 'Vui lòng nhập họ và tên!');
+        return;
+      }
 
-  // const handleCheckboxChange = (permissionId: string) => {
-  //   if (checkedPermissions.includes(permissionId)) {
-  //     setCheckedPermissions(
-  //       checkedPermissions.filter((id) => id !== permissionId)
-  //     );
-  //   } else {
-  //     setCheckedPermissions([...checkedPermissions, permissionId]);
-  //   }
-  // };
+      if (newUser.mail.length < 1) {
+        handleSnackbarAlert('error', 'Vui lòng nhập email!');
+        return;
+      }
 
-  const handleAddButtonClick = () => {
-    handleAddUsers();
+      if (!isVNPhoneNumber(newUser.tel)) {
+        handleSnackbarAlert('error', 'Số điện thoại không hợp lệ!');
+        return;
+      }
+
+      if (newUser.password.length < 6) {
+        handleSnackbarAlert('error', 'Mật khẩu phải lớn hơn 6 ký tự!');
+        return;
+      }
+
+      const credential = await createUserWithEmailAndPassword(
+        auth2,
+        newUser.mail,
+        newUser.password
+      );
+      const userUid = credential.user?.uid;
+
+      newUser.uid = userUid;
+
+      const { password, ...user } = newUser;
+      await createUser(user.group_id, user as User);
+      handleSnackbarAlert('success', 'Thêm người dùng thành công!');
+      handleAddUser(user);
+    }
+
+    onCloseDialog();
   };
+
+  function resetNewUser() {
+    setNewUser({
+      ...newUser!,
+      ...data,
+    });
+  }
+
+  const [newUser, setNewUser] = useState<UserWithPassword | null>({ ...data });
+
+  useEffect(() => {
+    if (group) {
+      setNewUser({
+        ...newUser!,
+        group_id: group.id,
+      });
+    }
+  }, [group]);
 
   return (
-    <Dialog open={open} onClose={onCloseDialog}>
+    <Dialog open={open} onClose={onCloseDialog} fullWidth>
       <DialogTitle>Thêm người dùng</DialogTitle>
-
       <Divider />
-
       <DialogContent>
-        <TextField
-          label="Tìm kiếm"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          size="small"
-          fullWidth
-        />
+        <Stack spacing={2} direction={'column'}>
+          <TextField
+            color="secondary"
+            fullWidth
+            label="Tên nhân viên"
+            onChange={(e) => {
+              setNewUser({
+                ...newUser!,
+                name: e.target.value,
+              });
+            }}
+          />
 
-        <List>
-          {!filteredUsers ||
-            (filteredUsers.length === 0 && (
-              <ListItem
-                sx={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="body2">Không có người dùng</Typography>
-              </ListItem>
-            ))}
-          {filteredUsers.map((user) => (
-            <ListItem key={user.id} sx={{ alignItems: 'center' }}>
-              <ListItemText primary={`ID: ${user.id}`} secondary={user.name} />
-              <Checkbox
-                color="secondary"
-                checked={selectedUsers.includes(user.id!)}
-                onChange={() => handleCheckUser(user.id!)}
-              />
-            </ListItem>
-          ))}
-        </List>
-
-        <Divider />
-
-        {/* <List>
-          {permissions.map((permission) => (
-            <ListItem key={permission.id} sx={{ alignItems: 'center' }}>
-              <ListItemText primary={permission.name} />
-              <Checkbox
-                color="secondary"
-                checked={checkedPermissions.includes(permission.id!)} // Use the checkedPermissions state
-                onChange={() => handleCheckboxChange(permission.id!)} // Handle the checkbox change event
-              />
-            </ListItem>
-          ))}
-        </List> */}
+          <TextField
+            color="secondary"
+            fullWidth
+            type="tel"
+            label="Số điện thoại"
+            onChange={(e) => {
+              setNewUser({
+                ...newUser!,
+                tel: e.target.value,
+              });
+            }}
+          />
+          <DatePicker
+            label="Ngày sinh"
+            onChange={(e: any) => {
+              setNewUser({
+                ...newUser!,
+                birth: new Date(e.$d),
+              });
+            }}
+          />
+          <Divider />
+          <TextField
+            color="secondary"
+            type="email"
+            fullWidth
+            label="Email"
+            helperText="Email cũng là tên đăng nhập"
+            onChange={(e) => {
+              setNewUser({
+                ...newUser!,
+                mail: e.target.value,
+              });
+            }}
+          />
+          <TextField
+            color="secondary"
+            type="password"
+            fullWidth
+            label="Password"
+            onChange={(e) => {
+              setNewUser({
+                ...newUser!,
+                password: e.target.value,
+              });
+            }}
+          />
+        </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseDialog} color="secondary">
+        <Button
+          onClick={() => {
+            resetNewUser();
+            onCloseDialog();
+          }}
+          color="secondary"
+        >
           Đóng
         </Button>
         <Button onClick={handleAddButtonClick} color="secondary">

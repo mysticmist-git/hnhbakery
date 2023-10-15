@@ -1,25 +1,28 @@
-import { db } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { UserGroup, UserObject } from '@/lib/models';
-import { group } from 'console';
-import { deleteUser } from 'firebase/auth';
-import { collection, deleteDoc, doc } from 'firebase/firestore';
-import { setgroups } from 'process';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 import UserGroupItem from '../UserGroupItem';
+import { GroupTableRow } from '@/models/group';
+import {
+  getGroupById,
+  deleteGroup,
+  getGroupTableRows,
+} from '@/lib/DAO/groupDAO';
 
 interface UserGroupAccordionProps {
-  userGroups: UserGroup[];
-  users: UserObject[];
+  groups: GroupTableRow[];
 }
 
-const UserGroupAccordions = ({
-  userGroups,
-  users,
-}: UserGroupAccordionProps) => {
-  const [deleteGroup, setDeleteGroup] = useState<UserGroup | null>(null);
+const UserGroupAccordions = ({ groups }: UserGroupAccordionProps) => {
+  const [deleteGroupObject, setDeleteGroup] = useState<GroupTableRow | null>(
+    null
+  );
+
+  const [groupData, setGroupData] = useState<GroupTableRow[]>([]);
+
+  useEffect(() => {
+    setGroupData(groups);
+  }, [groups]);
 
   const handleSnackbarAlert = useSnackbarService();
 
@@ -27,22 +30,31 @@ const UserGroupAccordions = ({
     setDeleteGroup(null);
   };
 
-  const handleConfirmDelete = (group: UserGroup) => {
+  const handleConfirmDelete = (group: GroupTableRow) => {
     setDeleteGroup(group);
   };
 
+  const handleChangeUserGroupItem = async (
+    action: 'add' | 'update' | 'delete',
+    group: GroupTableRow
+  ) => {
+    if (action === 'add') {
+      setGroupData(await getGroupTableRows());
+    } else if (action === 'update') {
+      setGroupData(await getGroupTableRows());
+    } else if (action === 'delete') {
+      setGroupData(groupData.filter((g) => g.id !== group.id));
+    }
+  };
+
   async function handleRemoveUser() {
-    if (!deleteGroup) {
+    if (!deleteGroupObject) {
       return;
     }
 
-    const ref = doc(
-      collection(db, COLLECTION_NAME.USER_GROUPS),
-      deleteGroup.id
-    );
-
     try {
-      await deleteDoc(ref);
+      const group = await getGroupById(deleteGroupObject.id);
+      await deleteGroup(group!.id);
       handleSnackbarAlert('success', 'Xóa nhóm người dùng thành công');
     } catch (error) {
       console.log(error);
@@ -52,36 +64,20 @@ const UserGroupAccordions = ({
   }
   return (
     <>
-      {userGroups?.map((group, index) => (
+      {groupData?.map((group, index) => (
         <UserGroupItem
           key={index}
           group={group}
-          users={users.filter((user) => group.users.includes(user.id!))}
-          allUsers={users}
           handleDeleteGroup={handleConfirmDelete}
+          handleChangeUserGroupItem={handleChangeUserGroupItem}
         />
       ))}
-
-      <UserGroupItem
-        key={'no-group'}
-        users={users.filter(
-          (user) =>
-            !userGroups
-              .map((group) => group.users)
-              .flat()
-              .includes(user.id!)
-        )}
-        allUsers={users}
-        handleDeleteGroup={handleConfirmDelete}
-        fallbackTitle="Không nhóm"
-        noGroup
-      />
 
       {/* Xóa nhóm người dùng */}
       <DeleteDialog
         title={'Xóa nhóm người dùng'}
         confirmString={'Bạn có chắc muốn xóa nhóm người dùng này?'}
-        deleteTarget={deleteGroup}
+        deleteTarget={deleteGroupObject}
         handleCancelDelete={handleCancelDelete}
         handleConfirmDelete={handleRemoveUser}
       />

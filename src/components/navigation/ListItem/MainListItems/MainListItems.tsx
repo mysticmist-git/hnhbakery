@@ -94,7 +94,41 @@ export const MainListItems = ({ open }: { open: boolean }) => {
 
   return (
     <React.Fragment>
-      {grantedPermissions && grantedPermissions.includes('KHO') && (
+      {grantedPermissions && grantedPermissions.includes('KHO1') && (
+        <ListItemButton
+          sx={{
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+          }}
+          onClick={() => router.push('/manager/storage')}
+        >
+          <ListItemIcon
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'space-between' : 'center',
+            }}
+          >
+            <Inventory2RoundedIcon sx={iconSxProps('storage')} />
+          </ListItemIcon>
+          {open && (
+            <>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={typographySxProps('storage')}>
+                    Kho hàng
+                  </Typography>
+                }
+              />
+              {isActive('storage') && <Check color="secondary" />}
+            </>
+          )}
+        </ListItemButton>
+      )}
+
+      {grantedPermissions && grantedPermissions.includes('KHO2') && (
         <ListItemButton
           sx={{
             height: '60px',

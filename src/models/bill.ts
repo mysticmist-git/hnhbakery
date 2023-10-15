@@ -43,6 +43,7 @@ type Bill = WithCreatedUpdated &
     customer_id: string;
     delivery_id: string;
     paid_time: Date;
+    branch_id: string;
   };
 
 type BillTableRow = Bill & {

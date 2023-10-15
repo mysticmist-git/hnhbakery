@@ -1,8 +1,8 @@
+import Permission from '@/models/permission';
 import { createContext } from 'react';
-import { PermissionObject } from '../models';
 
 export interface AuthorizeContextType {
-  permissions: PermissionObject[];
+  permissions: Permission[];
 }
 
 export const AuthorizeContext = createContext<AuthorizeContextType>({

@@ -1,7 +1,7 @@
 // #region Context
 
+import ProductType from '@/models/productType';
 import { createContext } from 'react';
-import { ProductTypeObject } from '../models';
 
 export interface HomeCardDisplayItem {
   id: string;
@@ -19,7 +19,7 @@ export interface CarouselImageItem {
 
 export interface HomeContextType {
   carouselImages: CarouselImageItem[];
-  productTypes: ProductTypeObject[];
+  productTypes: ProductType[];
 }
 
 export const initHomeContext: HomeContextType = {

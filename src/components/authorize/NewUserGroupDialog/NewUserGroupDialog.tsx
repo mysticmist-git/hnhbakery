@@ -1,4 +1,5 @@
-import { PermissionObject, UserGroup } from '@/lib/models';
+import { GroupTableRow } from '@/models/group';
+import Permission from '@/models/permission';
 import {
   Button,
   Checkbox,
@@ -17,11 +18,11 @@ import {
 } from '@mui/material';
 
 interface NewUserGroupDialogProps {
-  newGroup: UserGroup | null;
+  newGroup: GroupTableRow | null;
   handleDialogClose: () => void;
   handleNewGroupChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleNewGroupSubmit: () => void;
-  permissionOptions: PermissionObject[];
+  permissionOptions: Permission[];
 }
 
 const NewUserGroupDialog: React.FC<NewUserGroupDialogProps> = ({
@@ -68,7 +69,7 @@ const NewUserGroupDialog: React.FC<NewUserGroupDialogProps> = ({
               >
                 <Typography variant="body2">{p.name}</Typography>
                 <Checkbox
-                  checked={newGroup?.permission.includes(p.id!)}
+                  checked={newGroup?.permissions.includes(p.id!)}
                   color="secondary"
                   onChange={handleNewGroupChange}
                   name="permission"
