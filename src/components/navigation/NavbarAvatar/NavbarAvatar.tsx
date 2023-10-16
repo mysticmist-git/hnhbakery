@@ -37,6 +37,8 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   const router = useRouter();
   const handleSnackbarAlert = useSnackbarService();
 
+  console.log(grantedPermissions);
+
   //#endregion
 
   //#region States
@@ -79,10 +81,8 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
       }
     });
 
-    if (path) {
-      router.push(permissionRouteMap.get(path) ?? '/');
-      setAnchorEl(() => null);
-    }
+    router.push(permissionRouteMap.get(path!) ?? '/');
+    setAnchorEl(() => null);
   };
 
   const handleLogout = async () => {
