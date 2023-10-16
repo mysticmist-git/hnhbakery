@@ -21,10 +21,6 @@ export const crudTargets: CrudTarget[] = [
     collectionName: COLLECTION_NAME.PRODUCTS,
     label: 'Sản phẩm',
   },
-  {
-    collectionName: COLLECTION_NAME.BATCHES,
-    label: 'Lô hàng',
-  },
 ];
 
 export const initManageState: ManageState = {
@@ -205,6 +201,7 @@ export function generateDefaultRow(collectionName: string) {
         product_type_id: '',
         product_id: '',
         variant_id: '',
+        branch_id: '',
         created_at: new Date(),
         updated_at: new Date(),
       };
