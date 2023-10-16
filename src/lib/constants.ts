@@ -1,8 +1,8 @@
 export const authMessages = {
-  signInSucesful: 'Đăng nhập thành công',
-  signInFailed: 'Đăng nhập không thành công',
-  emailExisted: 'Email đã tồn tại',
-  networkError: 'Không thể kết nối với máy chủ',
+  signInSucesful: 'Đăng nhập thành công',
+  signInFailed: 'Đăng nhập không thành công',
+  emailExisted: 'Email đã tồn tại',
+  networkError: 'Không thể kết nối với máy chủ',
   error: 'Lỗi',
 };
 
@@ -34,7 +34,7 @@ export const COLLECTION_NAME = {
   ADDRESSES: 'addresses',
   PAYMENT_METHODS: 'payment_methods',
   NONE: 'none',
-} as const;
+};
 
 export const LOCAL_CART_KEY: string = 'cart';
 
@@ -50,8 +50,8 @@ export const ROUTES = {
   MANAGER: '/manager',
   CART: '/cart',
   PAYMENT: '/payment',
-  STORAGE: 'manager/storage',
-} as const;
+  STORAGE: '/manager/storage',
+};
 
 type ObjectValues<T> = T[keyof T];
 
@@ -103,3 +103,97 @@ export enum Path {
 }
 
 export const PLACEHOLDER_DELIVERY_PRICE = 20000;
+
+/**
+ * Enum representing permission codes.
+ */
+export enum PermissionCode {
+  /**
+   * Kho Doanh nghiệp
+   */
+  KHO1,
+
+  /**
+   * Kho chi nhánh
+   */
+  KHO2,
+
+  /**
+   * Phân quyền
+   */
+  PQ,
+
+  /**
+   * Đơn hàng
+   */
+  DH,
+
+  /**
+   * Khách hàng
+   */
+  KH,
+
+  /**
+   * Báo cáo
+   */
+  BC,
+
+  /**
+   * Giao hàng
+   */
+  GH,
+
+  /**
+   * Liên hệ
+   */
+  LH,
+
+  /**
+   * Khuyến mãi
+   */
+  KM,
+
+  /**
+   * Phản hồi
+   */
+  FB,
+}
+
+export const permissionToCodeMap = new Map<PermissionCode, string>([
+  [PermissionCode.KHO1, 'KHO1'],
+  [PermissionCode.KHO2, 'KHO2'],
+  [PermissionCode.PQ, 'PQ'],
+  [PermissionCode.DH, 'ĐH'],
+  [PermissionCode.KH, 'KH'],
+  [PermissionCode.BC, 'BC'],
+  [PermissionCode.GH, 'GH'],
+  [PermissionCode.LH, 'LH'],
+  [PermissionCode.KM, 'KM'],
+  [PermissionCode.FB, 'FB'],
+]);
+
+export const PERMISSION_ROUTES = {
+  [PermissionCode.KHO1]: '/manager/storage',
+  [PermissionCode.KHO2]: '/manager/branch-storage',
+  [PermissionCode.PQ]: '/manager/authorize',
+  [PermissionCode.DH]: '/manager/orders',
+  [PermissionCode.KH]: '/manager/customers',
+  [PermissionCode.BC]: '/manager/reports',
+  [PermissionCode.GH]: '/manager/deliveries',
+  [PermissionCode.LH]: '/manager/contacts',
+  [PermissionCode.KM]: '/manager/sales',
+  [PermissionCode.FB]: '/manager/feedbacks',
+};
+
+export const permissionRouteMap = new Map([
+  [PermissionCode.KHO1, PERMISSION_ROUTES[PermissionCode.KHO1]],
+  [PermissionCode.KHO2, PERMISSION_ROUTES[PermissionCode.KHO2]],
+  [PermissionCode.PQ, PERMISSION_ROUTES[PermissionCode.PQ]],
+  [PermissionCode.DH, PERMISSION_ROUTES[PermissionCode.DH]],
+  [PermissionCode.KH, PERMISSION_ROUTES[PermissionCode.KH]],
+  [PermissionCode.BC, PERMISSION_ROUTES[PermissionCode.BC]],
+  [PermissionCode.GH, PERMISSION_ROUTES[PermissionCode.GH]],
+  [PermissionCode.LH, PERMISSION_ROUTES[PermissionCode.LH]],
+  [PermissionCode.KM, PERMISSION_ROUTES[PermissionCode.KM]],
+  [PermissionCode.FB, PERMISSION_ROUTES[PermissionCode.FB]],
+]);

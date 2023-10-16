@@ -13,26 +13,29 @@ export default function useGrantedPermissions() {
 
   useEffect(() => {
     async function getPermissionIds(uid: string) {
-      console.log(uid);
+      try {
+        const signInUser = await getUserByUid(uid);
 
-      const signInUser = await getUserByUid(uid);
-
-      if (!signInUser) setGrantedPermissions([]);
-      else {
-        console.log(signInUser);
-
-        const group = await getGroupById(signInUser.group_id);
-
-        if (!group) {
+        if (!signInUser) {
           setGrantedPermissions([]);
-          return;
+        } else {
+          const group = await getGroupById(signInUser.group_id);
+
+          if (!group) {
+            setGrantedPermissions([]);
+            return;
+          }
+
+          const permissions = await getPermissionsWithQuery(
+            where(documentId(), 'in', group.permissions)
+          );
+
+          setGrantedPermissions(
+            permissions.map((permission) => permission.code)
+          );
         }
-
-        const permissions = await getPermissionsWithQuery(
-          where(documentId(), 'in', group.permissions)
-        );
-
-        setGrantedPermissions(permissions.map((permission) => permission.code));
+      } catch (error) {
+        console.log('[useGrantedPermissions] getPermissionIds', error);
       }
     }
 

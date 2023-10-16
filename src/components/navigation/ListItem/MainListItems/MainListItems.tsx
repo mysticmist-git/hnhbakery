@@ -1,5 +1,11 @@
 import { db } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
+import {
+  COLLECTION_NAME,
+  PERMISSION_ROUTES,
+  PermissionCode,
+  permissionToCodeMap as permissionEnumToCodeMap,
+  permissionRouteMap,
+} from '@/lib/constants';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
 import Contact, { contactConverter } from '@/models/contact';
 import {
@@ -14,7 +20,7 @@ import { default as BarChartIcon } from '@mui/icons-material/BarChart';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import { default as PeopleIcon } from '@mui/icons-material/People';
 import { default as ShoppingCartIcon } from '@mui/icons-material/ShoppingCart';
-import { Badge, Typography, useTheme } from '@mui/material';
+import { Badge, SxProps, Typography, useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -29,9 +35,107 @@ const PATH = '/manager/';
 
 //#endregion
 
-//#region Functions
-
 //#endregion
+
+const MainListItemIcon: React.FC<{
+  permissionCode: PermissionCode;
+  sx: SxProps;
+}> = ({ permissionCode, sx }) => {
+  switch (permissionCode) {
+    case PermissionCode.KHO1:
+      return <Inventory2RoundedIcon sx={sx} />;
+    case PermissionCode.KHO2:
+      return <Inventory2RoundedIcon sx={sx} />;
+    case PermissionCode.GH:
+      return <LocalShippingRounded sx={sx} />;
+    case PermissionCode.KH:
+      return <PeopleIcon sx={sx} />;
+    case PermissionCode.KM:
+      return <DiscountRounded sx={sx} />;
+    case PermissionCode.BC:
+      return <BarChartIcon sx={sx} />;
+    case PermissionCode.LH:
+      return <ContactsRounded sx={sx} />;
+    case PermissionCode.FB:
+      return <ChatRounded sx={sx} />;
+    case PermissionCode.PQ:
+      return <Security sx={sx} />;
+    case PermissionCode.DH:
+      return <ShoppingCartIcon sx={sx} />;
+    default:
+      return <Inventory2RoundedIcon sx={sx} />;
+  }
+};
+
+type ListItemProps = {
+  label: string;
+  code: PermissionCode;
+  open: boolean;
+  isActive: boolean;
+  onClick?: () => void;
+  iconSxProps: SxProps;
+  typographySxProps: SxProps;
+};
+
+const ListItem: React.FC<ListItemProps> = ({
+  label,
+  code,
+  open,
+  isActive,
+  onClick,
+  iconSxProps,
+  typographySxProps,
+}) => {
+  const handleClick = React.useCallback(() => {
+    onClick && onClick();
+  }, [onClick]);
+
+  return (
+    <ListItemButton
+      sx={{
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: open ? 'space-between' : 'center',
+      }}
+      onClick={handleClick}
+    >
+      <ListItemIcon
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: open ? 'space-between' : 'center',
+        }}
+      >
+        <MainListItemIcon permissionCode={code} sx={iconSxProps} />
+      </ListItemIcon>
+      {open && (
+        <>
+          <ListItemText
+            primary={
+              <Typography variant="body1" sx={typographySxProps}>
+                {label}
+              </Typography>
+            }
+          />
+          {isActive && <Check color="secondary" />}
+        </>
+      )}
+    </ListItemButton>
+  );
+};
+
+type GrantedListItemProps = {
+  visible: boolean;
+} & ListItemProps;
+
+const GrantedListItem: React.FC<GrantedListItemProps> = ({
+  visible,
+  ...props
+}) => {
+  return <>{visible && <ListItem {...props} />}</>;
+};
+
 export const MainListItems = ({ open }: { open: boolean }) => {
   //#region Hooks
 
@@ -50,11 +154,19 @@ export const MainListItems = ({ open }: { open: boolean }) => {
     }
   );
 
+  //#endregion
+
+  //#region UseMemos
+
   const badgeContact = React.useMemo(() => {
     if (!contacts && cLoading) return;
 
     return contacts?.length;
   }, [contacts, cLoading]);
+
+  //#endregion
+
+  //#region Callbacks
 
   const isActive = React.useCallback(
     (route: string) => {
@@ -92,363 +204,144 @@ export const MainListItems = ({ open }: { open: boolean }) => {
     [isActive, theme.palette.secondary.main, theme.palette.text.secondary]
   );
 
+  //#endregion
+
   return (
     <React.Fragment>
-      {grantedPermissions && grantedPermissions.includes('KHO1') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/storage')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <Inventory2RoundedIcon sx={iconSxProps('storage')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography variant="body1" sx={typographySxProps('storage')}>
-                    Kho hàng
-                  </Typography>
-                }
-              />
-              {isActive('storage') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+      {grantedPermissions ? (
+        <>
+          <GrantedListItem
+            label="Kho doanh nghiệp"
+            code={PermissionCode.KHO1}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.KHO1) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.KHO1])}
+            iconSxProps={iconSxProps('storage')}
+            typographySxProps={typographySxProps('storage')}
+            open={open}
+            isActive={isActive('storage')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('KHO2') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/storage')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <Inventory2RoundedIcon sx={iconSxProps('storage')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography variant="body1" sx={typographySxProps('storage')}>
-                    Kho hàng
-                  </Typography>
-                }
-              />
-              {isActive('storage') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Kho chi nhánh"
+            code={PermissionCode.KHO2}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.KHO2) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.KHO2])}
+            iconSxProps={iconSxProps('branch-storage')}
+            typographySxProps={typographySxProps('branch-storage')}
+            open={open}
+            isActive={isActive('branch-storage')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('ĐH') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/orders')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <ShoppingCartIcon sx={iconSxProps('orders')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography variant="body1" sx={typographySxProps('orders')}>
-                    Đơn hàng
-                  </Typography>
-                }
-              />
-              {isActive('orders') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Đơn hàng"
+            code={PermissionCode.DH}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.DH) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.DH])}
+            iconSxProps={iconSxProps('orders')}
+            typographySxProps={typographySxProps('orders')}
+            open={open}
+            isActive={isActive('orders')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('GH') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/deliveries')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <LocalShippingRounded sx={iconSxProps('deliveries')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    sx={typographySxProps('deliveries')}
-                  >
-                    Giao hàng
-                  </Typography>
-                }
-              />
-              {isActive('deliveries') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Giao hàng"
+            code={PermissionCode.GH}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.GH) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.GH])}
+            iconSxProps={iconSxProps('deliveries')}
+            typographySxProps={typographySxProps('deliveries')}
+            open={open}
+            isActive={isActive('deliveries')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('KH') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/customers')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <PeopleIcon sx={iconSxProps('customers')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    sx={typographySxProps('customers')}
-                  >
-                    Khách hàng
-                  </Typography>
-                }
-              />
-              {isActive('customers') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Khách hàng"
+            code={PermissionCode.KH}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.KH) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.KH])}
+            iconSxProps={iconSxProps('customers')}
+            typographySxProps={typographySxProps('customers')}
+            open={open}
+            isActive={isActive('customers')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('KM') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/sales')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <DiscountRounded sx={iconSxProps('sales')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography variant="body1" sx={typographySxProps('sales')}>
-                    Khuyến mãi
-                  </Typography>
-                }
-              />
-              {isActive('sales') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Khuyến mãi"
+            code={PermissionCode.KM}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.KM) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.KM])}
+            iconSxProps={iconSxProps('sales')}
+            typographySxProps={typographySxProps('sales')}
+            open={open}
+            isActive={isActive('sales')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('BC') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/reports')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <BarChartIcon sx={iconSxProps('reports')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography variant="body1" sx={typographySxProps('reports')}>
-                    Báo cáo
-                  </Typography>
-                }
-              />
-              {isActive('reports') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Báo cáo"
+            code={PermissionCode.BC}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.BC) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.BC])}
+            iconSxProps={iconSxProps('reports')}
+            typographySxProps={typographySxProps('reports')}
+            open={open}
+            isActive={isActive('reports')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('LH') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/contacts')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <Badge badgeContent={badgeContact} color="secondary" max={99}>
-              <ContactsRounded sx={iconSxProps('contacts')} />
-            </Badge>
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    sx={typographySxProps('contacts')}
-                  >
-                    Liên hệ
-                  </Typography>
-                }
-              />
-              {isActive('contacts') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Liên hệ"
+            code={PermissionCode.LH}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.LH) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.LH])}
+            iconSxProps={iconSxProps('contacts')}
+            typographySxProps={typographySxProps('contacts')}
+            open={open}
+            isActive={isActive('contacts')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('FB') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/feedbacks')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <ChatRounded sx={iconSxProps('feedbacks')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    sx={typographySxProps('feedbacks')}
-                  >
-                    Feedback
-                  </Typography>
-                }
-              />
-              {isActive('feedbacks') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
-      )}
+          <GrantedListItem
+            label="Phản hồi"
+            code={PermissionCode.FB}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.FB) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.FB])}
+            iconSxProps={iconSxProps('feedbacks')}
+            typographySxProps={typographySxProps('feedbacks')}
+            open={open}
+            isActive={isActive('feedbacks')}
+          />
 
-      {grantedPermissions && grantedPermissions.includes('PQ') && (
-        <ListItemButton
-          sx={{
-            height: '60px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
-          }}
-          onClick={() => router.push('/manager/authorize')}
-        >
-          <ListItemIcon
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'space-between' : 'center',
-            }}
-          >
-            <Security sx={iconSxProps('authorize')} />
-          </ListItemIcon>
-          {open && (
-            <>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    sx={typographySxProps('authorize')}
-                  >
-                    Phân quyền
-                  </Typography>
-                }
-              />
-              {isActive('authorize') && <Check color="secondary" />}
-            </>
-          )}
-        </ListItemButton>
+          <GrantedListItem
+            label="Phân quyền"
+            code={PermissionCode.PQ}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.PQ) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.PQ])}
+            iconSxProps={iconSxProps('authorize')}
+            typographySxProps={typographySxProps('authorize')}
+            open={open}
+            isActive={isActive('authorize')}
+          />
+        </>
+      ) : (
+        <p>Lỗi: Không tải được quyền</p>
       )}
     </React.Fragment>
   );

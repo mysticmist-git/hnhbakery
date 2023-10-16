@@ -1,8 +1,7 @@
 import { auth } from '@/firebase/config';
-import { Path } from '@/lib/constants';
+import { Path, permissionRouteMap } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
-import { permissionRouteMap } from '@/lib/pageSpecific/authorize';
 import theme from '@/styles/themes/lightTheme';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
 import { SxProps, Theme, Typography } from '@mui/material';
