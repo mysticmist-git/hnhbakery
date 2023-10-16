@@ -1,7 +1,6 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
 import { COLLECTION_NAME } from '@/lib/constants';
 import {
-  getBatch,
   getDocFromFirestore,
   getDownloadUrlFromFirebaseStorage,
 } from '@/lib/firestore';

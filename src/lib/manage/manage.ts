@@ -201,6 +201,7 @@ export function generateDefaultRow(collectionName: string) {
         product_type_id: '',
         product_id: '',
         variant_id: '',
+        branch_id: '',
         created_at: new Date(),
         updated_at: new Date(),
       };

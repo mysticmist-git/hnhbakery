@@ -80,6 +80,7 @@ function VariantManager(props: VariantManagerProps) {
       active: true,
       product_id: '',
       product_type_id: '',
+      batches: [],
       created_at: new Date(),
       updated_at: new Date(),
     };

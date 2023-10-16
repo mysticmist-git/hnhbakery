@@ -1,5 +1,10 @@
 import { auth } from '@/firebase/config';
-import { Path, permissionRouteMap } from '@/lib/constants';
+import {
+  Path,
+  PermissionCode,
+  permissionRouteMap,
+  permissionToCodeMap,
+} from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
 import theme from '@/styles/themes/lightTheme';
@@ -65,8 +70,19 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   };
 
   const handleOpenManagement = () => {
-    router.push(permissionRouteMap.get(grantedPermissions![0]) ?? '/');
-    setAnchorEl(() => null);
+    let path: PermissionCode | undefined = undefined;
+
+    permissionToCodeMap.forEach((value, key) => {
+      if (path) return;
+      if (grantedPermissions![0] === value) {
+        path = key;
+      }
+    });
+
+    if (path) {
+      router.push(permissionRouteMap.get(path) ?? '/');
+      setAnchorEl(() => null);
+    }
   };
 
   const handleLogout = async () => {
