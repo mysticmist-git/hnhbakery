@@ -13,6 +13,7 @@ import {
   Check,
   ContactsRounded,
   DiscountRounded,
+  HolidayVillageRounded,
   LocalShippingRounded,
   Security,
 } from '@mui/icons-material';
@@ -62,6 +63,8 @@ const MainListItemIcon: React.FC<{
       return <Security sx={sx} />;
     case PermissionCode.DH:
       return <ShoppingCartIcon sx={sx} />;
+    case PermissionCode.CN:
+      return <HolidayVillageRounded sx={sx} />;
     default:
       return <Inventory2RoundedIcon sx={sx} />;
   }
@@ -260,6 +263,19 @@ export const MainListItems = ({ open }: { open: boolean }) => {
             typographySxProps={typographySxProps('deliveries')}
             open={open}
             isActive={isActive('deliveries')}
+          />
+
+          <GrantedListItem
+            label="Chi nhánh"
+            code={PermissionCode.CN}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.CN) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.CN])}
+            iconSxProps={iconSxProps('branches')}
+            typographySxProps={typographySxProps('branches')}
+            open={open}
+            isActive={isActive('branches')}
           />
 
           <GrantedListItem

@@ -74,6 +74,7 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
     const mails = groups.flatMap((item) =>
       item.users?.map((user) => user.mail)
     );
+
     if (newUser) {
       if (mails.includes(newUser.mail)) {
         handleSnackbarAlert('error', 'Email đã tồn tại trong hệ thống!');
@@ -96,7 +97,7 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
       }
 
       if (newUser.password.length < 6) {
-        handleSnackbarAlert('error', 'Mật khẩu phải lớn hơn 6 ký tự!');
+        handleSnackbarAlert('error', 'Mật khẩu phải lớn hơn 6 ký tự!');
         return;
       }
 

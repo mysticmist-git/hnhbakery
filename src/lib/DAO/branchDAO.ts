@@ -1,6 +1,6 @@
 import { db } from '@/firebase/config';
 import { COLLECTION_NAME } from '../constants';
-import Branch, { branchConverter } from '@/models/branch';
+import Branch, { BranchTableRow, branchConverter } from '@/models/branch';
 import {
   DocumentReference,
   addDoc,
@@ -11,6 +11,7 @@ import {
   getDocs,
   updateDoc,
 } from 'firebase/firestore';
+import { getUser } from './userDAO';
 
 export function getBranchesRef() {
   return collection(db, COLLECTION_NAME.BRANCHES).withConverter(
@@ -70,5 +71,23 @@ export async function deleteBranch(
     await deleteDoc(getBranchRefById(arg));
   } else {
     await deleteDoc(arg);
+  }
+}
+
+export async function getBranchTableRows() {
+  try {
+    const finalData: BranchTableRow[] = [];
+    const branches = await getBranches();
+    for (let b of branches) {
+      const user = await getUser(b.group_id, b.manager_id);
+      finalData.push({
+        ...b,
+        manager: user,
+      });
+    }
+    return finalData;
+  } catch (error) {
+    console.log(error);
+    return [];
   }
 }

@@ -8,13 +8,15 @@ import {
 import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
 import User from './user';
+import WithActive from './withActive';
 
 /**
  * A branch;
  * Foreign Keys: manager_id
  */
 type Branch = WithCreatedUpdated &
-  WithId & {
+  WithId &
+  WithActive & {
     address: string;
     manager_id: string;
     group_id: string;

@@ -32,6 +32,12 @@ import ViewUserGroupDialog from '../ViewUserGroupDialog.tsx/ViewUserGroupDialog'
 import User from '@/models/user';
 import { GroupTableRow } from '@/models/group';
 import { deleteUser, getUser } from '@/lib/DAO/userDAO';
+import { getBranches, updateBranch } from '@/lib/DAO/branchDAO';
+import {
+  DEFAULT_GROUP_ID,
+  DEV_GROUP_ID,
+  MANAGER_GROUP_ID,
+} from '@/lib/DAO/groupDAO';
 
 function UserGroupItem({
   key,
@@ -67,6 +73,14 @@ function UserGroupItem({
     // Place your 'Quick Remove' action logic here
     try {
       await deleteUser(group.id, deleteUserObject.id);
+      const branch = (await getBranches()).find(
+        (b) => b.manager_id === deleteUserObject.id && b.group_id === group.id
+      );
+      if (branch) {
+        branch.manager_id = '';
+        branch.group_id = '';
+        await updateBranch(branch.id, branch);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -230,6 +244,15 @@ function UserGroupItem({
             </Button>
             <Button
               variant="outlined"
+              sx={{
+                display: () => {
+                  return group?.id == DEFAULT_GROUP_ID ||
+                    group?.id == MANAGER_GROUP_ID ||
+                    group?.id == DEV_GROUP_ID
+                    ? 'none'
+                    : 'block';
+                },
+              }}
               color="secondary"
               size="small"
               onClick={(e) => {
