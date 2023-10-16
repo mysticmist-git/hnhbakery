@@ -21,10 +21,6 @@ export const crudTargets: CrudTarget[] = [
     collectionName: COLLECTION_NAME.PRODUCTS,
     label: 'Sản phẩm',
   },
-  {
-    collectionName: COLLECTION_NAME.BATCHES,
-    label: 'Lô hàng',
-  },
 ];
 
 export const initManageState: ManageState = {
