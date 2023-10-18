@@ -80,7 +80,10 @@ export async function getBranchTableRows() {
     const finalData: BranchTableRow[] = [];
     const branches = await getBranches();
     for (let b of branches) {
-      const user = await getUser(b.group_id, b.manager_id);
+      const user =
+        b.manager_id == ''
+          ? undefined
+          : await getUser(b.group_id, b.manager_id);
       finalData.push({
         ...b,
         manager: user,

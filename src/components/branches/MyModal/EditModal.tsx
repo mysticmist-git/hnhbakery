@@ -25,7 +25,32 @@ import { BranchTableRow } from '@/models/branch';
 import User from '@/models/user';
 import { getUsers } from '@/lib/DAO/userDAO';
 import { MANAGER_GROUP_ID } from '@/lib/DAO/groupDAO';
-import { updateBranch } from '@/lib/DAO/branchDAO';
+import { getBranches, updateBranch } from '@/lib/DAO/branchDAO';
+
+const StyleCuaCaiBox = {
+  width: '100%',
+  height: '100%',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  border: 1,
+  borderColor: 'text.secondary',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'start',
+  alignItems: 'center',
+  opacity: 0.8,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    opacity: 1,
+    boxShadow: 10,
+  },
+};
+const textStyle = {
+  fontSize: 'body2.fontSize',
+  color: 'common.black',
+  fontWeight: 'body2.fontWeight',
+  fontFamily: 'body2.fontFamily',
+};
 
 export default function EditModal({
   open,
@@ -40,30 +65,6 @@ export default function EditModal({
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
-  const StyleCuaCaiBox = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    border: 1,
-    borderColor: theme.palette.text.secondary,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'start',
-    alignItems: 'center',
-    opacity: 0.8,
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      opacity: 1,
-      boxShadow: 10,
-    },
-  };
-  const textStyle = {
-    fontSize: theme.typography.body2.fontSize,
-    color: theme.palette.common.black,
-    fontWeight: theme.typography.body2.fontWeight,
-    fontFamily: theme.typography.body2.fontFamily,
-  };
 
   const [modalBranch, setModalBranch] = useState<BranchTableRow | null>(branch);
 
@@ -86,9 +87,26 @@ export default function EditModal({
   useEffect(() => {
     setModalBranch(() => branch);
     setBranchName(() => branch?.name);
+    setManagers(() => []);
     const fetchData = async () => {
       try {
-        setManagers(await getUsers(MANAGER_GROUP_ID));
+        const branches = await getBranches();
+        const allManagers = await getUsers(MANAGER_GROUP_ID);
+        const finalManagers: User[] = [];
+        for (var manager of allManagers) {
+          if (branch?.manager?.id == manager.id) {
+            finalManagers.push(manager);
+          } else {
+            const isManagerOfOtherBranch = branches.find(
+              (branch) => branch.manager_id == manager.id
+            );
+            if (!isManagerOfOtherBranch) {
+              finalManagers.push(manager);
+            }
+          }
+        }
+        setManagers(finalManagers);
+        console.log(finalManagers);
       } catch (error) {
         console.log(error);
       }
@@ -99,6 +117,9 @@ export default function EditModal({
   //#region hàm
   const clearData = () => {
     setModalBranch(() => null);
+    setBranchName(() => '');
+    setIsChanged(false);
+    setManagers(() => []);
   };
   const localHandleClose = () => {
     // Clear data
@@ -260,14 +281,12 @@ export default function EditModal({
                                   ...modalBranch!,
                                   manager: undefined,
                                   manager_id: '',
-                                  group_id: '',
                                 });
                               } else {
                                 setModalBranch({
                                   ...modalBranch!,
                                   manager: manager,
                                   manager_id: manager.id,
-                                  group_id: manager.group_id,
                                 });
                               }
                             }}
