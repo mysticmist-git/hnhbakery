@@ -1,4 +1,5 @@
-import { db } from '@/firebase/config';
+import { auth, db } from '@/firebase/config';
+import { getUserByUid } from '@/lib/DAO/userDAO';
 import {
   COLLECTION_NAME,
   PERMISSION_ROUTES,
@@ -7,8 +8,11 @@ import {
   permissionRouteMap,
 } from '@/lib/constants';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
+import useUserData from '@/lib/hooks/userUserData';
 import Contact, { contactConverter } from '@/models/contact';
+import User from '@/models/user';
 import {
+  BungalowRounded,
   ChatRounded,
   Check,
   ContactsRounded,
@@ -28,6 +32,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { collection, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import * as React from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 //#region Constants
@@ -63,8 +68,10 @@ const MainListItemIcon: React.FC<{
       return <Security sx={sx} />;
     case PermissionCode.DH:
       return <ShoppingCartIcon sx={sx} />;
-    case PermissionCode.CN:
+    case PermissionCode.CN1:
       return <HolidayVillageRounded sx={sx} />;
+    case PermissionCode.CN2:
+      return <BungalowRounded sx={sx} />;
     default:
       return <Inventory2RoundedIcon sx={sx} />;
   }
@@ -209,6 +216,8 @@ export const MainListItems = ({ open }: { open: boolean }) => {
 
   //#endregion
 
+  console.log(grantedPermissions);
+
   return (
     <React.Fragment>
       {grantedPermissions ? (
@@ -224,6 +233,19 @@ export const MainListItems = ({ open }: { open: boolean }) => {
             typographySxProps={typographySxProps('storage')}
             open={open}
             isActive={isActive('storage')}
+          />
+
+          <GrantedListItem
+            label="Chi nhánh"
+            code={PermissionCode.CN2}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.CN2) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.CN2])}
+            iconSxProps={iconSxProps('branch')}
+            typographySxProps={typographySxProps('branch')}
+            open={open}
+            isActive={isActive('branch')}
           />
 
           <GrantedListItem
@@ -266,12 +288,12 @@ export const MainListItems = ({ open }: { open: boolean }) => {
           />
 
           <GrantedListItem
-            label="Chi nhánh"
-            code={PermissionCode.CN}
+            label="Các chi nhánh"
+            code={PermissionCode.CN1}
             visible={grantedPermissions.includes(
-              permissionEnumToCodeMap.get(PermissionCode.CN) ?? ''
+              permissionEnumToCodeMap.get(PermissionCode.CN1) ?? ''
             )}
-            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.CN])}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.CN1])}
             iconSxProps={iconSxProps('branches')}
             typographySxProps={typographySxProps('branches')}
             open={open}

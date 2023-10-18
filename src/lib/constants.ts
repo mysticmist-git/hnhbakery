@@ -159,9 +159,14 @@ export enum PermissionCode {
   FB,
 
   /**
-   * Chi nhánh
+   * Chi nhánh cho doanh nghiệp
    */
-  CN,
+  CN1,
+
+  /**
+   * Chi nhánh cho chi nhánh
+   */
+  CN2,
 }
 
 export const permissionToCodeMap = new Map<PermissionCode, string>([
@@ -175,7 +180,8 @@ export const permissionToCodeMap = new Map<PermissionCode, string>([
   [PermissionCode.LH, 'LH'],
   [PermissionCode.KM, 'KM'],
   [PermissionCode.FB, 'FB'],
-  [PermissionCode.CN, 'CN'],
+  [PermissionCode.CN1, 'CN1'],
+  [PermissionCode.CN2, 'CN2'],
 ]);
 
 export const PERMISSION_ROUTES = {
@@ -189,7 +195,8 @@ export const PERMISSION_ROUTES = {
   [PermissionCode.LH]: '/manager/contacts',
   [PermissionCode.KM]: '/manager/sales',
   [PermissionCode.FB]: '/manager/feedbacks',
-  [PermissionCode.CN]: '/manager/branches',
+  [PermissionCode.CN1]: '/manager/branches',
+  [PermissionCode.CN2]: '/manager/branch',
 };
 
 export const permissionRouteMap = new Map([
@@ -203,5 +210,6 @@ export const permissionRouteMap = new Map([
   [PermissionCode.LH, PERMISSION_ROUTES[PermissionCode.LH]],
   [PermissionCode.KM, PERMISSION_ROUTES[PermissionCode.KM]],
   [PermissionCode.FB, PERMISSION_ROUTES[PermissionCode.FB]],
-  [PermissionCode.CN, PERMISSION_ROUTES[PermissionCode.CN]],
+  [PermissionCode.CN1, PERMISSION_ROUTES[PermissionCode.CN1]],
+  [PermissionCode.CN2, PERMISSION_ROUTES[PermissionCode.CN2]],
 ]);

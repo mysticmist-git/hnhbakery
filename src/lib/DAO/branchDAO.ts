@@ -12,6 +12,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { getUser } from './userDAO';
+import User from '@/models/user';
 
 export function getBranchesRef() {
   return collection(db, COLLECTION_NAME.BRANCHES).withConverter(
@@ -90,4 +91,11 @@ export async function getBranchTableRows() {
     console.log(error);
     return [];
   }
+}
+
+export async function getBranchByManager(manager: User) {
+  const branches = await getBranches();
+  return branches.find(
+    (b) => b.manager_id == manager.id && b.group_id == manager.group_id
+  );
 }

@@ -13,6 +13,7 @@ import PaymentMethod from './paymentMethod';
 import Sale from './sale';
 import User from './user';
 import WithId from './withId';
+import Branch from './branch';
 
 /**
  * State of a bill
@@ -52,6 +53,7 @@ type BillTableRow = Bill & {
   sale?: Sale;
   deliveryTableRow?: DeliveryTableRow;
   billItems?: BillItemTableRow[];
+  branch?: Branch;
 };
 
 const billConverter: FirestoreDataConverter<Bill> = {

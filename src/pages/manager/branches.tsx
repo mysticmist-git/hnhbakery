@@ -23,8 +23,6 @@ const Branches = () => {
     fetchData();
   }, []);
 
-  console.log(branches);
-
   const handleBranchDataChange = (value: BranchTableRow) => {
     setBranches(
       branches.map((branch) => (branch.id === value.id ? value : branch))

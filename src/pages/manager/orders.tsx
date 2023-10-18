@@ -1,32 +1,39 @@
+import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import MyModal from '@/components/order/MyModal';
 import ModalState from '@/components/order/MyModal/ModalState';
 import BillTable from '@/components/order/MyTable/BillTable';
+import { auth } from '@/firebase/config';
 import { getAddress } from '@/lib/DAO/addressDAO';
 import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
 import { getBillTableRows, getBills } from '@/lib/DAO/billDAO';
 import { getBillItems } from '@/lib/DAO/billItemDAO';
+import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
 import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 import { getPaymentMethodById } from '@/lib/DAO/paymentMethodDAO';
 import { getProduct } from '@/lib/DAO/productDAO';
 import { getProductTypeById } from '@/lib/DAO/productTypeDAO';
 import { getSaleById } from '@/lib/DAO/saleDAO';
-import { getUsers } from '@/lib/DAO/userDAO';
+import { getUserByUid, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
 import { BillTableRow } from '@/models/bill';
+import User from '@/models/user';
+import { LockPersonRounded } from '@mui/icons-material';
 import {
   Box,
   Divider,
   Grid,
   LinearProgress,
+  Stack,
   Typography,
   styled,
   useTheme,
 } from '@mui/material';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -78,10 +85,33 @@ const Order = () => {
   };
   //#endregion
 
+  //#region UserData - Trường hợp là quản lý chi nhánh - Check xem họ là quản lý của chi nhánh nào?
+  const [user, userLoading, userError] = useAuthState(auth);
+  const [canBeAccessed, setCanBeAccessed] = useState(true);
+  // const [userData, setUserData] = React.useState<User | undefined>(undefined);
+
+  //#endregion
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const finalBills: BillTableRow[] = await getBillTableRows();
+        if (!user) {
+          setCanBeAccessed(false);
+          return;
+        }
+        const userData = await getUserByUid(user?.uid);
+        if (!userData) {
+          setCanBeAccessed(false);
+          return;
+        }
+        const branch = await getBranchByManager(userData);
+        if (!branch) {
+          setCanBeAccessed(false);
+          return;
+        }
+        setCanBeAccessed(true);
+
+        const finalBills: BillTableRow[] = await getBillTableRows(branch);
         setBillsData(() => finalBills || []);
       } catch (error) {
         console.log(error);
@@ -95,61 +125,68 @@ const Order = () => {
   return (
     <>
       <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
-        <Grid
-          container
-          justifyContent={'center'}
-          alignItems={'center'}
-          spacing={2}
-        >
-          <Grid item xs={12}>
-            <Typography sx={{ color: theme.palette.common.black }} variant="h4">
-              Quản lý hóa đơn
-            </Typography>
-          </Grid>
+        {canBeAccessed ? (
+          <Grid
+            container
+            justifyContent={'center'}
+            alignItems={'center'}
+            spacing={2}
+          >
+            <Grid item xs={12}>
+              <Typography
+                sx={{ color: theme.palette.common.black }}
+                variant="h4"
+              >
+                Quản lý hóa đơn
+              </Typography>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
+            <Grid item xs={12}>
+              <Divider />
+            </Grid>
 
-          <Grid item xs={12}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontStyle: 'italic' }}
-            >
-              *Tìm kiếm theo hóa đơn, giao hàng, người mua hàng, người nhận
-              hàng, khuyến mãi...
-            </Typography>
-          </Grid>
+            <Grid item xs={12}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontStyle: 'italic' }}
+              >
+                *Tìm kiếm theo hóa đơn, giao hàng, người mua hàng, người nhận
+                hàng, khuyến mãi...
+              </Typography>
+            </Grid>
 
-          <Grid item xs={12}>
-            {/* Table */}
-            <Box width={'100%'}>
-              <BillTable
-                billsData={billsData}
-                handleViewBill={handleViewBillModalChiTiet}
-                handleViewBillModalState={handleViewBillModalState}
+            <Grid item xs={12}>
+              {/* Table */}
+              <Box width={'100%'}>
+                <BillTable
+                  billsData={billsData}
+                  handleViewBill={handleViewBillModalChiTiet}
+                  handleViewBillModalState={handleViewBillModalState}
+                />
+              </Box>
+
+              {/* Modals */}
+              <MyModal
+                open={openModalChiTiet}
+                handleClose={handleCloseModalChiTiet}
+                bill={currentViewBill}
+                handleBillDataChange={handleBillDataChange}
               />
-            </Box>
 
-            {/* Modals */}
-            <MyModal
-              open={openModalChiTiet}
-              handleClose={handleCloseModalChiTiet}
-              bill={currentViewBill}
-              handleBillDataChange={handleBillDataChange}
-            />
-
-            {/* State modal */}
-            <ModalState
-              open={openModalState}
-              handleClose={handleCloseModalState}
-              billState={billState}
-              setBillState={setBillState}
-              handleBillDataChange={handleBillDataChange}
-            />
+              {/* State modal */}
+              <ModalState
+                open={openModalState}
+                handleClose={handleCloseModalState}
+                billState={billState}
+                setBillState={setBillState}
+                handleBillDataChange={handleBillDataChange}
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        ) : (
+          <CanNotAccess />
+        )}
       </Box>
     </>
   );

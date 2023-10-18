@@ -28,6 +28,7 @@ import { getProduct } from './productDAO';
 import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getVariant } from './variantDAO';
+import Branch from '@/models/branch';
 
 export function getBillsRef(
   groupId: string,
@@ -399,11 +400,17 @@ export async function deleteBill(
   }
 }
 
-export async function getBillTableRows() {
+export async function getBillTableRows(
+  branch?: Branch
+): Promise<BillTableRow[]> {
   const finalBills: BillTableRow[] = [];
   const customers = await getUsers(DEFAULT_GROUP_ID);
   for (let c of customers) {
-    const bills = await getBills(c.group_id, c.id);
+    const bills = branch
+      ? (await getBills(c.group_id, c.id)).filter(
+          (b) => b.branch_id == branch.id
+        )
+      : await getBills(c.group_id, c.id);
 
     for (let b of bills) {
       const billitems = await getBillItems(c.group_id, c.id, b.id);
@@ -438,6 +445,7 @@ export async function getBillTableRows() {
           address: await getAddress(c.group_id, c.id, delivery!.address_id),
         },
         billItems: billItems,
+        branch: branch,
       });
     }
   }
