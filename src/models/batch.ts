@@ -8,6 +8,9 @@ import {
 import WithCreatedUpdated from './created_updated';
 import Discount from './discount';
 import WithId from './withId';
+import ProductType, { ProductTypeTableRow } from './productType';
+import Product from './product';
+import Variant from './variant';
 
 /**
  * Batch
@@ -25,6 +28,12 @@ export type Batch = WithCreatedUpdated &
     product_type_id: string;
     branch_id: string;
   };
+
+type BatchTableRow = Batch & {
+  productType?: ProductType;
+  product?: Product;
+  variant?: Variant;
+};
 
 const batchConverter: FirestoreDataConverter<Batch> = {
   toFirestore: function (modelObject: WithFieldValue<Batch>): DocumentData {
@@ -56,4 +65,5 @@ const batchConverter: FirestoreDataConverter<Batch> = {
 };
 
 export default Batch;
+export type { BatchTableRow };
 export { batchConverter };

@@ -125,3 +125,28 @@ export async function getProductTypeTableRows() {
   }
   return productTypeTableRows;
 }
+
+export async function getAvailableProductTypeTableRows() {
+  const productTypeTableRows: ProductTypeTableRow[] = [];
+  const productTypes = (await getProductTypes()).filter((pro) => pro.active);
+  for (let pro of productTypes) {
+    const productTableRows: ProductTableRow[] = [];
+    const products = (await getProducts(pro.id)).filter((p) => p.active);
+    for (let p of products) {
+      const variants = (await getVariants(pro.id, p.id)).filter(
+        (v) => v.active
+      );
+      const feedbacks = await getFeedbacks(pro.id, p.id);
+      productTableRows.push({
+        ...p,
+        variants: variants,
+        feedbacks: feedbacks,
+      });
+    }
+    productTypeTableRows.push({
+      ...pro,
+      products: productTableRows,
+    });
+  }
+  return productTypeTableRows;
+}

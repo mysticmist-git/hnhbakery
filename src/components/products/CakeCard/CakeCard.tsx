@@ -1,6 +1,7 @@
 import { CustomIconButton } from '@/components/buttons';
 import ProductsContext from '@/lib/contexts/productsContext';
 import { formatPrice } from '@/lib/utils';
+import { BatchTableRow } from '@/models/batch';
 import { ShoppingCart } from '@mui/icons-material';
 import {
   Box,
@@ -15,42 +16,32 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useContext, useMemo, useState } from 'react';
 
-type CakeCardProps = {
-  name: string;
-  description: string;
-  image: string;
-  href: string;
-  price: number;
-  discountPrice: number;
-  discounted: boolean;
-  imageHeight: number;
-  imageHeightList: number;
-};
+// type CakeCardProps = {
+//   name: string;
+//   description: string;
+//   image: string;
+//   href: string;
+//   price: number;
+//   discountPrice: number;
+//   discounted: boolean;
+//   imageHeight: string;
+//   imageHeightList: string;
+// };
 
 //#endregion
 function CakeCard({
-  name,
-  image,
-  description,
-  href,
-  price,
-  discountPrice,
-  discounted,
+  batch,
   imageHeight,
   imageHeightList,
-}: CakeCardProps) {
-  // #region States
+  viewState,
+}: {
+  viewState: 'grid' | 'list';
+  batch: BatchTableRow;
+  imageHeight: string;
+  imageHeightList: string;
+}) {
   const [cardHover, setCardHover] = useState(false);
-
-  // #endregion
-  // #region Hooks
   const theme = useTheme();
-  const context = useContext(ProductsContext);
-
-  // #endregion
-  // #region useEffects
-  // #endregion
-  const isList = useMemo(() => context.View === 'list', [context.View]);
 
   const imageStyles = {
     cardNormal: {
@@ -70,8 +61,6 @@ function CakeCard({
     },
   };
 
-  if (discounted) console.log(price, discountPrice);
-
   return (
     <Card
       onMouseOver={() => setCardHover(true)}
@@ -80,17 +69,17 @@ function CakeCard({
       sx={{
         borderRadius: '16px',
         display: 'flex',
-        flexDirection: isList ? 'row' : 'column',
+        flexDirection: viewState == 'list' ? 'row' : 'column',
         width: '100%',
         height: 'auto',
       }}
     >
       <CardActionArea
         LinkComponent={Link}
-        href={href}
+        href={batch.product?.images[0] ?? ''}
         sx={{
-          width: isList ? '50%' : '100%',
-          height: isList ? imageHeightList : imageHeight,
+          width: viewState == 'list' ? '50%' : '100%',
+          height: viewState == 'list' ? imageHeightList : imageHeight,
         }}
       >
         <Box
@@ -98,7 +87,7 @@ function CakeCard({
           component={Image}
           sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
           alt=""
-          src={image}
+          src={batch.product?.images[0] ?? ''}
           loading="lazy"
         />
       </CardActionArea>
@@ -107,16 +96,16 @@ function CakeCard({
           p: 0,
           bgcolor: theme.palette.common.white,
           zIndex: 1,
-          width: isList ? '50%' : '100%',
+          width: viewState == 'list' ? '50%' : '100%',
           height: 'auto',
-          maxHeight: isList ? imageHeightList : imageHeight,
+          maxHeight: viewState ? imageHeightList : imageHeight,
         }}
       >
         <Grid
           container
-          direction={isList ? 'column' : 'row'}
+          direction={viewState == 'list' ? 'column' : 'row'}
           justifyContent={'space-between'}
-          alignItems={isList ? 'start' : 'center'}
+          alignItems={viewState == 'list' ? 'start' : 'center'}
           sx={{
             p: 2,
             zIndex: 1,
@@ -125,7 +114,7 @@ function CakeCard({
           }}
           spacing={1}
         >
-          <Grid item xs={isList ? 'auto' : 9}>
+          <Grid item xs={viewState == 'list' ? 'auto' : 9}>
             <Grid
               container
               direction={'column'}
@@ -149,12 +138,12 @@ function CakeCard({
                     wordBreak: 'break-word',
                   }}
                 >
-                  {name}
+                  {batch.product?.name}
                 </Typography>
                 <Typography
                   variant="body2"
                   color={theme.palette.text.secondary}
-                  display={isList ? 'block' : 'none'}
+                  display={viewState == 'list' ? 'block' : 'none'}
                   sx={{
                     maxHeight: '10vh',
                     whiteSpace: 'normal',
@@ -164,7 +153,7 @@ function CakeCard({
                     fontWeight: 'medium',
                   }}
                 >
-                  {description}
+                  {batch.product?.description ?? ''}
                 </Typography>
               </Grid>
               <Grid item>
@@ -188,7 +177,7 @@ function CakeCard({
                       variant="body2"
                       color={theme.palette.secondary.main}
                       sx={
-                        discounted
+                        batch.discount.start_at <= new Date()
                           ? {
                               textDecoration: 'line-through',
                               color: theme.palette.common.black,
@@ -196,7 +185,7 @@ function CakeCard({
                           : {}
                       }
                     >
-                      {formatPrice(price)}
+                      {formatPrice(batch.variant?.price ?? 0)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -218,7 +207,14 @@ function CakeCard({
                     </Typography>
                   </Grid>
                   {/* TODO: HUY - Fix this */}
-                  <Grid item sx={!discounted ? { visibility: 'hidden' } : {}}>
+                  <Grid
+                    item
+                    sx={
+                      batch.discount.start_at <= new Date()
+                        ? { display: 'block' }
+                        : { display: 'none' }
+                    }
+                  >
                     <Typography
                       variant="body2"
                       color={theme.palette.secondary.main}
@@ -226,14 +222,17 @@ function CakeCard({
                         fontStyle: 'italic',
                       }}
                     >
-                      {formatPrice(discountPrice)}
+                      {formatPrice(
+                        (batch.variant?.price ?? 0) *
+                          (1 - batch.discount.percent / 100)
+                      )}
                     </Typography>
                   </Grid>
                 </Grid>
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={isList ? 'auto' : 'auto'}>
+          <Grid item xs={viewState == 'list' ? 'auto' : 'auto'}>
             <Box
               sx={{
                 bgcolor: theme.palette.secondary.main,
@@ -244,13 +243,13 @@ function CakeCard({
                 <ShoppingCart
                   sx={{
                     color: theme.palette.common.white,
-                    display: isList ? 'none' : 'block',
+                    display: viewState == 'list' ? 'none' : 'block',
                   }}
                 />
                 <Typography
                   variant="body2"
                   color={theme.palette.common.white}
-                  display={isList ? 'block' : 'none'}
+                  display={viewState == 'list' ? 'block' : 'none'}
                   sx={{
                     px: 0.5,
                   }}

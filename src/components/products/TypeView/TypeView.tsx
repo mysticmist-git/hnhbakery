@@ -7,10 +7,14 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import { useContext, useMemo } from 'react';
 
 // #region View
-function TypeView(props: any) {
+function TypeView({
+  viewState,
+  handleSetViewState,
+}: {
+  viewState: 'grid' | 'list';
+  handleSetViewState: (viewState: 'grid' | 'list') => void;
+}) {
   const theme = useTheme();
-  const context = useContext(ProductsContext);
-
   const buttonStyles = useMemo(
     () => ({
       nonFill: {
@@ -37,9 +41,7 @@ function TypeView(props: any) {
         value: 'grid',
         Icon: (
           <GridView
-            sx={
-              context.View == 'grid' ? buttonStyles.fill : buttonStyles.nonFill
-            }
+            sx={viewState == 'grid' ? buttonStyles.fill : buttonStyles.nonFill}
           />
         ),
       },
@@ -47,14 +49,12 @@ function TypeView(props: any) {
         value: 'list',
         Icon: (
           <ListAlt
-            sx={
-              context.View == 'list' ? buttonStyles.fill : buttonStyles.nonFill
-            }
+            sx={viewState == 'list' ? buttonStyles.fill : buttonStyles.nonFill}
           />
         ),
       },
     ];
-  }, [context.View, buttonStyles]);
+  }, [viewState, buttonStyles]);
 
   return (
     <>
@@ -75,7 +75,7 @@ function TypeView(props: any) {
           {ListTypeSort.map((item, i) => (
             <CustomIconButton
               key={i}
-              onClick={() => context.handleSetViewState(item.value)}
+              onClick={() => handleSetViewState(item.value as 'grid' | 'list')}
             >
               {item.Icon}
             </CustomIconButton>

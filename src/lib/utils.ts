@@ -66,12 +66,15 @@ export function isVNPhoneNumber(number: string) {
   return /([\+84|84|0]+(3|5|7|8|9|1[2|6|8|9]))+([0-9]{8})\b/.test(number);
 }
 
-export function formatPrice(price: number | undefined): string {
+export function formatPrice(
+  price: number | undefined,
+  unitFormat: string = 'đồng'
+): string {
   if (!price) {
-    return '0 đồng';
+    return '0' + unitFormat;
   }
   const formatter = new Intl.NumberFormat('vi-VN');
-  return formatter.format(price) + ' đồng';
+  return formatter.format(price) + unitFormat;
 }
 export function filterDuplicates<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);

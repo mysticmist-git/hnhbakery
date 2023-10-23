@@ -11,8 +11,9 @@ import WithId from './withId';
  * Color
  */
 type Color = WithId & {
+  value: string;
+  hex: string;
   name: string;
-  code: string;
 };
 
 const colorConverter: FirestoreDataConverter<Color> = {

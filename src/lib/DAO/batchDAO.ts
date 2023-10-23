@@ -1,5 +1,5 @@
 import { db } from '@/firebase/config';
-import Batch, { batchConverter } from '@/models/batch';
+import Batch, { BatchTableRow, batchConverter } from '@/models/batch';
 import {
   CollectionReference,
   DocumentReference,
@@ -16,6 +16,15 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import {
+  getAvailableProductTypeTableRows,
+  getProductTypes,
+} from './productTypeDAO';
+import { getProducts } from './productDAO';
+import { ProductTypeTableRow } from '@/models/productType';
+import { ProductTableRow } from '@/models/product';
+import { getVariants } from './variantDAO';
+import { getFeedbacks } from './feedbackDAO';
 
 export function getBatchesRef() {
   return collection(db, COLLECTION_NAME.BATCHES).withConverter(batchConverter);
@@ -73,4 +82,54 @@ export async function updateBatch(id: string, batch: Omit<Batch, 'id'>) {
 
 export async function deleteBatch(id: string) {
   await deleteDoc(getBatchRefById(id));
+}
+
+export async function getAvailableBatchById(id: string) {
+  const batchSnapshot = await getBatchSnapshotById(id);
+  const data = batchSnapshot.data();
+  if (!data) {
+    return undefined;
+  }
+  if (data.quantity - data.sold > 0 && new Date(data.exp) > new Date()) {
+    return data;
+  }
+  return undefined;
+}
+
+export async function getAvailableBatches(onlyFirstBatch: boolean = false) {
+  const productTypes = await getAvailableProductTypeTableRows();
+
+  const finalBatches: BatchTableRow[] = [];
+  for (let p of productTypes) {
+    if (!p.products || p.products.length === 0) {
+      continue;
+    }
+    for (let product of p.products) {
+      if (!product.variants || product.variants.length === 0) {
+        continue;
+      }
+      for (let v of product.variants) {
+        if (!v.batches || v.batches.length === 0) {
+          continue;
+        }
+        for (let b of v.batches) {
+          const batch = await getAvailableBatchById(b);
+
+          if (batch) {
+            finalBatches.push({
+              ...batch,
+              productType: p,
+              product: product,
+              variant: v,
+            });
+          }
+          if (onlyFirstBatch) {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return finalBatches;
 }

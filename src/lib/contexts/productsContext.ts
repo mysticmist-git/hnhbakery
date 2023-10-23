@@ -6,7 +6,7 @@ export type ProductItem = ProductObject & {
   totalSoldQuantity: number;
 };
 
-export interface BoLocItem {
+interface BoLocItem {
   heading: string;
   heading_value: string;
   children: {

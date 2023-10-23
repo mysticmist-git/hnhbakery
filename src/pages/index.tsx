@@ -57,17 +57,15 @@ function Home() {
             await getHomeProductTypes(),
             await getHomeBestSellers(),
           ]);
-
         const productTypes =
           productTypesPromise.status === 'fulfilled'
             ? productTypesPromise.value
             : [];
-
         const bestSellers =
           bestSellersPromise.status === 'fulfilled'
             ? bestSellersPromise.value
             : [];
-
+        console.log(productTypes);
         setProductTypes(productTypes);
         setBestSellers(bestSellers);
       } catch (error: any) {

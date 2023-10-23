@@ -1,13 +1,20 @@
 import bg12 from '@/assets/Decorate/bg12.png';
 import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
-import { Filter, ProductList, TypeSort, TypeView } from '@/components/products';
-import ProductsContext, { BoLocItem } from '@/lib/contexts/productsContext';
+import { ProductList, TypeSort, TypeView } from '@/components/products';
+import FilterComponent from '@/components/products/Filter/Filter';
+import ProductsContext from '@/lib/contexts/productsContext';
+import { getAvailableBatchById, getAvailableBatches } from '@/lib/DAO/batchDAO';
+import {
+  getAvailableProductTypeTableRows,
+  getProductTypes,
+} from '@/lib/DAO/productTypeDAO';
 import { fetchAvailableBatches } from '@/lib/firestore';
 import { BatchObject } from '@/lib/models';
 import { cachedCreateProductsOnProductsPage } from '@/lib/pageSpecific/products';
-import { ProductForProductsPage } from '@/lib/types/products';
 import { filterDuplicatesById } from '@/lib/utils';
+import Batch, { BatchTableRow } from '@/models/batch';
+import ProductType, { ProductTypeTableRow } from '@/models/productType';
 import {
   alpha,
   Box,
@@ -20,420 +27,395 @@ import {
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
 
-const initSortList = {
-  value: '0',
-  options: [
-    { display: 'Mặc định', value: '0' },
-    { display: 'Giá tăng dần', value: '1' },
-    { display: 'Giá giảm dần', value: '2' },
-    { display: 'A - Z', value: '3' },
-    { display: 'Z - A', value: '4' },
-    { display: 'Cũ nhất', value: '5' },
-    { display: 'Mới nhất', value: '6' },
-    { display: 'Bán chạy nhất', value: '7' },
-  ],
+export type Filter = {
+  sort: number;
+  productTypes_id: string[];
+  colors: string[];
+  sizes: string[];
+  price: {
+    min: number;
+    max: number;
+  };
 };
 
-//#endregion
-
 const Products = () => {
-  //#region Hooks
-
   const theme = useTheme();
   const router = useRouter();
-
-  // #endregion
-
-  //#region States
-
-  const [products, setProducts] = useState<ProductForProductsPage[]>([]);
-
-  const [groupBoLocState, setGroupBoLocState] = useState<BoLocItem[]>([]);
+  const [batches, setBatches] = useState<BatchTableRow[]>([]);
+  const [batchesDisplay, setBatchesDisplay] = useState<BatchTableRow[]>([]);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
-  const [sortListState, setSortListState] = useState<any>(initSortList);
   const [searchText, setSearchText] = useState('');
 
-  //#endregion
+  const [filter, setFilter] = useState<Filter>({
+    productTypes_id: [],
+    colors: [],
+    sizes: [],
+    price: { min: 0, max: Infinity },
+    sort: 0,
+  });
 
-  // #region functions
-
-  const generateGroupBoLoc = useCallback(
-    (types: { id: string; name: string }[]) => {
-      let children = types.map((type) => ({
-        display: type.name,
-        value: type.id,
-        isChecked: false,
-      }));
-
-      // This is to handle if a product type is selected from the index.tsx page
-      const initialProductTypeCheckk = router.query.product_type;
-
-      children = children.map((item) => {
-        if (item.value === initialProductTypeCheckk) {
-          return {
-            ...item,
-            isChecked: !item.isChecked,
-          };
-        } else {
-          return item;
-        }
+  function handleChangeFilter(
+    type: 'price' | 'sizes' | 'colors' | 'productTypes_id' | 'sort',
+    value: number | string | { min: number; max: number }
+  ) {
+    if (type === 'price') {
+      setFilter({
+        ...filter,
+        price: value as { min: number; max: number },
       });
-
-      return [
-        {
-          heading: 'Loại bánh',
-          heading_value: 'typeCake',
-          children: children,
-        },
-        {
-          heading: 'Màu sắc',
-          heading_value: 'color',
-          children: [
-            {
-              display: 'Đỏ',
-              value: '#F43545',
-              realValue: 'đỏ',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Cam',
-              value: '#FA8901',
-              realValue: 'cam',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Vàng',
-              value: '#C4A705',
-              realValue: 'vàng',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Lục',
-              value: '#00BA71',
-              realValue: 'lục',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Lam',
-              value: '#00C2DE',
-              realValue: 'lam',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Chàm',
-              value: '#00418D',
-              realValue: 'chàm',
-              color: true,
-              isChecked: false,
-            },
-            {
-              display: 'Tím',
-              value: '#5F2879',
-              realValue: 'tím',
-              color: true,
-              isChecked: false,
-            },
-          ],
-        },
-        {
-          heading: 'Size bánh',
-          heading_value: 'size',
-          children: [
-            { display: 'Nhỏ', value: 'nhỏ', isChecked: false },
-            { display: 'Thường', value: 'vừa', isChecked: false },
-            { display: 'Lớn', value: 'lớn', isChecked: false },
-          ],
-        },
-        {
-          heading: 'Giá bánh',
-          heading_value: 'price',
-          children: [
-            { display: 'Dưới 100,000đ', value: '<100', isChecked: false },
-            {
-              display: '100,000đ - 200,000đ',
-              value: '100-200',
-              isChecked: false,
-            },
-            {
-              display: '200,000đ - 300,000đ',
-              value: '200-300',
-              isChecked: false,
-            },
-            {
-              display: '300,000đ - 400,000đ',
-              value: '300-400',
-              isChecked: false,
-            },
-            { display: 'Trên 500,000đ', value: '>500', isChecked: false },
-          ],
-        },
-      ];
-    },
-    [router.query.product_type]
-  );
-
-  // #endregion
-
-  //#region useEffects
+    } else if (type === 'sizes') {
+      let sizes = filter.sizes;
+      if (filter.sizes.includes(value as string)) {
+        sizes = sizes.filter((item) => item !== (value as string));
+      } else {
+        sizes.push(value as string);
+      }
+      setFilter({
+        ...filter,
+        sizes: sizes,
+      });
+    } else if (type === 'colors') {
+      let colors = filter.colors;
+      if (filter.colors.includes(value as string)) {
+        colors = colors.filter((item) => item !== (value as string));
+      } else {
+        colors.push(value as string);
+      }
+      setFilter({
+        ...filter,
+        colors: colors,
+      });
+    } else if (type === 'productTypes_id') {
+      let productTypes_id = filter.productTypes_id;
+      if (filter.productTypes_id.includes(value as string)) {
+        productTypes_id = productTypes_id.filter(
+          (item) => item !== (value as string)
+        );
+      } else {
+        productTypes_id.push(value as string);
+      }
+      setFilter({
+        ...filter,
+        productTypes_id: productTypes_id,
+      });
+    } else if (type === 'sort') {
+      setFilter({
+        ...filter,
+        sort: value as number,
+      });
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
-      let batches: BatchObject[] = [];
-
-      try {
-        batches = await fetchAvailableBatches();
-      } catch (error) {
-        console.log(error);
-      }
-
-      const products = await cachedCreateProductsOnProductsPage(batches);
-
-      console.log(products);
-
-      setProducts(() => [...products]);
-
-      setGroupBoLocState(() =>
-        generateGroupBoLoc(
-          filterDuplicatesById(
-            products.map((p) => ({
-              id: p.productType_id ?? '',
-              name: p.typeName,
-            }))
-          )
-        )
-      );
+      const finalBatches = await getAvailableBatches(true);
+      setBatches(finalBatches);
+      setBatchesDisplay(finalBatches);
     }
-
     fetchData();
-  }, [generateGroupBoLoc]);
-
-  //#endregion
-
-  //#region Handlers
-
-  function handdleCheckBox(heading_value: string, value: string) {
-    setGroupBoLocState((currentGroupBoLocState) =>
-      currentGroupBoLocState.map((item) => {
-        if (item.heading_value === heading_value) {
-          return {
-            ...item,
-            children: item.children.map((child) => {
-              if (child.value === value) {
-                return {
-                  ...child,
-                  isChecked: !child.isChecked,
-                };
-              }
-              return child;
-            }),
-          };
-        }
-        return item;
-      })
-    );
-  }
+  }, []);
 
   function handleSetViewState(value: 'grid' | 'list') {
     setViewState(() => value);
-  }
-
-  function handleSetSortList(value: any) {
-    setSortListState((currentSortListState: any) => ({
-      ...currentSortListState,
-      value: value,
-    }));
   }
 
   function handleChangeSearch(e: any) {
     setSearchText(() => e.target.value);
   }
 
-  //#endregion
+  function handleFilterBatches(type: 'search' | 'sort' | 'filter') {
+    var final = [...batches];
 
-  // #region scroll
+    if (type === 'search') {
+      if (searchText !== '') {
+        final = final.filter((item) => {
+          return item.product?.name
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        });
+        if (final.length === 0) {
+          return final;
+        }
+      }
+    }
+    if (type === 'sort') {
+      if (final.length === 0) {
+        return final;
+      }
+      if (filter.sort == 0) {
+        //Mặc định
+      } else if (filter.sort == 1) {
+        //Giá tăng dần
+        final = final.sort((a, b) => {
+          const aPrice =
+            a.discount.start_at <= new Date()
+              ? a.variant!.price * (1 - a.discount.percent / 100)
+              : a.variant!.price;
+          const bPrice =
+            b.discount.start_at <= new Date()
+              ? b.variant!.price * (1 - b.discount.percent / 100)
+              : b.variant!.price;
+          return aPrice - bPrice;
+        });
+      } else if (filter.sort == 2) {
+        //Giá giảm dần
+        final = final.sort((a, b) => {
+          const aPrice =
+            a.discount.start_at <= new Date()
+              ? a.variant!.price * (1 - a.discount.percent / 100)
+              : a.variant!.price;
+          const bPrice =
+            b.discount.start_at <= new Date()
+              ? b.variant!.price * (1 - b.discount.percent / 100)
+              : b.variant!.price;
+          return bPrice - aPrice;
+        });
+      } else if (filter.sort == 3) {
+        //A - Z
+        final = final.sort((a, b) =>
+          a.product!.name.localeCompare(b.product!.name)
+        );
+      } else if (filter.sort == 4) {
+        //Z - A
+        final = final.sort((a, b) =>
+          b.product!.name.localeCompare(a.product!.name)
+        );
+      } else if (filter.sort == 5) {
+        //Cũ nhất
+        final = final.sort(
+          (a, b) => new Date(a.mfg).getTime() - new Date(b.mfg).getTime()
+        );
+      } else if (filter.sort == 6) {
+        //Mới nhất
+        final = final.sort(
+          (a, b) => new Date(b.mfg).getTime() - new Date(a.mfg).getTime()
+        );
+      } else if (filter.sort == 7) {
+        //Bán chạy nhất
+        final = final.sort((a, b) => {
+          const aSold = a.quantity - a.sold;
+          const bSold = b.quantity - b.sold;
+          return bSold - aSold;
+        });
+      }
+    }
+    if (type === 'filter') {
+      if (filter.productTypes_id.length > 0) {
+        final = final.filter((item) => {
+          return filter.productTypes_id.includes(item.product_type_id);
+        });
+
+        if (final.length === 0) {
+          return final;
+        }
+      }
+
+      if (filter.colors.length > 0) {
+        final = final.filter((item) => {
+          item.product?.colors.forEach((color) => {
+            if (filter.colors.includes(color)) {
+              return true;
+            }
+          });
+        });
+        if (final.length === 0) {
+          return final;
+        }
+      }
+      if (filter.sizes.length > 0) {
+        final = final.filter((item) => {
+          return filter.sizes.includes(item.variant!.size);
+        });
+        if (final.length === 0) {
+          return final;
+        }
+      }
+
+      final = final.filter((item) => {
+        const price =
+          item.discount.start_at <= new Date()
+            ? item.variant!.price * (1 - item.discount.percent / 100)
+            : item.variant!.price;
+        return filter.price.min <= price && price <= filter.price.max;
+      });
+    }
+    return final;
+  }
+
+  useEffect(() => {
+    setBatchesDisplay(() => handleFilterBatches('filter'));
+  }, [filter]);
+
+  useEffect(() => {
+    setBatchesDisplay(() => handleFilterBatches('sort'));
+  }, [filter.sort]);
+
+  useEffect(() => {
+    setBatchesDisplay(() => handleFilterBatches('search'));
+  }, [searchText]);
 
   const handleClick = () => {
     const top: number = 280;
     window.scrollTo({ top, behavior: 'smooth' });
   };
-  //#endregion
 
   return (
     <>
-      <ProductsContext.Provider
-        value={{
-          GroupBoLoc: groupBoLocState,
-          handleCheckBox: handdleCheckBox,
-          View: viewState,
-          handleSetViewState: handleSetViewState,
-          SortList: sortListState,
-          handleSetSortList: handleSetSortList,
-          ProductList: products,
-          searchText: searchText,
-        }}
-      >
-        <Box>
-          <ImageBackground>
+      <Box>
+        <ImageBackground>
+          <Grid
+            sx={{ px: 6 }}
+            height={'100%'}
+            container
+            direction={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            spacing={2}
+          >
+            <Grid item xs={12}>
+              <MuiLink href="#" style={{ textDecoration: 'none' }}>
+                <Typography
+                  align="center"
+                  variant="h2"
+                  color={theme.palette.primary.main}
+                  sx={{
+                    '&:hover': {
+                      color: theme.palette.common.white,
+                    },
+                  }}
+                >
+                  Tất cả sản phẩm
+                </Typography>
+              </MuiLink>
+            </Grid>
+          </Grid>
+        </ImageBackground>
+
+        <BottomSlideInDiv>
+          <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
             <Grid
-              sx={{ px: 6 }}
-              height={'100%'}
               container
               direction={'row'}
               justifyContent={'center'}
-              alignItems={'center'}
-              spacing={2}
+              alignItems={'start'}
+              spacing={4}
             >
               <Grid item xs={12}>
-                <MuiLink href="#" style={{ textDecoration: 'none' }}>
-                  <Typography
-                    align="center"
-                    variant="h2"
-                    color={theme.palette.primary.main}
-                    sx={{
-                      '&:hover': {
-                        color: theme.palette.common.white,
+                <Box
+                  sx={{
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    backgroundImage: `url(${bg12.src})`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    width: '100%',
+                    height: 'auto',
+                  }}
+                >
+                  <TextField
+                    placeholder="Tìm kiếm loại bánh ngon nhất?"
+                    hiddenLabel
+                    fullWidth
+                    type="text"
+                    variant="filled"
+                    maxRows="1"
+                    value={searchText}
+                    onChange={handleChangeSearch}
+                    onClick={handleClick}
+                    InputProps={{
+                      disableUnderline: true,
+                      style: {
+                        color: theme.palette.common.black,
                       },
                     }}
-                  >
-                    Tất cả sản phẩm
-                  </Typography>
-                </MuiLink>
+                    inputProps={{
+                      sx: {
+                        textAlign: 'center',
+                        fontSize: theme.typography.body1.fontSize,
+                        color: theme.palette.common.black,
+                        fontWeight: theme.typography.body2.fontWeight,
+                        fontFamily: theme.typography.body2.fontFamily,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                        backdropFilter: 'blur(2px)',
+                        border: 3,
+                        borderColor: theme.palette.secondary.main,
+                        py: 1.5,
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          backgroundColor: alpha(
+                            theme.palette.common.black,
+                            0.75
+                          ),
+                          color: theme.palette.common.white,
+                          backdropFilter: 'blur(3px)',
+                        },
+                        '&:focus': {
+                          backgroundColor: alpha(
+                            theme.palette.common.black,
+                            0.75
+                          ),
+                          color: theme.palette.common.white,
+                          backdropFilter: 'blur(3px)',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
               </Grid>
-            </Grid>
-          </ImageBackground>
 
-          <BottomSlideInDiv>
-            <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-                spacing={4}
-              >
-                <Grid item xs={12}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    justifyContent={'center'}
-                    alignItems={'start'}
-                  >
-                    <Grid item xs={12}>
-                      <Box
-                        sx={{
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          backgroundImage: `url(${bg12.src})`,
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          width: 'auto',
-                          height: 'auto',
-                        }}
-                      >
-                        <TextField
-                          placeholder="Tìm kiếm loại bánh ngon nhất?"
-                          hiddenLabel
-                          fullWidth
-                          type="text"
-                          variant="filled"
-                          maxRows="1"
-                          value={searchText}
-                          onChange={handleChangeSearch}
-                          onClick={handleClick}
-                          InputProps={{
-                            disableUnderline: true,
-                            style: {
-                              color: theme.palette.common.black,
-                            },
-                          }}
-                          inputProps={{
-                            sx: {
-                              textAlign: 'center',
-                              fontSize: theme.typography.body1.fontSize,
-                              color: theme.palette.common.black,
-                              fontWeight: theme.typography.body2.fontWeight,
-                              fontFamily: theme.typography.body2.fontFamily,
-                              backgroundColor: alpha(
-                                theme.palette.primary.main,
-                                0.2
-                              ),
-                              backdropFilter: 'blur(2px)',
-                              border: 3,
-                              borderColor: theme.palette.secondary.main,
-                              py: 1.5,
-                              borderRadius: '8px',
-                              transition: 'all 0.2s ease-in-out',
-                              '&:hover': {
-                                backgroundColor: alpha(
-                                  theme.palette.common.black,
-                                  0.75
-                                ),
-                                color: theme.palette.common.white,
-                                backdropFilter: 'blur(3px)',
-                              },
-                              '&:focus': {
-                                backgroundColor: alpha(
-                                  theme.palette.common.black,
-                                  0.75
-                                ),
-                                color: theme.palette.common.white,
-                                backdropFilter: 'blur(3px)',
-                              },
-                            },
-                          }}
+              <Grid item md={3} xs={12}>
+                <FilterComponent
+                  filter={filter}
+                  handleChangeFilter={handleChangeFilter}
+                />
+              </Grid>
+
+              <Grid item md={9} xs={12}>
+                <Grid
+                  container
+                  direction={'row'}
+                  justifyContent={'center'}
+                  alignItems={'start'}
+                  spacing={2}
+                >
+                  <Grid item xs={12}>
+                    <Grid
+                      container
+                      direction={'row'}
+                      justifyContent={'space-between'}
+                      alignItems={'center'}
+                    >
+                      <Grid item width={{ sm: 'auto', xs: '100%' }}>
+                        <TypeView
+                          viewState={viewState}
+                          handleSetViewState={handleSetViewState}
                         />
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Grid>
-
-                <Grid item md={3} xs={12}>
-                  <Filter />
-                </Grid>
-
-                <Grid item md={9} xs={12}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    justifyContent={'center'}
-                    alignItems={'start'}
-                    spacing={2}
-                  >
-                    <Grid item xs={12}>
-                      <Grid
-                        container
-                        direction={'row'}
-                        justifyContent={'space-between'}
-                        alignItems={'center'}
-                      >
-                        <Grid item width={{ sm: 'auto', xs: '100%' }}>
-                          <TypeView />
-                        </Grid>
-                        <Grid item width={{ sm: 'auto', xs: '100%' }}>
-                          <TypeSort />
-                        </Grid>
+                      </Grid>
+                      <Grid item width={{ sm: 'auto', xs: '100%' }}>
+                        <TypeSort
+                          filter={filter}
+                          handleChangeFilter={handleChangeFilter}
+                        />
                       </Grid>
                     </Grid>
+                  </Grid>
 
-                    <Grid item xs={12}>
-                      <ProductList
-                        imageHeight={'20vh'}
-                        imageHeightList={'30vh'}
-                      />
-                    </Grid>
+                  <Grid item xs={12}>
+                    <ProductList
+                      batches={batchesDisplay}
+                      viewState={viewState}
+                      imageHeight="20vh"
+                      imageHeightList="30vh"
+                    />
                   </Grid>
                 </Grid>
               </Grid>
-            </Box>
-          </BottomSlideInDiv>
-        </Box>
-      </ProductsContext.Provider>
+            </Grid>
+          </Box>
+        </BottomSlideInDiv>
+      </Box>
     </>
   );
 };

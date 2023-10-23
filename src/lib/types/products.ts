@@ -21,7 +21,7 @@ export interface AssembledProduct extends ProductObject {
   hasDiscounted: boolean;
 }
 
-export interface ProductForProductsPage
+interface ProductForProductsPage
   extends ProductObject,
     ProductVariant,
     BatchObject {

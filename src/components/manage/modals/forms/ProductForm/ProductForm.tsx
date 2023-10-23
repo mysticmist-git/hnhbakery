@@ -530,7 +530,7 @@ function ProductForm(
               >
                 {colors.map((color) => (
                   <ToggleButton key={color.id} value={color.id}>
-                    {color.name}
+                    {color.value}
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
