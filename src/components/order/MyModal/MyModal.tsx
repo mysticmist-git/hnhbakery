@@ -25,7 +25,7 @@ import ThongTin_Content from './ThongTin_Content';
 import { BillTableRow } from '@/models/bill';
 import Delivery, {
   deliveryStateColorParse,
-  deliveryStateParse,
+  deliveryStateContentParse,
 } from '@/models/delivery';
 import { updateDelivery } from '@/lib/DAO/deliveryDAO';
 
@@ -485,7 +485,7 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Trạng thái giao hàng"
-                          value={deliveryStateParse(
+                          value={deliveryStateContentParse(
                             modalBill?.deliveryTableRow?.state
                           )}
                           InputProps={{

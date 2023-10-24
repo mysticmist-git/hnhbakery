@@ -32,6 +32,20 @@ const sizeConverter: FirestoreDataConverter<Size> = {
   },
 };
 
+export function SizeNameParse(name: string | undefined): string {
+  if (!name) {
+    return 'Trống';
+  }
+  if (name == 'lon') {
+    return 'Lớn';
+  } else if (name == 'nho') {
+    return 'Nhỏ';
+  } else if (name == 'vua') {
+    return 'Vừa';
+  }
+  return name;
+}
+
 export default Size;
 
 export { sizeConverter };

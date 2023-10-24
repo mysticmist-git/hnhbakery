@@ -5,12 +5,17 @@ import { ref } from 'firebase/storage';
 import React, { ChangeEvent, ChangeEventHandler, memo, useMemo } from 'react';
 import { useUploadFile } from 'react-firebase-hooks/storage';
 import ProfileAvatar from '../ProfileAvatar';
+import User from '@/models/user';
 
 const LeftProfileColumn = ({
   image,
   userId,
   onUpdateUserData,
-}: LeftProfileColumnProps) => {
+}: {
+  image: string;
+  userId: string;
+  onUpdateUserData?: (field: keyof User, value: User[keyof User]) => void;
+}) => {
   const theme = useTheme();
 
   const [uploadFile, uploading, snapshot, error] = useUploadFile();
@@ -27,7 +32,7 @@ const LeftProfileColumn = ({
     const result = await uploadFile(avtRef, file);
 
     if (onUpdateUserData)
-      await onUpdateUserData('image', `/${result?.metadata.fullPath}`);
+      await onUpdateUserData('avatar', `/${result?.metadata.fullPath}`);
   };
 
   return (

@@ -7,17 +7,20 @@ import dayjs from 'dayjs';
 import React, { memo } from 'react';
 import AddressList from '../AddressList';
 import TelTextField from '../TelTextField';
+import User, { UserTableRow } from '@/models/user';
+import { User as FirebaseUser } from 'firebase/auth';
 
 interface RightProfileColumnProps {
-  userData?: UserObject;
-  onUpdateUserData: (
-    field: keyof UserObject,
-    value: UserObject[keyof UserObject]
-  ) => void;
-  [key: string]: any;
+  user: FirebaseUser;
+  userData: UserTableRow | undefined;
+  onUpdateUserData: (field: keyof User, value: User[keyof User]) => void;
 }
 
-const RightProfileColumn = (props: RightProfileColumnProps) => {
+const RightProfileColumn = ({
+  user,
+  userData,
+  onUpdateUserData,
+}: RightProfileColumnProps) => {
   const theme = useTheme();
   const textStyle = {
     fontSize: theme.typography.body2.fontSize,
@@ -25,7 +28,6 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
     fontWeight: theme.typography.body2.fontWeight,
     fontFamily: theme.typography.body2.fontFamily,
   };
-  const { user, userData, onUpdateUserData } = props;
 
   return (
     <Grid
@@ -91,7 +93,7 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
                 sx={{
                   width: '100%',
                 }}
-                value={dayjs(userData?.birthday ?? new Date())}
+                value={dayjs(userData?.birth ?? new Date())}
                 format="DD/MM/YYYY"
                 slotProps={{
                   textField: {
@@ -164,10 +166,11 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
                 textStyle={textStyle}
                 userData={userData}
                 onUpdateUserData={onUpdateUserData}
+                user={user}
               />
             </Grid>
             <Grid item xs={12}>
-              {userData?.accountType === 'google' && (
+              {userData?.type === 'google' && (
                 <Box
                   sx={{
                     borderRadius: '8px',
@@ -192,7 +195,7 @@ const RightProfileColumn = (props: RightProfileColumnProps) => {
                   </Typography>
                 </Box>
               )}
-              {userData?.accountType === 'email_n_password' && (
+              {userData?.type === 'mail' && (
                 <DoiMKTextField
                   textStyle={textStyle}
                   userData={userData}

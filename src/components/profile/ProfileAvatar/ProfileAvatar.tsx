@@ -2,6 +2,7 @@ import defaultAva from '@/assets/defaultAva.jpg';
 import { CustomIconButton } from '@/components/buttons';
 import { storage } from '@/firebase/config';
 import { UserObject } from '@/lib/models';
+import User from '@/models/user';
 import { CameraAlt } from '@mui/icons-material';
 import { Box, useTheme } from '@mui/material';
 import { alpha } from '@mui/system';
@@ -11,20 +12,15 @@ import Image from 'next/image';
 import { ChangeEventHandler, useRef, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 
-interface ProfileAvatarProps {
-  image: string;
-  onUploadImage: ChangeEventHandler<HTMLInputElement>;
-  onUpdateUserData?: (
-    field: keyof UserObject,
-    value: UserObject[keyof UserObject]
-  ) => void;
-}
-
 function ProfileAvatar({
   image,
   onUploadImage,
   onUpdateUserData,
-}: ProfileAvatarProps) {
+}: {
+  image: string;
+  onUploadImage: ChangeEventHandler<HTMLInputElement>;
+  onUpdateUserData?: (field: keyof User, value: User[keyof User]) => void;
+}) {
   const theme = useTheme();
 
   const [url, urlLoading, urlError] = useDownloadURL(

@@ -1,6 +1,9 @@
 import { formatDateString } from '@/lib/utils';
 import { BillTableRow } from '@/models/bill';
-import { deliveryStateColorParse, deliveryStateParse } from '@/models/delivery';
+import {
+  deliveryStateColorParse,
+  deliveryStateContentParse,
+} from '@/models/delivery';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -190,7 +193,7 @@ export default function DeliveryTable({
       hideable: false,
       width: 120,
       valueGetter: (params) => {
-        return deliveryStateParse(params.row.deliveryTableRow.state);
+        return deliveryStateContentParse(params.row.deliveryTableRow.state);
       },
       renderCell(params) {
         return (
@@ -202,7 +205,7 @@ export default function DeliveryTable({
               ),
             }}
           >
-            {deliveryStateParse(params.row.deliveryTableRow.state)}
+            {deliveryStateContentParse(params.row.deliveryTableRow.state)}
           </Box>
         );
       },

@@ -38,7 +38,7 @@ const initTabs = {
   tabItems: [
     { label: 'Trang chủ', href: '/' },
     { label: 'Sản phẩm', href: '/products' },
-    { label: 'Tìm kiếm', href: '/search' },
+    // { label: 'Tìm kiếm', href: '/search' },
     { label: 'Về H&H', href: '/about' },
     { label: 'Liên hệ', href: '/contact' },
   ],

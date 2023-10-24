@@ -62,7 +62,7 @@ const deliveryConverter: FirestoreDataConverter<Delivery> = {
   },
 };
 
-export function deliveryStateParse(state: DeliveryState | undefined) {
+export function deliveryStateContentParse(state: DeliveryState | undefined) {
   switch (state) {
     case 'issued':
       return 'Chờ xử lý';

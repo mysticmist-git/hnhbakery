@@ -1,7 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
 import { db } from '@/firebase/config';
+import { updateAddress } from '@/lib/DAO/addressDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import Address from '@/models/address';
+import { UserTableRow } from '@/models/user';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
@@ -9,39 +12,49 @@ import { InputAdornment, TextField, useTheme } from '@mui/material';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useRef } from 'react';
 
-export default function AddressItem(props: any) {
-  const {
-    textStyle,
-    value,
-    index,
-    disabled,
-    editItem,
-    handleSetEditItem,
-    userData,
-  } = props;
-  const theme = useTheme();
-
+export default function AddressItem({
+  textStyle,
+  value,
+  index,
+  disabled,
+  editItem,
+  handleSetEditItem,
+  userData,
+}: {
+  textStyle: any;
+  value: Address;
+  index: number;
+  disabled: boolean;
+  editItem: { editState: boolean; index: number };
+  handleSetEditItem: (editState: boolean, index: number) => void;
+  userData: UserTableRow | undefined;
+}) {
   const handleSnackbarAlert = useSnackbarService();
+  const theme = useTheme();
   const addressRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (addressRef.current) {
-      addressRef.current.value = value;
+      addressRef.current.value = value.address;
     }
   }, [value]);
 
   const handleSave = async () => {
-    if (addressRef.current) {
-      if (addressRef.current.value !== value) {
+    if (addressRef.current && userData) {
+      if (addressRef.current.value !== value.address) {
         try {
+          if (!userData?.addresses) {
+            return;
+          }
           const addressIndex = userData.addresses.indexOf(value);
           const newAddresses = [...userData.addresses];
-          newAddresses[addressIndex] = addressRef.current!.value;
 
-          await updateDoc(
-            doc(collection(db, COLLECTION_NAME.USERS), userData.id),
-            {
-              addresses: newAddresses,
-            }
+          newAddresses[addressIndex].address = addressRef.current!.value;
+
+          await updateAddress(
+            userData.group_id,
+            userData.id!,
+            newAddresses[addressIndex].id,
+            newAddresses[addressIndex]
           );
 
           handleSnackbarAlert(
@@ -58,7 +71,7 @@ export default function AddressItem(props: any) {
           );
         }
       }
-      if (addressRef.current.value === value) {
+      if (addressRef.current.value === value.address) {
         handleSnackbarAlert(
           'info',
           'Địa chỉ ' + (index + 1) + ' không thay đổi!'
@@ -72,7 +85,7 @@ export default function AddressItem(props: any) {
       'info',
       'Hủy thay đổi địa chỉ ' + (index + 1) + ' thành công!'
     );
-    if (addressRef.current) addressRef.current.value = value;
+    if (addressRef.current) addressRef.current.value = value.address;
     handleSetEditItem(false, -1);
   };
 

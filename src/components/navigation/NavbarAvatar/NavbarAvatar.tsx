@@ -9,7 +9,18 @@ import { useSnackbarService } from '@/lib/contexts';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
 import theme from '@/styles/themes/lightTheme';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
-import { SxProps, Theme, Typography } from '@mui/material';
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Popover,
+  SxProps,
+  Theme,
+  Typography,
+} from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -101,28 +112,62 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
   return (
     <>
       <Avatar src={photoURL as string | undefined} onClick={handleClick} />
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenProfile} sx={menuItemSx}>
-          <AccountCircle />
-          <Typography variant="body2" color={theme.palette.common.black}>
-            Tài khoản
-          </Typography>
-        </MenuItem>
-        {isManager && (
-          <MenuItem onClick={handleOpenManagement} sx={menuItemSx}>
-            <ViewInAr />
-            <Typography variant="body2" color={theme.palette.common.black}>
-              Quản lý
-            </Typography>
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleLogout} sx={menuItemSx}>
-          <Logout />
-          <Typography variant="body2" color={theme.palette.common.black}>
-            Đăng xuất
-          </Typography>
-        </MenuItem>
-      </Menu>
+      <Popover
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <Box
+          sx={{
+            boxShadow: 2,
+          }}
+        >
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleOpenProfile}>
+                <ListItemIcon>
+                  <AccountCircle fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>
+                  <Typography variant="body2">Thông tin cá nhân</Typography>
+                </ListItemText>
+              </ListItemButton>
+            </ListItem>
+
+            {isManager && (
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleOpenManagement}>
+                  <ListItemIcon>
+                    <ViewInAr fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography variant="body2">Quản lý</Typography>
+                  </ListItemText>
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemIcon>
+                  <Logout fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>
+                  <Typography variant="body2">Đăng xuất</Typography>
+                </ListItemText>
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
+      </Popover>
     </>
   );
 };

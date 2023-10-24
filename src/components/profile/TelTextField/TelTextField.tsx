@@ -1,25 +1,36 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
 import { isVNPhoneNumber } from '@/lib/utils';
+import User, { UserTableRow } from '@/models/user';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { InputAdornment, TextField, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
+import { User as FirebaseUser } from 'firebase/auth';
 
-export default function TelTextField(props: any) {
+export default function TelTextField({
+  textStyle,
+  userData,
+  onUpdateUserData,
+  user,
+}: {
+  textStyle: any;
+  userData: UserTableRow | undefined;
+  onUpdateUserData: (field: keyof User, value: User[keyof User]) => void;
+  user: FirebaseUser;
+}) {
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
 
-  const { textStyle, userData, onUpdateUserData } = props;
   const telRef = useRef<HTMLInputElement>(null);
   const [editState, setEditState] = useState(false);
 
   useEffect(() => {
-    if (telRef.current) {
+    if (telRef.current && userData?.tel) {
       telRef.current.value = userData.tel;
     }
-  }, [userData.tel]);
+  }, [userData?.tel]);
 
   const handleSave = async () => {
     if (telRef.current) {
@@ -27,13 +38,13 @@ export default function TelTextField(props: any) {
         handleSnackbarAlert('warning', 'Số điện thoại không hợp lệ');
         return;
       }
-      if (telRef.current.value !== userData.tel) {
+      if (telRef.current.value !== userData?.tel) {
         handleSnackbarAlert('success', 'Thay đổi số điện thoại thành công!');
         // Hên: cập nhật thay đổi dô db phụ nha bà!
         console.log(telRef.current.value);
         await onUpdateUserData('tel', telRef.current.value);
       }
-      if (telRef.current.value === userData.tel) {
+      if (telRef.current.value === userData?.tel) {
         handleSnackbarAlert('info', 'Không thay đổi!');
       }
     }
@@ -41,7 +52,7 @@ export default function TelTextField(props: any) {
   };
   const handleCancel = () => {
     handleSnackbarAlert('info', 'Hủy thay đổi thành công!');
-    if (telRef.current) telRef.current.value = userData.tel;
+    if (telRef.current && userData?.tel) telRef.current.value = userData.tel;
     setEditState(() => !editState);
   };
 

@@ -1,12 +1,23 @@
 import { CustomIconButton } from '@/components/buttons';
 import DoiMatKhau_Dialog from '@/components/profile/DoiMatKhau_Dialog';
+import User, { UserTableRow } from '@/models/user';
 import { EditRounded } from '@mui/icons-material';
 import { InputAdornment, TextField, useTheme } from '@mui/material';
+import { User as FirebaseUser } from 'firebase/auth';
 import React, { useState } from 'react';
 
-function DoiMKTextField(props: any) {
+function DoiMKTextField({
+  textStyle,
+  user,
+  userData,
+  onUpdateUserData,
+}: {
+  textStyle: any;
+  user: FirebaseUser;
+  userData: UserTableRow;
+  onUpdateUserData: (field: keyof User, value: User[keyof User]) => void;
+}) {
   const theme = useTheme();
-  const { textStyle, userData, user } = props;
   const [open, setOpen] = useState(false);
 
   const handleCloseDoiMatKhau = () => {
@@ -19,7 +30,7 @@ function DoiMKTextField(props: any) {
         label="Mật khẩu"
         disabled
         variant="outlined"
-        value={userData.password ? userData.password : ''}
+        value={'Không biết lấy mật khẩu'}
         fullWidth
         InputProps={{
           style: {

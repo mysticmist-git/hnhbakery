@@ -9,22 +9,30 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import AddressItem from '../AddressList/AddressItem';
+import { UserTableRow } from '@/models/user';
+import Address from '@/models/address';
 
-export default function CheckboxList(props: any) {
-  const {
-    textStyle,
-    userData,
-    checked,
-    handleSetChecked,
-    editItem,
-    handleSetEditItem,
-  } = props;
-  const { addresses } = userData;
+export default function CheckboxList({
+  textStyle,
+  userData,
+  checked,
+  handleSetChecked,
+  editItem,
+  handleSetEditItem,
+}: {
+  textStyle: any;
+  userData: UserTableRow | undefined;
+  checked: string[];
+  handleSetChecked: (value: Address) => void;
+  editItem: { editState: boolean; index: number };
+  handleSetEditItem: (editState: boolean, index: number) => void;
+}) {
+  const { addresses, ...data } = userData ?? {};
 
   const theme = useTheme();
   return (
     <List sx={{ width: '100%', p: 0, m: 0 }}>
-      {addresses?.map((value: string, index: number) => {
+      {addresses?.map((value, index) => {
         const labelId = `checkbox-list-label-${index}`;
 
         return (
@@ -37,7 +45,7 @@ export default function CheckboxList(props: any) {
             >
               <ListItemIcon>
                 <Checkbox
-                  checked={checked.indexOf(value) !== -1}
+                  checked={checked.indexOf(value.id) !== -1}
                   tabIndex={-1}
                   disableRipple
                   inputProps={{ 'aria-labelledby': labelId }}

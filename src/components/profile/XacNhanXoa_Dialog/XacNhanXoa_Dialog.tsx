@@ -4,9 +4,16 @@ import { useSnackbarService } from '@/lib/contexts';
 import { Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 
-export default function XacNhanXoa_Dialog(props: any) {
+export default function XacNhanXoa_Dialog({
+  open,
+  handleClose,
+  handleXacNhan,
+}: {
+  open: boolean;
+  handleClose: () => void;
+  handleXacNhan: () => void;
+}) {
   const theme = useTheme();
-  const { handleClose, open, handleXacNhan } = props;
 
   return (
     <>

@@ -5,7 +5,7 @@ import { ContentCopyRounded } from '@mui/icons-material';
 import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
 import { BillTableRow } from '@/models/bill';
-import { deliveryStateParse } from '@/models/delivery';
+import { deliveryStateContentParse } from '@/models/delivery';
 
 export default function ThongTin_Content({
   textStyle,
@@ -97,8 +97,9 @@ export default function ThongTin_Content({
             textStyle={textStyle}
             label="Trạng thái giao hàng"
             value={
-              deliveryStateParse(modalDelivery?.deliveryTableRow?.state) ??
-              'Trống'
+              deliveryStateContentParse(
+                modalDelivery?.deliveryTableRow?.state
+              ) ?? 'Trống'
             }
           />
         </Grid>

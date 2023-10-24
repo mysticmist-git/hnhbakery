@@ -17,7 +17,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getUserRef, getUsers } from './userDAO';
+import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getAddress } from './addressDAO';
 import { getBatchById } from './batchDAO';
 import { getBillItems } from './billItemDAO';
@@ -29,6 +29,7 @@ import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getVariant } from './variantDAO';
 import Branch from '@/models/branch';
+import { getBranchById } from './branchDAO';
 
 export function getBillsRef(
   groupId: string,
@@ -448,6 +449,62 @@ export async function getBillTableRows(
         branch: branch,
       });
     }
+  }
+
+  return finalBills;
+}
+
+export async function getBillTableRowsByUserId(
+  userId: string
+): Promise<BillTableRow[]> {
+  const finalBills: BillTableRow[] = [];
+
+  const customer = await getUserByUid(userId);
+
+  if (!customer) {
+    return [];
+  }
+  const bills = await getBills(customer.group_id, customer.id);
+
+  for (let b of bills) {
+    const billitems = await getBillItems(customer.group_id, customer.id, b.id);
+
+    const billItems: BillTableRow['billItems'] = [];
+    for (let bi of billitems) {
+      const batch = await getBatchById(bi.batch_id);
+      billItems.push({
+        ...bi,
+        batch: batch,
+        productType: await getProductTypeById(batch!.product_type_id),
+        product: await getProduct(batch!.product_type_id, batch!.product_id),
+        variant: await getVariant(
+          batch!.product_type_id,
+          batch!.product_id,
+          batch!.variant_id
+        ),
+      });
+    }
+
+    const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+    const delivery = await getDeliveryById(b.delivery_id);
+
+    finalBills.push({
+      ...b,
+      paymentMethod: await getPaymentMethodById(b.payment_method_id),
+      customer: { ...customer },
+      sale: sale,
+      deliveryTableRow: {
+        ...delivery!,
+        address: await getAddress(
+          customer.group_id,
+          customer.id,
+          delivery!.address_id
+        ),
+      },
+      billItems: billItems,
+      branch: await getBranchById(b.branch_id),
+    });
   }
 
   return finalBills;

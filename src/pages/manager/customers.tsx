@@ -11,7 +11,7 @@ import { getPaymentMethodById } from '@/lib/DAO/paymentMethodDAO';
 import { getProduct, getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypeById, getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getSaleById } from '@/lib/DAO/saleDAO';
-import { getUsers } from '@/lib/DAO/userDAO';
+import { getUserTableRows, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
 
 import { BillTableRow } from '@/models/bill';
@@ -40,87 +40,7 @@ const Customer = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const finalUsers: UserTableRow[] = [];
-        const customers = await getUsers(DEFAULT_GROUP_ID);
-
-        for (let c of customers) {
-          const billTableRows: BillTableRow[] = [];
-          const bills = await getBills(c.group_id, c.id);
-          for (let b of bills) {
-            const billitems = await getBillItems(c.group_id, c.id, b.id);
-
-            const billItems: BillTableRow['billItems'] = [];
-            for (let bi of billitems) {
-              const batch = await getBatchById(bi.batch_id);
-              billItems.push({
-                ...bi,
-                batch: batch,
-                productType: await getProductTypeById(batch!.product_type_id),
-                product: await getProduct(
-                  batch!.product_type_id,
-                  batch!.product_id
-                ),
-                variant: await getVariant(
-                  batch!.product_type_id,
-                  batch!.product_id,
-                  batch!.variant_id
-                ),
-              });
-            }
-
-            const sale =
-              b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-            const delivery = await getDeliveryById(b.delivery_id);
-
-            billTableRows.push({
-              ...b,
-              paymentMethod: await getPaymentMethodById(b.payment_method_id),
-              customer: { ...c },
-              sale: sale,
-              deliveryTableRow: {
-                ...delivery!,
-                address: await getAddress(
-                  c.group_id,
-                  c.id,
-                  delivery!.address_id
-                ),
-              },
-              billItems: billItems,
-            });
-          }
-
-          const addresses = await getAddresses(c.group_id, c.id);
-
-          const feedbackTableRows: FeedbackTableRow[] = [];
-          const productTypes = await getProductTypes();
-
-          for (let p of productTypes) {
-            const products = await getProducts(p.id);
-            for (let product of products) {
-              const feedbacks = await getFeedbacks(p.id, product.id);
-              for (let feedback of feedbacks) {
-                if (feedback.user_id != c.id) {
-                  continue;
-                }
-                feedbackTableRows.push({
-                  ...feedback,
-                  product: product,
-                  user: { ...c },
-                });
-              }
-            }
-          }
-
-          finalUsers.push({
-            ...c,
-            bills: billTableRows,
-            addresses: addresses,
-            feedbacks: feedbackTableRows,
-          });
-        }
-
-        setUsersData(() => finalUsers || []);
+        setUsersData(await getUserTableRows());
       } catch (error) {
         console.log(error);
       }

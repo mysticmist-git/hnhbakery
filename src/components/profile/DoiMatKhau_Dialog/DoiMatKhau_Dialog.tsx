@@ -18,9 +18,18 @@ import {
 } from 'firebase/auth';
 import React, { useState } from 'react';
 
-function DoiMatKhau_Dialog(props: any) {
+function DoiMatKhau_Dialog({
+  open,
+  handleClose,
+  textStyle,
+  user,
+}: {
+  open: boolean;
+  handleClose: () => void;
+  textStyle: any;
+  user: User;
+}) {
   const theme = useTheme();
-  const { handleClose, open, textStyle, user } = props;
 
   const handleSnackbarAlert = useSnackbarService();
 

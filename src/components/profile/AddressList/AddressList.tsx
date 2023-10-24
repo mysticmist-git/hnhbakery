@@ -8,19 +8,27 @@ import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import CheckboxList from '../CheckboxList';
 import XacNhanXoa_Dialog from '../XacNhanXoa_Dialog';
+import { UserTableRow } from '@/models/user';
+import Address from '@/models/address';
+import { deleteAddress } from '@/lib/DAO/addressDAO';
 
-export default function AddressList(props: any) {
-  const { textStyle, userData } = props;
+export default function AddressList({
+  userData,
+  textStyle,
+}: {
+  textStyle: any;
+  userData: UserTableRow | undefined;
+}) {
   const theme = useTheme();
 
   const [checked, setChecked] = React.useState(['']);
 
-  const handleSetChecked = (value: string) => {
-    const currentIndex = checked.indexOf(value);
+  const handleSetChecked = (value: Address) => {
+    const currentIndex = checked.indexOf(value.id);
     const newChecked = [...checked];
 
     if (currentIndex === -1) {
-      newChecked.push(value);
+      newChecked.push(value.id);
     } else {
       newChecked.splice(currentIndex, 1);
     }
@@ -48,17 +56,13 @@ export default function AddressList(props: any) {
 
   const handleXacNhan = async () => {
     try {
-      await updateDoc(
-        doc(collection(db, COLLECTION_NAME.USERS), userData.id!),
-        {
-          addresses: [
-            ...userData.addresses.filter((a: string) => !checked.includes(a)),
-          ],
-        }
-      );
-
-      handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
-      handleCloseXoaDiaChi();
+      if (!checked.length && userData) {
+        checked.forEach(async (a: string) => {
+          await deleteAddress(userData.group_id, userData.id!, a);
+        });
+        handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
+        handleCloseXoaDiaChi();
+      }
     } catch (error) {
       console.log(error);
       handleSnackbarAlert('error', 'Xóa địa chỉ không thành công!');
