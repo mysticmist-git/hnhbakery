@@ -2,78 +2,89 @@ import { CustomButton } from '@/components/buttons';
 import { NumberInputWithButtons } from '@/components/inputs/MultiValue';
 import CheckboxButtonGroup from '@/components/inputs/MultiValue/CheckboxButtonGroup';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
-import { formatPrice } from '@/lib/utils';
-import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
+import { formatDateString, formatPrice } from '@/lib/utils';
+import {
+  Box,
+  Grid,
+  Stack,
+  Typography,
+  TypographyProps,
+  useTheme,
+} from '@mui/material';
 import { useMemo } from 'react';
 import { ProductObject, ProductVariant } from '../../../lib/models';
 import MyDivider from '../Divider';
 import ProductCarousel from '../ProductCarousel';
 import ProductRating from '../ProductRating';
+import { ProductDetail } from '@/models/product';
+import { VariantTableRow } from '@/models/variant';
+import Batch from '@/models/batch';
+import { SizeNameParse } from '@/models/size';
 
 function ProductDetailInfo({
-  comments,
+  productDetail,
   variant,
   onVariantChange,
   batch,
   onBatchChange,
+  batchOptions,
   quantity,
   onQuantityChange,
-  product,
-  onAddToCart,
-  batchOptions,
-}: ProductDetailInfoProps) {
+  handleAddToCart,
+}: {
+  productDetail: ProductDetail | undefined;
+  variant: VariantTableRow | undefined;
+  onVariantChange: (variant: VariantTableRow) => void;
+  batch: Batch | undefined;
+  onBatchChange: (batch: Batch) => void;
+  batchOptions: Batch[];
+  quantity: number;
+  onQuantityChange: (quantity: number) => void;
+  handleAddToCart: () => void;
+}) {
   const theme = useTheme();
 
-  const [minPrice, maxPrice, text]: [
+  const [minPrice, maxPrice, priceValue]: [
     minPrice: number,
     maxPrice: number,
-    text: string
+    priceValue: string
   ] = useMemo(() => {
-    if (!product) return [0, 0, formatPrice(0)];
+    if (!productDetail) return [0, 0, formatPrice(0)];
 
-    if (!product.variants || product.variants.length <= 0)
+    if (!productDetail.variants || productDetail.variants.length <= 0)
       return [0, 0, 'Hết hàng'];
 
-    const prices = product.variants.map((v) => v.price);
+    const prices = productDetail.variants.map((v) => v.price);
 
-    const variantsWithDiscountPrice = create(product.batches, product);
+    const min = Math.min(...prices);
 
-    const min = variantsWithDiscountPrice.reduce(
-      (min, v) =>
-        Math.min(
-          min,
-          Math.min(v.price, v.discounted ? v.discountPrice : v.price)
-        ),
-      Number.MAX_VALUE
-    );
+    let max = Math.max(...prices);
 
-    let max = variantsWithDiscountPrice.reduce((max, v) => {
-      return Math.max(
-        max,
-        Math.min(v.price, v.discounted ? v.discountPrice : v.price)
-      );
-    }, Number.MIN_VALUE);
+    let value = '';
 
-    let text = '';
+    if (min === max) value = formatPrice(min, ' đồng');
+    else value = `${formatPrice(min, ' đồng')} - ${formatPrice(max, ' đồng')}`;
 
-    if (min === max) text = formatPrice(min);
-    else text = `${formatPrice(min)} - ${formatPrice(max)}`;
-
-    return [min, max, text];
-  }, [product]);
+    return [min, max, value];
+  }, [productDetail]);
 
   const isProductAvailable: boolean = useMemo(() => {
-    if (!product) return false;
+    if (!productDetail || !productDetail.variants) return false;
 
-    if (!product.batches || product.batches.length <= 0) return false;
+    for (let i = 0; i < productDetail.variants.length; i++) {
+      const variant = productDetail.variants[i];
+      if (variant.batcheObjects && variant.batcheObjects.length > 0) {
+        return true;
+      }
+    }
 
-    return true;
-  }, [product]);
+    return false;
+  }, [productDetail]);
 
   const maxQuantity = useMemo(() => {
     let max = 1;
 
-    if (batch) max = batch.totalQuantity - batch.soldQuantity;
+    if (batch) max = batch.quantity - batch.sold;
 
     return max;
   }, [batch]);
@@ -86,9 +97,8 @@ function ProductDetailInfo({
 
       let itemDiscountPrice = 0;
 
-      if (Date.now() > new Date(batch.discount.date).getTime()) {
-        itemDiscountPrice =
-          (variant.price * (100 - batch.discount.percent)) / 100;
+      if (new Date() > new Date(batch.discount.start_at)) {
+        itemDiscountPrice = variant.price * (1 - batch.discount.percent / 100);
       }
 
       const totalPrice = itemPrice * quantity;
@@ -102,21 +112,23 @@ function ProductDetailInfo({
       container
       direction={'row'}
       justifyContent={'center'}
-      alignItems={'start'}
+      alignItems={'stretch'}
       spacing={4}
     >
       <Grid item xs={12}>
-        <ProductCarousel images={product?.images ?? []} />
+        <ProductCarousel images={productDetail?.images ?? []} />
       </Grid>
 
       <Grid item xs={12} md={8} lg={6}>
         <Box
           sx={{
+            height: '100%',
             border: 3,
             borderColor: (theme) => theme.palette.secondary.main,
             borderRadius: '8px',
             overflow: 'hidden',
-            p: 2,
+            p: 3,
+            backgroundColor: 'white',
           }}
         >
           <Grid
@@ -128,21 +140,25 @@ function ProductDetailInfo({
           >
             <Grid item xs={12}>
               <Typography variant="h2" color={theme.palette.secondary.main}>
-                {product?.name ?? ''}
+                {productDetail?.name ?? ''}
               </Typography>
             </Grid>
 
             <Grid item xs={12}>
               <ProductRating
                 rating={
-                  comments !== undefined
-                    ? comments.reduce(
-                      (total, comment) => total + comment.rating,
-                      0
-                    ) / comments.length
+                  productDetail?.feedbacks !== undefined
+                    ? productDetail?.feedbacks.reduce(
+                        (total, feedbacks) => total + feedbacks.rating,
+                        0
+                      ) / productDetail?.feedbacks.length
                     : 0
                 }
-                numReviews={comments !== undefined ? comments.length : 0}
+                numReviews={
+                  productDetail?.feedbacks !== undefined
+                    ? productDetail?.feedbacks.length
+                    : 0
+                }
               />
             </Grid>
 
@@ -154,15 +170,10 @@ function ProductDetailInfo({
                 alignItems={'start'}
               >
                 <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Giá tiền:
-                  </Typography>
+                  <Typography {...typoHeadStyle}>Giá tiền:</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">{text}</Typography>
+                  <Typography {...typoContentStyle}>{priceValue}</Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -175,16 +186,11 @@ function ProductDetailInfo({
                 alignItems={'start'}
               >
                 <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Loại:
-                  </Typography>
+                  <Typography {...typoHeadStyle}>Loại:</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {product?.type.name ?? ''}
+                  <Typography {...typoContentStyle}>
+                    {productDetail?.productType?.name ?? 'Trống'}
                   </Typography>
                 </Grid>
               </Grid>
@@ -198,115 +204,91 @@ function ProductDetailInfo({
                 alignItems={'start'}
               >
                 <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Trạng thái:
+                  <Typography {...typoHeadStyle}>Mô tả:</Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography {...typoContentStyle}>
+                    {productDetail?.description ?? ''}
                   </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography {...typoHeadStyle}>Nguyên liệu:</Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography {...typoContentStyle}>
+                    {productDetail?.ingredients.join(', ') ?? 'Trống'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography {...typoHeadStyle}>Cách dùng:</Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography {...typoContentStyle}>
+                    {productDetail?.how_to_use ?? 'Trống'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography {...typoHeadStyle}>Bảo quản:</Typography>
+                </Grid>
+                <Grid item xs={9}>
+                  <Typography {...typoContentStyle}>
+                    {productDetail?.preservation ?? 'Trống'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'start'}
+              >
+                <Grid item xs={3}>
+                  <Typography {...typoHeadStyle}>Trạng thái:</Typography>
                 </Grid>
                 <Grid item xs={9}>
                   <Typography
-                    variant="body1"
+                    {...typoContentStyle}
                     color={
                       isProductAvailable
                         ? theme.palette.success.main
                         : theme.palette.error.main
                     }
+                    fontWeight={'bold'}
                   >
                     {isProductAvailable ? 'Còn hàng' : 'Không còn hàng'}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Mô tả:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {product?.description ?? ''}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Nguyên liệu:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {product?.ingredients.join(', ') ?? ''}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Cách dùng:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {product?.howToUse ?? ''}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-              >
-                <Grid item xs={3}>
-                  <Typography
-                    variant="body1"
-                    color={theme.palette.text.secondary}
-                  >
-                    Bảo quản:
-                  </Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography variant="body1">
-                    {product?.preservation ?? ''}
                   </Typography>
                 </Grid>
               </Grid>
@@ -315,15 +297,17 @@ function ProductDetailInfo({
         </Box>
       </Grid>
 
-      {product?.variants && product?.variants.length > 0 ? (
+      {productDetail?.variants && productDetail.variants.length > 0 ? (
         <Grid item xs={12} md={8} lg={6}>
           <Box
             sx={{
+              height: '100%',
               border: 3,
               borderColor: theme.palette.secondary.main,
               borderRadius: '8px',
               overflow: 'hidden',
-              p: 2,
+              p: 3,
+              backgroundColor: 'white',
             }}
           >
             <Grid
@@ -347,18 +331,19 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <Grid item xs={3}>
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.text.secondary}
-                    >
-                      Biến thể:
-                    </Typography>
+                    <Typography {...typoHeadStyle}>Biến thể:</Typography>
                   </Grid>
                   <Grid item xs={9}>
                     <CheckboxButtonGroup
-                      options={product?.variants ?? []}
+                      options={
+                        productDetail?.variants.filter(
+                          (v) => v.batcheObjects && v.batcheObjects?.length > 0
+                        ) ?? []
+                      }
                       value={variant}
-                      getOptionLabel={(o) => `${o.material} - ${o.size}`}
+                      getOptionLabel={(o) =>
+                        `${o.material} - ${SizeNameParse(o.size)}`
+                      }
                       onChange={onVariantChange}
                       valueEqualOption={(value, option) =>
                         value?.id === option.id
@@ -376,34 +361,15 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <Grid item xs={3}>
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.text.secondary}
-                    >
-                      Ngày hết hạn:
-                    </Typography>
+                    <Typography {...typoHeadStyle}>Ngày hết hạn:</Typography>
                   </Grid>
                   <Grid item xs={9}>
                     <CheckboxButtonGroup
-                      options={batchOptions}
+                      options={batchOptions ?? []}
                       value={batch}
-                      getOptionLabel={
-                        (batch) => {
-                          const label = new Date(batch.EXP).toLocaleString(
-                            'vi-VN',
-                            {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            }
-                          );
-
-                          return label;
-                        }
-                        // TODO: fix this formating
-                      }
+                      getOptionLabel={(batch) => {
+                        return formatDateString(batch?.exp);
+                      }}
                       onChange={onBatchChange}
                       valueEqualOption={(value, option) =>
                         value?.id === option.id
@@ -421,12 +387,7 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <Grid item xs={3}>
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.text.secondary}
-                    >
-                      Số lượng:
-                    </Typography>
+                    <Typography {...typoHeadStyle}>Số lượng:</Typography>
                   </Grid>
                   <Grid item xs={9}>
                     <NumberInputWithButtons
@@ -449,21 +410,17 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <Grid item xs={3}>
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.text.secondary}
-                    >
-                      Giá:
-                    </Typography>
+                    <Typography {...typoHeadStyle}>Giá:</Typography>
                   </Grid>
                   <Grid item xs={9}>
                     <Stack direction={'row'} gap={1}>
                       <Typography
+                        {...typoContentStyle}
                         sx={
                           itemDiscountPrice > 0
                             ? {
-                              textDecoration: 'line-through',
-                            }
+                                textDecoration: 'line-through',
+                              }
                             : {}
                         }
                       >
@@ -471,6 +428,7 @@ function ProductDetailInfo({
                       </Typography>
                       {itemDiscountPrice > 0 && (
                         <Typography
+                          {...typoContentStyle}
                           sx={{
                             color: theme.palette.secondary.main,
                           }}
@@ -491,15 +449,10 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <Grid item xs={3}>
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.text.secondary}
-                    >
-                      Tổng tiền:
-                    </Typography>
+                    <Typography {...typoHeadStyle}>Tổng tiền:</Typography>
                   </Grid>
                   <Grid item xs={9}>
-                    <Typography>
+                    <Typography {...typoContentStyle}>
                       {formatPrice(
                         discountTotalPrice > 0 ? discountTotalPrice : totalPrice
                       )}
@@ -518,9 +471,9 @@ function ProductDetailInfo({
                   alignItems={'start'}
                 >
                   <CustomButton
-                    onClick={() => onAddToCart()}
+                    onClick={() => handleAddToCart()}
                     sx={{
-                      py: 1.5,
+                      py: 1,
                       width: '100%',
                       borderRadius: '8px',
                     }}
@@ -584,3 +537,13 @@ function create(
 
   return result;
 }
+
+const typoContentStyle: TypographyProps = {
+  variant: 'body1',
+  fontWeight: 'regular',
+};
+
+const typoHeadStyle: TypographyProps = {
+  variant: 'body1',
+  color: 'text.secondary',
+};

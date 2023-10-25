@@ -14,28 +14,34 @@ import { useMemo, useState } from 'react';
 import FeedbackDialog from '../FeedbackDialog';
 import FeedbackItem from '../FeedbackItem';
 import ProductRating from '../ProductRating';
+import Feedback, { FeedbackTableRow } from '@/models/feedback';
+import { getUserByUid } from '@/lib/DAO/userDAO';
+import { createFeedback } from '@/lib/DAO/feedbackDAO';
+import { ProductDetail } from '@/models/product';
 
 function Feedbacks({
+  productDetail,
   userId,
   productId,
-  comments,
+  feedbacks,
 }: {
+  productDetail: ProductDetail | undefined;
   userId: string;
   productId: string;
-  comments: FeedbackObject[];
+  feedbacks: FeedbackTableRow[];
 }) {
   const theme = useTheme();
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const rating = useMemo(() => {
-    if (!comments || comments.length <= 0) return 0;
+    if (!feedbacks || feedbacks.length <= 0) return 0;
 
     return (
-      comments.reduce((total, comment) => total + comment.rating, 0) /
-      comments.length
+      feedbacks.reduce((total, comment) => total + comment.rating, 0) /
+      feedbacks.length
     );
-  }, [comments]);
+  }, [feedbacks]);
 
   const handleNewComment = () => {
     setDialogOpen(true);
@@ -47,15 +53,26 @@ function Feedbacks({
 
   const handleSubmitFeedback = async (rating: number, comment: string) => {
     try {
-      const newFeedback: FeedbackObject = {
+      const userUpload = await getUserByUid(userId);
+
+      if (!userUpload || !productDetail) {
+        return;
+      }
+      const newFeedback: Feedback = {
+        id: '',
         rating,
         comment,
-        time: new Date(),
         product_id: productId,
-        user_id: userId,
+        user_id: userUpload.id,
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
-      await addDocToFirestore(newFeedback, COLLECTION_NAME.FEEDBACKS);
+      await createFeedback(
+        productDetail.product_type_id,
+        productDetail.id,
+        newFeedback
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -85,8 +102,10 @@ function Feedbacks({
         <Grid item xs={12} md={8} lg={12}>
           <Box
             sx={{
-              bgcolor: theme.palette.primary.light,
-              py: 3,
+              backgroundColor: 'white',
+              border: 3,
+              borderColor: theme.palette.secondary.main,
+              py: 4,
               px: 4,
               borderRadius: '8px',
             }}
@@ -139,7 +158,7 @@ function Feedbacks({
                     <ProductRating
                       rating={rating}
                       size="large"
-                      numReviews={comments ? comments.length : 0}
+                      numReviews={feedbacks ? feedbacks.length : 0}
                     />
                   </Box>
                   <Button
@@ -151,12 +170,6 @@ function Feedbacks({
                     Thêm đánh giá
                   </Button>
                 </Box>
-              </Grid>
-              <Grid item xs={8}>
-                {/* <CheckboxButtonGroup
-                  object={starState}
-                  setObject={setStarState}
-                /> */}
               </Grid>
             </Grid>
           </Box>
@@ -171,10 +184,11 @@ function Feedbacks({
             spacing={2}
             sx={{
               px: 2,
+              pt: 2,
             }}
           >
-            {comments.map((comment, index) => (
-              <FeedbackItem key={index} value={comment} />
+            {feedbacks.map((feedback, index) => (
+              <FeedbackItem key={index} feedback={feedback} />
             ))}
           </Grid>
         </Grid>

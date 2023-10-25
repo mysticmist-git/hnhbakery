@@ -194,6 +194,14 @@ export async function updateFeedback(
   }
 }
 
+export async function createFeedback(
+  productTypeId: string,
+  productId: string,
+  data: Omit<Feedback, 'id'>
+): Promise<DocumentReference<Omit<Feedback, 'id'>>> {
+  return await addDoc(getFeedbacksRef(productTypeId, productId), data);
+}
+
 export async function deleteFeedback(
   productTypeId: string,
   productId: string,

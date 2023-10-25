@@ -7,8 +7,10 @@ import {
 import WithCreatedUpdated from './created_updated';
 import WithActive from './withActive';
 import WithId from './withId';
-import Variant from './variant';
-import Feedback from './feedback';
+import Variant, { VariantTableRow } from './variant';
+import Feedback, { FeedbackTableRow } from './feedback';
+import Color from './color';
+import { ProductTypeTableRow } from './productType';
 
 /**
  * Product
@@ -32,6 +34,13 @@ type Product = WithCreatedUpdated &
 type ProductTableRow = Product & {
   variants?: Variant[];
   feedbacks?: Feedback[];
+};
+
+type ProductDetail = Product & {
+  variants?: VariantTableRow[];
+  feedbacks?: FeedbackTableRow[];
+  colorObjects?: Color[];
+  productType?: ProductTypeTableRow;
 };
 
 const productConverter: FirestoreDataConverter<Product> = {
@@ -58,5 +67,5 @@ const productConverter: FirestoreDataConverter<Product> = {
 };
 
 export default Product;
-export type { Product, ProductTableRow };
+export type { Product, ProductTableRow, ProductDetail };
 export { productConverter };

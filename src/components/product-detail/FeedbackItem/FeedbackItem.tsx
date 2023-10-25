@@ -10,29 +10,22 @@ import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 import FeedbackImage from '../FeedbackImage';
 import ProductRating from '../ProductRating';
+import { FeedbackTableRow } from '@/models/feedback';
 
 const avatarHeight = '50px';
 
 const FeedbackItem = ({
   key,
-  value,
+  feedback,
 }: {
   key: React.Key;
-  value: FeedbackObject;
+  feedback: FeedbackTableRow;
 }) => {
   const theme = useTheme();
 
-  const [user, uLoading, uError] = useDocumentData<UserObject>(
-    value.user_id
-      ? doc(collection(db, COLLECTION_NAME.USERS), value.user_id).withConverter(
-          userConverter
-        )
-      : undefined
-  );
-
   const [image, iLoading, iError] = useDownloadURL(
-    user && user?.image && user?.image !== ''
-      ? ref(storage, user.image)
+    feedback.user && feedback.user.avatar !== ''
+      ? ref(storage, feedback.user.avatar)
       : undefined
   );
 
@@ -69,30 +62,31 @@ const FeedbackItem = ({
               }}
               color={theme.palette.common.black}
             >
-              {user?.name}
+              {feedback.user?.name}
             </Typography>
-            <ProductRating rating={value.rating} noNumReviews />
+            <ProductRating rating={feedback.rating} noNumReviews />
             <Typography
               variant="button"
               color={theme.palette.text.secondary}
               mt={1}
             >
-              {formatDateString(value.time)}
+              {formatDateString(feedback.created_at)}
             </Typography>
             <Typography
               variant="body2"
               color={theme.palette.common.black}
               mt={1}
             >
-              {value.comment}
+              {feedback.comment}
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12}>
           <Box
             sx={{
-              borderBottom: 1,
-              borderColor: theme.palette.text.secondary,
+              borderBottom: 0.5,
+              pt: 1.5,
+              borderColor: 'grey.400',
             }}
           ></Box>
         </Grid>

@@ -76,7 +76,7 @@ function CakeCard({
     >
       <CardActionArea
         LinkComponent={Link}
-        href={batch.product?.images[0] ?? ''}
+        href={`/product-detail?id=${batch.product?.id}` ?? ''}
         sx={{
           width: viewState == 'list' ? '50%' : '100%',
           height: viewState == 'list' ? imageHeightList : imageHeight,

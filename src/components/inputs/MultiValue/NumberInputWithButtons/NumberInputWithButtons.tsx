@@ -49,9 +49,9 @@ export default function NumberInputWithButtons({
   const style = useMemo(
     () => ({
       spacing: size === 'small' ? 0.5 : 1,
-      button_py: size === 'small' ? 0.5 : 1.5,
-      button_px: size === 'small' ? 0 : 3,
-      input_p: size === 'small' ? 0.5 : 1.5,
+      button_py: size === 'small' ? 0.5 : 0.5,
+      button_px: size === 'small' ? 0 : 1.5,
+      input_p: size === 'small' ? 0.5 : 0.5,
     }),
     [size]
   );

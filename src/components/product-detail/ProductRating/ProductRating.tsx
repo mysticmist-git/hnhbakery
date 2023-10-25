@@ -1,3 +1,4 @@
+import { StarOutlineRounded, StarRounded } from '@mui/icons-material';
 import {
   Box,
   Rating,
@@ -15,14 +16,16 @@ function ProductRating({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const sizeProps = isSmallScreen ? { size: 'small' } : { size };
+  const sizeProps = isSmallScreen ? { size: 'medium' } : { size };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
       <Rating
         value={Number.isNaN(rating) ? 0 : rating}
         sx={{ color: theme.palette.secondary.main }}
         precision={0.5}
+        icon={<StarRounded fontSize="medium" />}
+        emptyIcon={<StarOutlineRounded fontSize="medium" />}
         max={5}
         readOnly
         {...sizeProps}

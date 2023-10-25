@@ -158,16 +158,18 @@ const Payment = () => {
     );
 
     // Update batch soldQuantity
-    billDetails.forEach(async (item) => {
-      const batchRef = doc(
-        collection(db, COLLECTION_NAME.BATCHES),
-        item.batch_id
-      );
+    await Promise.all(
+      billDetails.map(async (item) => {
+        const batchRef = doc(
+          collection(db, COLLECTION_NAME.BATCHES),
+          item.batch_id
+        );
 
-      await updateDoc(batchRef, {
-        soldQuantity: increment(item.amount ?? 0),
-      });
-    });
+        await updateDoc(batchRef, {
+          soldQuantity: increment(item.amount ?? 0),
+        });
+      })
+    );
 
     return {
       billData: { ...billData, id: billRef.id },

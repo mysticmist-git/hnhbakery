@@ -1,3 +1,5 @@
+import { ProductTableRow } from '@/models/product';
+import ProductType from '@/models/productType';
 import { useMediaQuery, Typography, Grid, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
@@ -107,7 +109,7 @@ export default function CustomCardSlider(props: any) {
                   px={{ xs: 2, sm: 2, md: 4, lg: 8 }}
                 >
                   {listColumn.map(
-                    (_item: any, i: React.Key | null | undefined) =>
+                    (_item: ProductType, i: React.Key | null | undefined) =>
                       Object.keys(_item).length > 0 ? (
                         <Grid key={i} item xs={12 / listColumn.length}>
                           <Grid
@@ -124,7 +126,7 @@ export default function CustomCardSlider(props: any) {
                                 image: _item.image,
                                 name: _item.name,
                                 description: _item.description,
-                                href: _item.href,
+                                href: _item.id,
                               }}
                               buttonOnclick={buttonOnclick}
                             />
@@ -132,7 +134,7 @@ export default function CustomCardSlider(props: any) {
                         </Grid>
                       ) : (
                         <Grid key={i} item xs={12 / listColumn.length}></Grid>
-                      ),
+                      )
                   )}
                 </Grid>
               ))}

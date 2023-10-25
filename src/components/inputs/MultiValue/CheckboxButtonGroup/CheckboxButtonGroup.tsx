@@ -8,10 +8,10 @@ function CheckboxButtonGroup<T>({
   valueEqualOption,
 }: {
   options: T[];
-  value: T | null;
+  value: T | undefined;
   onChange: (newValue: T) => void;
   getOptionLabel: (option: T) => string;
-  valueEqualOption: (value: T | null, option: T) => boolean;
+  valueEqualOption: (value: T | undefined, option: T) => boolean;
 }) {
   const handleClick = (option: T) => {
     onChange(option);
@@ -41,9 +41,9 @@ function CheckboxButtonGroup<T>({
                 ? theme.palette.common.white
                 : theme.palette.secondary.main,
               transition: 'opacity 0.2s',
-              py: { md: 1.5, xs: 0.5 },
-              px: { md: 3, xs: 1 },
-              border: 3,
+              py: { md: 0.5, xs: 0.5 },
+              px: { md: 1.5, xs: 1 },
+              border: 0,
               borderColor: theme.palette.secondary.main,
               borderRadius: '8px',
               '&:hover': {

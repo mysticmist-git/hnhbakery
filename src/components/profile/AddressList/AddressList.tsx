@@ -57,9 +57,11 @@ export default function AddressList({
   const handleXacNhan = async () => {
     try {
       if (!checked.length && userData) {
-        checked.forEach(async (a: string) => {
-          await deleteAddress(userData.group_id, userData.id!, a);
-        });
+        await Promise.all(
+          checked.map(async (a: string) => {
+            await deleteAddress(userData.group_id, userData.id!, a);
+          })
+        );
         handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
         handleCloseXoaDiaChi();
       }

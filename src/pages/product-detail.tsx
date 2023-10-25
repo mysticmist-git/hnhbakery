@@ -7,6 +7,8 @@ import { CustomCard, CustomCardSlider } from '@/components/cards';
 import Feedbacks from '@/components/product-detail/Comments/Feedbacks';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
 import { auth, db } from '@/firebase/config';
+import { getProductDetail } from '@/lib/DAO/productDAO';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { CartItemFactory } from '@/lib/factories/CartItemFactory';
@@ -20,6 +22,10 @@ import {
 } from '@/lib/models';
 import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { AssembledProduct } from '@/lib/types/products';
+import Batch from '@/models/batch';
+import { ProductDetail } from '@/models/product';
+import ProductType from '@/models/productType';
+import { VariantTableRow } from '@/models/variant';
 import {
   Backdrop,
   Box,
@@ -38,7 +44,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
-const similiarProducts = [
+const similiarProductsSample = [
   {
     id: 1,
     image: banh1.src,
@@ -85,16 +91,35 @@ function ProductDetail() {
   // #endregion
 
   // #region States
-
   const [backdropOpen, setBackdropOpen] = useState<boolean>(false);
   const [user, loading, error] = useAuthState(auth);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    null
-  );
-  const [selectedBatch, setSelectedBatch] =
-    useState<BatchObjectWithDiscount | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsLoading] = useState<boolean>(false);
+
+  const [productDetail, setProductDetail] = useState<ProductDetail | undefined>(
+    undefined
+  );
+
+  const [similiarProducts, setSimiliarProducts] = useState<ProductType[]>([]);
+
+  const [selectedBatch, setSelectedBatch] = useState<Batch | undefined>(
+    undefined
+  );
+  function handleBatchChange(batch: Batch) {
+    setSelectedBatch(() => batch);
+  }
+
+  const [quantity, setQuantity] = useState<number>(1);
+  function handleQuantityChange(quantity: number) {
+    setQuantity(() => quantity);
+  }
+
+  const [selectedVariant, setSelectedVariant] = useState<
+    VariantTableRow | undefined
+  >(undefined);
+  function handleVariantChange(variant: VariantTableRow) {
+    setSelectedVariant(() => variant);
+  }
+
   const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
     'cart',
     {
@@ -113,12 +138,9 @@ function ProductDetail() {
       },
     }
   );
-
-  const [product, setProduct] = useState<AssembledProduct | null>(null);
+  // const [product, setProduct] = useState<AssembledProduct | null>(null);
 
   // #endregion
-
-  //#region Callbacks
 
   const handleAddToCart = useCallback(() => {
     setIsLoading(() => true);
@@ -128,7 +150,7 @@ function ProductDetail() {
       return;
     }
 
-    if (!product) {
+    if (!productDetail) {
       handleSnackbarAlert('error', 'Lỗi khi tải sản phẩm');
       return;
     }
@@ -184,7 +206,7 @@ function ProductDetail() {
     cart,
     handleSnackbarAlert,
     loading,
-    product,
+    productDetail,
     quantity,
     router,
     selectedBatch,
@@ -193,75 +215,63 @@ function ProductDetail() {
     user?.uid,
   ]);
 
-  //#endregion
+  const batchOptions: Batch[] = useMemo(() => {
+    if (!selectedVariant || !productDetail) return [];
 
-  //#region useMemo
-
-  const batchOptions: BatchObjectWithDiscount[] = useMemo(() => {
-    if (!selectedVariant || !product) return [];
-
-    const batches = product.batches.filter(
-      (b) => b.variant_id === selectedVariant.id
-    );
+    const batches =
+      productDetail.variants?.find((v) => v.id === selectedVariant.id)
+        ?.batcheObjects ?? [];
 
     return batches;
-  }, [product, selectedVariant]);
+  }, [productDetail, selectedVariant]);
 
-  const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
-    product
-      ? query(
-          collection(db, COLLECTION_NAME.FEEDBACKS),
-          where('product_id', '==', product.id)
-        ).withConverter(feedbackConverter)
-      : undefined,
-    {
-      initialValue: [],
-    }
-  );
+  // const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
+  //   product
+  //     ? query(
+  //         collection(db, COLLECTION_NAME.FEEDBACKS),
+  //         where('product_id', '==', product.id)
+  //       ).withConverter(feedbackConverter)
+  //     : undefined,
+  //   {
+  //     initialValue: [],
+  //   }
+  // );
 
-  const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
-    return {
-      product: product,
-      variant: selectedVariant,
-      onVariantChange: handleVariantChange,
-      batch: selectedBatch,
-      onBatchChange: handleBatchChange,
-      batchOptions: batchOptions,
-      quantity: quantity,
-      onQuantityChange: handleQuantityChange,
-      comments: feedbacks ?? [],
-      onAddToCart: handleAddToCart,
-    };
-  }, [
-    product,
-    selectedVariant,
-    selectedBatch,
-    batchOptions,
-    quantity,
-    feedbacks,
-    handleAddToCart,
-  ]);
-
-  //#endregion
-
-  //#region useEffects
+  // const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
+  //   return {
+  //     product: product,
+  //     variant: selectedVariant,
+  //     onVariantChange: handleVariantChange,
+  //     batch: selectedBatch,
+  //     onBatchChange: handleBatchChange,
+  //     batchOptions: batchOptions,
+  //     quantity: quantity,
+  //     onQuantityChange: handleQuantityChange,
+  //     comments: feedbacks ?? [],
+  //     onAddToCart: handleAddToCart,
+  //   };
+  // }, [
+  //   product,
+  //   selectedVariant,
+  //   selectedBatch,
+  //   batchOptions,
+  //   quantity,
+  //   feedbacks,
+  //   handleAddToCart,
+  // ]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const id = router.query.id;
+      const batch_id = router.query.id;
 
       try {
-        // Get product
-        const product = await getDocFromFirestore<ProductObject>(
-          COLLECTION_NAME.PRODUCTS,
-          id as string
+        const finalDetail = await getProductDetail(batch_id as string);
+        setSimiliarProducts(
+          (await getProductTypes()).filter(
+            (p) => p.id !== finalDetail?.product_type_id && p.active
+          )
         );
-
-        const assembledProduct = await assembleProduct(product);
-
-        console.log(assembledProduct);
-
-        setProduct(assembledProduct);
+        setProductDetail(finalDetail);
       } catch (error) {
         console.log(error);
         return {
@@ -275,16 +285,18 @@ function ProductDetail() {
     fetchData();
   }, [router.query.id]);
 
+  console.log(productDetail);
+
   useEffect(() => {
-    if (!product) {
-      setSelectedBatch(null);
+    if (!productDetail) {
+      setSelectedBatch(undefined);
 
       return;
     }
 
-    if (product.variants.length > 0)
-      setSelectedVariant(() => product.variants[0]);
-  }, [product, product?.variants]);
+    if (productDetail.variants && productDetail?.variants?.length > 0)
+      setSelectedVariant(productDetail.variants[0]);
+  }, [productDetail, productDetail?.variants]);
 
   useEffect(() => {
     if (batchOptions && batchOptions.length > 0) {
@@ -295,24 +307,6 @@ function ProductDetail() {
   useEffect(() => {
     setBackdropOpen(() => isAdding);
   }, [isAdding]);
-
-  //#endregion
-
-  //#region Handlers
-
-  function handleVariantChange(variant: ProductVariant) {
-    setSelectedVariant(() => variant);
-  }
-
-  function handleBatchChange(batch: BatchObjectWithDiscount) {
-    setSelectedBatch(() => batch);
-  }
-
-  function handleQuantityChange(quantity: number) {
-    setQuantity(() => quantity);
-  }
-
-  //#endregion
 
   return (
     <>
@@ -356,7 +350,7 @@ function ProductDetail() {
                     variant="h2"
                     color={theme.palette.primary.main}
                   >
-                    {product?.name ?? ''}
+                    {productDetail?.name ?? ''}
                   </Typography>
                 </Grid>
               </Grid>
@@ -374,19 +368,26 @@ function ProductDetail() {
             sx={{ pt: 8 }}
           >
             <Grid item xs={12}>
-              <ProductDetailInfo {...productDetailInfoProps} />
+              <ProductDetailInfo
+                productDetail={productDetail}
+                variant={selectedVariant}
+                onVariantChange={handleVariantChange}
+                batch={selectedBatch}
+                onBatchChange={handleBatchChange}
+                batchOptions={batchOptions}
+                quantity={quantity}
+                onQuantityChange={handleQuantityChange}
+                handleAddToCart={handleAddToCart}
+              />
             </Grid>
 
             <Grid item xs={12}>
-              {fLoading ? (
-                <div>Loading...</div>
-              ) : (
-                <Feedbacks
-                  userId={user?.uid ?? ''}
-                  productId={product?.id ?? ''}
-                  comments={feedbacks ?? []}
-                />
-              )}
+              <Feedbacks
+                productDetail={productDetail}
+                userId={user?.uid ?? ''}
+                productId={productDetail?.id ?? ''}
+                feedbacks={productDetail?.feedbacks ?? []}
+              />
             </Grid>
           </Grid>
         </Box>
@@ -398,7 +399,7 @@ function ProductDetail() {
             descriptionHeight="32px"
             CustomCard={CustomCard}
             title={'Sản phẩm tương tự'}
-            productList={similiarProducts}
+            productList={similiarProducts ?? similiarProductsSample}
           />
         </Box>
       </Box>

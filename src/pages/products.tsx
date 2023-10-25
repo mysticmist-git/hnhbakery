@@ -41,6 +41,7 @@ export type Filter = {
 const Products = () => {
   const theme = useTheme();
   const router = useRouter();
+
   const [batches, setBatches] = useState<BatchTableRow[]>([]);
   const [batchesDisplay, setBatchesDisplay] = useState<BatchTableRow[]>([]);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
@@ -111,6 +112,14 @@ const Products = () => {
       const finalBatches = await getAvailableBatches(true);
       setBatches(finalBatches);
       setBatchesDisplay(finalBatches);
+
+      const queryProductTypes = router.query.productType;
+      if (queryProductTypes !== '') {
+        setFilter({
+          ...filter,
+          productTypes_id: [queryProductTypes as string],
+        });
+      }
     }
     fetchData();
   }, []);
