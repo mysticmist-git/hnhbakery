@@ -114,7 +114,8 @@ const Products = () => {
       setBatchesDisplay(finalBatches);
 
       const queryProductTypes = router.query.productType;
-      if (queryProductTypes !== '') {
+
+      if (queryProductTypes && queryProductTypes !== '') {
         setFilter({
           ...filter,
           productTypes_id: [queryProductTypes as string],
