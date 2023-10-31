@@ -13,7 +13,7 @@ const Contact = () => {
   const theme = useTheme();
 
   return (
-    <Box>
+    <>
       <Box>
         <ImageBackground>
           <Grid
@@ -66,7 +66,7 @@ const Contact = () => {
           </Grid>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

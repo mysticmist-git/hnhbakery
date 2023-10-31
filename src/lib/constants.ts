@@ -33,6 +33,11 @@ export const COLLECTION_NAME = {
   SIZES: 'sizes',
   ADDRESSES: 'addresses',
   PAYMENT_METHODS: 'payment_methods',
+  BOOKING_ITEMS: 'booking_items',
+  CAKE_OCCASIONS: 'cake_occasions',
+  CAKE_BASES: 'cake_bases',
+  MODEL_3D: 'model_3d',
+  MODEL_TYPES: 'model_types',
   NONE: 'none',
 };
 
