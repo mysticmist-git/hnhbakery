@@ -75,6 +75,7 @@ export function deliveryStateContentParse(state: DeliveryState | undefined) {
     default:
       return 'Lỗi';
   }
+  return 'Lỗi';
 }
 
 export function deliveryStateColorParse(
