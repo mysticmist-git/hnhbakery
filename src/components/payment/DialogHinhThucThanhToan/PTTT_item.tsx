@@ -4,9 +4,10 @@ import tienmat from '@/assets/Decorate/tienmat.jpg';
 import vnpay from '@/assets/Decorate/vnpay.jpg';
 
 import { CustomIconButton } from '@/components/buttons';
-import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
+import { getPaymentMethods } from '@/lib/DAO/paymentMethodDAO';
+import useDownloadUrl from '@/lib/hooks/useDownloadUrl';
 import { PaymentObject } from '@/lib/models';
+import PaymentMethod from '@/models/paymentMethod';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
@@ -20,7 +21,6 @@ import {
   useTheme,
 } from '@mui/material';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 interface Props {
@@ -29,7 +29,13 @@ interface Props {
   paymentDescription: string;
 }
 
-function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
+function PTTT_item({
+  item,
+  onClick,
+}: {
+  item: PaymentMethod;
+  onClick: () => void;
+}) {
   const theme = useTheme();
   const { name, image } = item;
 
@@ -39,6 +45,9 @@ function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
   const handleImageLoad = () => {
     setIsLoading(false);
   };
+
+  const url = useDownloadUrl(image);
+  console.log(image, url);
 
   return (
     <Box
@@ -60,7 +69,7 @@ function PTTT_item({ item, onClick }: { item: any; onClick: () => void }) {
       <Box
         component={Image}
         fill={true}
-        src={image}
+        src={url}
         alt={name}
         sx={{
           objectFit: 'cover',
@@ -109,27 +118,15 @@ export default function DialogHinhThucThanhToan({
 
   // #region States
 
-  const [PTTTs, setPTTTs] = useState<PaymentObject[]>([]);
+  const [PTTTs, setPTTTs] = useState<PaymentMethod[]>([]);
 
   // #endregion
 
   useEffect(() => {
     const getPayments = async () => {
-      const payments = await getCollection<PaymentObject>(
-        COLLECTION_NAME.PAYMENTS
-      );
+      const payments = await getPaymentMethods();
 
-      for (const pttt of payments) {
-        if (pttt.name === 'VNPay') {
-          pttt.image = vnpay.src;
-        } else if (pttt.name === 'Momo') {
-          pttt.image = momo.src;
-        } else {
-          pttt.image = tienmat.src;
-        }
-      }
-
-      setPTTTs(() => [...payments]);
+      setPTTTs(payments);
     };
 
     getPayments();
@@ -185,7 +182,7 @@ export default function DialogHinhThucThanhToan({
             alignItems="center"
             spacing={2}
           >
-            {PTTTs.map((item: PaymentObject, index: number) => (
+            {PTTTs.map((item, index) => (
               <Grid item key={index} xs={12}>
                 <PTTT_item
                   item={item}

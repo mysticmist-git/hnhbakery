@@ -41,7 +41,6 @@ const Payment = () => {
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
-  const [firstTime, setFirstTime] = useState(true);
   const [cartNote, setCartNote] = useCartNote();
 
   const [saleAmount, setSaleAmount] = useState(0);
@@ -88,11 +87,10 @@ const Payment = () => {
   }, [billPrice, saleAmount, shippingFee]);
 
   useEffect(() => {
-    if (cart && firstTime) {
+    if (cart) {
       reloadAssembledCartItems(cart);
-      setFirstTime(false);
     }
-  }, [cart, firstTime, reloadAssembledCartItems]);
+  }, [cart, reloadAssembledCartItems]);
 
   // #endregion
 

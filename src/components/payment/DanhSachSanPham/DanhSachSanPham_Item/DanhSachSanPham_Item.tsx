@@ -199,7 +199,7 @@ function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {formatDateString(item.batch?.MFG ?? new Date())}
+                  {formatDateString(item.batch?.mfg ?? new Date())}
                 </Typography>
               </Box>
             </Grid>
@@ -226,7 +226,7 @@ function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {formatDateString(item.batch?.EXP ?? new Date())}
+                  {formatDateString(item.batch?.exp ?? new Date())}
                 </Typography>
               </Box>
             </Grid>
