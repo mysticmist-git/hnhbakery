@@ -59,8 +59,8 @@ function UploadStepperComponent({
       ),
     },
     {
-      label: ' ảnh',
-      content: <>Bước 2</>,
+      label: 'Tiến hành đặt bánh',
+      content: <></>,
     },
   ];
 
@@ -127,7 +127,7 @@ function UploadStepperComponent({
                       sx={{ mt: 1, mr: 1 }}
                     >
                       {index === uploadImageStepper.length - 1
-                        ? 'Hoàn tất'
+                        ? 'Thông tin giao hàng'
                         : 'Tiếp tục'}
                     </Button>
                     <Button

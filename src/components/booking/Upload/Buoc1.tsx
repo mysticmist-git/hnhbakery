@@ -35,7 +35,7 @@ export function Buoc1({
               key={index}
               sx={{
                 m: 1,
-                width: 148,
+                width: 248,
                 aspectRatio: '1',
               }}
             >
@@ -92,7 +92,7 @@ export function Buoc1({
           <Box
             sx={{
               m: 1,
-              width: 148,
+              width: 248,
               aspectRatio: '1',
             }}
           >
