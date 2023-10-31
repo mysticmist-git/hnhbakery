@@ -27,7 +27,7 @@ function useNumberCounter(
 
   useEffect(() => {
     if (max < value) {
-      setValue(() => max);
+      setValue(max);
     }
   }, [max, value]);
 

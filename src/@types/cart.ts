@@ -1,11 +1,7 @@
-import {
-  BatchObject,
-  ProductObject,
-  ProductObjectWithURLs,
-  ProductVariant,
-} from '@/lib/models';
-import { FromObjectable, Prototype } from '@/utils/prototype';
-import { ClosedCaptionDisabledTwoTone } from '@mui/icons-material';
+import Batch from '@/models/batch';
+import Product from '@/models/product';
+import Variant from '@/models/variant';
+import { Prototype } from '@/utils/prototype';
 import { nanoid } from 'nanoid';
 
 export class CartItem implements Prototype {
@@ -14,12 +10,13 @@ export class CartItem implements Prototype {
   private _batchId: string = '';
   private _quantity: number = 0;
 
-  constructor(userId: string, batchId: string, quantity: number, id?: string) {
-    if (id) {
-      this._id = id;
-    } else {
-      this._id = nanoid(4);
-    }
+  constructor(
+    userId: string,
+    batchId: string,
+    quantity: number,
+    id: string = nanoid(4)
+  ) {
+    this._id = id;
     this._userId = userId;
     this._batchId = batchId;
     this._quantity = quantity;
@@ -69,9 +66,9 @@ export class CartItem implements Prototype {
 export class AssembledCartItem extends CartItem {
   private _href: string = '';
   private _image: string = '';
-  private _batch: BatchObject | null = null;
-  private _variant: ProductVariant | null = null;
-  private _product: ProductObject | null = null;
+  private _batch: Batch | null = null;
+  private _variant: Variant | null = null;
+  private _product: Product | null = null;
   private _discounted: boolean = false;
   private _discountAmount: number = 0;
 
@@ -96,22 +93,22 @@ export class AssembledCartItem extends CartItem {
   public set image(value: string) {
     this._image = value;
   }
-  public get batch(): BatchObject | null {
+  public get batch(): Batch | null {
     return this._batch;
   }
-  public set batch(value: BatchObject | null) {
+  public set batch(value: Batch | null) {
     this._batch = value;
   }
-  public get variant(): ProductVariant | null {
+  public get variant(): Variant | null {
     return this._variant;
   }
-  public set variant(value: ProductVariant | null) {
+  public set variant(value: Variant | null) {
     this._variant = value;
   }
-  public get product(): ProductObject | null {
+  public get product(): Product | null {
     return this._product;
   }
-  public set product(value: ProductObject | null) {
+  public set product(value: Product | null) {
     this._product = value;
   }
   public get discounted(): boolean {
@@ -131,7 +128,7 @@ export class AssembledCartItem extends CartItem {
   }
 
   getRawItem() {
-    return new CartItem(this.userId, this.batchId, this.quantity);
+    return new CartItem(this.userId, this.batchId, this.quantity, this.id);
   }
 
   clone(): AssembledCartItem {

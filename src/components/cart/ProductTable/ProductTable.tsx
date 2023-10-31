@@ -15,6 +15,7 @@ import {
   useTheme,
 } from '@mui/material';
 import Image from 'next/image';
+import { useCallback } from 'react';
 import UI_Delete from '../UI_Delete';
 import UI_Name from '../UI_Name';
 import UI_Price from '../UI_Price';
@@ -45,23 +46,25 @@ function ProductTable({ items, onChange }: ProductTableProps) {
   const theme = useTheme();
   const imageHeight = '25vh';
 
-  const handleDeleteRow = (id: string) => {
-    console.log(id);
-    onChange(items.filter((item) => item.id !== id));
-  };
+  const handleDeleteRow = useCallback(
+    (id: string) => {
+      onChange(items.filter((item) => item.id !== id));
+    },
+    [items, onChange]
+  );
 
-  function handleQuantityChange(
-    quantity: number,
-    changeItem: AssembledCartItem
-  ) {
-    onChange(
-      items.map((i) => {
-        if (i.id === changeItem.id) i.quantity = quantity;
+  const handleQuantityChange = useCallback(
+    (quantity: number, changeItem: AssembledCartItem) => {
+      onChange(
+        items.map((i) => {
+          if (i.id === changeItem.id) i.quantity = quantity;
 
-        return i;
-      })
-    );
-  }
+          return i;
+        })
+      );
+    },
+    [items, onChange]
+  );
 
   return (
     <>
@@ -164,7 +167,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                         color={theme.palette.text.secondary}
                       >
                         Hết hạn:{' '}
-                        {formatDateString(item.batch?.EXP ?? new Date())}
+                        {formatDateString(item.batch?.exp ?? new Date())}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -181,12 +184,10 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                     value={item.quantity}
                     min={1}
                     max={resolveBatchMax(
-                      item.batch?.totalQuantity,
-                      item.batch?.soldQuantity
+                      item.batch?.quantity,
+                      item.batch?.sold
                     )}
-                    onChange={(quantity: number) =>
-                      handleQuantityChange(quantity, item)
-                    }
+                    onChange={(value) => handleQuantityChange(value, item)}
                     justifyContent={'center'}
                   />
                 </TableCell>
@@ -293,8 +294,8 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                         value={item.quantity}
                         min={1}
                         max={resolveBatchMax(
-                          item.batch?.totalQuantity,
-                          item.batch?.soldQuantity
+                          item.batch?.quantity,
+                          item.batch?.sold
                         )}
                         onChange={(quantity: number) =>
                           handleQuantityChange(quantity, item)

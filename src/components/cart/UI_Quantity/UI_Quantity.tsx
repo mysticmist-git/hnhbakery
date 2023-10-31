@@ -15,15 +15,13 @@ export default function UI_Quantity({
   justifyContent: any;
 }) {
   return (
-    <>
-      <NumberInputWithButtons
-        value={value}
-        min={min}
-        max={max}
-        justifyContent={justifyContent}
-        size="small"
-        onChange={onChange}
-      />
-    </>
+    <NumberInputWithButtons
+      value={value}
+      min={min}
+      max={max}
+      justifyContent={justifyContent}
+      size="small"
+      onChange={onChange}
+    />
   );
 }

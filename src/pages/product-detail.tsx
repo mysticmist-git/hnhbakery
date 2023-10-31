@@ -6,22 +6,12 @@ import ImageBackground from '@/components/Imagebackground';
 import { CustomCard, CustomCardSlider } from '@/components/cards';
 import Feedbacks from '@/components/product-detail/Comments/Feedbacks';
 import ProductDetailInfo from '@/components/product-detail/ProductDetailInfo';
-import { auth, db } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import { getProductDetail } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { CartItemFactory } from '@/lib/factories/CartItemFactory';
-import { assembleProduct, getDocFromFirestore } from '@/lib/firestore';
-import {
-  BatchObjectWithDiscount,
-  FeedbackObject,
-  ProductObject,
-  ProductVariant,
-  feedbackConverter,
-} from '@/lib/models';
-import { ProductDetailInfoProps } from '@/lib/types/product-detail';
-import { AssembledProduct } from '@/lib/types/products';
+import useCartItems from '@/lib/hooks/useCartItems';
 import Batch from '@/models/batch';
 import { ProductDetail } from '@/models/product';
 import ProductType from '@/models/productType';
@@ -34,16 +24,15 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { isTimeView } from '@mui/x-date-pickers/internals/utils/time-utils';
 import { useLocalStorageValue } from '@react-hookz/web';
-import { collection, query, where } from 'firebase/firestore';
-import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
 
+/**
+ * Similiar products mock data
+ */
 const similiarProductsSample = [
   {
     id: 1,
@@ -91,6 +80,7 @@ function ProductDetail() {
   // #endregion
 
   // #region States
+
   const [backdropOpen, setBackdropOpen] = useState<boolean>(false);
   const [user, loading, error] = useAuthState(auth);
   const [isAdding, setIsLoading] = useState<boolean>(false);
@@ -104,6 +94,7 @@ function ProductDetail() {
   const [selectedBatch, setSelectedBatch] = useState<Batch | undefined>(
     undefined
   );
+
   function handleBatchChange(batch: Batch) {
     setSelectedBatch(() => batch);
   }
@@ -120,30 +111,14 @@ function ProductDetail() {
     setSelectedVariant(() => variant);
   }
 
-  const { value: cart, set: setCart } = useLocalStorageValue<CartItem[]>(
-    'cart',
-    {
-      defaultValue: [],
-      initializeWithValue: false,
-      parse(str, fallback) {
-        if (!str) return fallback;
+  const [cart, setCart] = useCartItems();
 
-        const value: any[] = JSON.parse(str);
-        const items = value.map(
-          (item) =>
-            new CartItem(item._userId, item._batchId, item._quantity, item._id)
-        );
-
-        return items;
-      },
-    }
-  );
   // const [product, setProduct] = useState<AssembledProduct | null>(null);
 
   // #endregion
 
   const handleAddToCart = useCallback(() => {
-    setIsLoading(() => true);
+    setIsLoading(true);
 
     if (loading) {
       handleSnackbarAlert('error', 'Đang tải người dùng');
@@ -177,14 +152,14 @@ function ProductDetail() {
     console.log(clonedCart);
     console.log(selectedBatch.id);
 
-    const duplicateItem = clonedCart.find(
+    const duplicatedItem = clonedCart.find(
       (item) => item.batchId === selectedBatch.id
     );
 
-    console.log(duplicateItem);
+    console.log(duplicatedItem);
 
-    if (duplicateItem) {
-      duplicateItem.quantity = duplicateItem.quantity + quantity;
+    if (duplicatedItem) {
+      duplicatedItem.quantity = duplicatedItem.quantity + quantity;
     } else {
       const cartItem: CartItem = factory.create(
         user?.uid ?? '',

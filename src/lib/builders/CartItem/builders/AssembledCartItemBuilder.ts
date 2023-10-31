@@ -1,14 +1,7 @@
 import { AssembledCartItem, CartItem } from '@/@types/cart';
-import { COLLECTION_NAME } from '@/lib/constants';
-import {
-  getDocFromFirestore,
-  getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore';
-import {
-  BatchObject,
-  ProductObject,
-  ProductObjectWithURLs,
-} from '@/lib/models';
+import { getBatchById } from '@/lib/DAO/batchDAO';
+import { getProduct } from '@/lib/DAO/productDAO';
+import { getVariant } from '@/lib/DAO/variantDAO';
 
 class AssembledCartItemBuilder {
   private _item: AssembledCartItem | null = null;
@@ -21,8 +14,8 @@ class AssembledCartItemBuilder {
     if (!this._item) throw new Error('Item not found');
 
     try {
-      const batch = await getBatch(this._item.batchId);
-      this._item.batch = batch;
+      const batch = await getBatchById(this._item.batchId);
+      this._item.batch = batch ?? null;
     } catch (error) {
       console.log(error);
       throw error;
@@ -38,7 +31,7 @@ class AssembledCartItemBuilder {
 
     if (!this._item.batch) throw new Error('Batch not found');
 
-    if (new Date(this._item.batch.discount.date).getTime() < Date.now()) {
+    if (new Date(this._item.batch.discount.start_at).getTime() < Date.now()) {
       this._item.discounted = true;
 
       if (this._item.variant) {
@@ -58,17 +51,13 @@ class AssembledCartItemBuilder {
     if (!this._item.batch) throw new Error('Batch not found');
 
     try {
-      const product = await getDocFromFirestore<ProductObject>(
-        COLLECTION_NAME.PRODUCTS,
+      const product = await getProduct(
+        this._item.batch.product_type_id,
         this._item.batch.product_id
       );
 
-      this._item.product = product;
-      const image =
-        product.images.length ?? 0
-          ? await getDownloadUrlFromFirebaseStorage(product.images[0])
-          : '';
-      this._item.image = image;
+      this._item.product = product ?? null;
+      this._item.image = product?.images[0] ?? '';
     } catch (error) {
       console.log(error);
       throw error;
@@ -80,14 +69,21 @@ class AssembledCartItemBuilder {
   async fetchVariant(): Promise<AssembledCartItemBuilder> {
     if (!this._item) throw new Error('Item not found');
 
+    if (!this._item.batch) await this.fetchBatch();
+
+    if (!this._item.batch) throw new Error('Batch not found');
+
     if (!this._item.product) await this.fetchProduct();
 
     if (!this._item.product) throw new Error('Product not found');
 
-    this._item.variant =
-      this._item.product.variants.find(
-        (v) => v.id === this._item?.batch?.variant_id
-      ) ?? null;
+    const variant = await getVariant(
+      this._item.product?.product_type_id,
+      this._item.product.id,
+      this._item.batch.variant_id
+    );
+
+    this._item.variant = variant ?? null;
 
     return this;
   }

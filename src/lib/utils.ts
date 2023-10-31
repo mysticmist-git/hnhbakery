@@ -21,25 +21,26 @@ export function createProductTypeObject(source: BaseModel): ProductType {
 }
 
 // TODO: move this to lib.
-// export function createBatchObject(source: BaseModel): Batch {
-//   const convertedSourcee = { ...source } as Batch;
+export function createBatchObject(source: BaseModel): Batch {
+  const convertedSourcee = { ...source } as Batch;
 
-//   const batchObject: Batch = {
-//     id: convertedSourcee.id,
-//     quantity: convertedSourcee.quantity,
-//     sold: convertedSourcee.sold,
-//     mfg: convertedSourcee.mfg,
-//     exp: convertedSourcee.exp,
-//     discount: convertedSourcee.discount,
-//     variant_id: convertedSourcee.variant_id,
-//     product_id: convertedSourcee.product_id,
-//     product_type_id: convertedSourcee.product_type_id,
-//     created_at: convertedSourcee.created_at,
-//     updated_at: convertedSourcee.updated_at,
-//   };
+  const batchObject: Batch = {
+    id: convertedSourcee.id,
+    quantity: convertedSourcee.quantity,
+    sold: convertedSourcee.sold,
+    mfg: convertedSourcee.mfg,
+    exp: convertedSourcee.exp,
+    discount: convertedSourcee.discount,
+    variant_id: convertedSourcee.variant_id,
+    product_id: convertedSourcee.product_id,
+    product_type_id: convertedSourcee.product_type_id,
+    branch_id: convertedSourcee.branch_id,
+    created_at: convertedSourcee.created_at,
+    updated_at: convertedSourcee.updated_at,
+  };
 
-//   return batchObject;
-// }
+  return batchObject;
+}
 
 // TODO: move this to lib.
 export function createProductObject(source: BaseModel): Product {

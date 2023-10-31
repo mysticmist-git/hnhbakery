@@ -1,4 +1,3 @@
-import { COLLECTION_NAME } from '@/lib/constants';
 import {
   BaseModel,
   ModalProduct,
@@ -27,11 +26,9 @@ import {
 } from '../DAO/productTypeDAO';
 import { createVariant, getVariant } from '../DAO/variantDAO';
 import {
-  addDocToFirestore,
   deleteImageFromFirebaseStorage,
   deleteImagesFromFirebaseStorage,
   getDownloadUrlFromFirebaseStorage,
-  updateDocToFirestore,
   uploadImageToFirebaseStorage,
   uploadImagesToFirebaseStorage,
 } from '../firestore';

@@ -8,7 +8,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 // Button component to avoid code duplication
 function Button({ onClick, children, style }: any) {
@@ -71,7 +71,8 @@ export default function NumberInputWithButtons({
 
   useEffect(() => {
     if (onChange) onChange(value);
-  }, [onChange, value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   function handleOnBlur() {
     if (value < min) {
