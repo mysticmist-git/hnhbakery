@@ -16,6 +16,23 @@ export default class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap"
           />
+          <style>{`
+            ::-webkit-scrollbar {
+              width: 4px;
+            }
+
+            ::-webkit-scrollbar-track {
+              background: #c8c8c8;
+            }
+
+            ::-webkit-scrollbar-thumb {
+              background: #810000;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+              background: #555;
+            }
+          `}</style>
         </Head>
         <body>
           <Main />
