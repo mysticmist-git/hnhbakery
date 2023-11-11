@@ -109,6 +109,7 @@ function Home() {
         }}
       >
         <Box
+          component={'div'}
           sx={{
             backgroundImage: `url(${bg2.src})`,
             backgroundRepeat: 'no-repeat',
@@ -118,6 +119,7 @@ function Home() {
           }}
         >
           <Box
+            component={'div'}
             sx={{
               backgroundColor: alpha(theme.palette.primary.main, 0.85),
               backdropFilter: 'blur(1px)',
@@ -125,6 +127,7 @@ function Home() {
           >
             <TopSlideInDiv>
               <Box
+                component={'div'}
                 sx={{
                   overflow: 'hidden',
                   position: 'relative',
@@ -140,6 +143,7 @@ function Home() {
             <BottomSlideInDiv>
               <FadeDiv>
                 <Box
+                  component={'div'}
                   sx={{
                     py: 8,
                     display: 'flex',
@@ -168,6 +172,7 @@ function Home() {
               <FadeDiv>
                 <DashUpWhite />
                 <Box
+                  component={'div'}
                   sx={{
                     pb: 8,
                     px: { xs: 2, sm: 2, md: 4, lg: 8 },
@@ -185,6 +190,7 @@ function Home() {
 
               <FadeDiv>
                 <Box
+                  component={'div'}
                   sx={{
                     background: `linear-gradient(to bottom,${alpha(
                       theme.palette.primary.main,

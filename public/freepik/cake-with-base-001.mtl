@@ -1,0 +1,29 @@
+# MTL written from C:\Users\USUARIO\Desktop\MIGRACIÓN DE MODELOS\1.MODELOS\cake-with-base-001\cake-with-base-001.obj
+newmtl base
+Kd 0.48 0.48 0.48
+Ns 181.019
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.04 0.04 0.04
+newmtl base_cake
+Kd 0.48 0.48 0.48
+Ns 181.019
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.04 0.04 0.04
+newmtl cake
+Kd 0.48 0.48 0.48
+Ns 181.019
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.04 0.04 0.04
+newmtl cream
+Kd 0.48 0.48 0.48
+Ns 181.019
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.04 0.04 0.04
