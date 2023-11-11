@@ -74,7 +74,10 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
+    "next-compose-plugins": "^2.2.1",
+    "next-images": "^1.8.5",
     "prettier": "^2.8.8",
+    "raw-loader": "^4.0.2",
     "typescript": "latest"
   }
 }
