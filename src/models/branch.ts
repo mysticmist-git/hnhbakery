@@ -6,9 +6,9 @@ import {
   WithFieldValue,
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
-import WithId from './withId';
 import User from './user';
 import WithActive from './withActive';
+import WithId from './withId';
 
 /**
  * A branch;
@@ -20,6 +20,7 @@ type Branch = WithCreatedUpdated &
     address: string;
     manager_id: string;
     group_id: string;
+    province_id: string;
     name: string;
   };
 
@@ -50,5 +51,5 @@ const branchConverter: FirestoreDataConverter<Branch> = {
 };
 
 export default Branch;
-export type { Branch, BranchTableRow };
 export { branchConverter };
+export type { Branch, BranchTableRow };
