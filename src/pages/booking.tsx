@@ -1,6 +1,8 @@
 import ImageBackground from '@/components/Imagebackground';
 import BookingTabs from '@/components/booking/BookingTabs';
-import TESTMODEL from '@/components/booking/Design/Model3D';
+import EditModel from '@/components/booking/Design/EditModel';
+import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
+import { createModel3DItem } from '@/components/booking/Design/Utils';
 import UploadStepperComponent from '@/components/booking/Upload/UploadStepperComponent';
 import BookingItem from '@/models/bookingItem';
 
@@ -14,8 +16,45 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useThree } from '@react-three/fiber';
-import { useState } from 'react';
+import { RootState, useThree } from '@react-three/fiber';
+import path from 'path';
+import { createContext, useEffect, useState } from 'react';
+import { Group, Object3DEventMap, Vector3 } from 'three';
+
+export type Model3DPropsType =
+  | 'path'
+  | 'children'
+  | 'textures'
+  | 'scale'
+  | 'planeId'
+  | 'rotation'
+  | 'box3';
+
+export type Model3DProps = {
+  path: string;
+  children?: string[];
+  textures?: { name: string; path: string }[];
+  scale?: number;
+  planeId?: ActiveDrag;
+  rotation?: [number, number, number];
+  box3?: {
+    min: Vector3;
+    max: Vector3;
+  };
+};
+
+export type Model3DContextType = {
+  array: Model3DProps[];
+  editIndex: number;
+  handleChangeContext?: (type: string, value: any, index?: number) => void;
+};
+
+export const Model3DContext = createContext<Model3DContextType>({
+  array: [],
+  editIndex: -1,
+  handleChangeContext: () => {},
+});
+
 const Booking = () => {
   const theme = useTheme();
 
@@ -62,12 +101,64 @@ const Booking = () => {
   }
   //#endregion
 
-  // console.log(bookingItem);
-
+  //#region screenshot
   const [screenShot, setScreenShot] = useState<string>('2');
-  const [canvas, setCanvas] = useState<any>();
+  const [canvas, setCanvas] = useState<RootState>();
+  //#endregion
 
-  if (canvas) console.log(canvas.camera.position);
+  //#region 3D
+
+  const [model3DContext, setArrayModel3D] = useState<Model3DContextType>({
+    array: [
+      createModel3DItem({
+        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
+        textures: [
+          {
+            name: 'Dâu',
+            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fstrawberry.png?alt=media&token=4595f126-25a7-4a9c-a6de-a5b55b67593f',
+          },
+        ],
+      }),
+      createModel3DItem({
+        path: '/freepik/cupcake-topper.obj',
+        textures: [
+          {
+            name: 'Dâu',
+            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fstrawberry.png?alt=media&token=4595f126-25a7-4a9c-a6de-a5b55b67593f',
+          },
+          {
+            name: 'Vani',
+            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fvani.png?alt=media&token=12ff1884-9366-4113-b8cb-a19af6607808',
+          },
+        ],
+        scale: 0.7,
+        planeId: { id: 2 },
+      }),
+    ],
+    editIndex: 0,
+  });
+
+  function handleChangeContext(type: string, value: any, index?: number) {
+    if (type === 'array') {
+      if (index !== undefined) {
+        setArrayModel3D((prev) => {
+          const newArray = [...prev.array];
+          newArray[index] = value;
+
+          return {
+            ...prev,
+            array: newArray,
+          };
+        });
+      }
+    } else if (type === 'editIndex') {
+      setArrayModel3D({ ...model3DContext, [type]: value });
+    }
+  }
+
+  //#endregion
+
+  console.log(model3DContext.array);
 
   return (
     <>
@@ -147,71 +238,95 @@ const Booking = () => {
 
             {tabIndex === 1 && (
               <>
-                <Grid item xs={12} lg={3}>
-                  <Box
-                    component={'div'}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      minHeight: '80vh',
-                      backgroundColor: 'grey.200',
-                      border: 3,
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      borderColor: 'secondary.main',
-                    }}
-                  >
+                <Model3DContext.Provider
+                  value={{
+                    ...model3DContext,
+                    handleChangeContext: handleChangeContext,
+                  }}
+                >
+                  <Grid item xs={12} lg={3}>
                     <Box
-                      component={'img'}
-                      src={screenShot}
-                      alt={screenShot}
+                      component={'div'}
                       sx={{
                         width: '100%',
-
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                      }}
-                    />
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={async () => {
-                        if (canvas) {
-                          canvas.camera.position.set(0, 0, 2.5);
-                        }
+                        height: '100%',
+                        minHeight: '80vh',
+                        backgroundColor: 'grey.200',
+                        border: 3,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        borderColor: 'secondary.main',
                       }}
                     >
-                      Nhìn thẳng
-                    </Button>
+                      <Box
+                        component={'img'}
+                        src={screenShot}
+                        alt={screenShot}
+                        sx={{
+                          width: '100%',
 
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={async () => {
-                        if (canvas) {
-                          setScreenShot(canvas.gl.domElement.toDataURL());
-                        }
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                          if (canvas) {
+                            canvas.camera.position.set(0, 0, 2.5);
+                          }
+                        }}
+                      >
+                        Nhìn thẳng
+                      </Button>
+
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                          if (canvas) {
+                            setScreenShot(canvas.gl.domElement.toDataURL());
+                          }
+                        }}
+                      >
+                        Bấm
+                      </Button>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} lg={6}>
+                    <Box
+                      component={'div'}
+                      sx={{
+                        height: '100%',
+                        width: '100%',
+                        border: 3,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        borderColor: 'secondary.main',
                       }}
                     >
-                      Bấm
-                    </Button>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} lg={true}>
-                  <Box
-                    component={'div'}
-                    sx={{
-                      height: '100%',
-                      width: '100%',
-                      border: 3,
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      borderColor: 'secondary.main',
-                    }}
-                  >
-                    <TESTMODEL setCanvas={setCanvas} />
-                  </Box>
-                </Grid>
+                      <Canvas3D setCanvas={setCanvas} />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} lg={3}>
+                    <Box
+                      component={'div'}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '80vh',
+                        backgroundColor: 'white',
+                        border: 3,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        borderColor: 'secondary.main',
+                      }}
+                    >
+                      <EditModel />
+                    </Box>
+                  </Grid>
+                </Model3DContext.Provider>
               </>
             )}
           </Grid>

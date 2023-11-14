@@ -11,7 +11,7 @@ function Backdrop() {
       alphaTest={0.25}
       //   scale={10}
       rotation={[Math.PI / 2, 0, 0]}
-      position={[0, 0, -1]}
+      position={[0, 0, -1.5]}
     >
       <RandomizedLight
         amount={4}

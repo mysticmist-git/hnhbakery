@@ -1,132 +1,170 @@
-import { Suspense, useEffect, useRef, useState } from 'react';
-import { Canvas, ThreeElements, useLoader, useThree } from '@react-three/fiber';
-import { Box } from '@mui/material';
-import THREE, { Box3, MeshStandardMaterial, Vector3 } from 'three';
+import {
+  Suspense,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { Canvas, RootState, useLoader } from '@react-three/fiber';
+import {
+  Box3,
+  Group,
+  MeshStandardMaterial,
+  Object3DEventMap,
+  Texture,
+  Vector3,
+} from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import {
   Center,
   Environment,
   useTexture,
-  Text,
   OrbitControls,
 } from '@react-three/drei';
-import CameraRig from './CameraRig';
 import Backdrop from './Backdrop';
+import React from 'react';
+import GridBoudingBox from './GridBoudingBox';
+import GroupDecor from './Decor/GroupDecor';
+import { Model3DContext, Model3DProps } from '@/pages/booking';
+import { getDownloadURL, ref } from 'firebase/storage';
+import { storage } from '@/firebase/config';
 
-const colors = ['red', 'blue', 'green', 'purple'];
+// -1 = none
+// 0 = mặt trước
+// 1 = mặt sau
+// 2 = mặt trên
+// 3 = mặt dưới
+// 4 = mặt phải
+// 5 = mặt trái
 
-function BoxModel3D({ props }: { props?: ThreeElements['mesh'] }) {
-  const decor1 = useLoader(OBJLoader, '/freepik/cupcake-topper.obj');
-  const decor2 = useLoader(OBJLoader, '/freepik/cake-pop-with-tag-001.obj');
+export type ActiveDrag = {
+  id: -1 | 0 | 1 | 2 | 3 | 4 | 5;
+};
 
-  const cake = useLoader(OBJLoader, '/freepik/cake-002.obj');
-  // const cake = useLoader(
-  //   OBJLoader,
-  //   'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-001.obj?alt=media&token=b8035f02-67e2-4eae-b1b8-90aaeaf4d44c'
-  // );
+export function Primitive({
+  index,
+  handleCakeBoudingChange,
+}: {
+  index: number;
+  handleCakeBoudingChange?: (value: Box3) => void;
+}) {
+  const { array: arrayModel, handleChangeContext } = useContext(Model3DContext);
+  const { path, textures } = arrayModel[index];
 
-  const [strawberry, vani] = useTexture([
-    '/freepik/textures/strawberry.png',
-    '/freepik/textures/vani.png',
-  ]);
+  let loader = useLoader(OBJLoader, path);
 
-  console.log(decor1.children);
-
-  console.log(
-    new MeshStandardMaterial({
-      map: vani,
-    })
-  );
-
-  decor1.children.forEach((mesh: any, i) => {
-    mesh.material = new MeshStandardMaterial({
-      map: i % 2 === 0 ? vani : strawberry,
+  if (textures) {
+    let texturesLoaded = useTexture(textures.map((item) => item.path));
+    loader.children.forEach((mesh: any, i) => {
+      if (texturesLoaded[i]) {
+        mesh.material = new MeshStandardMaterial({
+          map: texturesLoaded[i],
+        });
+      } else {
+        mesh.material = new MeshStandardMaterial({
+          color: 'white',
+        });
+      }
     });
-    // mesh.material = new MeshBasicMaterial({
-    //   color: colors[i],
-    // });
-  });
+  }
 
-  decor2.children.forEach((mesh: any, i) => {
-    mesh.material = new MeshStandardMaterial({
-      map: i % 2 !== 0 ? vani : strawberry,
-    });
-    // mesh.material = new MeshBasicMaterial({
-    //   color: colors[i],
-    // });
-  });
+  // useEffect(() => {
+  //   if (!texturesLoaded) {
+  //     return;
+  //   }
+  //   console.log(texturesLoaded);
 
-  cake.children.forEach((mesh: any, i) => {
-    mesh.material = new MeshStandardMaterial({
-      map: i % 2 !== 0 ? vani : strawberry,
-    });
-    // mesh.material = new MeshBasicMaterial({
-    //   color: colors[i],
-    // });
-    mesh.castShadow = true;
-  });
+  //   loader.children.forEach((mesh: any, i) => {
+  //     if (texturesLoaded[i]) {
+  //       mesh.material = new MeshStandardMaterial({
+  //         map: texturesLoaded[i],
+  //       });
+  //     } else {
+  //       mesh.material = new MeshStandardMaterial({
+  //         color: 'white',
+  //       });
+  //     }
+  //   });
+  // }, [texturesURL]);
 
-  let sizeCake = new Vector3();
-  new Box3().setFromObject(cake).getSize(sizeCake);
+  useEffect(() => {
+    if (!loader) return;
 
-  let sizeDecor1 = new Vector3();
-  new Box3().setFromObject(decor1).getSize(sizeDecor1);
+    const box3 = new Box3().setFromObject(loader);
+    if (handleChangeContext) {
+      const newValue = {
+        ...arrayModel[index],
+        children: loader.children.map((item) => item.name),
+        box3: {
+          min: box3.min,
+          max: box3.max,
+        },
+      };
 
-  console.log(sizeCake);
-  console.log(sizeDecor1);
+      handleChangeContext('array', newValue, index);
+    }
+
+    if (handleCakeBoudingChange) {
+      handleCakeBoudingChange(box3);
+    }
+  }, [loader]);
 
   return (
-    <group
-      scale={10}
-      position={[0, 0, 0]}
-      rotation={[0, 0, 0]}
-      castShadow
-      dispose={null}
-    >
-      <group>
-        <group position={[-0.08, 0.02, -0.03]} rotation={[0, 0, 0.2]}>
-          <primitive object={decor1.clone()} castShadow dispose={null} />
-          <Text
-            scale={12 / 1200}
-            position={[0, 0.075, 0.0015]}
-            color="black"
-            anchorX="center"
-            anchorY="middle"
-          >
-            Hi
-          </Text>
-        </group>
-
-        <group
-          position={[
-            sizeCake.x / 3,
-            sizeCake.y - sizeDecor1.y / 4,
-            sizeCake.z / 3,
-          ]}
-          rotation={[0, 0, -0.2]}
-        >
-          <primitive object={decor1.clone()} castShadow dispose={null} />
-          <Text
-            scale={12 / 1200}
-            position={[0, 0.075, 0.0015]}
-            color="black"
-            anchorX="center"
-            anchorY="middle"
-          >
-            Ha
-          </Text>
-        </group>
-      </group>
-
-      <group position={[0, 0.03, -0.03]} rotation={[0, 0, 0]} scale={0.7}>
-        <primitive object={decor2.clone()} castShadow dispose={null} />
-      </group>
-
-      <primitive object={cake.clone()} castShadow dispose={null} />
-    </group>
+    <>
+      <primitive object={loader.clone()} />
+    </>
   );
 }
-export default function TESTMODEL({ setCanvas }: { setCanvas: any }) {
+
+function Model3D() {
+  const { array: arrayModel } = useContext(Model3DContext);
+
+  const [active, setActive] = useState<ActiveDrag>({ id: -1 });
+
+  const [cakeBoundingBox, setCakeBoundingBox] = useState<Box3 | null>(null);
+
+  const handleCakeBoudingChange = useCallback(
+    (value: Box3) => {
+      setCakeBoundingBox(value);
+    },
+    [setCakeBoundingBox]
+  );
+
+  return (
+    <DraggingContext.Provider value={{ active, setActive, cakeBoundingBox }}>
+      <group scale={10} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
+          {arrayModel[0].path && (
+            <Primitive
+              index={0}
+              handleCakeBoudingChange={handleCakeBoudingChange}
+            />
+          )}
+
+          {arrayModel[1].path && <GroupDecor index={1} />}
+        </GridBoudingBox>
+      </group>
+    </DraggingContext.Provider>
+  );
+}
+
+export const DraggingContext = createContext<{
+  active: ActiveDrag;
+  setActive: React.Dispatch<React.SetStateAction<ActiveDrag>>;
+  cakeBoundingBox: Box3 | null;
+}>({
+  active: { id: -1 },
+  setActive: () => {},
+  cakeBoundingBox: new Box3(),
+});
+
+export default function Canvas3D({
+  setCanvas,
+}: {
+  setCanvas: (state: RootState) => void;
+}) {
   return (
     <>
       <Canvas
@@ -136,16 +174,16 @@ export default function TESTMODEL({ setCanvas }: { setCanvas: any }) {
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%' }}
       >
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.3} />
         <Environment preset="city" />
 
-        <CameraRig>
-          <Backdrop />
-          <Center>
-            <BoxModel3D />
-          </Center>
-        </CameraRig>
-        <OrbitControls />
+        {/* <CameraRig>
+        </CameraRig> */}
+        <Backdrop />
+        <Center>
+          <Model3D />
+        </Center>
+        <OrbitControls makeDefault />
       </Canvas>
     </>
   );
