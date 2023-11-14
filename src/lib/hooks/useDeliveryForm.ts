@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react';
 import { MocGioGiaoHang } from '../constants';
 
+// THIS WHOLE THING IS REDUNDANT.
+// I HAVE NO IDEA WHY I'VE COME UP WITH THIS.
+// PLEASE REFACTOR TO REMOVE THIS IN THE FUTURE IF YOU HAVE TIME.
+
 const DeliveryFormField = {
   CUSTOMER_NAME: 'CUSTOMER_NAME',
   TEL: 'TEL',
   EMAIL: 'EMAIL',
   ADDRESS: 'ADDRESS',
+  BRANCH_ID: 'BRANCH_ID',
   DELIVERY_DATE: 'DELIVERY_DATE',
   DELIVERY_TIME: 'DELIVERY_TIME',
   NOTE: 'NOTE',
@@ -17,6 +22,7 @@ export type DeliveryForm = {
   customerName: string;
   tel: string;
   email: string;
+  branchId: string;
   address: string;
   deliveryDate: Date;
   deliveryTime: string;
@@ -33,6 +39,7 @@ function useDeliveryForm(): [DeliveryForm, SetDeliveryForm] {
   const [tel, setTel] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [branchId, setBranchId] = useState('');
   const [deliveryDate, setDeliveryDate] = useState<Date>(new Date());
   const [deliveryTime, setDeliveryTime] = useState(MocGioGiaoHang[0].value);
   const [note, setNote] = useState('');
@@ -50,6 +57,12 @@ function useDeliveryForm(): [DeliveryForm, SetDeliveryForm] {
         break;
       case 'EMAIL':
         if (typeof value === 'string') setEmail(value);
+        break;
+      case 'ADDRESS':
+        if (typeof value === 'string') setAddress(value);
+        break;
+      case 'BRANCH_ID':
+        if (typeof value === 'string') setBranchId(value);
         break;
       case 'ADDRESS':
         if (typeof value === 'string') setAddress(value);
@@ -72,11 +85,21 @@ function useDeliveryForm(): [DeliveryForm, SetDeliveryForm] {
       tel,
       email,
       address,
+      branchId,
       deliveryDate,
       deliveryTime,
       note,
     }),
-    [customerName, tel, email, address, deliveryDate, deliveryTime, note]
+    [
+      customerName,
+      tel,
+      email,
+      address,
+      branchId,
+      deliveryDate,
+      deliveryTime,
+      note,
+    ]
   );
 
   return [form, handleFieldChange];

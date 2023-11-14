@@ -1,12 +1,26 @@
 import CustomTextarea from '@/components/inputs/TextArea/CustomTextArea';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
-
+import { getBranches } from '@/lib/DAO/branchDAO';
+import { getProvinces } from '@/lib/DAO/provinceDAO';
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
-import { Grid, Typography, alpha, useTheme } from '@mui/material';
+import Branch from '@/models/branch';
+import Province from '@/models/province';
+import { Check } from '@mui/icons-material';
+import {
+  Autocomplete,
+  Divider,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+  alpha,
+  useTheme,
+} from '@mui/material';
 import { Box } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { memo } from 'react';
+import { FC, memo, useEffect, useMemo, useState } from 'react';
+import { isImportSpecifier } from 'typescript';
 import { useLocalStorage } from 'usehooks-ts';
 import ChooseTime from '../ChooseTime';
 
@@ -15,10 +29,198 @@ type FormGiaoHangProps = {
   setForm: SetDeliveryForm;
 };
 
+type UserAddressResolverProps = {
+  branchId: string;
+  onBranchIdChange: (value: string) => void;
+};
+
+const UserAddressResolver: FC<UserAddressResolverProps> = ({
+  branchId,
+  onBranchIdChange,
+}) => {
+  //#region Hooks
+
+  const theme = useTheme();
+
+  //#endregion
+
+  //#region UseStates
+
+  const [isFirstTime, setIsFirstTime] = useState(true);
+
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+
+  const [selectedProvince, setSelectedProvince] = useState<Province | null>(
+    null
+  );
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+
+  //#endregion
+
+  //#region Memos
+
+  const availableProvinces = useMemo(() => {
+    if (!branches || branches.length <= 0) return [];
+
+    const branchProvinceIds = branches.map((b) => b.province_id);
+
+    return provinces.filter((p) => branchProvinceIds.includes(p.id));
+  }, [branches, provinces]);
+
+  const filteredBranches = useMemo(() => {
+    if (!branches || branches.length < 0) return [];
+    if (!selectedProvince) return branches;
+
+    return branches.filter((b) => b.province_id === selectedProvince?.id);
+  }, [branches, selectedProvince]);
+
+  //#endregion
+
+  //#region UseEffects
+
+  useEffect(() => {
+    if (isFirstTime) {
+      getProvinces()
+        .then((provinces) => {
+          setProvinces(provinces);
+
+          getBranches()
+            .then((branches) => {
+              setBranches(branches);
+
+              if (branchId) {
+                const branch = branches.find((b) => b.id === branchId);
+                if (branch) {
+                  setSelectedBranch(branch);
+                  const province = provinces.find((p) => p.id === branch?.id);
+                  setSelectedProvince(province ?? null);
+                } else {
+                  setSelectedBranch(null);
+                }
+              }
+            })
+            .catch(() => setBranches([]));
+        })
+        .catch(() => setProvinces([]))
+        .finally(() => setIsFirstTime(false));
+    } else {
+      if (branchId) {
+        const branch = branches.find((b) => b.id === branchId);
+        if (branch) {
+          setSelectedBranch(branch);
+          onBranchIdChange(branch.id);
+          const province = provinces.find((p) => p.id === branch?.id);
+          setSelectedProvince(province ?? null);
+        } else {
+          setSelectedBranch(null);
+        }
+      }
+    }
+  }, [branches, isFirstTime, onBranchIdChange, provinces]);
+
+  //#endregion
+
+  //#region Handlers
+
+  const handleSelectBranch = (branch: Branch) => {
+    setSelectedBranch(branch);
+    onBranchIdChange(branch.id);
+  };
+
+  //#endregion
+
+  return (
+    <>
+      <Autocomplete
+        value={selectedProvince}
+        onChange={(e, value) => setSelectedProvince(value)}
+        disablePortal
+        options={availableProvinces}
+        getOptionLabel={(p) => p.name}
+        sx={{ width: 300 }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Tỉnh thành"
+            inputProps={{
+              ...params.inputProps,
+            }}
+          />
+        )}
+      />
+
+      <Divider sx={{ mt: 1 }} />
+
+      {filteredBranches && filteredBranches.length > 0 ? (
+        <Stack gap={1} marginTop={2}>
+          {filteredBranches.map((b, i) => (
+            <Box
+              key={i}
+              component="button"
+              onClick={(e) => {
+                e.preventDefault();
+                handleSelectBranch(b);
+              }}
+              sx={{
+                backgroundColor: 'white',
+                borderWidth: 3,
+                borderStyle: 'solid',
+                borderColor: 'secondary.main',
+                borderRadius: 2,
+                padding: 2,
+                py: 1,
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                  cursor: 'pointer',
+                },
+                transition: 'all 0.2 ease-in-out',
+              }}
+            >
+              <Stack
+                direction="row"
+                justifyContent={'space-between'}
+                alignItems={'center'}
+              >
+                <Stack alignItems="start">
+                  <Stack>
+                    <Stack direction="row" alignItems={'center'} gap={1}>
+                      <Typography>Chi nhánh:</Typography>
+                      <Typography variant="body2">{b.name}</Typography>
+                    </Stack>
+                  </Stack>
+                  <Typography
+                    sx={{
+                      fontSize: 16,
+                      fontStyle: 'italic',
+                      fontWeight: 'regular',
+                      color: 'grey.600',
+                    }}
+                  >
+                    {b.address}
+                  </Typography>
+                </Stack>
+                <Check
+                  color="secondary"
+                  sx={
+                    selectedBranch?.id !== b.id ? { visibility: 'hidden' } : {}
+                  }
+                />
+              </Stack>
+            </Box>
+          ))}
+        </Stack>
+      ) : (
+        <Typography>Hiện không có chi nhánh khả dụng nào!</Typography>
+      )}
+    </>
+  );
+};
+
 function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const theme = useTheme();
 
-  const [email, setEmail] = useLocalStorage('email', '');
+  const [] = useLocalStorage('email', '');
 
   return (
     <>
@@ -94,6 +296,28 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                   autoComplete="email"
                   name="email"
                   id="email"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Divider
+                  sx={{
+                    height: 4,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography
+                  variant="body1"
+                  fontWeight="bold"
+                  color={theme.palette.secondary.main}
+                >
+                  Địa chỉ nhận bánh
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <UserAddressResolver
+                  branchId={form.branchId}
+                  onBranchIdChange={(id) => setForm('BRANCH_ID', id)}
                 />
               </Grid>
               <Grid item xs={12}>

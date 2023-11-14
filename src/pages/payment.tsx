@@ -33,27 +33,21 @@ import FormGiaoHang from '../components/payment/FormGiaoHang';
 // #endregion
 
 const Payment = () => {
-  // #region States
+  //#region States
 
   const { value: sales } = useSales();
   const [user, loading, error] = useAuthState(auth);
-
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
   const [cartNote, setCartNote] = useCartNote();
-
   const [saleAmount, setSaleAmount] = useState(0);
   const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
-
   const [dialogOpen, setDialogOpen] = useState(false);
-
   const [deliveryForm, setDeliveryForm] = useDeliveryForm();
-
   const shippingFee = useShippingFee();
 
   // #endregion
-
   //#region Hooks
 
   const theme = useTheme();
@@ -61,8 +55,7 @@ const Payment = () => {
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
-
-  // #region useMemos
+  //#region useMemos
 
   const billPrice = useMemo(() => {
     return assembledCartItems.reduce((acc, item) => {
@@ -78,13 +71,12 @@ const Payment = () => {
     }, 0);
   }, [assembledCartItems]);
 
-  //  #endregion
-
-  // #region useEffects
-
   const totalBill = useMemo(() => {
     return calculateTotalBillPrice(billPrice, saleAmount, shippingFee);
   }, [billPrice, saleAmount, shippingFee]);
+
+  //  #endregion
+  //#region useEffects
 
   useEffect(() => {
     if (cart) {
@@ -92,9 +84,10 @@ const Payment = () => {
     }
   }, [cart, reloadAssembledCartItems]);
 
-  // #endregion
+  //#endregion
+  //#region Methods
 
-  // #region Methods
+  //#endregion
 
   const TimKiemMaSale = () => {};
 
