@@ -10,6 +10,7 @@ import { ActiveDrag, DraggingContext, Primitive } from '../Model3D';
 import {
   getPlane,
   getPositionFromPlaneId,
+  getPositionFromPlaneIdAndGhim,
   getRotationFromPlaneId,
   useDrag,
 } from '../Utils';
@@ -24,13 +25,13 @@ function GroupDecor({ index }: { index: number }) {
     React.useContext(DraggingContext);
 
   const { array: arrayModel, handleChangeContext } = useContext(Model3DContext);
-  const { planeId, box3, scale, rotation } = arrayModel[index];
+  const { planeId, box3, scale, rotation, ghim } = arrayModel[index];
 
   const pos = useRef<[number, number, number] | null>(null);
 
   const onDrag = useCallback(
     (v: Vector3) => {
-      if (!planeId || !cakeBoundingBox || !box3) return;
+      if (!planeId || !cakeBoundingBox || !box3 || ghim == undefined) return;
 
       const plane = getPlane(planeId, cakeBoundingBox);
       if (!plane) {
@@ -38,8 +39,6 @@ function GroupDecor({ index }: { index: number }) {
       }
 
       const normal = plane.normal;
-
-      const ghim = (box3.max.y - box3.min.y) / 6;
 
       if (normal.x != 0) {
         v.x = plane.constant;
@@ -70,7 +69,7 @@ function GroupDecor({ index }: { index: number }) {
         clamp(v.z, cakeBoundingBox.min.z + ghim, cakeBoundingBox.max.z - ghim),
       ];
     },
-    [planeId, cakeBoundingBox, box3]
+    [planeId, cakeBoundingBox, box3, ghim]
   );
 
   const [events, hovered] = useDrag({ planeId: planeId, onDrag });
@@ -101,9 +100,11 @@ function GroupDecor({ index }: { index: number }) {
   }, [planeId, cakeBoundingBox]);
 
   useEffect(() => {
-    document.body.style.cursor =
-      active.id != -1 ? 'grabbing' : hovered ? 'grab' : 'auto';
-  }, [active, hovered]);
+    if (!cakeBoundingBox || !planeId || ghim == undefined || !pos.current)
+      return;
+    const v3 = new Vector3(pos.current[0], pos.current[1], pos.current[2]);
+    onDrag(v3);
+  }, [ghim]);
 
   return (
     <group ref={ref} {...events} scale={scale}>

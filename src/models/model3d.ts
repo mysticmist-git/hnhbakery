@@ -12,6 +12,7 @@ type Model3d = WithId & {
   name: string;
   description?: string;
   file: string;
+  image?: string;
 };
 
 const model3dConverter: FirestoreDataConverter<Model3d> = {

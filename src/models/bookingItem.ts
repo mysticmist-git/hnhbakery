@@ -14,20 +14,11 @@ type Message = {
   color: string;
 };
 
-type CakeStyle = {
-  model_3d_id: string;
-  position: number[];
-  rotation: number[];
-  color: string;
-};
-
 type BookingItem = WithId & {
   images?: string[];
   occasion?: string;
   size: string;
   cake_base_id: string;
-  cake_pan: CakeStyle;
-  cake_decor: CakeStyle[];
   message: Message;
   note: string;
 };

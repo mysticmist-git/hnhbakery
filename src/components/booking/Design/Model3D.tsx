@@ -50,15 +50,25 @@ export function Primitive({
   index: number;
   handleCakeBoudingChange?: (value: Box3) => void;
 }) {
-  const { array: arrayModel, handleChangeContext } = useContext(Model3DContext);
+  const {
+    array: arrayModel,
+    handleChangeContext,
+    editIndex,
+  } = useContext(Model3DContext);
   const { path, textures } = arrayModel[index];
 
   let loader = useLoader(OBJLoader, path);
 
   if (textures) {
-    let texturesLoaded = useTexture(textures.map((item) => item.path));
+    let texturesLoaded = useTexture(
+      textures.filter((item) => item.path != '').map((item) => item.path)
+    );
+
     loader.children.forEach((mesh: any, i) => {
-      if (texturesLoaded[i]) {
+      if (
+        texturesLoaded[i] &&
+        textures[i].path == texturesLoaded[i].source.data.src
+      ) {
         mesh.material = new MeshStandardMaterial({
           map: texturesLoaded[i],
         });
@@ -70,25 +80,6 @@ export function Primitive({
     });
   }
 
-  // useEffect(() => {
-  //   if (!texturesLoaded) {
-  //     return;
-  //   }
-  //   console.log(texturesLoaded);
-
-  //   loader.children.forEach((mesh: any, i) => {
-  //     if (texturesLoaded[i]) {
-  //       mesh.material = new MeshStandardMaterial({
-  //         map: texturesLoaded[i],
-  //       });
-  //     } else {
-  //       mesh.material = new MeshStandardMaterial({
-  //         color: 'white',
-  //       });
-  //     }
-  //   });
-  // }, [texturesURL]);
-
   useEffect(() => {
     if (!loader) return;
 
@@ -96,7 +87,13 @@ export function Primitive({
     if (handleChangeContext) {
       const newValue = {
         ...arrayModel[index],
-        children: loader.children.map((item) => item.name),
+        children: loader.children.map((item, i) =>
+          item.name == 'Default' ? 'Phần ' + (i + 1) : item.name
+        ),
+        textures: loader.children.map((item, i) => ({
+          name: '',
+          path: '',
+        })),
         box3: {
           min: box3.min,
           max: box3.max,
@@ -113,7 +110,21 @@ export function Primitive({
 
   return (
     <>
-      <primitive object={loader.clone()} />
+      <group
+        onClick={() => {
+          if (handleChangeContext && index !== editIndex) {
+            handleChangeContext('editIndex', index);
+          }
+        }}
+        onPointerOver={() => {
+          window.document.body.style.cursor = 'pointer';
+        }}
+        onPointerLeave={() => {
+          window.document.body.style.cursor = 'auto';
+        }}
+      >
+        <primitive object={loader.clone()} />
+      </group>
     </>
   );
 }
@@ -136,14 +147,22 @@ function Model3D() {
     <DraggingContext.Provider value={{ active, setActive, cakeBoundingBox }}>
       <group scale={10} position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
-          {arrayModel[0].path && (
-            <Primitive
-              index={0}
-              handleCakeBoudingChange={handleCakeBoudingChange}
-            />
-          )}
-
-          {arrayModel[1].path && <GroupDecor index={1} />}
+          {arrayModel &&
+            arrayModel.map((item, index) => {
+              if (item.path) {
+                if (index == 0) {
+                  return (
+                    <Primitive
+                      key={index}
+                      index={0}
+                      handleCakeBoudingChange={handleCakeBoudingChange}
+                    />
+                  );
+                } else {
+                  return <GroupDecor key={index} index={index} />;
+                }
+              }
+            })}
         </GridBoudingBox>
       </group>
     </DraggingContext.Provider>

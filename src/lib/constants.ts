@@ -36,6 +36,7 @@ export const COLLECTION_NAME = {
   BOOKING_ITEMS: 'booking_items',
   CAKE_OCCASIONS: 'cake_occasions',
   CAKE_BASES: 'cake_bases',
+  CAKE_TEXTURES: 'cake_textures',
   MODEL_3D: 'model_3d',
   MODEL_TYPES: 'model_types',
   PROVINCES: 'provinces',

@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Stack } from '@mui/system';
 import { getDownloadURL, ref } from 'firebase/storage';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 const texturesData = [
   {
     name: 'Dâu',
@@ -51,7 +51,7 @@ function EditModel() {
       </>
     );
   }
-  const { children, textures } = array[editIndex];
+  const { children, textures, rotation, ghim } = array[editIndex];
 
   return (
     <>
@@ -69,56 +69,55 @@ function EditModel() {
       >
         Điều chỉnh
       </Typography>
-      <Stack direction="column" sx={{ width: '100%' }} gap={0}>
-        <CustomAccodion label="Thông số">
-          <Stack direction="column" sx={{ width: '100%' }} gap={1}>
-            <Box component={'div'} sx={{ width: '100%' }}>
-              <Typography variant="caption">Xoay ngang</Typography>
-              <Slider
-                defaultValue={0}
-                valueLabelDisplay="auto"
-                step={15}
-                marks
-                min={-180}
-                max={180}
-                size="small"
-                color="secondary"
-              />
-            </Box>
 
-            <Box component={'div'} sx={{ width: '100%' }}>
-              <Typography variant="caption">Xoay dọc</Typography>
-              <Slider
-                defaultValue={0}
-                valueLabelDisplay="auto"
-                step={15}
-                marks
-                min={-180}
-                max={180}
-                size="small"
-                color="secondary"
-              />
-            </Box>
+      <Stack
+        direction="column"
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'auto',
+          pb: 4,
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+        gap={0}
+      >
+        {editIndex != 0 &&
+          rotation &&
+          ghim !== undefined &&
+          handleChangeContext && (
+            <CustomAccodion label="Thông số">
+              <Stack direction="column" sx={{ width: '100%' }} gap={1}>
+                <Box component={'div'} sx={{ width: '100%' }}>
+                  <Typography variant="caption">Độ lớn</Typography>
+                  <CustomSliderScale />
+                </Box>
 
-            <Box component={'div'} sx={{ width: '100%' }}>
-              <Typography variant="caption">Xoay trục</Typography>
-              <Slider
-                defaultValue={0}
-                valueLabelDisplay="auto"
-                step={15}
-                marks
-                min={-180}
-                max={180}
-                size="small"
-                color="secondary"
-              />
-            </Box>
-          </Stack>
-        </CustomAccodion>
+                <Box component={'div'} sx={{ width: '100%' }}>
+                  <Typography variant="caption">Ghim</Typography>
+                  <CustomSliderGhim />
+                </Box>
+
+                <Box component={'div'} sx={{ width: '100%' }}>
+                  <Typography variant="caption">Xoay ngang</Typography>
+                  <CustomSliderRotation i={2} />
+                </Box>
+
+                <Box component={'div'} sx={{ width: '100%' }}>
+                  <Typography variant="caption">Xoay dọc</Typography>
+                  <CustomSliderRotation i={0} />
+                </Box>
+
+                <Box component={'div'} sx={{ width: '100%' }}>
+                  <Typography variant="caption">Xoay trục</Typography>
+                  <CustomSliderRotation i={1} />
+                </Box>
+              </Stack>
+            </CustomAccodion>
+          )}
 
         {children && handleChangeContext && textures && children.length > 0 && (
           <CustomAccodion label="Lớp phủ">
-            <Stack direction="column" sx={{ width: '100%' }} gap={1}>
+            <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={1}>
               {children.map((label, i) => {
                 return (
                   <FormControl fullWidth key={i}>
@@ -139,6 +138,134 @@ function EditModel() {
 
 export default EditModel;
 
+function CustomSliderGhim() {
+  const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+  const { ghim, box3 } = array[editIndex];
+  if (ghim == undefined || box3 == undefined) {
+    return <></>;
+  }
+  const [data, setData] = useState(Math.round(ghim * 100));
+  const height = useMemo(() => box3.max.y - box3.min.y, [box3]);
+  useEffect(() => {
+    setData(Math.round(ghim * 100));
+  }, [ghim]);
+
+  return (
+    <>
+      <Slider
+        value={data}
+        onChange={(e, newValue) => {
+          setData(newValue as number);
+
+          if (handleChangeContext && editIndex !== -1) {
+            handleChangeContext(
+              'array',
+              {
+                ...array[editIndex],
+                ghim: (newValue as number) / 100,
+              },
+              editIndex
+            );
+          }
+        }}
+        valueLabelDisplay="auto"
+        step={Math.round((height * 100) / (3 * 5))}
+        marks
+        min={0}
+        max={Math.round((height * 100) / 3)}
+        size="small"
+        color="secondary"
+      />
+    </>
+  );
+}
+
+function CustomSliderScale() {
+  const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+  const { scale } = array[editIndex];
+  if (!scale) {
+    return <></>;
+  }
+  const [data, setData] = useState(scale);
+
+  useEffect(() => {
+    setData(scale);
+  }, [scale]);
+
+  return (
+    <>
+      <Slider
+        value={data}
+        onChange={(e, newValue) => {
+          setData(newValue as number);
+
+          if (handleChangeContext && editIndex !== -1) {
+            handleChangeContext(
+              'array',
+              {
+                ...array[editIndex],
+                scale: newValue as number,
+              },
+              editIndex
+            );
+          }
+        }}
+        valueLabelDisplay="auto"
+        step={1 / 10}
+        marks
+        min={0.5}
+        max={1.5}
+        size="small"
+        color="secondary"
+      />
+    </>
+  );
+}
+
+function CustomSliderRotation({ i }: { i: number }) {
+  const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+  const { rotation } = array[editIndex];
+  if (!rotation) {
+    return <></>;
+  }
+  const [data, setData] = useState(Math.round(rotation[i] * (180 / Math.PI)));
+
+  useEffect(() => {
+    setData(Math.round(rotation[i] * (180 / Math.PI)));
+  }, [rotation, i]);
+
+  return (
+    <>
+      <Slider
+        value={data}
+        onChange={(e, newValue) => {
+          setData(newValue as number);
+
+          if (handleChangeContext && editIndex !== -1) {
+            const r = [...rotation];
+            r[i] = (newValue as number) / (180 / Math.PI);
+            handleChangeContext(
+              'array',
+              {
+                ...array[editIndex],
+                rotation: r,
+              },
+              editIndex
+            );
+          }
+        }}
+        valueLabelDisplay="auto"
+        step={15}
+        marks
+        min={-180}
+        max={180}
+        size="small"
+        color="secondary"
+      />
+    </>
+  );
+}
+
 function CustomSelect({ label, i }: { i: number; label: string }) {
   const { array, editIndex, handleChangeContext } = useContext(Model3DContext);
   const { textures } = array[editIndex];
@@ -147,7 +274,10 @@ function CustomSelect({ label, i }: { i: number; label: string }) {
   }
 
   const [value, setValue] = useState(textures[i]?.path ?? '');
-  console.log(value);
+
+  useEffect(() => {
+    setValue(textures[i]?.path ?? '');
+  }, [i, textures]);
 
   return (
     <>

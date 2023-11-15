@@ -35,6 +35,7 @@ export type Model3DProps = {
   children?: string[];
   textures?: { name: string; path: string }[];
   scale?: number;
+  ghim?: number;
   planeId?: ActiveDrag;
   rotation?: [number, number, number];
   box3?: {
@@ -69,13 +70,6 @@ const Booking = () => {
     occasion: '',
     size: '',
     cake_base_id: '',
-    cake_pan: {
-      model_3d_id: '',
-      position: [],
-      rotation: [],
-      color: '',
-    },
-    cake_decor: [],
     message: {
       content: '',
       color: '',
@@ -112,30 +106,17 @@ const Booking = () => {
     array: [
       createModel3DItem({
         path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
-        textures: [
-          {
-            name: 'Dâu',
-            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fstrawberry.png?alt=media&token=4595f126-25a7-4a9c-a6de-a5b55b67593f',
-          },
-        ],
       }),
       createModel3DItem({
-        path: '/freepik/cupcake-topper.obj',
-        textures: [
-          {
-            name: 'Dâu',
-            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fstrawberry.png?alt=media&token=4595f126-25a7-4a9c-a6de-a5b55b67593f',
-          },
-          {
-            name: 'Vani',
-            path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fvani.png?alt=media&token=12ff1884-9366-4113-b8cb-a19af6607808',
-          },
-        ],
-        scale: 0.7,
+        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-pop-with-tag-001.obj?alt=media&token=9ee1ccc9-0dba-4cf4-b2d8-3db78bfd69b5',
+        planeId: { id: 2 },
+      }),
+      createModel3DItem({
+        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper.obj?alt=media&token=0927573d-63d7-40fd-869c-7486dda65ffc',
         planeId: { id: 2 },
       }),
     ],
-    editIndex: 0,
+    editIndex: -1,
   });
 
   function handleChangeContext(type: string, value: any, index?: number) {
@@ -249,8 +230,8 @@ const Booking = () => {
                       component={'div'}
                       sx={{
                         width: '100%',
-                        height: '100%',
-                        minHeight: '80vh',
+                        height: '80vh',
+                        minHeight: '500px',
                         backgroundColor: 'grey.200',
                         border: 3,
                         borderRadius: 4,
@@ -258,7 +239,7 @@ const Booking = () => {
                         borderColor: 'secondary.main',
                       }}
                     >
-                      <Box
+                      {/* <Box
                         component={'img'}
                         src={screenShot}
                         alt={screenShot}
@@ -291,14 +272,33 @@ const Booking = () => {
                         }}
                       >
                         Bấm
-                      </Button>
+                      </Button> */}
+
+                      <Box
+                        component={'div'}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{ textAlign: 'center', color: 'grey.500' }}
+                        >
+                          Not Implemented
+                        </Typography>
+                      </Box>
                     </Box>
                   </Grid>
                   <Grid item xs={12} lg={6}>
                     <Box
                       component={'div'}
                       sx={{
-                        height: '100%',
+                        height: '80vh',
+                        minHeight: '500px',
                         width: '100%',
                         border: 3,
                         borderRadius: 4,
@@ -314,8 +314,8 @@ const Booking = () => {
                       component={'div'}
                       sx={{
                         width: '100%',
-                        height: '100%',
-                        minHeight: '80vh',
+                        height: '80vh',
+                        minHeight: '500px',
                         backgroundColor: 'white',
                         border: 3,
                         borderRadius: 4,

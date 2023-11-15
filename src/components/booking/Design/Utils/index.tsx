@@ -195,6 +195,36 @@ export function getPositionFromPlaneId(
   return [0, 0, 0];
 }
 
+export function getPositionFromPlaneIdAndGhim(
+  planeId: ActiveDrag,
+  cakeBoundingBox: THREE.Box3 | null,
+  ghim: number
+): [number, number, number] {
+  if (!cakeBoundingBox || planeId.id < 0) {
+    return [0, 0, 0];
+  }
+
+  const plane = getPlane(planeId, cakeBoundingBox);
+  if (plane) {
+    const normal = plane.normal;
+    let direct = 0;
+    let result: [number, number, number] = [0, 0, 0];
+    if (normal.x != 0) {
+      direct = normal.x > 0 ? 1 : -1;
+      result = [ghim, 0, 0];
+    } else if (normal.y != 0) {
+      direct = normal.y > 0 ? 1 : -1;
+      result = [0, ghim, 0];
+    } else if (normal.z != 0) {
+      direct = normal.z > 0 ? 1 : -1;
+      result = [0, 0, ghim];
+    }
+    direct = direct * -1;
+    return [result[0] * direct, result[1] * direct, result[2] * direct];
+  }
+  return [0, 0, 0];
+}
+
 export function getRotationFromPlaneId(
   planeId: ActiveDrag | undefined,
   cakeBoundingBox: THREE.Box3 | null
@@ -238,6 +268,7 @@ export function createModel3DItem({
   planeId,
   rotation,
   box3,
+  ghim,
 }: Model3DProps) {
   return {
     path: path,
@@ -250,5 +281,6 @@ export function createModel3DItem({
       min: new Vector3(),
       max: new Vector3(),
     },
+    ghim: ghim ?? 0,
   } as Model3DProps;
 }
