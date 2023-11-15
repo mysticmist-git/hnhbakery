@@ -138,13 +138,30 @@ const UserAddressResolver: FC<UserAddressResolverProps> = ({
         disablePortal
         options={availableProvinces}
         getOptionLabel={(p) => p.name}
-        sx={{ width: 300 }}
+        sx={{ width: '100%' }}
+        size="small"
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Tỉnh thành"
+            variant="outlined"
+            size="small"
+            placeholder="Tỉnh thành"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                border: 3,
+                borderColor: theme.palette.secondary.main,
+                borderRadius: 2,
+                overflow: 'hidden',
+              },
+            }}
             inputProps={{
               ...params.inputProps,
+              style: {
+                ...params.inputProps?.style,
+                border: '0px solid transparent',
+                fontSize: theme.typography.body2.fontSize,
+              },
             }}
           />
         )}
@@ -164,8 +181,7 @@ const UserAddressResolver: FC<UserAddressResolverProps> = ({
               }}
               sx={{
                 backgroundColor: 'white',
-                borderWidth: 3,
-                borderStyle: 'solid',
+                border: 3,
                 borderColor: 'secondary.main',
                 borderRadius: 2,
                 padding: 2,
@@ -185,16 +201,25 @@ const UserAddressResolver: FC<UserAddressResolverProps> = ({
                 <Stack alignItems="start">
                   <Stack>
                     <Stack direction="row" alignItems={'center'} gap={1}>
-                      <Typography>Chi nhánh:</Typography>
-                      <Typography variant="body2">{b.name}</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'grey.800',
+                        }}
+                      >
+                        Chi nhánh:
+                      </Typography>
+                      <Typography variant="body2" fontWeight={'bold'}>
+                        {b.name}
+                      </Typography>
                     </Stack>
                   </Stack>
                   <Typography
+                    variant="body2"
                     sx={{
-                      fontSize: 16,
-                      fontStyle: 'italic',
-                      fontWeight: 'regular',
-                      color: 'grey.600',
+                      fontWeight: 'light',
+                      color: 'grey.800',
+                      textAlign: 'start',
                     }}
                   >
                     {b.address}
@@ -338,6 +363,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
 
           <Grid item xs={12} display={{ md: 'none', xs: 'block' }}>
             <Box
+              component="div"
               sx={{
                 borderTop: 1.5,
                 borderColor: theme.palette.text.secondary,
@@ -452,6 +478,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                   </Grid>
                   <Grid item xs={12}>
                     <Box
+                      component="div"
                       sx={{
                         border: 3,
                         borderColor: theme.palette.secondary.main,
