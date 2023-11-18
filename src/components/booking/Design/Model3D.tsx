@@ -64,13 +64,11 @@ export function Primitive({
       textures.filter((item) => item.path != '').map((item) => item.path)
     );
 
+    let index = 0;
     loader.children.forEach((mesh: any, i) => {
-      if (
-        texturesLoaded[i] &&
-        textures[i].path == texturesLoaded[i].source.data.src
-      ) {
+      if (textures[i] && textures[i].path != '') {
         mesh.material = new MeshStandardMaterial({
-          map: texturesLoaded[i],
+          map: texturesLoaded[index++],
         });
       } else {
         mesh.material = new MeshStandardMaterial({

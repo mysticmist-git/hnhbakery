@@ -40,6 +40,8 @@ function GroupDecor({ index }: { index: number }) {
 
       const normal = plane.normal;
 
+      const giamToc = 5;
+
       if (normal.x != 0) {
         v.x = plane.constant;
         if (normal.x > 0) {
@@ -47,6 +49,8 @@ function GroupDecor({ index }: { index: number }) {
         } else {
           v.x += ghim;
         }
+        v.y = v.y / giamToc;
+        v.z = v.z / giamToc;
       } else if (normal.y != 0) {
         v.y = plane.constant;
         if (normal.y > 0) {
@@ -54,6 +58,8 @@ function GroupDecor({ index }: { index: number }) {
         } else {
           v.y += ghim;
         }
+        v.x = v.x / giamToc;
+        v.z = v.z / giamToc;
       } else if (normal.z != 0) {
         v.z = plane.constant;
         if (normal.z > 0) {
@@ -61,6 +67,8 @@ function GroupDecor({ index }: { index: number }) {
         } else {
           v.z += ghim;
         }
+        v.x = v.x / giamToc;
+        v.y = v.y / giamToc;
       }
 
       pos.current = [
@@ -99,11 +107,39 @@ function GroupDecor({ index }: { index: number }) {
     }
   }, [planeId, cakeBoundingBox]);
 
+  const [oldGhim, setOldGhim] = useState<number>(ghim ?? 0);
   useEffect(() => {
     if (!cakeBoundingBox || !planeId || ghim == undefined || !pos.current)
       return;
-    const v3 = new Vector3(pos.current[0], pos.current[1], pos.current[2]);
-    onDrag(v3);
+    const plane = getPlane(planeId, cakeBoundingBox);
+    if (!plane) {
+      return;
+    }
+    const normal = plane.normal;
+
+    const isIncrease = ghim > oldGhim ? 1 : -1;
+
+    if (normal.x != 0) {
+      if (normal.x > 0) {
+        pos.current[0] -= isIncrease * Math.abs(ghim - oldGhim);
+      } else {
+        pos.current[0] += isIncrease * Math.abs(ghim - oldGhim);
+      }
+    } else if (normal.y != 0) {
+      if (normal.y > 0) {
+        pos.current[1] -= isIncrease * Math.abs(ghim - oldGhim);
+      } else {
+        pos.current[1] += isIncrease * Math.abs(ghim - oldGhim);
+      }
+    } else if (normal.z != 0) {
+      if (normal.z > 0) {
+        pos.current[2] -= isIncrease * Math.abs(ghim - oldGhim);
+      } else {
+        pos.current[2] += isIncrease * Math.abs(ghim - oldGhim);
+      }
+    }
+
+    setOldGhim(ghim);
   }, [ghim]);
 
   return (
