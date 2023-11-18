@@ -59,7 +59,7 @@ export const Model3DContext = createContext<Model3DContextType>({
 const Booking = () => {
   const theme = useTheme();
 
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(1);
   function handleChangeTab(value: number) {
     setTabIndex(value);
   }
@@ -107,13 +107,18 @@ const Booking = () => {
       createModel3DItem({
         path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
       }),
+      // createModel3DItem({
+      //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-pop-with-tag-001.obj?alt=media&token=9ee1ccc9-0dba-4cf4-b2d8-3db78bfd69b5',
+      //   planeId: { id: 2 },
+      // }),
+      // createModel3DItem({
+      //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper.obj?alt=media&token=0927573d-63d7-40fd-869c-7486dda65ffc',
+      //   planeId: { id: 2 },
+      // }),
       createModel3DItem({
-        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-pop-with-tag-001.obj?alt=media&token=9ee1ccc9-0dba-4cf4-b2d8-3db78bfd69b5',
+        path: './freepik/strawberry.obj',
         planeId: { id: 2 },
-      }),
-      createModel3DItem({
-        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper.obj?alt=media&token=0927573d-63d7-40fd-869c-7486dda65ffc',
-        planeId: { id: 2 },
+        scale: 0.001,
       }),
     ],
     editIndex: -1,
@@ -138,8 +143,6 @@ const Booking = () => {
   }
 
   //#endregion
-
-  console.log(model3DContext.array);
 
   return (
     <>
@@ -203,43 +206,50 @@ const Booking = () => {
                 handleChangeTab={handleChangeTab}
               />
             </Grid>
-            {tabIndex === 0 && (
-              <Grid item xs={12} lg={10}>
-                <UploadStepperComponent
-                  bookingItem={bookingItem}
-                  buoc1Props={{
-                    imageArray: imageArray,
-                    handleImageArrayChange: handleImageArrayChange,
-                    removeImage: removeImage,
-                  }}
-                  handleBookingItemChange={handleBookingItemChange}
-                />
-              </Grid>
-            )}
 
-            {tabIndex === 1 && (
-              <>
-                <Model3DContext.Provider
-                  value={{
-                    ...model3DContext,
-                    handleChangeContext: handleChangeContext,
+            <Grid
+              item
+              xs={12}
+              lg={10}
+              display={tabIndex === 0 ? 'block' : 'none'}
+            >
+              <UploadStepperComponent
+                bookingItem={bookingItem}
+                buoc1Props={{
+                  imageArray: imageArray,
+                  handleImageArrayChange: handleImageArrayChange,
+                  removeImage: removeImage,
+                }}
+                handleBookingItemChange={handleBookingItemChange}
+              />
+            </Grid>
+
+            <Model3DContext.Provider
+              value={{
+                ...model3DContext,
+                handleChangeContext: handleChangeContext,
+              }}
+            >
+              <Grid
+                item
+                xs={12}
+                lg={3}
+                display={tabIndex === 1 ? 'block' : 'none'}
+              >
+                <Box
+                  component={'div'}
+                  sx={{
+                    width: '100%',
+                    height: '80vh',
+                    minHeight: '500px',
+                    backgroundColor: 'grey.200',
+                    border: 3,
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    borderColor: 'secondary.main',
                   }}
                 >
-                  <Grid item xs={12} lg={3}>
-                    <Box
-                      component={'div'}
-                      sx={{
-                        width: '100%',
-                        height: '80vh',
-                        minHeight: '500px',
-                        backgroundColor: 'grey.200',
-                        border: 3,
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        borderColor: 'secondary.main',
-                      }}
-                    >
-                      {/* <Box
+                  {/* <Box
                         component={'img'}
                         src={screenShot}
                         alt={screenShot}
@@ -274,61 +284,69 @@ const Booking = () => {
                         Bấm
                       </Button> */}
 
-                      <Box
-                        component={'div'}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          sx={{ textAlign: 'center', color: 'grey.500' }}
-                        >
-                          Not Implemented
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} lg={6}>
-                    <Box
-                      component={'div'}
-                      sx={{
-                        height: '80vh',
-                        minHeight: '500px',
-                        width: '100%',
-                        border: 3,
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        borderColor: 'secondary.main',
-                      }}
+                  <Box
+                    component={'div'}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{ textAlign: 'center', color: 'grey.500' }}
                     >
-                      <Canvas3D setCanvas={setCanvas} />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} lg={3}>
-                    <Box
-                      component={'div'}
-                      sx={{
-                        width: '100%',
-                        height: '80vh',
-                        minHeight: '500px',
-                        backgroundColor: 'white',
-                        border: 3,
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        borderColor: 'secondary.main',
-                      }}
-                    >
-                      <EditModel />
-                    </Box>
-                  </Grid>
-                </Model3DContext.Provider>
-              </>
-            )}
+                      Not Implemented
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                lg={6}
+                display={tabIndex === 1 ? 'block' : 'none'}
+              >
+                <Box
+                  component={'div'}
+                  sx={{
+                    height: '80vh',
+                    minHeight: '500px',
+                    width: '100%',
+                    border: 3,
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    borderColor: 'secondary.main',
+                  }}
+                >
+                  <Canvas3D setCanvas={setCanvas} />
+                </Box>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                lg={3}
+                display={tabIndex === 1 ? 'block' : 'none'}
+              >
+                <Box
+                  component={'div'}
+                  sx={{
+                    width: '100%',
+                    height: '80vh',
+                    minHeight: '500px',
+                    backgroundColor: 'white',
+                    border: 3,
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    borderColor: 'secondary.main',
+                  }}
+                >
+                  <EditModel />
+                </Box>
+              </Grid>
+            </Model3DContext.Provider>
           </Grid>
         </Box>
       </Box>

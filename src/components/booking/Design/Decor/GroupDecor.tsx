@@ -40,7 +40,7 @@ function GroupDecor({ index }: { index: number }) {
 
       const normal = plane.normal;
 
-      const giamToc = 5;
+      const giamToc = 10;
 
       if (normal.x != 0) {
         v.x = plane.constant;

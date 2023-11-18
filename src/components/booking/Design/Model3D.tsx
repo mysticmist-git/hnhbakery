@@ -11,6 +11,7 @@ import { Canvas, RootState, useLoader } from '@react-three/fiber';
 import {
   Box3,
   Group,
+  MathUtils,
   MeshStandardMaterial,
   Object3DEventMap,
   Texture,
@@ -22,6 +23,8 @@ import {
   Environment,
   useTexture,
   OrbitControls,
+  Box,
+  PerspectiveCamera,
 } from '@react-three/drei';
 import Backdrop from './Backdrop';
 import React from 'react';
@@ -30,6 +33,7 @@ import GroupDecor from './Decor/GroupDecor';
 import { Model3DContext, Model3DProps } from '@/pages/booking';
 import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '@/firebase/config';
+import TableModel3D from './TableModel3D';
 
 // -1 = none
 // 0 = mặt trước
@@ -143,7 +147,7 @@ function Model3D() {
 
   return (
     <DraggingContext.Provider value={{ active, setActive, cakeBoundingBox }}>
-      <group scale={10} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      <group scale={5} position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
           {arrayModel &&
             arrayModel.map((item, index) => {
@@ -187,16 +191,19 @@ export default function Canvas3D({
       <Canvas
         onCreated={setCanvas}
         shadows
-        camera={{ fov: 75, position: [0, 0, 2.5] }}
+        camera={{
+          fov: 75,
+          position: [0, Math.PI / 6, 2.5],
+        }}
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%' }}
       >
+        <TableModel3D />
         <ambientLight intensity={0.3} />
         <Environment preset="city" />
-
         {/* <CameraRig>
         </CameraRig> */}
-        <Backdrop />
+        {/* <Backdrop /> */}
         <Center>
           <Model3D />
         </Center>

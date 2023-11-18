@@ -117,7 +117,7 @@ function EditModel() {
 
         {children && handleChangeContext && textures && children.length > 0 && (
           <CustomAccodion label="Lớp phủ">
-            <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={1}>
+            <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={2}>
               {children.map((label, i) => {
                 return (
                   <FormControl fullWidth key={i}>
