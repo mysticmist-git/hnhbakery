@@ -2,8 +2,13 @@ import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
-import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
+import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, db } from '@/firebase/config';
+import { increaseDecreaseBatchQuantity, updateBatch } from '@/lib/DAO/batchDAO';
+import { createBill, getBillRef } from '@/lib/DAO/billDAO';
+import { createBillItem } from '@/lib/DAO/billItemDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
+import { updateVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME, PLACEHOLDER_DELIVERY_PRICE } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { addDocToFirestore, addDocsToFirestore } from '@/lib/firestore';
@@ -15,12 +20,15 @@ import useSales from '@/lib/hooks/useSales';
 import useShippingFee from '@/lib/hooks/useShippingFee';
 import { BillObject, DeliveryObject, SaleObject } from '@/lib/models';
 import {
-  calculateTotalBillPrice,
+  calculateTotalBillPrice as calculateFinalBillPrice,
   createDeliveryData,
-  mapProductBillToBillDetailObject,
+  mapProductBillToBillDetailObject as mapProductBillToBillItem,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/pageSpecific/payment';
+import Bill from '@/models/bill';
+import Delivery from '@/models/delivery';
+import Sale from '@/models/sale';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { collection, doc, increment, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -35,13 +43,13 @@ const Payment = () => {
   //#region States
 
   const { value: sales } = useSales();
-  const [user, loading, error] = useAuthState(auth);
+  const [user] = useAuthState(auth);
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
   const [cartNote, setCartNote] = useCartNote();
   const [saleAmount, setSaleAmount] = useState(0);
-  const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
+  const [chosenSale, setChosenSale] = useState<Sale | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deliveryForm, setDeliveryForm] = useDeliveryForm();
   const shippingFee = useShippingFee();
@@ -56,25 +64,27 @@ const Payment = () => {
   //#endregion
   //#region useMemos
 
-  const billPrice = useMemo(() => {
-    return assembledCartItems.reduce((acc, item) => {
-      if (item.discounted)
-        return (
-          acc +
-          item.quantity *
-            (item.variant?.price
-              ? item.variant?.price - item.discountAmount
-              : 0)
-        );
-      else return acc + item.quantity * (item.variant?.price ?? 0);
-    }, 0);
+  const { billPrice, discountAmount } = useMemo(() => {
+    return assembledCartItems.reduce(
+      (result, item) => {
+        (result.billPrice += item.variant?.price ?? 0),
+          (result.discountAmount +=
+            item.batch?.discount?.start_at?.valueOf() ??
+            Number.MAX_VALUE < Date.now()
+              ? (item.batch?.discount.percent ?? 0) * (item.variant?.price ?? 0)
+              : 0);
+
+        return result;
+      },
+      { billPrice: 0, discountAmount: 0 }
+    );
   }, [assembledCartItems]);
 
-  const totalBill = useMemo(() => {
-    return calculateTotalBillPrice(billPrice, saleAmount, shippingFee);
-  }, [billPrice, saleAmount, shippingFee]);
+  const finalBillPrice = useMemo(() => {
+    return billPrice - discountAmount - saleAmount - shippingFee;
+  }, [billPrice, discountAmount, saleAmount, shippingFee]);
 
-  //  #endregion
+  //#endregion
   //#region useEffects
 
   useEffect(() => {
@@ -88,85 +98,93 @@ const Payment = () => {
 
   const createBillData = useCallback(
     function (
-      paymentId: string | undefined,
-      chosenSale: SaleObject | null
-    ): BillObject {
-      let billData: BillObject = {
-        totalPrice: billPrice - saleAmount,
-        originalPrice: billPrice,
-        saleAmount: saleAmount,
-        note: cartNote,
-        state: 0,
-        payment_id: paymentId,
-        user_id: user?.uid ?? '',
-        created_at: new Date(),
-      } as BillObject;
-
-      if (chosenSale) {
-        billData = {
-          ...billData,
-          sale_id: chosenSale.id,
-        } as BillObject;
+      paymentId: string,
+      chosenSale: Sale | null
+    ): Omit<Bill, 'id' | 'paid_time'> {
+      if (!user) {
+        throw new Error('User not found!');
       }
+
+      let billData: Omit<Bill, 'id' | 'paid_time'> = {
+        total_price: billPrice,
+        total_discount: discountAmount,
+        sale_price: saleAmount,
+        final_price: finalBillPrice,
+        note: cartNote ?? '',
+        state: 'issued',
+        payment_method_id: paymentId,
+        customer_id: user.uid,
+        booking_item_id: '',
+        branch_id: deliveryForm.branchId,
+        delivery_id: '',
+        sale_id: chosenSale ? chosenSale.id : '',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
 
       return billData;
     },
-    [billPrice, cartNote, saleAmount, user?.uid]
+    [
+      billPrice,
+      cartNote,
+      deliveryForm.branchId,
+      discountAmount,
+      finalBillPrice,
+      saleAmount,
+      user,
+    ]
   );
 
   const addAllNecessariesInfoToFirestore = useCallback(
     async function (
       paymentId: string | undefined,
-      chosenSale: SaleObject | null
-    ): Promise<{
-      billData: BillObject;
-      deliveryData: DeliveryObject;
-    }> {
+      chosenSale: Sale | null
+    ): Promise<Omit<Bill, 'paid_time'>> {
+      if (!user) {
+        throw new Error('Please login!');
+      }
+
+      const userData = await getUserByUid(user.uid);
+
+      if (!userData) {
+        throw new Error('User not found!');
+      }
+
+      if (!paymentId) {
+        throw new Error('paymentId is required');
+      }
+
       const billData = createBillData(paymentId, chosenSale);
-      const billRef = await addDocToFirestore(billData, COLLECTION_NAME.BILLS);
 
-      const deliveryData = createDeliveryData(
-        deliveryForm,
-        billRef.id,
-        PLACEHOLDER_DELIVERY_PRICE
+      const billRef = await createBill(
+        userData?.group_id,
+        userData.id,
+        billData as Omit<Bill, 'id'>
       );
 
-      const deliveryRef = await addDocToFirestore(
-        deliveryData,
-        COLLECTION_NAME.DELIVERIES
-      );
-
-      const billDetails = mapProductBillToBillDetailObject(
+      const billItemsData = mapProductBillToBillItem(
         assembledCartItems,
         billRef.id
       );
 
-      // Make a firestore batch commit
-      const billDetailRefs = await addDocsToFirestore(
-        billDetails,
-        COLLECTION_NAME.BILL_DETAILS
-      );
-
-      // Update batch soldQuantity
       await Promise.all(
-        billDetails.map(async (item) => {
-          const batchRef = doc(
-            collection(db, COLLECTION_NAME.BATCHES),
-            item.batch_id
+        billItemsData.map(async (item) => {
+          await createBillItem(
+            userData.group_id,
+            userData.id,
+            billRef.id,
+            item
           );
-
-          await updateDoc(batchRef, {
-            soldQuantity: increment(item.amount ?? 0),
-          });
         })
       );
 
-      return {
-        billData: { ...billData, id: billRef.id },
-        deliveryData: { ...deliveryData, id: deliveryRef.id },
-      };
+      for (const item of assembledCartItems) {
+        await increaseDecreaseBatchQuantity(item.batchId, -item.quantity);
+      }
+
+      return { ...billData, id: billRef.id };
     },
-    [assembledCartItems, createBillData, deliveryForm]
+    [assembledCartItems, createBillData, user]
   );
 
   //#endregion
@@ -201,8 +219,7 @@ const Payment = () => {
 
         console.log('Adding data to firestore...');
 
-        const { billData, deliveryData } =
-          await addAllNecessariesInfoToFirestore(id, chosenSale);
+        const billData = await addAllNecessariesInfoToFirestore(id, chosenSale);
 
         console.log('Clearing cache...');
         // Deelte localStorage cart
@@ -214,7 +231,7 @@ const Payment = () => {
         } else {
           const reqData = {
             billId: billData.id as string,
-            totalPrice: totalBill,
+            totalPrice: finalBillPrice,
             paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
           };
 
@@ -242,12 +259,12 @@ const Payment = () => {
       router,
       setCart,
       setCartNote,
-      totalBill,
+      finalBillPrice,
     ]
   );
 
   const handleChooseSale = useCallback(
-    function (newChosenSale: SaleObject) {
+    function (newChosenSale: Sale) {
       if (newChosenSale) {
         if (newChosenSale.id === chosenSale?.id) {
           setChosenSale(() => null);
@@ -257,11 +274,11 @@ const Payment = () => {
 
           if (
             (billPrice * newChosenSale.percent) / 100 <
-            newChosenSale.maxSalePrice
+            newChosenSale.limit
           ) {
             setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
           } else {
-            setSaleAmount(newChosenSale.maxSalePrice);
+            setSaleAmount(newChosenSale.limit);
           }
         }
       } else {
@@ -367,7 +384,7 @@ const Payment = () => {
               <DonHangCuaBan
                 tamTinh={billPrice}
                 khuyenMai={saleAmount}
-                tongBill={totalBill}
+                tongBill={finalBillPrice}
                 Sales={sales}
                 TimKiemMaSale={() => {}}
                 showDeliveryPrice={shippingFee}

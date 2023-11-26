@@ -16,7 +16,6 @@ import {
 import { COLLECTION_NAME } from '../constants';
 import {
   getAllProductSnapshots,
-  getAllProducts,
   getProductRef,
 } from './productDAO';
 

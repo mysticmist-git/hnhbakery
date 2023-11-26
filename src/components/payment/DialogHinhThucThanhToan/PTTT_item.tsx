@@ -5,14 +5,13 @@ import Image from 'next/image';
 import { useState } from 'react';
 
 export default function PTTT_item({
-  item,
+  item: { name, image },
   onClick,
 }: Readonly<{
   item: PaymentMethod;
   onClick: () => void;
 }>) {
   const theme = useTheme();
-  const { name, image } = item;
 
   const [isHover, setIsHover] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

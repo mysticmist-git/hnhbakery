@@ -193,8 +193,8 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                 </TableCell>
                 <TableCell align="center">
                   <UI_TotalPrice
-                    price={item.variant?.price}
-                    discountAmount={item.discountAmount}
+                    price={(item.variant?.price ?? 0) * item.quantity}
+                    discountAmount={item.discountAmount * item.quantity}
                   />
                 </TableCell>
                 <TableCell align="center">

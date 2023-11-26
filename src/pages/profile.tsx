@@ -1,20 +1,13 @@
 import ImageBackground from '@/components/Imagebackground';
-import { CustomIconButton } from '@/components/buttons';
-import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { LeftProfileColumn } from '@/components/profile';
 import RightProfileColumn from '@/components/profile/RightProfileColumn';
 import { auth } from '@/firebase/config';
 import {
-  getUserByUid,
   getUserTableRowByUID,
   updateUser,
 } from '@/lib/DAO/userDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getCollection, updateDocToFirestore } from '@/lib/firestore';
-import useUserData from '@/lib/hooks/userUserData';
 // import { billStatusParse } from '@/lib/manage/manage';
-import { BillObject, UserObject } from '@/lib/models';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import {
   BillTableRow,
@@ -22,7 +15,7 @@ import {
   billStateContentParse,
 } from '@/models/bill';
 import User, { UserTableRow } from '@/models/user';
-import { ContentCopyRounded, ExpandMore } from '@mui/icons-material';
+import { ExpandMore } from '@mui/icons-material';
 import {
   Accordion,
   AccordionDetails,
@@ -30,17 +23,15 @@ import {
   Box,
   Divider,
   Grid,
-  InputAdornment,
   Link,
   Skeleton,
-  Tooltip,
   Typography,
   TypographyProps,
   useTheme,
 } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useRouter } from 'next/router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import promotionImage from '@/assets/promotion.png';
 import {
@@ -72,8 +63,6 @@ const Profile = () => {
 
     fetchData();
   }, [user]);
-
-  console.log(userData?.bills);
 
   // #endregion
 
@@ -276,6 +265,7 @@ const Profile = () => {
     </>
   );
 };
+
 export default Profile;
 
 function BillAccordionContent({ bill }: { bill: BillTableRow }) {
