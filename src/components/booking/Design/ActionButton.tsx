@@ -17,17 +17,28 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
   Grid,
   IconButton,
   IconButtonProps,
+  InputLabel,
   ListItemIcon,
   Menu,
   MenuItem,
+  Select,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { ActiveDrag } from './Model3D';
 
 function ActionButton() {
+  //#region Menu
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,8 +47,11 @@ function ActionButton() {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
+  //#endregion
+
   const { array, handleChangeContext } = useContext(Model3DContext);
 
+  //#region KhuonBanh
   const [openDialogKhuonBanh, setOpenDialogKhuonBanh] = React.useState(false);
   const [khuonBanhArray, setKhuonBanhArray] = React.useState<Model3d[]>([]);
   const [selectedKhuonBanh, setSelectedKhuonBanh] =
@@ -45,13 +59,53 @@ function ActionButton() {
   const handleSelectedKhuonBanh = useCallback((value: Model3d) => {
     setSelectedKhuonBanh(value);
   }, []);
+  //#endregion
 
+  //#region TrangTri
   const [openDialogTrangTri, setOpenDialogTrangTri] = React.useState(false);
+  const [trangTriArray, setTrangTriArray] = React.useState<Model3d[]>([]);
+  const [selectedTrangTri, setSelectedTrangTri] =
+    React.useState<Model3d | null>(null);
+  const handleSelectedTrangTri = useCallback((value: Model3d) => {
+    setSelectedTrangTri(value);
+  }, []);
+
+  const ActiveDragData: { value: ActiveDrag; label: string }[] = useMemo(() => {
+    return [
+      {
+        value: { id: 0 },
+        label: 'Mặt trước',
+      },
+      {
+        value: { id: 1 },
+        label: 'Mặt sau',
+      },
+      {
+        value: { id: 2 },
+        label: 'Mặt trên',
+      },
+      {
+        value: { id: 4 },
+        label: 'Mặt trái',
+      },
+      {
+        value: { id: 5 },
+        label: 'Mặt phải',
+      },
+    ];
+  }, []);
+
+  const [selectedActiveDrag, setSelectedActiveDrag] =
+    React.useState<ActiveDrag>({ id: -1 });
+  //#endregion
 
   useEffect(() => {
     async function fetchData() {
       const khuonbanhs = await getModel3dByType('1');
       setKhuonBanhArray(khuonbanhs);
+
+      const trangtris = await getModel3dByType('2');
+      setTrangTriArray(trangtris);
 
       setSelectedKhuonBanh(
         khuonbanhs.find((item) => item.file == array[0].path) || null
@@ -181,7 +235,7 @@ function ActionButton() {
                     <CardItem
                       item={item}
                       selected={item === selectedKhuonBanh}
-                      handleSelectedKhuonBanh={handleSelectedKhuonBanh}
+                      onClick={handleSelectedKhuonBanh}
                     />
                   </Grid>
                 );
@@ -216,24 +270,88 @@ function ActionButton() {
           setOpenDialogTrangTri(false);
         }}
       >
-        <DialogTitle>Use Google's</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending
-            anonymous location data to Google, even when no apps are running.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              setOpenDialogTrangTri(false);
+          <Box
+            component={'div'}
+            sx={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 2,
             }}
           >
-            Thêm
-          </Button>
-        </DialogActions>
+            <FormControl fullWidth>
+              <InputLabel color="secondary" size="small">
+                Mặt trang trí
+              </InputLabel>
+              <Select
+                size="small"
+                color="secondary"
+                value={JSON.stringify(selectedActiveDrag)}
+                label="Mặt trang trí"
+                onChange={(e: any) => {
+                  setSelectedActiveDrag(JSON.parse(e.target.value));
+                }}
+                required
+              >
+                {ActiveDragData.map((item, index) => {
+                  return (
+                    <MenuItem key={index} value={JSON.stringify(item.value)}>
+                      <Typography
+                        variant="body1"
+                        fontWeight={'regular'}
+                        sx={{
+                          py: 0.5,
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+
+            <Grid container spacing={2} justifyContent={'flex-start'}>
+              {trangTriArray.map((item, index) => {
+                return (
+                  <Grid item key={index} xs={4}>
+                    <CardItem
+                      item={item}
+                      selected={item === selectedTrangTri}
+                      onClick={handleSelectedTrangTri}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                if (
+                  !selectedTrangTri ||
+                  !selectedActiveDrag ||
+                  selectedActiveDrag.id == -1 ||
+                  !handleChangeContext
+                ) {
+                  return;
+                }
+                const value: Model3DProps = {
+                  path: selectedTrangTri.file,
+                  planeId: selectedActiveDrag,
+                };
+                handleChangeContext('add', value);
+                setOpenDialogTrangTri(false);
+              }}
+            >
+              Thêm
+            </Button>
+          </Box>
+        </DialogContent>
       </CustomDialog>
     </>
   );
@@ -298,11 +416,11 @@ function CustomDialog({
 function CardItem({
   item,
   selected,
-  handleSelectedKhuonBanh,
+  onClick,
 }: {
   item: Model3d;
   selected: boolean;
-  handleSelectedKhuonBanh: (item: Model3d) => void;
+  onClick: (item: Model3d) => void;
 }) {
   const [image, setImage] = useState('');
   const [hover, setHover] = useState(false);
@@ -330,7 +448,7 @@ function CardItem({
           border: 6,
           borderColor: selected ? 'secondary.main' : 'primary.main',
         }}
-        onClick={() => handleSelectedKhuonBanh(item)}
+        onClick={() => onClick(item)}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >

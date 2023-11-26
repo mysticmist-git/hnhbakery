@@ -107,12 +107,12 @@ function GroupDecor({ index }: { index: number }) {
       const newValue = {
         ...arrayModel[index],
         rotation: getRotationFromPlaneId(planeId, cakeBoundingBox),
+        scale: 1,
+        ghim: 0,
       };
       handleChangeContext('array', newValue, index);
     }
-    if (!pos.current) {
-      pos.current = getPositionFromPlaneId(planeId, cakeBoundingBox);
-    }
+    pos.current = getPositionFromPlaneId(planeId, cakeBoundingBox);
   }, [planeId, cakeBoundingBox]);
 
   const [oldGhim, setOldGhim] = useState<number>(ghim ?? 0);
@@ -148,7 +148,7 @@ function GroupDecor({ index }: { index: number }) {
     }
 
     setOldGhim(ghim);
-  }, [ghim]);
+  }, [ghim, planeId, cakeBoundingBox]);
 
   return (
     <group ref={ref} {...events} scale={scale}>

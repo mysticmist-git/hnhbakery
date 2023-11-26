@@ -7,7 +7,7 @@ function TableModel3D() {
   const [floor, wall] = useTexture([floorTexture.src, wallTexture.src]);
 
   const size = 10;
-  const height = 1.5;
+  const height = 2;
 
   return (
     <>

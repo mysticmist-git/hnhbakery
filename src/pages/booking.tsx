@@ -119,12 +119,27 @@ const Booking = () => {
     (type: string, value: any, index?: number) => {
       if (type === 'array') {
         if (index !== undefined && value.children.length > 0) {
-          setArrayModel((prev) => {
-            const newArray = [...prev];
-            newArray[index] = value;
-            return newArray;
-          });
+          if (index == 0) {
+            setArrayModel((prev) => {
+              const newArray = [...prev].map((item) => {
+                return {
+                  ...item,
+                  scale: 0.2,
+                };
+              });
+              newArray[index] = value;
+              return newArray;
+            });
+          } else {
+            setArrayModel((prev) => {
+              const newArray = [...prev];
+              newArray[index] = value;
+              return newArray;
+            });
+          }
         }
+      } else if (type === 'add') {
+        setArrayModel((prev) => [...prev, createModel3DItem(value)]);
       } else if (type === 'editIndex') {
         setEditIndex(value);
       }
