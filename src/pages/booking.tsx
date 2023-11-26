@@ -1,5 +1,6 @@
 import ImageBackground from '@/components/Imagebackground';
 import BookingTabs from '@/components/booking/BookingTabs';
+import ActionButton from '@/components/booking/Design/ActionButton';
 import EditModel from '@/components/booking/Design/EditModel';
 import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
 import { createModel3DItem } from '@/components/booking/Design/Utils';
@@ -106,28 +107,6 @@ const Booking = () => {
 
   //#region 3D
 
-  // const [model3DContext, setArrayModel3D] = useState<Model3DContextType>({
-  //   array: [
-  // createModel3DItem({
-  //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
-  // }),
-  //     // createModel3DItem({
-  //     //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-pop-with-tag-001.obj?alt=media&token=9ee1ccc9-0dba-4cf4-b2d8-3db78bfd69b5',
-  //     //   planeId: { id: 2 },
-  //     // }),
-  //     // createModel3DItem({
-  //     //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper-001.obj?alt=media&token=af439384-26d6-4b9f-832b-03def1d8b975',
-  //     //   planeId: { id: 2 },
-  //     // }),
-  //     // createModel3DItem({
-  //     //   path: './freepik/strawberry.obj',
-  //     //   planeId: { id: 2 },
-  //     //   scale: 0.001,
-  //     // }),
-  //   ],
-  //   editIndex: -1,
-  // });
-
   const [arrayModel, setArrayModel] = useState<Model3DProps[]>([
     createModel3DItem({
       path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
@@ -161,6 +140,8 @@ const Booking = () => {
     }
     fetchData();
   }, []);
+
+  console.log(arrayModel);
 
   //#endregion
 
@@ -325,6 +306,7 @@ const Booking = () => {
                   </Box>
                 </Box>
               </Grid>
+
               <Grid
                 item
                 xs={12}
@@ -345,47 +327,10 @@ const Booking = () => {
                   }}
                 >
                   <Canvas3D setCanvas={setCanvas} />
-                  <Box
-                    component={'div'}
-                    sx={{
-                      width: '100%',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      color: 'white',
-                      zIndex: 2,
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      p: 2,
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(2px)',
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => {
-                        setArrayModel((prev) => {
-                          const newArray = [...prev];
-                          newArray.push(
-                            createModel3DItem({
-                              path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper-002.obj?alt=media&token=7a3673d6-f0fe-4cc1-91c5-aa436c8b7f11',
-                              planeId: { id: 2 },
-                            })
-                          );
-                          console.log(newArray);
-
-                          return newArray;
-                        });
-                      }}
-                    >
-                      Thêm
-                    </Button>
-                  </Box>
+                  <ActionButton />
                 </Box>
               </Grid>
+
               <Grid
                 item
                 xs={12}

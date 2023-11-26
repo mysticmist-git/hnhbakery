@@ -115,14 +115,27 @@ function EditModel() {
           <CustomAccodion label="Lớp phủ">
             <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={2}>
               {children.map((label, i) => {
-                return (
-                  <FormControl fullWidth key={i}>
-                    <InputLabel size="small" color="secondary">
-                      {label}
-                    </InputLabel>
-                    <CustomSelect i={i} label={label} />
-                  </FormControl>
-                );
+                if (editIndex == 0) {
+                  if (label.includes('Default')) {
+                    return (
+                      <FormControl fullWidth key={i}>
+                        <InputLabel size="small" color="secondary">
+                          {label.split('_')[1]}
+                        </InputLabel>
+                        <CustomSelect i={i} label={label.split('_')[1]} />
+                      </FormControl>
+                    );
+                  }
+                } else {
+                  return (
+                    <FormControl fullWidth key={i}>
+                      <InputLabel size="small" color="secondary">
+                        {label}
+                      </InputLabel>
+                      <CustomSelect i={i} label={label} />
+                    </FormControl>
+                  );
+                }
               })}
             </Stack>
           </CustomAccodion>

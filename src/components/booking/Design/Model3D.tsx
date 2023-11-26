@@ -91,12 +91,19 @@ export function Primitive({
 
     const box3 = new Box3().setFromObject(loader);
     if (handleChangeContext) {
+      const children: string[] = [];
+      let count = 1;
+      loader.children.forEach((item, i) => {
+        if (item.name == 'Default') {
+          children.push('Default_Phần ' + count++);
+        } else {
+          children.push(item.name);
+        }
+      });
       const newValue = {
         ...arrayModel[index],
-        children: loader.children.map((item, i) =>
-          item.name == 'Default' ? 'Phần ' + (i + 1) : item.name
-        ),
-        textures: loader.children.map((item, i) => ({
+        children: children,
+        textures: children.map((item, i) => ({
           name: '',
           path: '',
         })),
@@ -156,7 +163,7 @@ function Model3D() {
     <DraggingContext.Provider
       value={{ active, setActive, cakeBoundingBox, dragIndex, setDragIndex }}
     >
-      <group scale={5} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      <group scale={7} position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
           {arrayModel &&
             arrayModel.map((item, index) => {
@@ -206,7 +213,7 @@ export default function Canvas3D({
         shadows
         camera={{
           fov: 75,
-          position: [0, Math.PI / 6, 2.5],
+          position: [0, Math.PI / 3, 2.5],
         }}
         gl={{ preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%' }}

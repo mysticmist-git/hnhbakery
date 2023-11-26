@@ -37,6 +37,11 @@ export async function getModel3dById(id: string) {
   return (await getModel3dSnapshotById(id)).data();
 }
 
+export async function getModel3dByType(type_id: string) {
+  const model3ds = await getAllModel3d();
+  return model3ds.filter((model3d) => model3d.model_3d_type_id === type_id);
+}
+
 export async function updateModel3d(id: string, data: Model3d) {
   await updateDoc(getModel3dRefById(id), data);
 }
