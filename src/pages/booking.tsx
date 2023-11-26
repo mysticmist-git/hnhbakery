@@ -1,10 +1,13 @@
 import ImageBackground from '@/components/Imagebackground';
 import BookingTabs from '@/components/booking/BookingTabs';
+import ActionButton from '@/components/booking/Design/ActionButton';
 import EditModel from '@/components/booking/Design/EditModel';
 import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
 import { createModel3DItem } from '@/components/booking/Design/Utils';
 import UploadStepperComponent from '@/components/booking/Upload/UploadStepperComponent';
+import { getCakeTextures } from '@/lib/DAO/cakeTextureDAO';
 import BookingItem from '@/models/bookingItem';
+import CakeTexture from '@/models/cakeTexture';
 
 import {
   alpha,
@@ -18,7 +21,7 @@ import {
 } from '@mui/material';
 import { RootState, useThree } from '@react-three/fiber';
 import path from 'path';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
 import { Group, Object3DEventMap, Vector3 } from 'three';
 
 export type Model3DPropsType =
@@ -48,12 +51,14 @@ export type Model3DContextType = {
   array: Model3DProps[];
   editIndex: number;
   handleChangeContext?: (type: string, value: any, index?: number) => void;
+  textureData?: CakeTexture[];
 };
 
 export const Model3DContext = createContext<Model3DContextType>({
   array: [],
   editIndex: -1,
   handleChangeContext: () => {},
+  textureData: [],
 });
 
 const Booking = () => {
@@ -102,45 +107,56 @@ const Booking = () => {
 
   //#region 3D
 
-  const [model3DContext, setArrayModel3D] = useState<Model3DContextType>({
-    array: [
-      createModel3DItem({
-        path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
-      }),
-      // createModel3DItem({
-      //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-pop-with-tag-001.obj?alt=media&token=9ee1ccc9-0dba-4cf4-b2d8-3db78bfd69b5',
-      //   planeId: { id: 2 },
-      // }),
-      // createModel3DItem({
-      //   path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcupcake-topper.obj?alt=media&token=0927573d-63d7-40fd-869c-7486dda65ffc',
-      //   planeId: { id: 2 },
-      // }),
-      createModel3DItem({
-        path: './freepik/strawberry.obj',
-        planeId: { id: 2 },
-        scale: 0.001,
-      }),
-    ],
-    editIndex: -1,
-  });
+  const [arrayModel, setArrayModel] = useState<Model3DProps[]>([
+    createModel3DItem({
+      path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
+    }),
+  ]);
 
-  function handleChangeContext(type: string, value: any, index?: number) {
-    if (type === 'array') {
-      if (index !== undefined) {
-        setArrayModel3D((prev) => {
-          const newArray = [...prev.array];
-          newArray[index] = value;
+  const [editIndex, setEditIndex] = useState(-1);
 
-          return {
-            ...prev,
-            array: newArray,
-          };
-        });
+  const handleChangeContext = useCallback(
+    (type: string, value: any, index?: number) => {
+      if (type === 'array') {
+        if (index !== undefined && value.children.length > 0) {
+          if (index == 0) {
+            setArrayModel((prev) => {
+              const newArray = [...prev].map((item) => {
+                return {
+                  ...item,
+                  scale: 0.2,
+                };
+              });
+              newArray[index] = value;
+              return newArray;
+            });
+          } else {
+            setArrayModel((prev) => {
+              const newArray = [...prev];
+              newArray[index] = value;
+              return newArray;
+            });
+          }
+        }
+      } else if (type === 'add') {
+        setArrayModel((prev) => [...prev, createModel3DItem(value)]);
+      } else if (type === 'editIndex') {
+        setEditIndex(value);
       }
-    } else if (type === 'editIndex') {
-      setArrayModel3D({ ...model3DContext, [type]: value });
+    },
+    []
+  );
+
+  const [textureData, setTextureData] = useState<CakeTexture[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      setTextureData(await getCakeTextures());
     }
-  }
+    fetchData();
+  }, []);
+
+  console.log(arrayModel);
 
   //#endregion
 
@@ -226,8 +242,10 @@ const Booking = () => {
 
             <Model3DContext.Provider
               value={{
-                ...model3DContext,
+                array: arrayModel,
+                editIndex: editIndex,
                 handleChangeContext: handleChangeContext,
+                textureData: textureData,
               }}
             >
               <Grid
@@ -303,6 +321,7 @@ const Booking = () => {
                   </Box>
                 </Box>
               </Grid>
+
               <Grid
                 item
                 xs={12}
@@ -319,11 +338,14 @@ const Booking = () => {
                     borderRadius: 4,
                     overflow: 'hidden',
                     borderColor: 'secondary.main',
+                    position: 'relative',
                   }}
                 >
                   <Canvas3D setCanvas={setCanvas} />
+                  <ActionButton />
                 </Box>
               </Grid>
+
               <Grid
                 item
                 xs={12}

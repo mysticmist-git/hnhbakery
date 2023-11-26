@@ -12,7 +12,7 @@ import Model3d, { model3dConverter } from '@/models/model3d';
 import { db } from '@/firebase/config';
 
 export function getModel3dRef() {
-  return collection(db, COLLECTION_NAME.MODEL_3D).withConverter(
+  return collection(db, COLLECTION_NAME.MODEL_3Ds).withConverter(
     model3dConverter
   );
 }
@@ -35,6 +35,11 @@ export async function getAllModel3d() {
 
 export async function getModel3dById(id: string) {
   return (await getModel3dSnapshotById(id)).data();
+}
+
+export async function getModel3dByType(type_id: string) {
+  const model3ds = await getAllModel3d();
+  return model3ds.filter((model3d) => model3d.model_3d_type_id === type_id);
 }
 
 export async function updateModel3d(id: string, data: Model3d) {

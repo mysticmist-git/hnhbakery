@@ -8,7 +8,7 @@ import {
 import WithId from './withId';
 
 type Model3d = WithId & {
-  model_type_id: string;
+  model_3d_type_id: string;
   name: string;
   description?: string;
   file: string;

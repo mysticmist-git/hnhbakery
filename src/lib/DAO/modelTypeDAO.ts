@@ -9,10 +9,10 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import ModelType, { modelTypeConverter } from '@/models/modelType';
+import Model3DType, { modelTypeConverter } from '@/models/modelType';
 
 function getModelTypesRef() {
-  return collection(db, COLLECTION_NAME.MODEL_TYPES).withConverter(
+  return collection(db, COLLECTION_NAME.MODEL_3D_TYPES).withConverter(
     modelTypeConverter
   );
 }
@@ -37,11 +37,11 @@ async function getModelTypeById(id: string) {
   return (await getModelTypeSnapshotById(id)).data();
 }
 
-async function updateModelType(id: string, data: ModelType) {
+async function updateModelType(id: string, data: Model3DType) {
   await updateDoc(getModelTypeRefById(id), data);
 }
 
-async function createModelType(data: Omit<ModelType, 'id'>) {
+async function createModelType(data: Omit<Model3DType, 'id'>) {
   return await addDoc(getModelTypesRef(), data);
 }
 
