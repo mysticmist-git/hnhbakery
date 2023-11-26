@@ -1,41 +1,16 @@
-import bg from '@/assets/Decorate/bg10.png';
-import momo from '@/assets/Decorate/momo.jpg';
-import tienmat from '@/assets/Decorate/tienmat.jpg';
-import vnpay from '@/assets/Decorate/vnpay.jpg';
-
-import { CustomIconButton } from '@/components/buttons';
-import { getPaymentMethods } from '@/lib/DAO/paymentMethodDAO';
 import useDownloadUrl from '@/lib/hooks/useDownloadUrl';
-import { PaymentObject } from '@/lib/models';
 import PaymentMethod from '@/models/paymentMethod';
-import CloseIcon from '@mui/icons-material/Close';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  Typography,
-  alpha,
-  useTheme,
-} from '@mui/material';
+import { Box, Button, Typography, alpha, useTheme } from '@mui/material';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-interface Props {
-  billId: string;
-  totalPrice: number;
-  paymentDescription: string;
-}
-
-function PTTT_item({
+export default function PTTT_item({
   item,
   onClick,
-}: {
+}: Readonly<{
   item: PaymentMethod;
   onClick: () => void;
-}) {
+}>) {
   const theme = useTheme();
   const { name, image } = item;
 
@@ -98,101 +73,5 @@ function PTTT_item({
         </Typography>
       </Box>
     </Box>
-  );
-}
-
-export default function DialogHinhThucThanhToan({
-  open,
-  handleClose,
-  handlePayment,
-}: {
-  open: boolean;
-  handleClose: any;
-  handlePayment: (id: string | undefined, type: string | undefined) => void;
-}) {
-  // #region Hooks
-
-  const theme = useTheme();
-
-  // #endregion
-
-  // #region States
-
-  const [PTTTs, setPTTTs] = useState<PaymentMethod[]>([]);
-
-  // #endregion
-
-  useEffect(() => {
-    const getPayments = async () => {
-      const payments = await getPaymentMethods();
-
-      setPTTTs(payments);
-    };
-
-    getPayments();
-  }, []);
-
-  return (
-    <>
-      <Dialog
-        disableEscapeKeyDown
-        open={open}
-        onClose={handleClose}
-        sx={{
-          backgroundImage: `url(${bg.src})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: alpha(theme.palette.primary.main, 0.5),
-          backdropFilter: 'blur(7px)',
-          '& .MuiDialog-paper': {
-            backgroundColor: theme.palette.common.white,
-            borderRadius: '8px',
-            width: { md: '50vw', xs: '85vw' },
-          },
-          transition: 'all 0.5s ease-in-out',
-        }}
-      >
-        <DialogTitle>
-          <Typography
-            align="center"
-            variant="body1"
-            sx={{
-              fontWeight: 'bold',
-            }}
-            color={theme.palette.common.black}
-          >
-            Chọn phương thức thanh toán
-          </Typography>
-
-          <Box>
-            <CustomIconButton
-              onClick={handleClose}
-              sx={{ position: 'absolute', top: '8px', right: '8px' }}
-            >
-              <CloseIcon />
-            </CustomIconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Grid
-            container
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            spacing={2}
-          >
-            {PTTTs.map((item, index) => (
-              <Grid item key={index} xs={12}>
-                <PTTT_item
-                  item={item}
-                  onClick={() => handlePayment(item.id, item.name)}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
