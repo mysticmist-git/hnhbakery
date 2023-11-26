@@ -25,6 +25,10 @@ function GroupDecor({ index }: { index: number }) {
     React.useContext(DraggingContext);
 
   const { array: arrayModel, handleChangeContext } = useContext(Model3DContext);
+
+  if (!arrayModel[index]) {
+    return <></>;
+  }
   const { planeId, box3, scale, rotation, ghim } = arrayModel[index];
 
   const pos = useRef<[number, number, number] | null>(null);
@@ -40,7 +44,7 @@ function GroupDecor({ index }: { index: number }) {
 
       const normal = plane.normal;
 
-      const giamToc = 10;
+      const giamToc = 5;
 
       if (normal.x != 0) {
         v.x = plane.constant;
@@ -80,7 +84,11 @@ function GroupDecor({ index }: { index: number }) {
     [planeId, cakeBoundingBox, box3, ghim]
   );
 
-  const [events, hovered] = useDrag({ planeId: planeId, onDrag });
+  const [events, hovered] = useDrag({
+    planeId: planeId,
+    onDrag,
+    index,
+  });
 
   useFrame((state, delta) => {
     if (pos.current) {

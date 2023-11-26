@@ -97,16 +97,19 @@ export function getPlane(
 export function useDrag({
   planeId,
   onDrag,
+  index,
 }: {
   planeId: ActiveDrag | undefined;
   onDrag: (v: Vector3) => void;
+  index: number;
 }): any {
   if (!planeId) {
     return () => {};
   }
   const controls: any = useThree((state) => state.controls);
 
-  const { active, setActive, cakeBoundingBox } = useContext(DraggingContext);
+  const { active, setActive, cakeBoundingBox, dragIndex, setDragIndex } =
+    useContext(DraggingContext);
 
   const [hovered, hover] = useState(false);
 
@@ -117,6 +120,7 @@ export function useDrag({
     (e: any) => {
       e.stopPropagation();
       setActive(planeId);
+      setDragIndex(index);
       if (controls) controls.enabled = false;
       e.target.setPointerCapture(e.pointerId);
     },
@@ -126,6 +130,7 @@ export function useDrag({
   const up = useCallback(
     (e: any) => {
       setActive({ id: -1 });
+      setDragIndex(-1);
       if (controls) controls.enabled = true;
       e.target.releasePointerCapture(e.pointerId);
     },
@@ -137,6 +142,7 @@ export function useDrag({
       e.stopPropagation();
       if (
         active.id != -1 &&
+        dragIndex == index &&
         e.ray.intersectPlane(getPlane(planeId, cakeBoundingBox), v)
       )
         onDrag(v);

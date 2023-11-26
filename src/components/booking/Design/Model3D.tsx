@@ -59,6 +59,10 @@ export function Primitive({
     handleChangeContext,
     editIndex,
   } = useContext(Model3DContext);
+
+  if (!arrayModel[index]) {
+    return <></>;
+  }
   const { path, textures } = arrayModel[index];
 
   let loader = useLoader(OBJLoader, path);
@@ -101,6 +105,7 @@ export function Primitive({
           max: box3.max,
         },
       };
+      console.log(newValue);
 
       handleChangeContext('array', newValue, index);
     }
@@ -136,6 +141,8 @@ function Model3D() {
 
   const [active, setActive] = useState<ActiveDrag>({ id: -1 });
 
+  const [dragIndex, setDragIndex] = useState(-1);
+
   const [cakeBoundingBox, setCakeBoundingBox] = useState<Box3 | null>(null);
 
   const handleCakeBoudingChange = useCallback(
@@ -146,7 +153,9 @@ function Model3D() {
   );
 
   return (
-    <DraggingContext.Provider value={{ active, setActive, cakeBoundingBox }}>
+    <DraggingContext.Provider
+      value={{ active, setActive, cakeBoundingBox, dragIndex, setDragIndex }}
+    >
       <group scale={5} position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
           {arrayModel &&
@@ -175,10 +184,14 @@ export const DraggingContext = createContext<{
   active: ActiveDrag;
   setActive: React.Dispatch<React.SetStateAction<ActiveDrag>>;
   cakeBoundingBox: Box3 | null;
+  dragIndex: number;
+  setDragIndex: React.Dispatch<React.SetStateAction<number>>;
 }>({
   active: { id: -1 },
   setActive: () => {},
   cakeBoundingBox: new Box3(),
+  dragIndex: -1,
+  setDragIndex: () => {},
 });
 
 export default function Canvas3D({

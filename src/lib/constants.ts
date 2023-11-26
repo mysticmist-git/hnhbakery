@@ -37,8 +37,8 @@ export const COLLECTION_NAME = {
   CAKE_OCCASIONS: 'cake_occasions',
   CAKE_BASES: 'cake_bases',
   CAKE_TEXTURES: 'cake_textures',
-  MODEL_3D: 'model_3d',
-  MODEL_TYPES: 'model_types',
+  MODEL_3Ds: 'model_3ds',
+  MODEL_3D_TYPES: 'model_3d_types',
   PROVINCES: 'provinces',
   NONE: 'none',
 };

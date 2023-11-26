@@ -9,12 +9,14 @@ import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
 import Size from './size';
 
-type ModelType = WithId & {
+type Model3DType = WithId & {
   name: string;
 };
 
-const modelTypeConverter: FirestoreDataConverter<ModelType> = {
-  toFirestore: function (modelObject: WithFieldValue<ModelType>): DocumentData {
+const modelTypeConverter: FirestoreDataConverter<Model3DType> = {
+  toFirestore: function (
+    modelObject: WithFieldValue<Model3DType>
+  ): DocumentData {
     const { id, ...obj } = modelObject;
 
     return obj;
@@ -22,17 +24,17 @@ const modelTypeConverter: FirestoreDataConverter<ModelType> = {
   fromFirestore: function (
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
-  ): ModelType {
+  ): Model3DType {
     const data = snapshot.data(options);
 
-    const convertedData: ModelType = {
+    const convertedData: Model3DType = {
       ...data,
       id: snapshot.id,
-    } as ModelType;
+    } as Model3DType;
     return convertedData;
   },
 };
 
-export default ModelType;
+export default Model3DType;
 
 export { modelTypeConverter };

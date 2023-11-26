@@ -12,7 +12,7 @@ import Model3d, { model3dConverter } from '@/models/model3d';
 import { db } from '@/firebase/config';
 
 export function getModel3dRef() {
-  return collection(db, COLLECTION_NAME.MODEL_3D).withConverter(
+  return collection(db, COLLECTION_NAME.MODEL_3Ds).withConverter(
     model3dConverter
   );
 }

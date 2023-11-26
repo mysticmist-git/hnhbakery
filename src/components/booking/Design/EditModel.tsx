@@ -1,4 +1,6 @@
 import { storage } from '@/firebase/config';
+import { getCakeTextures } from '@/lib/DAO/cakeTextureDAO';
+import CakeTexture from '@/models/cakeTexture';
 import { Model3DContext, Model3DPropsType } from '@/pages/booking';
 import { ExpandMore } from '@mui/icons-material';
 import {
@@ -14,20 +16,10 @@ import {
   Typography,
 } from '@mui/material';
 import { Stack } from '@mui/system';
-import { getDownloadURL, ref } from 'firebase/storage';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-const texturesData = [
-  {
-    name: 'Dâu',
-    path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fstrawberry.png?alt=media&token=4595f126-25a7-4a9c-a6de-a5b55b67593f',
-  },
-  {
-    name: 'Vani',
-    path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/cakeTextures%2Fvani.png?alt=media&token=12ff1884-9366-4113-b8cb-a19af6607808',
-  },
-];
 function EditModel() {
   const { array, editIndex, handleChangeContext } = useContext(Model3DContext);
+
   if (editIndex === -1) {
     return (
       <>
@@ -50,6 +42,10 @@ function EditModel() {
         </Box>
       </>
     );
+  }
+
+  if (!array[editIndex]) {
+    return <></>;
   }
   const { children, textures, rotation, ghim } = array[editIndex];
 
@@ -140,7 +136,12 @@ export default EditModel;
 
 function CustomSliderGhim() {
   const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+
+  if (!array[editIndex]) {
+    return <></>;
+  }
   const { ghim, box3 } = array[editIndex];
+
   if (ghim == undefined || box3 == undefined) {
     return <></>;
   }
@@ -182,6 +183,9 @@ function CustomSliderGhim() {
 
 function CustomSliderScale() {
   const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+  if (!array[editIndex]) {
+    return <></>;
+  }
   const { scale } = array[editIndex];
   if (!scale) {
     return <></>;
@@ -224,6 +228,9 @@ function CustomSliderScale() {
 
 function CustomSliderRotation({ i }: { i: number }) {
   const { editIndex, array, handleChangeContext } = useContext(Model3DContext);
+  if (!array[editIndex]) {
+    return <></>;
+  }
   const { rotation } = array[editIndex];
   if (!rotation) {
     return <></>;
@@ -267,9 +274,13 @@ function CustomSliderRotation({ i }: { i: number }) {
 }
 
 function CustomSelect({ label, i }: { i: number; label: string }) {
-  const { array, editIndex, handleChangeContext } = useContext(Model3DContext);
+  const { array, editIndex, handleChangeContext, textureData } =
+    useContext(Model3DContext);
+  if (!array[editIndex]) {
+    return <></>;
+  }
   const { textures } = array[editIndex];
-  if (!textures) {
+  if (!textures || !textureData) {
     return null;
   }
 
@@ -290,14 +301,13 @@ function CustomSelect({ label, i }: { i: number; label: string }) {
           setValue(e.target.value);
 
           let newTextures = [...textures];
-          const tt = texturesData.find(
-            (texture) => texture.path === e.target.value
+          const tt = textureData.find(
+            (texture) => texture.image === e.target.value
           );
-          console.log(tt);
 
           newTextures[i] = {
             name: tt?.name ?? '',
-            path: tt?.path ?? '',
+            path: tt?.image ?? '',
           };
 
           const newValue = {
@@ -308,9 +318,9 @@ function CustomSelect({ label, i }: { i: number; label: string }) {
             handleChangeContext('array', newValue, editIndex);
         }}
       >
-        {texturesData.map((texture, i) => (
-          <MenuItem key={i} value={texture.path}>
-            <CustomMenuItem {...texture} />
+        {textureData.map((texture, i) => (
+          <MenuItem key={i} value={texture.image}>
+            <CustomMenuItem name={texture.name} path={texture.image} />
           </MenuItem>
         ))}
       </Select>
