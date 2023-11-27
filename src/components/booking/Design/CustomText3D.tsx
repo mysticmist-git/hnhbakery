@@ -1,23 +1,29 @@
-import {
-  Suspense,
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  useMemo,
-} from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Text3D, OrbitControls, Center, useTexture } from '@react-three/drei';
+import { useState, useEffect, useContext, useRef, useMemo } from 'react';
+import { Text3D, Center, useTexture } from '@react-three/drei';
 import { suspend } from 'suspend-react';
 import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js';
-import { Box } from '@mui/material';
-import { DraggingContext } from './Model3D';
-import { easing } from 'maath';
-import { Box3, MeshStandardMaterial, Vector3 } from 'three';
+import { Box3, MeshStandardMaterial } from 'three';
 import { Model3DContext } from '@/pages/booking';
 
+const fonts = [
+  'Roboto',
+  'DancingScript',
+  'Pacifico',
+  'Grandstander',
+  'Corinthia',
+  'TwinkleStar',
+  'GreatVibes',
+  'Arizonia',
+  'Gluten',
+  'FleurDeLeah',
+  'Coiny',
+];
+
 export default function CustomText3D({ index }: { index: number }) {
-  const [fontFileUrl, setFontFileUrl] = useState('/fonts/Roboto-Light.ttf');
+  const [fontFileUrl, setFontFileUrl] = useState(`/fonts/${'FleurDeLeah'}.ttf`);
+
+  console.log(fontFileUrl);
+
   const font: any = suspend(() => {
     const loader = new TTFLoader();
     return new Promise((resolve) => {
@@ -125,6 +131,7 @@ export default function CustomText3D({ index }: { index: number }) {
           ref={ref}
           font={font}
           height={configNumber} // Độ dày
+          curveSegments={100}
           bevelEnabled // Gọt cạnh - bo tròn
           bevelSize={configNumber} // Độ múp khi bo tròn
           bevelThickness={configNumber}

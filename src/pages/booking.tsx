@@ -185,6 +185,7 @@ const Booking = () => {
           createModel3DItem({
             isText: true,
             planeId: { id: 2 },
+            children: ['Trăm năm hạnh phúc'],
           })
         );
         return newArray;
