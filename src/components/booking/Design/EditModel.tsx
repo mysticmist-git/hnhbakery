@@ -47,7 +47,8 @@ function EditModel() {
   if (!array[editIndex]) {
     return <></>;
   }
-  const { children, textures, rotation, ghim } = array[editIndex];
+  const { children, textures, rotation, ghim, isText, isShow } =
+    array[editIndex];
 
   return (
     <>
@@ -65,86 +66,93 @@ function EditModel() {
       >
         Điều chỉnh
       </Typography>
+      {isShow && (
+        <Stack
+          direction="column"
+          sx={{
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
+            pb: 4,
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+          gap={0}
+        >
+          {editIndex != 0 &&
+            rotation &&
+            ghim !== undefined &&
+            handleChangeContext && (
+              <CustomAccodion label="Thông số">
+                <Stack direction="column" sx={{ width: '100%' }} gap={1}>
+                  <Box component={'div'} sx={{ width: '100%' }}>
+                    <Typography variant="caption">Độ lớn</Typography>
+                    <CustomSliderScale />
+                  </Box>
 
-      <Stack
-        direction="column"
-        sx={{
-          width: '100%',
-          height: '100%',
-          overflow: 'auto',
-          pb: 4,
-          '&::-webkit-scrollbar': { display: 'none' },
-        }}
-        gap={0}
-      >
-        {editIndex != 0 &&
-          rotation &&
-          ghim !== undefined &&
-          handleChangeContext && (
-            <CustomAccodion label="Thông số">
-              <Stack direction="column" sx={{ width: '100%' }} gap={1}>
-                <Box component={'div'} sx={{ width: '100%' }}>
-                  <Typography variant="caption">Độ lớn</Typography>
-                  <CustomSliderScale />
-                </Box>
+                  {!isText && (
+                    <Box component={'div'} sx={{ width: '100%' }}>
+                      <Typography variant="caption">Ghim</Typography>
+                      <CustomSliderGhim />
+                    </Box>
+                  )}
 
-                <Box component={'div'} sx={{ width: '100%' }}>
-                  <Typography variant="caption">Ghim</Typography>
-                  <CustomSliderGhim />
-                </Box>
+                  <Box component={'div'} sx={{ width: '100%' }}>
+                    <Typography variant="caption">Xoay ngang</Typography>
+                    <CustomSliderRotation i={2} />
+                  </Box>
 
-                <Box component={'div'} sx={{ width: '100%' }}>
-                  <Typography variant="caption">Xoay ngang</Typography>
-                  <CustomSliderRotation i={2} />
-                </Box>
+                  <Box component={'div'} sx={{ width: '100%' }}>
+                    <Typography variant="caption">Xoay dọc</Typography>
+                    <CustomSliderRotation i={0} />
+                  </Box>
 
-                <Box component={'div'} sx={{ width: '100%' }}>
-                  <Typography variant="caption">Xoay dọc</Typography>
-                  <CustomSliderRotation i={0} />
-                </Box>
+                  <Box component={'div'} sx={{ width: '100%' }}>
+                    <Typography variant="caption">Xoay trục</Typography>
+                    <CustomSliderRotation i={1} />
+                  </Box>
+                </Stack>
+              </CustomAccodion>
+            )}
 
-                <Box component={'div'} sx={{ width: '100%' }}>
-                  <Typography variant="caption">Xoay trục</Typography>
-                  <CustomSliderRotation i={1} />
-                </Box>
-              </Stack>
-            </CustomAccodion>
-          )}
-
-        {children && handleChangeContext && textures && children.length > 0 && (
-          <CustomAccodion label="Lớp phủ">
-            <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={2}>
-              {children.map((label, i) => {
-                if (editIndex == 0) {
-                  if (label.includes('Default')) {
-                    const displayLabel = label.split('_')[1];
-                    return (
-                      <FormControl fullWidth key={i}>
-                        <InputLabel size="small" color="secondary">
-                          {displayLabel}
-                        </InputLabel>
-                        <CustomSelect i={i} label={displayLabel} />
-                      </FormControl>
-                    );
-                  }
-                } else {
-                  const displayLabel = label.includes('Default')
-                    ? label.split('_')[1]
-                    : label;
-                  return (
-                    <FormControl fullWidth key={i}>
-                      <InputLabel size="small" color="secondary">
-                        {displayLabel}
-                      </InputLabel>
-                      <CustomSelect i={i} label={displayLabel} />
-                    </FormControl>
-                  );
-                }
-              })}
-            </Stack>
-          </CustomAccodion>
-        )}
-      </Stack>
+          {children &&
+            children.length > 0 &&
+            handleChangeContext &&
+            textures &&
+            textures.length > 0 && (
+              <CustomAccodion label="Lớp phủ">
+                <Stack direction="column" sx={{ width: '100%', py: 1 }} gap={2}>
+                  {children.map((label, i) => {
+                    if (editIndex == 0) {
+                      if (label.includes('Default')) {
+                        const displayLabel = label.split('_')[1];
+                        return (
+                          <FormControl fullWidth key={i}>
+                            <InputLabel size="small" color="secondary">
+                              {displayLabel}
+                            </InputLabel>
+                            <CustomSelect i={i} label={displayLabel} />
+                          </FormControl>
+                        );
+                      }
+                    } else {
+                      const displayLabel = label.includes('Default')
+                        ? label.split('_')[1]
+                        : label;
+                      return (
+                        <FormControl fullWidth key={i}>
+                          <InputLabel size="small" color="secondary">
+                            {displayLabel}
+                          </InputLabel>
+                          <CustomSelect i={i} label={displayLabel} />
+                        </FormControl>
+                      );
+                    }
+                  })}
+                </Stack>
+              </CustomAccodion>
+            )}
+        </Stack>
+      )}
     </>
   );
 }
@@ -297,14 +305,14 @@ function CustomSelect({ label, i }: { i: number; label: string }) {
     return <></>;
   }
   const { textures } = array[editIndex];
-  if (!textures || !textureData) {
+  if (!textures || !textureData || textures[i] == undefined) {
     return null;
   }
 
-  const [value, setValue] = useState(textures[i]?.path ?? '');
+  const [value, setValue] = useState(textures[i].path);
 
   useEffect(() => {
-    setValue(textures[i]?.path ?? '');
+    setValue(textures[i].path);
   }, [i, textures]);
 
   return (

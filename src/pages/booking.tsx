@@ -1,6 +1,7 @@
 import ImageBackground from '@/components/Imagebackground';
 import BookingTabs from '@/components/booking/BookingTabs';
 import ActionButton from '@/components/booking/Design/ActionButton';
+import CustomText3D from '@/components/booking/Design/CustomText3D';
 import EditModel from '@/components/booking/Design/EditModel';
 import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
 import { createModel3DItem } from '@/components/booking/Design/Utils';
@@ -36,7 +37,7 @@ export type Model3DPropsType =
   | 'box3';
 
 export type Model3DProps = {
-  path: string;
+  path?: string;
   children?: string[];
   textures?: { name: string; path: string }[];
   scale?: number;
@@ -48,6 +49,7 @@ export type Model3DProps = {
     max: Vector3;
   };
   isShow?: boolean;
+  isText?: boolean;
 };
 
 export type Model3DContextType = {
@@ -117,13 +119,16 @@ const Booking = () => {
   const handleChangeContext = useCallback(
     (type: string, value: any, index?: number) => {
       if (type === 'array') {
-        if (index !== undefined && value.children.length > 0) {
+        if (
+          index !== undefined &&
+          value.children.length > 0 &&
+          value.textures.length > 0
+        ) {
           if (index == 0) {
             setArrayModel((prev) => {
               const newArray = [...prev].map((item) => {
                 return {
                   ...item,
-                  scale: 0.2,
                 };
               });
               newArray[index] = value;
@@ -157,6 +162,8 @@ const Booking = () => {
     []
   );
 
+  console.log(arrayModel);
+
   const [textureData, setTextureData] = useState<CakeTexture[]>([]);
   const [khuonBanhArray, setKhuonBanhArray] = useState<Model3d[]>([]);
   const [trangTriArray, setTrangTriArray] = useState<Model3d[]>([]);
@@ -169,11 +176,17 @@ const Booking = () => {
       setTrangTriArray(models.filter((item) => item.model_3d_type_id == '2'));
 
       setArrayModel((prev) => {
-        const newArray = [...prev];
-        newArray[0] = createModel3DItem({
-          // path: models.filter((item) => item.model_3d_type_id == '1')[2].file,
-          path: '/cake-002.obj',
-        });
+        const newArray = [];
+        newArray.push(
+          createModel3DItem({
+            // path: models.filter((item) => item.model_3d_type_id == '1')[2].file,
+            path: '/cake-002.obj',
+          }),
+          createModel3DItem({
+            isText: true,
+            planeId: { id: 2 },
+          })
+        );
         return newArray;
       });
     }
@@ -270,7 +283,7 @@ const Booking = () => {
                 textureData: textureData,
               }}
             >
-              <Grid
+              {/* <Grid
                 item
                 xs={12}
                 lg={3}
@@ -289,7 +302,7 @@ const Booking = () => {
                     borderColor: 'secondary.main',
                   }}
                 >
-                  {/* <Box
+                  <Box
                         component={'img'}
                         src={screenShot}
                         alt={screenShot}
@@ -322,7 +335,7 @@ const Booking = () => {
                         }}
                       >
                         Bấm
-                      </Button> */}
+                      </Button>
 
                   <Box
                     component={'div'}
@@ -342,12 +355,12 @@ const Booking = () => {
                     </Typography>
                   </Box>
                 </Box>
-              </Grid>
+              </Grid> */}
 
               <Grid
                 item
                 xs={12}
-                lg={6}
+                lg={9}
                 display={tabIndex === 1 ? 'block' : 'none'}
               >
                 <Box
