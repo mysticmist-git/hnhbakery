@@ -23,7 +23,6 @@ import {
   Environment,
   useTexture,
   OrbitControls,
-  Box,
   PerspectiveCamera,
 } from '@react-three/drei';
 import Backdrop from './Backdrop';
@@ -34,6 +33,7 @@ import { Model3DContext, Model3DProps } from '@/pages/booking';
 import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '@/firebase/config';
 import TableModel3D from './TableModel3D';
+import { Box, Typography } from '@mui/material';
 
 // -1 = none
 // 0 = mặt trước
@@ -63,7 +63,7 @@ export function Primitive({
   if (!arrayModel[index]) {
     return <></>;
   }
-  const { path, textures } = arrayModel[index];
+  const { path, textures, isShow } = arrayModel[index];
 
   let loader = useLoader(OBJLoader, path);
 
@@ -124,21 +124,23 @@ export function Primitive({
 
   return (
     <>
-      <group
-        onClick={() => {
-          if (handleChangeContext && index !== editIndex) {
-            handleChangeContext('editIndex', index);
-          }
-        }}
-        onPointerOver={() => {
-          window.document.body.style.cursor = 'pointer';
-        }}
-        onPointerLeave={() => {
-          window.document.body.style.cursor = 'auto';
-        }}
-      >
-        <primitive object={loader.clone()} />
-      </group>
+      {isShow && loader && (
+        <group
+          onClick={() => {
+            if (handleChangeContext && index !== editIndex) {
+              handleChangeContext('editIndex', index);
+            }
+          }}
+          onPointerOver={() => {
+            window.document.body.style.cursor = 'pointer';
+          }}
+          onPointerLeave={() => {
+            window.document.body.style.cursor = 'auto';
+          }}
+        >
+          <primitive object={loader.clone()} />
+        </group>
+      )}
     </>
   );
 }
@@ -208,27 +210,53 @@ export default function Canvas3D({
 }) {
   return (
     <>
-      <Canvas
-        onCreated={setCanvas}
-        shadows
-        camera={{
-          fov: 75,
-          position: [0, Math.PI / 3, 2.5],
-        }}
-        gl={{ preserveDrawingBuffer: true }}
-        style={{ width: '100%', height: '100%' }}
-      >
-        <TableModel3D />
-        <ambientLight intensity={0.3} />
-        <Environment preset="city" />
-        {/* <CameraRig>
+      <Suspense fallback={<Loading />}>
+        <Canvas
+          onCreated={setCanvas}
+          shadows
+          camera={{
+            fov: 75,
+            position: [0, Math.PI / 3, 2.5],
+          }}
+          gl={{ preserveDrawingBuffer: true }}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <TableModel3D />
+          <ambientLight intensity={0.3} />
+          <Environment preset="city" />
+          {/* <CameraRig>
         </CameraRig> */}
-        {/* <Backdrop /> */}
-        <Center>
-          <Model3D />
-        </Center>
-        <OrbitControls makeDefault />
-      </Canvas>
+          {/* <Backdrop /> */}
+          <Center>
+            <Model3D />
+          </Center>
+          <OrbitControls makeDefault />
+        </Canvas>
+      </Suspense>
+    </>
+  );
+}
+
+function Loading() {
+  return (
+    <>
+      <Box
+        component={'div'}
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Typography
+          variant="body1"
+          sx={{ textAlign: 'center', color: 'grey.500' }}
+        >
+          Đang tải...
+        </Typography>
+      </Box>
     </>
   );
 }

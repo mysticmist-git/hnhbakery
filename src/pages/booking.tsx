@@ -6,8 +6,10 @@ import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
 import { createModel3DItem } from '@/components/booking/Design/Utils';
 import UploadStepperComponent from '@/components/booking/Upload/UploadStepperComponent';
 import { getCakeTextures } from '@/lib/DAO/cakeTextureDAO';
+import { getAllModel3d } from '@/lib/DAO/model3dDAO';
 import BookingItem from '@/models/bookingItem';
 import CakeTexture from '@/models/cakeTexture';
+import Model3d from '@/models/model3d';
 
 import {
   alpha,
@@ -45,6 +47,7 @@ export type Model3DProps = {
     min: Vector3;
     max: Vector3;
   };
+  isShow?: boolean;
 };
 
 export type Model3DContextType = {
@@ -107,11 +110,7 @@ const Booking = () => {
 
   //#region 3D
 
-  const [arrayModel, setArrayModel] = useState<Model3DProps[]>([
-    createModel3DItem({
-      path: 'https://firebasestorage.googleapis.com/v0/b/hnhbakery-83cdd.appspot.com/o/model3D%2Fcake-002.obj?alt=media&token=d64a0d8e-459d-4cda-a140-ebeb4802a411',
-    }),
-  ]);
+  const [arrayModel, setArrayModel] = useState<Model3DProps[]>([]);
 
   const [editIndex, setEditIndex] = useState(-1);
 
@@ -138,6 +137,17 @@ const Booking = () => {
             });
           }
         }
+      } else if (type == 'delete') {
+        if (index !== undefined && index > 0) {
+          setArrayModel((prev) => {
+            const newArray = [...prev];
+            newArray[index] = {
+              ...newArray[index],
+              isShow: false,
+            };
+            return newArray;
+          });
+        }
       } else if (type === 'add') {
         setArrayModel((prev) => [...prev, createModel3DItem(value)]);
       } else if (type === 'editIndex') {
@@ -148,15 +158,27 @@ const Booking = () => {
   );
 
   const [textureData, setTextureData] = useState<CakeTexture[]>([]);
-
+  const [khuonBanhArray, setKhuonBanhArray] = useState<Model3d[]>([]);
+  const [trangTriArray, setTrangTriArray] = useState<Model3d[]>([]);
   useEffect(() => {
     async function fetchData() {
       setTextureData(await getCakeTextures());
+
+      const models = await getAllModel3d();
+      setKhuonBanhArray(models.filter((item) => item.model_3d_type_id == '1'));
+      setTrangTriArray(models.filter((item) => item.model_3d_type_id == '2'));
+
+      setArrayModel((prev) => {
+        const newArray = [...prev];
+        newArray[0] = createModel3DItem({
+          // path: models.filter((item) => item.model_3d_type_id == '1')[2].file,
+          path: '/cake-002.obj',
+        });
+        return newArray;
+      });
     }
     fetchData();
   }, []);
-
-  console.log(arrayModel);
 
   //#endregion
 
@@ -342,7 +364,10 @@ const Booking = () => {
                   }}
                 >
                   <Canvas3D setCanvas={setCanvas} />
-                  <ActionButton />
+                  <ActionButton
+                    khuonBanhArray={khuonBanhArray}
+                    trangTriArray={trangTriArray}
+                  />
                 </Box>
               </Grid>
 

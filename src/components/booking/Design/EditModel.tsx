@@ -117,22 +117,26 @@ function EditModel() {
               {children.map((label, i) => {
                 if (editIndex == 0) {
                   if (label.includes('Default')) {
+                    const displayLabel = label.split('_')[1];
                     return (
                       <FormControl fullWidth key={i}>
                         <InputLabel size="small" color="secondary">
-                          {label.split('_')[1]}
+                          {displayLabel}
                         </InputLabel>
-                        <CustomSelect i={i} label={label.split('_')[1]} />
+                        <CustomSelect i={i} label={displayLabel} />
                       </FormControl>
                     );
                   }
                 } else {
+                  const displayLabel = label.includes('Default')
+                    ? label.split('_')[1]
+                    : label;
                   return (
                     <FormControl fullWidth key={i}>
                       <InputLabel size="small" color="secondary">
-                        {label}
+                        {displayLabel}
                       </InputLabel>
-                      <CustomSelect i={i} label={label} />
+                      <CustomSelect i={i} label={displayLabel} />
                     </FormControl>
                   );
                 }

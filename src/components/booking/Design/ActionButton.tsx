@@ -3,20 +3,17 @@ import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import Model3d from '@/models/model3d';
 import { Model3DContext, Model3DProps } from '@/pages/booking';
 import {
-  AddRounded,
   AutoFixHighRounded,
   CakeRounded,
   DeleteRounded,
+  EditRounded,
   FormatColorTextRounded,
 } from '@mui/icons-material';
 import {
   Box,
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle,
   FormControl,
   Grid,
   IconButton,
@@ -37,7 +34,13 @@ import React, {
 } from 'react';
 import { ActiveDrag } from './Model3D';
 
-function ActionButton() {
+function ActionButton({
+  khuonBanhArray,
+  trangTriArray,
+}: {
+  khuonBanhArray: Model3d[];
+  trangTriArray: Model3d[];
+}) {
   //#region Menu
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
@@ -49,11 +52,10 @@ function ActionButton() {
   };
   //#endregion
 
-  const { array, handleChangeContext } = useContext(Model3DContext);
+  const { array, handleChangeContext, editIndex } = useContext(Model3DContext);
 
   //#region KhuonBanh
   const [openDialogKhuonBanh, setOpenDialogKhuonBanh] = React.useState(false);
-  const [khuonBanhArray, setKhuonBanhArray] = React.useState<Model3d[]>([]);
   const [selectedKhuonBanh, setSelectedKhuonBanh] =
     React.useState<Model3d | null>(null);
   const handleSelectedKhuonBanh = useCallback((value: Model3d) => {
@@ -63,7 +65,6 @@ function ActionButton() {
 
   //#region TrangTri
   const [openDialogTrangTri, setOpenDialogTrangTri] = React.useState(false);
-  const [trangTriArray, setTrangTriArray] = React.useState<Model3d[]>([]);
   const [selectedTrangTri, setSelectedTrangTri] =
     React.useState<Model3d | null>(null);
   const handleSelectedTrangTri = useCallback((value: Model3d) => {
@@ -100,18 +101,9 @@ function ActionButton() {
   //#endregion
 
   useEffect(() => {
-    async function fetchData() {
-      const khuonbanhs = await getModel3dByType('1');
-      setKhuonBanhArray(khuonbanhs);
-
-      const trangtris = await getModel3dByType('2');
-      setTrangTriArray(trangtris);
-
-      setSelectedKhuonBanh(
-        khuonbanhs.find((item) => item.file == array[0].path) || null
-      );
-    }
-    fetchData();
+    setSelectedKhuonBanh(
+      khuonBanhArray.find((item) => item.file == array[0].path) || null
+    );
   }, []);
 
   return (
@@ -137,10 +129,19 @@ function ActionButton() {
         }}
       >
         <IconButton {...IconButtonProps} onClick={handleOpenMenu}>
-          <AddRounded fontSize="inherit" />
+          <EditRounded fontSize="inherit" />
         </IconButton>
 
-        <IconButton {...IconButtonProps}>
+        <IconButton
+          {...IconButtonProps}
+          disabled={editIndex == -1 || editIndex == 0}
+          onClick={() => {
+            if (!handleChangeContext || editIndex <= 0) {
+              return;
+            }
+            handleChangeContext('delete', null, editIndex);
+          }}
+        >
           <DeleteRounded fontSize="inherit" />
         </IconButton>
       </Box>
@@ -368,6 +369,7 @@ const IconButtonProps: IconButtonProps = {
       backgroundColor: 'secondary.dark',
     },
     boxShadow: 3,
+    transition: 'all 0.2s',
   },
 };
 

@@ -288,5 +288,6 @@ export function createModel3DItem({
       max: new Vector3(),
     },
     ghim: ghim ?? 0,
+    isShow: true,
   } as Model3DProps;
 }
