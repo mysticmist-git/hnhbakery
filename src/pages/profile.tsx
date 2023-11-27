@@ -2,18 +2,23 @@ import ImageBackground from '@/components/Imagebackground';
 import { LeftProfileColumn } from '@/components/profile';
 import RightProfileColumn from '@/components/profile/RightProfileColumn';
 import { auth } from '@/firebase/config';
-import {
-  getUserTableRowByUID,
-  updateUser,
-} from '@/lib/DAO/userDAO';
+import { getUserTableRowByUID, updateUser } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 // import { billStatusParse } from '@/lib/manage/manage';
+import promotionImage from '@/assets/promotion.png';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import {
   BillTableRow,
   billStateColorParse,
   billStateContentParse,
 } from '@/models/bill';
+import { BillItemTableRow } from '@/models/billItem';
+import {
+  deliveryStateColorParse,
+  deliveryStateContentParse,
+} from '@/models/delivery';
+import { SizeNameParse } from '@/models/size';
 import User, { UserTableRow } from '@/models/user';
 import { ExpandMore } from '@mui/icons-material';
 import {
@@ -31,24 +36,28 @@ import {
 } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import promotionImage from '@/assets/promotion.png';
-import {
-  deliveryStateColorParse,
-  deliveryStateContentParse,
-} from '@/models/delivery';
-import { BillItemTableRow } from '@/models/billItem';
-import { SizeNameParse } from '@/models/size';
 
 const Profile = () => {
+  //#region Hooks
+
   const router = useRouter();
+  const handleSnackbarAlert = useSnackbarService();
+  const theme = useTheme();
+  const [load, stop] = useLoadingService();
+
+  //#endregion
 
   // #region states
 
   const [user, userLoading, userError] = useAuthState(auth);
   // const [myBills, setMyBills] = useState<BillObject[]>([]);
   const [userData, setUserData] = useState<UserTableRow>();
+
+  //#endregion
+
+  //#region UseEffects
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -58,19 +67,31 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      load();
       setUserData(await getUserTableRowByUID(user?.uid ?? ''));
+      stop();
     };
 
     fetchData();
-  }, [user]);
+  }, [load, stop, user]);
 
   // #endregion
 
-  // #region Hooks
+  //#region Methods
 
-  const theme = useTheme();
+  const reload = useCallback(() => {
+    const fetchData = async () => {
+      load();
+      setUserData(await getUserTableRowByUID(user?.uid ?? ''));
+      stop();
+    };
 
-  // #endregion
+    fetchData();
+  }, [load, stop, user?.uid]);
+
+  //#endregion
+
+  //#region Handlers
 
   const handleUpdateUserData = async (
     field: keyof User,
@@ -85,7 +106,7 @@ const Profile = () => {
     handleSnackbarAlert('success', 'Cập nhật thành công');
   };
 
-  const handleSnackbarAlert = useSnackbarService();
+  //#endregion
 
   return (
     <>
@@ -159,6 +180,7 @@ const Profile = () => {
                 </Box>
               )}
             </Grid>
+
             <Grid item xs={12} sm={8} md={9}>
               {userLoading ? (
                 <Skeleton
@@ -171,6 +193,7 @@ const Profile = () => {
                 <RightProfileColumn
                   user={user}
                   userData={userData}
+                  reload={reload}
                   onUpdateUserData={handleUpdateUserData}
                 />
               )}

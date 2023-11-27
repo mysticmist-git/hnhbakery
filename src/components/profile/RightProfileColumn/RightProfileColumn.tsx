@@ -1,33 +1,50 @@
 import DoiMKTextField from '@/components/search/DoiMKTextField';
-import { UserObject } from '@/lib/models';
+import { getAddresses } from '@/lib/DAO/addressDAO';
+import { useSnackbarService } from '@/lib/contexts';
+import Address from '@/models/address';
+import User, { UserTableRow } from '@/models/user';
 import { Google } from '@mui/icons-material';
 import { Box, Grid, TextField, Typography, useTheme } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import React, { memo } from 'react';
+import { User as FirebaseUser } from 'firebase/auth';
+import React, { useEffect, useMemo, useState } from 'react';
 import AddressList from '../AddressList';
 import TelTextField from '../TelTextField';
-import User, { UserTableRow } from '@/models/user';
-import { User as FirebaseUser } from 'firebase/auth';
 
 interface RightProfileColumnProps {
   user: FirebaseUser;
   userData: UserTableRow | undefined;
+  reload: () => void;
   onUpdateUserData: (field: keyof User, value: User[keyof User]) => void;
 }
 
 const RightProfileColumn = ({
   user,
   userData,
+  reload,
   onUpdateUserData,
 }: RightProfileColumnProps) => {
+  //#region Hooks
+
   const theme = useTheme();
-  const textStyle = {
-    fontSize: theme.typography.body2.fontSize,
-    color: theme.palette.common.black,
-    fontWeight: theme.typography.body2.fontWeight,
-    fontFamily: theme.typography.body2.fontFamily,
-  };
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  //#region UseMemos
+
+  const textStyle = useMemo(
+    () => ({
+      fontSize: theme.typography.body2.fontSize,
+      color: theme.palette.common.black,
+      fontWeight: theme.typography.body2.fontWeight,
+      fontFamily: theme.typography.body2.fontFamily,
+    }),
+    [theme]
+  );
+
+  //#endregion
 
   return (
     <Grid
@@ -208,7 +225,7 @@ const RightProfileColumn = ({
         </Box>
       </Grid>
 
-      <Grid item xs={12} sx={{ display: 'none' }}>
+      <Grid item xs={12}>
         <Box
           sx={{
             backgroundColor: theme.palette.common.white,
@@ -218,11 +235,15 @@ const RightProfileColumn = ({
             p: 2,
           }}
         >
-          <AddressList textStyle={textStyle} userData={userData} />
+          <AddressList
+            textStyle={textStyle}
+            userData={userData}
+            reload={reload}
+          />
         </Box>
       </Grid>
     </Grid>
   );
 };
 
-export default memo(RightProfileColumn);
+export default RightProfileColumn;

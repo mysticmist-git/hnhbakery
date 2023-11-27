@@ -1,5 +1,12 @@
 import '@/styles/nprogress.scss';
-import { Alert, CssBaseline, Snackbar, ThemeProvider } from '@mui/material';
+import {
+  Alert,
+  Backdrop,
+  CircularProgress,
+  CssBaseline,
+  Snackbar,
+  ThemeProvider,
+} from '@mui/material';
 import NProgress from 'nprogress';
 import React from 'react';
 
@@ -14,6 +21,7 @@ Router.events.on('routeChangeError', () => NProgress.done());
 import MainLayout from '@/components/layouts/MainLayout';
 import { TransitionUp } from '@/components/transitions';
 import { SnackbarService } from '@/lib/contexts';
+import { LoadingService, useLoading } from '@/lib/hooks/useLoadingService';
 import useSnackbar from '@/lib/hooks/useSnackbar';
 import theme from '@/styles/themes/lightTheme';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -33,6 +41,8 @@ const MyApp = (props: AppProps) => {
     handleSnackbarClose,
   } = useSnackbar();
 
+  const [backdropOpen, openBackdrop, closeBackdrop] = useLoading();
+
   return (
     <>
       <Head>
@@ -42,24 +52,35 @@ const MyApp = (props: AppProps) => {
         {/* <CacheProvider value={emotionCache}> */}
         <ThemeProvider theme={theme}>
           <SnackbarService.Provider value={{ handleSnackbarAlert }}>
-            <CssBaseline />
-            <MainLayout>
-              <Component {...pageProps} />
-            </MainLayout>
-            <Snackbar
-              open={snackbarOpen}
-              autoHideDuration={3000}
-              onClose={handleSnackbarClose}
-              TransitionComponent={TransitionUp}
-            >
-              <Alert
+            <LoadingService.Provider value={[openBackdrop, closeBackdrop]}>
+              <CssBaseline />
+              <MainLayout>
+                <Component {...pageProps} />
+              </MainLayout>
+              <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
                 onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: '100%' }}
+                TransitionComponent={TransitionUp}
               >
-                {snackbarText}
-              </Alert>
-            </Snackbar>
+                <Alert
+                  onClose={handleSnackbarClose}
+                  severity={snackbarSeverity}
+                  sx={{ width: '100%' }}
+                >
+                  {snackbarText}
+                </Alert>
+              </Snackbar>
+              <Backdrop
+                sx={{
+                  color: '#fff',
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={backdropOpen}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
+            </LoadingService.Provider>
           </SnackbarService.Provider>
         </ThemeProvider>
       </LocalizationProvider>
