@@ -1,7 +1,5 @@
 import { CustomIconButton } from '@/components/buttons';
-import { db } from '@/firebase/config';
-import { updateAddress } from '@/lib/DAO/addressDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { updateAddress, updateAddressValue } from '@/lib/DAO/addressDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import Address from '@/models/address';
 import { UserTableRow } from '@/models/user';
@@ -9,7 +7,6 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { InputAdornment, TextField, useTheme } from '@mui/material';
-import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useRef } from 'react';
 
 export default function AddressItem({
@@ -29,16 +26,35 @@ export default function AddressItem({
   handleSetEditItem: (editState: boolean, index: number) => void;
   userData: UserTableRow | undefined;
 }) {
+  //#region Hooks
+
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
+
+  //#endregion
+
+  //#region Refs
+
   const addressRef = useRef<HTMLInputElement>(null);
+
+  //#endregion
+
+  //#region UseEffects
+
   useEffect(() => {
     if (addressRef.current) {
       addressRef.current.value = value.address;
     }
   }, [value]);
 
+  //#endregion
+
+  //#region Handlers
+
   const handleSave = async () => {
+    console.log(addressRef.current);
+    console.log(userData);
+
     if (addressRef.current && userData) {
       if (addressRef.current.value !== value.address) {
         try {
@@ -50,11 +66,11 @@ export default function AddressItem({
 
           newAddresses[addressIndex].address = addressRef.current!.value;
 
-          await updateAddress(
+          await updateAddressValue(
             userData.group_id,
-            userData.id!,
+            userData.id,
             newAddresses[addressIndex].id,
-            newAddresses[addressIndex]
+            addressRef.current!.value
           );
 
           handleSnackbarAlert(
@@ -71,15 +87,11 @@ export default function AddressItem({
           );
         }
       }
-      if (addressRef.current.value === value.address) {
-        handleSnackbarAlert(
-          'info',
-          'Địa chỉ ' + (index + 1) + ' không thay đổi!'
-        );
-      }
     }
+
     handleSetEditItem(false, -1);
   };
+
   const handleCancel = () => {
     handleSnackbarAlert(
       'info',
@@ -88,6 +100,8 @@ export default function AddressItem({
     if (addressRef.current) addressRef.current.value = value.address;
     handleSetEditItem(false, -1);
   };
+
+  //#endregion
 
   return (
     <>

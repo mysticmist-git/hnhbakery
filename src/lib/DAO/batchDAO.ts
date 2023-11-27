@@ -73,7 +73,7 @@ export async function increaseDecreaseBatchQuantity(
   id: string,
   quantity: number
 ) {
-  await updateDoc(getBatchRefById(id), { quantity: increment(quantity) });
+  await updateDoc(getBatchRefById(id), { quantity: increment(quantity), updated_at: new Date(), });
 }
 
 export async function deleteBatch(id: string) {

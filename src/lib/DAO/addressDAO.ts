@@ -359,6 +359,16 @@ export async function updateAddress(
   }
 }
 
+export async function updateAddressValue(
+  userGroupId: string,
+  userId: string,
+  addressId: string,
+  newAddress: string
+) {
+  const addressRef = getAddressRef(userGroupId, userId, addressId);
+  await updateDoc(addressRef, { address: newAddress, updated_at: new Date() });
+}
+
 export async function deleteAddress(
   groupId: string,
   userId: string,
