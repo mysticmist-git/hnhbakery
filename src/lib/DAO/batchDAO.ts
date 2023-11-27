@@ -1,30 +1,19 @@
 import { db } from '@/firebase/config';
 import Batch, { BatchTableRow, batchConverter } from '@/models/batch';
 import {
-  CollectionReference,
-  DocumentReference,
-  DocumentSnapshot,
   QueryConstraint,
-  QuerySnapshot,
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  increment,
   query,
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import {
-  getAvailableProductTypeTableRows,
-  getProductTypes,
-} from './productTypeDAO';
-import { getProducts } from './productDAO';
-import { ProductTypeTableRow } from '@/models/productType';
-import { ProductTableRow } from '@/models/product';
-import { getVariants } from './variantDAO';
-import { getFeedbacks } from './feedbackDAO';
+import { getAvailableProductTypeTableRows } from './productTypeDAO';
 
 export function getBatchesRef() {
   return collection(db, COLLECTION_NAME.BATCHES).withConverter(batchConverter);
@@ -78,6 +67,13 @@ export async function createBatch(batch: Omit<Batch, 'id'>) {
 
 export async function updateBatch(id: string, batch: Omit<Batch, 'id'>) {
   await updateDoc(getBatchRefById(id), batch);
+}
+
+export async function increaseDecreaseBatchQuantity(
+  id: string,
+  quantity: number
+) {
+  await updateDoc(getBatchRefById(id), { quantity: increment(quantity) });
 }
 
 export async function deleteBatch(id: string) {

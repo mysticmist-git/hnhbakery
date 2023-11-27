@@ -2,8 +2,13 @@ import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
-import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan/PTTT_item';
+import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, db } from '@/firebase/config';
+import { increaseDecreaseBatchQuantity, updateBatch } from '@/lib/DAO/batchDAO';
+import { createBill, getBillRef } from '@/lib/DAO/billDAO';
+import { createBillItem } from '@/lib/DAO/billItemDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
+import { updateVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME, PLACEHOLDER_DELIVERY_PRICE } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { addDocToFirestore, addDocsToFirestore } from '@/lib/firestore';
@@ -15,18 +20,20 @@ import useSales from '@/lib/hooks/useSales';
 import useShippingFee from '@/lib/hooks/useShippingFee';
 import { BillObject, DeliveryObject, SaleObject } from '@/lib/models';
 import {
-  calculateTotalBillPrice,
+  calculateTotalBillPrice as calculateFinalBillPrice,
   createDeliveryData,
-  mapProductBillToBillDetailObject,
+  mapProductBillToBillDetailObject as mapProductBillToBillItem,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/pageSpecific/payment';
-import { Grid, Typography, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import Bill from '@/models/bill';
+import Delivery from '@/models/delivery';
+import Sale from '@/models/sale';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { collection, doc, increment, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import FormGiaoHang from '../components/payment/FormGiaoHang';
 
@@ -36,13 +43,13 @@ const Payment = () => {
   //#region States
 
   const { value: sales } = useSales();
-  const [user, loading, error] = useAuthState(auth);
+  const [user] = useAuthState(auth);
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
   const [cartNote, setCartNote] = useCartNote();
   const [saleAmount, setSaleAmount] = useState(0);
-  const [chosenSale, setChosenSale] = useState<SaleObject | null>(null);
+  const [chosenSale, setChosenSale] = useState<Sale | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deliveryForm, setDeliveryForm] = useDeliveryForm();
   const shippingFee = useShippingFee();
@@ -57,25 +64,27 @@ const Payment = () => {
   //#endregion
   //#region useMemos
 
-  const billPrice = useMemo(() => {
-    return assembledCartItems.reduce((acc, item) => {
-      if (item.discounted)
-        return (
-          acc +
-          item.quantity *
-            (item.variant?.price
-              ? item.variant?.price - item.discountAmount
-              : 0)
-        );
-      else return acc + item.quantity * (item.variant?.price ?? 0);
-    }, 0);
+  const { billPrice, discountAmount } = useMemo(() => {
+    return assembledCartItems.reduce(
+      (result, item) => {
+        (result.billPrice += item.variant?.price ?? 0),
+          (result.discountAmount +=
+            item.batch?.discount?.start_at?.valueOf() ??
+            Number.MAX_VALUE < Date.now()
+              ? (item.batch?.discount.percent ?? 0) * (item.variant?.price ?? 0)
+              : 0);
+
+        return result;
+      },
+      { billPrice: 0, discountAmount: 0 }
+    );
   }, [assembledCartItems]);
 
-  const totalBill = useMemo(() => {
-    return calculateTotalBillPrice(billPrice, saleAmount, shippingFee);
-  }, [billPrice, saleAmount, shippingFee]);
+  const finalBillPrice = useMemo(() => {
+    return billPrice - discountAmount - saleAmount - shippingFee;
+  }, [billPrice, discountAmount, saleAmount, shippingFee]);
 
-  //  #endregion
+  //#endregion
   //#region useEffects
 
   useEffect(() => {
@@ -87,301 +96,320 @@ const Payment = () => {
   //#endregion
   //#region Methods
 
-  //#endregion
+  const createBillData = useCallback(
+    function (
+      paymentId: string,
+      chosenSale: Sale | null
+    ): Omit<Bill, 'id' | 'paid_time'> {
+      if (!user) {
+        throw new Error('User not found!');
+      }
 
-  const TimKiemMaSale = () => {};
+      let billData: Omit<Bill, 'id' | 'paid_time'> = {
+        total_price: billPrice,
+        total_discount: discountAmount,
+        sale_price: saleAmount,
+        final_price: finalBillPrice,
+        note: cartNote ?? '',
+        state: 'issued',
+        payment_method_id: paymentId,
+        customer_id: user.uid,
+        booking_item_id: '',
+        branch_id: deliveryForm.branchId,
+        delivery_id: '',
+        sale_id: chosenSale ? chosenSale.id : '',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
 
-  const createBillData = (
-    paymentId: string | undefined,
-    chosenSale: SaleObject | null
-  ): BillObject => {
-    let billData: BillObject = {
-      totalPrice: billPrice - saleAmount,
-      originalPrice: billPrice,
-      saleAmount: saleAmount,
-      note: cartNote,
-      state: 0,
-      payment_id: paymentId,
-      user_id: user?.uid ?? '',
-      created_at: new Date(),
-    } as BillObject;
+      return billData;
+    },
+    [
+      billPrice,
+      cartNote,
+      deliveryForm.branchId,
+      discountAmount,
+      finalBillPrice,
+      saleAmount,
+      user,
+    ]
+  );
 
-    if (chosenSale) {
-      billData = {
-        ...billData,
-        sale_id: chosenSale.id,
-      } as BillObject;
-    }
+  const addAllNecessariesInfoToFirestore = useCallback(
+    async function (
+      paymentId: string | undefined,
+      chosenSale: Sale | null
+    ): Promise<Omit<Bill, 'paid_time'>> {
+      if (!user) {
+        throw new Error('Please login!');
+      }
 
-    return billData;
-  };
+      const userData = await getUserByUid(user.uid);
 
-  const addAllNecessariesInfoToFirestore = async (
-    paymentId: string | undefined,
-    chosenSale: SaleObject | null
-  ): Promise<{
-    billData: BillObject;
-    deliveryData: DeliveryObject;
-  }> => {
-    const billData = createBillData(paymentId, chosenSale);
-    const billRef = await addDocToFirestore(billData, COLLECTION_NAME.BILLS);
+      if (!userData) {
+        throw new Error('User not found!');
+      }
 
-    const deliveryData = createDeliveryData(
-      deliveryForm,
-      billRef.id,
-      PLACEHOLDER_DELIVERY_PRICE
-    );
+      if (!paymentId) {
+        throw new Error('paymentId is required');
+      }
 
-    const deliveryRef = await addDocToFirestore(
-      deliveryData,
-      COLLECTION_NAME.DELIVERIES
-    );
+      const billData = createBillData(paymentId, chosenSale);
 
-    const billDetails = mapProductBillToBillDetailObject(
-      assembledCartItems,
-      billRef.id
-    );
-
-    // Make a firestore batch commit
-    const billDetailRefs = await addDocsToFirestore(
-      billDetails,
-      COLLECTION_NAME.BILL_DETAILS
-    );
-
-    // Update batch soldQuantity
-    await Promise.all(
-      billDetails.map(async (item) => {
-        const batchRef = doc(
-          collection(db, COLLECTION_NAME.BATCHES),
-          item.batch_id
-        );
-
-        await updateDoc(batchRef, {
-          soldQuantity: increment(item.amount ?? 0),
-        });
-      })
-    );
-
-    return {
-      billData: { ...billData, id: billRef.id },
-      deliveryData: { ...deliveryData, id: deliveryRef.id },
-    };
-  };
-
-  const handleProceedPayment = async (
-    id: string | undefined,
-    type: string | undefined
-  ) => {
-    try {
-      if (!checkPaymentValidation(type)) return;
-
-      console.log(id, type);
-
-      console.log('Running...');
-
-      console.log('Adding data to firestore...');
-
-      const { billData, deliveryData } = await addAllNecessariesInfoToFirestore(
-        id,
-        chosenSale
+      const billRef = await createBill(
+        userData?.group_id,
+        userData.id,
+        billData as Omit<Bill, 'id'>
       );
 
-      console.log('Clearing cache...');
-      // Deelte localStorage cart
-      setCart([]);
-      setCartNote('');
+      const billItemsData = mapProductBillToBillItem(
+        assembledCartItems,
+        billRef.id
+      );
 
-      if (type === 'Thanh toán khi nhận hàng') {
-        router.push(`/tienmat-result?billId=${billData.id}`);
-      } else {
-        const reqData = {
-          billId: billData.id as string,
-          totalPrice: totalBill,
-          paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
-        };
+      await Promise.all(
+        billItemsData.map(async (item) => {
+          await createBillItem(
+            userData.group_id,
+            userData.id,
+            billRef.id,
+            item
+          );
+        })
+      );
 
-        console.log('Sending payment request wih data...');
-        console.log('Payload:', reqData);
-
-        const data = await sendPaymentRequestToVNPay(reqData);
-
-        console.log('URL received from VNPay: ', data.url);
-
-        window.location.href = data.url;
-
-        console.log('Finishing...');
+      for (const item of assembledCartItems) {
+        await increaseDecreaseBatchQuantity(item.batchId, -item.quantity);
       }
-    } catch (error: any) {
-      console.log(error);
-      handleSnackbarAlert('error', error.message);
-    }
-  };
 
-  // #endregion
+      return { ...billData, id: billRef.id };
+    },
+    [assembledCartItems, createBillData, user]
+  );
 
-  // #region Handlers
+  //#endregion
+  //#region Handlers
 
-  const handleChooseSale = (newChosenSale: SaleObject) => {
-    if (newChosenSale) {
-      if (newChosenSale.id === chosenSale?.id) {
-        setChosenSale(() => null);
-        setSaleAmount(() => 0);
-      } else {
-        setChosenSale(() => newChosenSale);
+  const checkPaymentValidation = useCallback(
+    function (type: string | undefined): boolean {
+      if (!type) {
+        handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
+        router.push('/cart');
+        return false;
+      }
 
-        if (
-          (billPrice * newChosenSale.percent) / 100 <
-          newChosenSale.maxSalePrice
-        ) {
-          setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
+      if (type === 'Momo') {
+        handleSnackbarAlert('error', 'Momo chưa được hỗ trợ');
+        return false;
+      }
+
+      return true;
+    },
+    [handleSnackbarAlert, router]
+  );
+
+  const handleProceedPayment = useCallback(
+    async function (id: string | undefined, type: string | undefined) {
+      try {
+        if (!checkPaymentValidation(type)) return;
+
+        console.log(id, type);
+
+        console.log('Running...');
+
+        console.log('Adding data to firestore...');
+
+        const billData = await addAllNecessariesInfoToFirestore(id, chosenSale);
+
+        console.log('Clearing cache...');
+        // Deelte localStorage cart
+        setCart([]);
+        setCartNote('');
+
+        if (type === 'Thanh toán khi nhận hàng') {
+          router.push(`/tienmat-result?billId=${billData.id}`);
         } else {
-          setSaleAmount(newChosenSale.maxSalePrice);
+          const reqData = {
+            billId: billData.id as string,
+            totalPrice: finalBillPrice,
+            paymentDescription: `THANH TOAN CHO DON HANG ${billData.id}`,
+          };
+
+          console.log('Sending payment request wih data...');
+          console.log('Payload:', reqData);
+
+          const data = await sendPaymentRequestToVNPay(reqData);
+
+          console.log('URL received from VNPay: ', data.url);
+
+          window.location.href = data.url;
+
+          console.log('Finishing...');
         }
+      } catch (error: any) {
+        console.log(error);
+        handleSnackbarAlert('error', error.message);
       }
-    } else {
-      setSaleAmount(0);
-    }
-  };
+    },
+    [
+      addAllNecessariesInfoToFirestore,
+      checkPaymentValidation,
+      chosenSale,
+      handleSnackbarAlert,
+      router,
+      setCart,
+      setCartNote,
+      finalBillPrice,
+    ]
+  );
 
-  const checkPaymentValidation = (type: string | undefined): boolean => {
-    if (!type) {
-      handleSnackbarAlert('error', 'Đã có lỗi xảy ra');
-      router.push('/cart');
-      return false;
-    }
+  const handleChooseSale = useCallback(
+    function (newChosenSale: Sale) {
+      if (newChosenSale) {
+        if (newChosenSale.id === chosenSale?.id) {
+          setChosenSale(() => null);
+          setSaleAmount(() => 0);
+        } else {
+          setChosenSale(() => newChosenSale);
 
-    if (type === 'Momo') {
-      handleSnackbarAlert('error', 'Momo chưa được hỗ trợ');
-      return false;
-    }
+          if (
+            (billPrice * newChosenSale.percent) / 100 <
+            newChosenSale.limit
+          ) {
+            setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
+          } else {
+            setSaleAmount(newChosenSale.limit);
+          }
+        }
+      } else {
+        setSaleAmount(0);
+      }
+    },
+    [billPrice, chosenSale?.id]
+  );
 
-    return true;
-  };
+  const handleClickOpen = useCallback(
+    function () {
+      const result = validateForm(deliveryForm);
 
-  // const handleSaveCart = async () => {
-  //   const result = await saveCart(state.productBill);
+      if (!result.isValid) {
+        handleSnackbarAlert('error', result.msg);
+        return;
+      }
 
-  //   handleSnackbarAlert(result.isSuccess ? 'success' : 'error', result.msg);
-  // };
+      setDialogOpen(true);
+    },
+    [deliveryForm, handleSnackbarAlert]
+  );
 
-  const handleClickOpen = () => {
-    const result = validateForm(deliveryForm);
-
-    if (!result.isValid) {
-      handleSnackbarAlert('error', result.msg);
-      return;
-    }
-
-    setDialogOpen(true);
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(function () {
     setDialogOpen(false);
-  };
+  }, []);
 
   // #endregion
+
+  console.log(deliveryForm);
 
   return (
-    <>
-      <Box sx={{ pb: 16 }}>
-        <ImageBackground>
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'center'}
-            alignItems={'center'}
-            height={'100%'}
-            sx={{ px: 6 }}
-          >
-            <Grid item xs={12}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'center'}
-                spacing={2}
-              >
-                <Grid item xs={12}>
-                  <Link href="/cart" style={{ textDecoration: 'none' }}>
-                    <Typography
-                      align="center"
-                      variant="h3"
-                      color={theme.palette.primary.main}
-                      sx={{
-                        '&:hover': {
-                          textDecoration: 'underline',
-                        },
-                      }}
-                    >
-                      Giỏ hàng
-                    </Typography>
-                  </Link>
-                </Grid>
-                <Grid item xs={12}>
+    <Box sx={{ pb: 16 }}>
+      <ImageBackground>
+        <Grid
+          container
+          direction={'row'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          height={'100%'}
+          sx={{ px: 6 }}
+        >
+          <Grid item xs={12}>
+            <Grid
+              container
+              direction={'row'}
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Link href="/cart" style={{ textDecoration: 'none' }}>
                   <Typography
                     align="center"
-                    variant="h2"
+                    variant="h3"
                     color={theme.palette.primary.main}
+                    sx={{
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
                   >
-                    Thông tin thanh toán
+                    Giỏ hàng
                   </Typography>
-                </Grid>
+                </Link>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography
+                  align="center"
+                  variant="h2"
+                  color={theme.palette.primary.main}
+                >
+                  Thông tin thanh toán
+                </Typography>
               </Grid>
             </Grid>
           </Grid>
-        </ImageBackground>
+        </Grid>
+      </ImageBackground>
 
-        <Box sx={{ pt: 8, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
-          <Grid
-            container
-            direction={'row'}
-            justifyContent={'center'}
-            alignItems={'start'}
-            spacing={4}
-          >
-            <Grid item xs={12}>
-              <CaiKhungCoTitle title={'Thông tin giao hàng'}>
-                <FormGiaoHang form={deliveryForm} setForm={setDeliveryForm} />
-              </CaiKhungCoTitle>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <CaiKhungCoTitle title={'Danh sách sản phẩm'} fluidContent={true}>
-                <DanhSachSanPham Products={assembledCartItems} />
-              </CaiKhungCoTitle>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
-                <DonHangCuaBan
-                  tamTinh={billPrice}
-                  khuyenMai={saleAmount}
-                  tongBill={totalBill}
-                  Sales={sales}
-                  TimKiemMaSale={TimKiemMaSale}
-                  showDeliveryPrice={shippingFee}
-                  handleChooseSale={handleChooseSale}
-                  chosenSale={chosenSale}
-                />
-              </CaiKhungCoTitle>
-            </Grid>
-
-            <Grid item xs={'auto'}>
-              <CustomButton onClick={handleClickOpen}>
-                <Typography variant="button" color={theme.palette.common.white}>
-                  Phương thức thanh toán
-                </Typography>
-              </CustomButton>
-            </Grid>
+      <Box sx={{ pt: 8, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Grid
+          container
+          direction={'row'}
+          justifyContent={'center'}
+          alignItems={'start'}
+          spacing={4}
+        >
+          <Grid item xs={12}>
+            <CaiKhungCoTitle title={'Thông tin giao hàng'}>
+              <FormGiaoHang form={deliveryForm} setForm={setDeliveryForm} />
+            </CaiKhungCoTitle>
           </Grid>
-        </Box>
-        <DialogHinhThucThanhToan
-          open={dialogOpen}
-          handleClose={handleClose}
-          handlePayment={handleProceedPayment}
-        />
+
+          <Grid item xs={12} md={6}>
+            <CaiKhungCoTitle title={'Danh sách sản phẩm'} fluidContent={true}>
+              <DanhSachSanPham Products={assembledCartItems} />
+            </CaiKhungCoTitle>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
+              <DonHangCuaBan
+                tamTinh={billPrice}
+                khuyenMai={saleAmount}
+                tongBill={finalBillPrice}
+                Sales={sales}
+                TimKiemMaSale={() => {}}
+                showDeliveryPrice={shippingFee}
+                handleChooseSale={handleChooseSale}
+                chosenSale={chosenSale}
+              />
+            </CaiKhungCoTitle>
+          </Grid>
+
+          <Grid item xs={'auto'}>
+            <CustomButton onClick={handleClickOpen}>
+              <Typography variant="button" color={theme.palette.common.white}>
+                Phương thức thanh toán
+              </Typography>
+            </CustomButton>
+          </Grid>
+        </Grid>
       </Box>
-    </>
+
+      <DialogHinhThucThanhToan
+        open={dialogOpen}
+        handleClose={handleClose}
+        handlePayment={handleProceedPayment}
+      />
+    </Box>
   );
 };
 

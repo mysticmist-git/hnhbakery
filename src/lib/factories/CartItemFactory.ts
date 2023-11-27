@@ -1,7 +1,7 @@
 import { CartItem } from '@/@types/cart';
 
 export class CartItemFactory {
-  create(userId: string, batchId: string, quantity: number): CartItem {
-    return new CartItem(userId, batchId, quantity);
+  create(uid: string, batchId: string, quantity: number): CartItem {
+    return new CartItem(uid, batchId, quantity);
   }
 }

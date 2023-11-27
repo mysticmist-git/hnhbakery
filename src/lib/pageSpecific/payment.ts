@@ -2,44 +2,41 @@ import { AssembledCartItem } from '@/@types/cart';
 import { DeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import { BillDetailObject, DeliveryObject } from '@/lib/models';
 import { FormValidationResult } from '@/lib/types/payment';
+import BillItem from '@/models/billItem';
+import Delivery from '@/models/delivery';
 
 export function createDeliveryData(
   form: DeliveryForm,
   billId: string,
   price: number
-) {
-  const date = form.deliveryDate;
-  const time = form.deliveryTime;
-
-  const deliveryData: DeliveryObject = {
-    name: form.customerName,
-    tel: form.tel,
-    email: form.email,
-    address: form.address,
-    note: form.note,
-    date: date,
-    time: time,
-    bill_id: billId,
-    state: 'inProcress',
-  };
-
-  return deliveryData;
+): Delivery {
+  throw new Error('Not implemented');
 }
 
-export const createBillDetailData = (
+export const createBillItemData = (
   cartItem: AssembledCartItem,
   billId: string
-): BillDetailObject => {
-  const billDetailData: BillDetailObject = {
-    amount: cartItem.quantity,
-    price: cartItem.variant?.price,
-    discount: cartItem.batch?.discount.percent,
-    discountAmount: cartItem.discountAmount,
-    batch_id: cartItem.batchId,
-    bill_id: billId,
-  } as BillDetailObject;
+): Omit<BillItem, 'id'> => {
+  const price = cartItem.variant?.price ?? 0;
+  const discountPercent = cartItem.batch?.discount.percent ?? 0;
 
-  return billDetailData;
+  const totalPrice = price * cartItem.quantity;
+  const totalDiscount = (price * discountPercent) * cartItem.quantity; 
+
+  const billItemData: Omit<BillItem, 'id'> = {
+    bill_id: billId,
+    batch_id: cartItem.batchId,
+    amount: cartItem.quantity,
+    discount: discountPercent,
+    price: totalPrice,
+    total_price: totalPrice,
+    total_discount: totalDiscount,
+    final_price: price - totalDiscount, 
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  return billItemData;
 };
 
 export const sendPaymentRequestToVNPay = async (reqData: {
@@ -71,9 +68,9 @@ export const sendPaymentRequestToVNPay = async (reqData: {
 export const mapProductBillToBillDetailObject = (
   productBill: AssembledCartItem[],
   billId: string
-) => {
+): Omit<BillItem, 'id'>[] => {
   return productBill.map((item) => {
-    return createBillDetailData(item, billId);
+    return createBillItemData(item, billId);
   });
 };
 
@@ -125,11 +122,3 @@ export const validateForm = (form: DeliveryForm): FormValidationResult => {
     msg: '',
   };
 };
-
-export function calculateTotalBillPrice(
-  productPrice: number,
-  saleAmount: number,
-  shippingFee: number
-) {
-  return productPrice - saleAmount + shippingFee;
-}

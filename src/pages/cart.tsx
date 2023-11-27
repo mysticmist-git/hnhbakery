@@ -10,7 +10,6 @@ import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
 import useCartNote from '@/lib/hooks/useCartNote';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
-import { useLocalStorageValue } from '@react-hookz/web';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
