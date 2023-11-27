@@ -1,27 +1,81 @@
 import { CustomIconButton } from '@/components/buttons';
-import { db } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { deleteAddress } from '@/lib/DAO/addressDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import Address from '@/models/address';
+import { UserTableRow } from '@/models/user';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { collection, doc, updateDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import CheckboxList from '../CheckboxList';
 import XacNhanXoa_Dialog from '../XacNhanXoa_Dialog';
-import { UserTableRow } from '@/models/user';
-import Address from '@/models/address';
-import { deleteAddress } from '@/lib/DAO/addressDAO';
 
 export default function AddressList({
   userData,
   textStyle,
+  reload,
 }: {
   textStyle: any;
   userData: UserTableRow | undefined;
+  reload: () => void;
 }) {
+  //#region Hooks
+
   const theme = useTheme();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  //#region States
 
   const [checked, setChecked] = React.useState(['']);
+  const [editItem, setEditItem] = useState({ editState: false, index: -1 });
+  const [openXoaDiaChi, setOpenXoaDiaChi] = useState(false);
+
+  //#endregion
+
+  //#region Handlers
+
+  const handleXacNhan = async () => {
+    console.log('run');
+    console.log(checked);
+
+    if (!userData) {
+      console.log('Please login');
+      handleSnackbarAlert('warning', 'Vui lòng đăng nhập');
+      return;
+    }
+
+    try {
+      if (checked.length > 0) {
+        const result = await Promise.allSettled(
+          checked.map(async (a: string) => {
+            await deleteAddress(userData.group_id, userData.id!, a);
+          })
+        );
+
+        console.log(result);
+
+        handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
+        handleCloseXoaDiaChi();
+        reload();
+      }
+    } catch (error) {
+      console.log(error);
+      handleSnackbarAlert('error', 'Xóa địa chỉ không thành công!');
+    }
+  };
+
+  const handleCloseXoaDiaChi = () => {
+    setOpenXoaDiaChi(false);
+  };
+
+  const handleDeleteAll = () => {
+    setOpenXoaDiaChi(true);
+  };
+
+  const handleSetEditItem = (editState: boolean, index: number) => {
+    setEditItem({ editState, index });
+  };
 
   const handleSetChecked = (value: Address) => {
     const currentIndex = checked.indexOf(value.id);
@@ -36,40 +90,7 @@ export default function AddressList({
     setChecked(newChecked);
   };
 
-  const [editItem, setEditItem] = useState({ editState: false, index: -1 });
-
-  const handleSetEditItem = (editState: boolean, index: number) => {
-    setEditItem({ editState, index });
-  };
-
-  const handleDeleteAll = () => {
-    setOpenXoaDiaChi(true);
-  };
-
-  const [openXoaDiaChi, setOpenXoaDiaChi] = useState(false);
-
-  const handleCloseXoaDiaChi = () => {
-    setOpenXoaDiaChi(false);
-  };
-
-  const handleSnackbarAlert = useSnackbarService();
-
-  const handleXacNhan = async () => {
-    try {
-      if (!checked.length && userData) {
-        await Promise.all(
-          checked.map(async (a: string) => {
-            await deleteAddress(userData.group_id, userData.id!, a);
-          })
-        );
-        handleSnackbarAlert('success', 'Xóa địa chỉ thành công!');
-        handleCloseXoaDiaChi();
-      }
-    } catch (error) {
-      console.log(error);
-      handleSnackbarAlert('error', 'Xóa địa chỉ không thành công!');
-    }
-  };
+  //#endregion
 
   return (
     <>
@@ -114,6 +135,7 @@ export default function AddressList({
             handleSetChecked={handleSetChecked}
             editItem={editItem}
             handleSetEditItem={handleSetEditItem}
+            reload={reload}
           />
         </Grid>
       </Grid>

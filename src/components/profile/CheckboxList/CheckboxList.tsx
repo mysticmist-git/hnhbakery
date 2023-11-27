@@ -1,4 +1,11 @@
+import { createAddress } from '@/lib/DAO/addressDAO';
+import { useSnackbarService } from '@/lib/contexts';
+import Address from '@/models/address';
+import { UserTableRow } from '@/models/user';
+import { Add, Close } from '@mui/icons-material';
 import {
+  Box,
+  Button,
   Checkbox,
   List,
   ListItem,
@@ -7,10 +14,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import AddressItem from '../AddressList/AddressItem';
-import { UserTableRow } from '@/models/user';
-import Address from '@/models/address';
 
 export default function CheckboxList({
   textStyle,
@@ -19,6 +24,7 @@ export default function CheckboxList({
   handleSetChecked,
   editItem,
   handleSetEditItem,
+  reload,
 }: {
   textStyle: any;
   userData: UserTableRow | undefined;
@@ -26,10 +32,48 @@ export default function CheckboxList({
   handleSetChecked: (value: Address) => void;
   editItem: { editState: boolean; index: number };
   handleSetEditItem: (editState: boolean, index: number) => void;
+  reload: () => void;
 }) {
-  const { addresses, ...data } = userData ?? {};
+  //#region Hooks
 
+  const { addresses, ...data } = userData ?? {};
   const theme = useTheme();
+  const handleSnackbarAlert = useSnackbarService();
+
+  //#endregion
+
+  //#region Handlers
+
+  const handleAddAddress = useCallback(async () => {
+    if (!userData) {
+      return;
+    }
+
+    const newAddress: Omit<Address, 'id'> = {
+      address: '',
+      user_id: userData.id,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    try {
+      await createAddress(
+        userData.group_id,
+        userData.id,
+        newAddress as Address
+      );
+
+      reload();
+
+      handleSnackbarAlert('success', 'Thêm địa chỉ mới thành công!');
+    } catch (error) {
+      console.log('Fail to add new address', error);
+      handleSnackbarAlert('warning', 'Thêm địa chỉ mới thất bại!');
+    }
+  }, [handleSnackbarAlert, reload, userData]);
+
+  //#endregion
+
   return (
     <List sx={{ width: '100%', p: 0, m: 0 }}>
       {addresses?.map((value, index) => {
@@ -56,6 +100,7 @@ export default function CheckboxList({
                 />
               </ListItemIcon>
             </ListItemButton>
+
             <AddressItem
               textStyle={textStyle}
               value={value}
@@ -74,6 +119,18 @@ export default function CheckboxList({
           </ListItem>
         );
       })}
+
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleAddAddress}
+        >
+          <Add />
+        </Button>
+      </Box>
 
       {addresses?.length == 0 && (
         <ListItem>
