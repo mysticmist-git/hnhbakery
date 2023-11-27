@@ -21,9 +21,6 @@ const fonts = [
 
 export default function CustomText3D({ index }: { index: number }) {
   const [fontFileUrl, setFontFileUrl] = useState(`/fonts/${'FleurDeLeah'}.ttf`);
-
-  console.log(fontFileUrl);
-
   const font: any = suspend(() => {
     const loader = new TTFLoader();
     return new Promise((resolve) => {
