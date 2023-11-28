@@ -19,17 +19,18 @@ import { Box3, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { easing } from 'maath';
 import { Model3DContext, Model3DProps } from '@/pages/booking';
+import CustomText3D from '../CustomText3D';
 
 function GroupDecor({ index }: { index: number }) {
-  const { active, setActive, cakeBoundingBox } =
-    React.useContext(DraggingContext);
+  const { cakeBoundingBox } = React.useContext(DraggingContext);
 
   const { array: arrayModel, handleChangeContext } = useContext(Model3DContext);
 
   if (!arrayModel[index]) {
     return <></>;
   }
-  const { planeId, box3, scale, rotation, ghim } = arrayModel[index];
+  const { planeId, box3, scale, rotation, ghim, isShow, isText } =
+    arrayModel[index];
 
   const pos = useRef<[number, number, number] | null>(null);
 
@@ -103,16 +104,25 @@ function GroupDecor({ index }: { index: number }) {
 
   useEffect(() => {
     if (!cakeBoundingBox || !planeId) return;
+
     if (handleChangeContext) {
       const newValue = {
         ...arrayModel[index],
-        rotation: getRotationFromPlaneId(planeId, cakeBoundingBox),
+        rotation: getRotationFromPlaneId(
+          planeId,
+          cakeBoundingBox,
+          isText ? isText : false
+        ),
         scale: 1,
         ghim: 0,
       };
       handleChangeContext('array', newValue, index);
     }
-    pos.current = getPositionFromPlaneId(planeId, cakeBoundingBox);
+    pos.current = getPositionFromPlaneId(
+      planeId,
+      cakeBoundingBox,
+      isText ? isText : false
+    );
   }, [planeId, cakeBoundingBox]);
 
   const [oldGhim, setOldGhim] = useState<number>(ghim ?? 0);
@@ -152,7 +162,8 @@ function GroupDecor({ index }: { index: number }) {
 
   return (
     <group ref={ref} {...events} scale={scale}>
-      <Primitive index={index} />
+      {isShow && !isText && <Primitive index={index} />}
+      {isShow && isText && <CustomText3D index={index} />}
     </group>
   );
 }

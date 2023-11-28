@@ -181,21 +181,23 @@ export function getVector3FromPlaneId(planeId: ActiveDrag) {
 
 export function getPositionFromPlaneId(
   planeId: ActiveDrag,
-  cakeBoundingBox: THREE.Box3 | null
+  cakeBoundingBox: THREE.Box3 | null,
+  isText: boolean
 ): [number, number, number] {
   if (!cakeBoundingBox || planeId.id < 0) {
     return [0, 0, 0];
   }
 
+  const textConfig = isText ? 0.003 : 0;
   const plane = getPlane(planeId, cakeBoundingBox);
   if (plane) {
     const normal = plane.normal;
     if (normal.x != 0) {
-      return [plane.constant, 0, 0];
+      return [plane.constant - textConfig, 0, 0];
     } else if (normal.y != 0) {
-      return [0, plane.constant, 0];
+      return [0, plane.constant - textConfig, 0];
     } else if (normal.z != 0) {
-      return [0, 0, plane.constant];
+      return [0, 0, plane.constant - textConfig];
     }
   }
   return [0, 0, 0];
@@ -233,7 +235,8 @@ export function getPositionFromPlaneIdAndGhim(
 
 export function getRotationFromPlaneId(
   planeId: ActiveDrag | undefined,
-  cakeBoundingBox: THREE.Box3 | null
+  cakeBoundingBox: THREE.Box3 | null,
+  isText: boolean
 ): [number, number, number] {
   if (!cakeBoundingBox || !planeId || planeId.id < 0) {
     return [0, 0, 0];
@@ -249,7 +252,8 @@ export function getRotationFromPlaneId(
       }
     } else if (normal.y != 0) {
       if (normal.y > 0) {
-        return [0, 0, 0];
+        if (isText) return [-Math.PI / 2, 0, 0];
+        else return [0, 0, 0];
       } else {
         // Ghim dưới đáy
         // return [-Math.PI, 0, 0];
@@ -259,7 +263,7 @@ export function getRotationFromPlaneId(
       if (normal.z > 0) {
         return [0, 0, 0];
       } else {
-        return [-Math.PI, 0, 0];
+        return [0, Math.PI, 0];
       }
     }
   }
@@ -275,9 +279,10 @@ export function createModel3DItem({
   rotation,
   box3,
   ghim,
+  isText,
 }: Model3DProps) {
   return {
-    path: path,
+    path: path ?? '',
     children: children ?? [],
     textures: textures ?? [],
     scale: scale || 1,
@@ -289,5 +294,6 @@ export function createModel3DItem({
     },
     ghim: ghim ?? 0,
     isShow: true,
+    isText: isText ?? false,
   } as Model3DProps;
 }

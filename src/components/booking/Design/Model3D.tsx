@@ -34,6 +34,7 @@ import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '@/firebase/config';
 import TableModel3D from './TableModel3D';
 import { Box, Typography } from '@mui/material';
+import CustomText3D from './CustomText3D';
 
 // -1 = none
 // 0 = mặt trước
@@ -63,8 +64,10 @@ export function Primitive({
   if (!arrayModel[index]) {
     return <></>;
   }
-  const { path, textures, isShow } = arrayModel[index];
-
+  const { path, textures } = arrayModel[index];
+  if (!path) {
+    return <></>;
+  }
   let loader = useLoader(OBJLoader, path);
 
   if (textures) {
@@ -124,23 +127,21 @@ export function Primitive({
 
   return (
     <>
-      {isShow && loader && (
-        <group
-          onClick={() => {
-            if (handleChangeContext && index !== editIndex) {
-              handleChangeContext('editIndex', index);
-            }
-          }}
-          onPointerOver={() => {
-            window.document.body.style.cursor = 'pointer';
-          }}
-          onPointerLeave={() => {
-            window.document.body.style.cursor = 'auto';
-          }}
-        >
-          <primitive object={loader.clone()} />
-        </group>
-      )}
+      <group
+        onClick={() => {
+          if (handleChangeContext && index !== editIndex) {
+            handleChangeContext('editIndex', index);
+          }
+        }}
+        onPointerOver={() => {
+          window.document.body.style.cursor = 'pointer';
+        }}
+        onPointerLeave={() => {
+          window.document.body.style.cursor = 'auto';
+        }}
+      >
+        <primitive object={loader.clone()} />
+      </group>
     </>
   );
 }
@@ -169,18 +170,16 @@ function Model3D() {
         <GridBoudingBox cakeBoundingBox={cakeBoundingBox}>
           {arrayModel &&
             arrayModel.map((item, index) => {
-              if (item.path) {
-                if (index == 0) {
-                  return (
-                    <Primitive
-                      key={index}
-                      index={0}
-                      handleCakeBoudingChange={handleCakeBoudingChange}
-                    />
-                  );
-                } else {
-                  return <GroupDecor key={index} index={index} />;
-                }
+              if (index == 0) {
+                return (
+                  <Primitive
+                    key={index}
+                    index={0}
+                    handleCakeBoudingChange={handleCakeBoudingChange}
+                  />
+                );
+              } else {
+                return <GroupDecor key={index} index={index} />;
               }
             })}
         </GridBoudingBox>
@@ -224,9 +223,6 @@ export default function Canvas3D({
           <TableModel3D />
           <ambientLight intensity={0.3} />
           <Environment preset="city" />
-          {/* <CameraRig>
-        </CameraRig> */}
-          {/* <Backdrop /> */}
           <Center>
             <Model3D />
           </Center>
