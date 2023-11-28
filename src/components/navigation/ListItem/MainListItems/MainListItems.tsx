@@ -8,7 +8,6 @@ import {
   permissionRouteMap,
 } from '@/lib/constants';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
-import useUserData from '@/lib/hooks/userUserData';
 import Contact, { contactConverter } from '@/models/contact';
 import User from '@/models/user';
 import {

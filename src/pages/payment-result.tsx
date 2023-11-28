@@ -1,17 +1,15 @@
 import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
-import { db } from '@/firebase/config';
-import { COLLECTION_NAME } from '@/lib/constants';
+import { auth, db } from '@/firebase/config';
+import { updateBillField } from '@/lib/DAO/billDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
-import { updateBillState, updateDocToFirestore } from '@/lib/firestore';
+import User from '@/models/user';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
-import { doc, updateDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
-
-const MSG_ERROR_UPDATE_BILL =
-  'Đã có lỗi xảy ra trong quá trình cập nhật trạng thái đơn hàng';
 
 const resolveResponseCode = (responseCode: string) => {
   switch (responseCode) {
@@ -47,23 +45,36 @@ const resolveResponseCode = (responseCode: string) => {
 };
 
 const PaymentResult = () => {
+  //#region Hooks
+
   const theme = useTheme();
   const handlerSnackbarAlert = useSnackbarService();
+  const [email] = useLocalStorage<string>('email', '');
+  const router = useRouter();
 
+  //#endregion
+  //#region States
+
+  const [userData, setUserData] = useState<User | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(true);
   const [responseMessage, setResponseMessage] = useState<string>('');
+  const [isProcessed, setIsProcessed] = useState(false);
 
-  const [email, setEmail] = useLocalStorage<string>('email', '');
-
-  const router = useRouter();
+  //#endregion
+  //#region UseMemos
 
   const { vnp_ResponseCode: responseCode, vnp_TxnRef: responseBillId } =
     useMemo(() => {
       return router.query;
     }, [router.query]);
 
+  //#endregion
+  //#region Handlers
+
   const sendBillToMail = useCallback(async () => {
     try {
+      console.log(email);
+
       const sendMailResponse = await fetch('/api/send-mail', {
         method: 'POST',
         headers: {
@@ -93,6 +104,27 @@ const PaymentResult = () => {
     }
   }, [email, handlerSnackbarAlert, responseBillId]);
 
+  //#endregion
+  //#region UseEffects
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        getUserByUid(user.uid)
+          .then((fetchedUserData) => setUserData(fetchedUserData ?? null))
+          .catch(() => {
+            console.log('Fail to fetch user data!');
+            handlerSnackbarAlert(
+              'warning',
+              'Không thể lấy dữ liệu người dùng!'
+            );
+          });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [handlerSnackbarAlert]);
+
   useEffect(() => {
     const getPaymentResultAndUpdateBillState = async () => {
       if (
@@ -103,18 +135,53 @@ const PaymentResult = () => {
       )
         return;
 
+      if (!userData) {
+        return;
+      }
+
       if (['00', '07'].includes(responseCode as string)) {
         setIsSuccess(true);
-        const updateResult = await updateBillState(responseBillId as string, 1);
-        if (!updateResult) handlerSnackbarAlert('error', MSG_ERROR_UPDATE_BILL);
+        try {
+          await updateBillField(
+            userData.group_id,
+            userData.id,
+            responseBillId as string,
+            {
+              state: 'paid',
+              updated_at: new Date(),
+            }
+          );
+        } catch (error) {
+          console.log('Fail to update bill state', error);
+          handlerSnackbarAlert(
+            'warning',
+            'Cập nhật trạng thái đơn hàng thất bại!'
+          );
+        }
       } else {
         setIsSuccess(false);
-        const updateResult = await updateBillState(
-          responseBillId as string,
-          -1
-        );
 
-        if (!updateResult) handlerSnackbarAlert('error', MSG_ERROR_UPDATE_BILL);
+        try {
+          await updateBillField(
+            userData.group_id,
+            userData.id,
+            responseBillId as string,
+            {
+              state: 'cancelled',
+              updated_at: new Date(),
+            }
+          );
+          handlerSnackbarAlert(
+            'warning',
+            'Thanh toán đơn hàng thất bại, đã hủy đơn hàng!'
+          );
+        } catch (error) {
+          console.log('Fail to update bill state', error);
+          handlerSnackbarAlert(
+            'warning',
+            'Cập nhật trạng thái đơn hàng thất bại!'
+          );
+        }
       }
 
       const responseMessage = resolveResponseCode(responseCode as string);
@@ -125,18 +192,34 @@ const PaymentResult = () => {
 
         // Update payment time
         try {
-          await updateDoc(
-            doc(db, COLLECTION_NAME.BILLS, responseBillId as string),
-            { paymentTime: new Date() }
+          await updateBillField(
+            userData.group_id,
+            userData.id,
+            responseBillId as string,
+            {
+              paid_time: new Date(),
+            }
           );
+
+          setIsProcessed(true);
         } catch (error) {
           console.log(error);
         }
       }
     };
 
+    if (isProcessed) return;
     getPaymentResultAndUpdateBillState();
-  }, [responseCode, responseBillId, handlerSnackbarAlert, sendBillToMail]);
+  }, [
+    responseCode,
+    responseBillId,
+    handlerSnackbarAlert,
+    sendBillToMail,
+    userData,
+    isProcessed,
+  ]);
+
+  //#endregion
 
   return (
     <Box sx={{ pb: 16 }}>

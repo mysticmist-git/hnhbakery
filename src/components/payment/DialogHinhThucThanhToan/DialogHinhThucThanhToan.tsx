@@ -46,15 +46,18 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
 
   // #endregion
 
+  //#region UseEffect
+
   useEffect(() => {
     const getPayments = async () => {
       const payments = await getPaymentMethods();
 
       setPTTTs(payments);
     };
-
     getPayments();
   }, []);
+
+  //#endregion
 
   return (
     <Dialog

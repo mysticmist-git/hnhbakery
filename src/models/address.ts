@@ -10,12 +10,13 @@ import WithId from './withId';
 
 /**
  * An address of an user;
- * Foreign Keys: user_id
+ * Foreign Keys: user_id, province_id
  */
 type Address = WithCreatedUpdated &
   WithId & {
     address: string;
     user_id: string;
+    province_id: string;
   };
 
 const addressConverter: FirestoreDataConverter<Address> = {

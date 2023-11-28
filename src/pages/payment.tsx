@@ -3,34 +3,26 @@ import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
-import { auth, db } from '@/firebase/config';
-import { increaseDecreaseBatchQuantity, updateBatch } from '@/lib/DAO/batchDAO';
-import { createBill, getBillRef } from '@/lib/DAO/billDAO';
+import { auth } from '@/firebase/config';
+import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
+import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
-import { updateVariant } from '@/lib/DAO/variantDAO';
-import { COLLECTION_NAME, PLACEHOLDER_DELIVERY_PRICE } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { addDocToFirestore, addDocsToFirestore } from '@/lib/firestore';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
 import useCartNote from '@/lib/hooks/useCartNote';
 import useDeliveryForm from '@/lib/hooks/useDeliveryForm';
 import useSales from '@/lib/hooks/useSales';
 import useShippingFee from '@/lib/hooks/useShippingFee';
-import { BillObject, DeliveryObject, SaleObject } from '@/lib/models';
 import {
-  calculateTotalBillPrice as calculateFinalBillPrice,
-  createDeliveryData,
   mapProductBillToBillDetailObject as mapProductBillToBillItem,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/pageSpecific/payment';
 import Bill from '@/models/bill';
-import Delivery from '@/models/delivery';
 import Sale from '@/models/sale';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { collection, doc, increment, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -67,21 +59,21 @@ const Payment = () => {
   const { billPrice, discountAmount } = useMemo(() => {
     return assembledCartItems.reduce(
       (result, item) => {
-        (result.billPrice += item.variant?.price ?? 0),
-          (result.discountAmount +=
-            item.batch?.discount?.start_at?.valueOf() ??
-            Number.MAX_VALUE < Date.now()
-              ? (item.batch?.discount.percent ?? 0) * (item.variant?.price ?? 0)
-              : 0);
+        result.billPrice += (item.variant?.price ?? 0) * item.quantity;
+        result.discountAmount +=
+          (item.batch?.discount?.start_at?.valueOf() &&
+          item.batch?.discount?.start_at < new Date()
+            ? ((item.batch?.discount.percent ?? 0) / 100) *
+              (item.variant?.price ?? 0)
+            : 0) * item.quantity;
 
         return result;
       },
-      { billPrice: 0, discountAmount: 0 }
+      { billPrice: 0, discountAmount: 0 } // Updated initial value
     );
   }, [assembledCartItems]);
-
   const finalBillPrice = useMemo(() => {
-    return billPrice - discountAmount - saleAmount - shippingFee;
+    return billPrice - discountAmount - saleAmount + shippingFee;
   }, [billPrice, discountAmount, saleAmount, shippingFee]);
 
   //#endregion
@@ -272,10 +264,7 @@ const Payment = () => {
         } else {
           setChosenSale(() => newChosenSale);
 
-          if (
-            (billPrice * newChosenSale.percent) / 100 <
-            newChosenSale.limit
-          ) {
+          if ((billPrice * newChosenSale.percent) / 100 < newChosenSale.limit) {
             setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
           } else {
             setSaleAmount(newChosenSale.limit);
@@ -307,8 +296,6 @@ const Payment = () => {
   }, []);
 
   // #endregion
-
-  console.log(deliveryForm);
 
   return (
     <Box sx={{ pb: 16 }}>
@@ -382,7 +369,7 @@ const Payment = () => {
           <Grid item xs={12} md={6}>
             <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
               <DonHangCuaBan
-                tamTinh={billPrice}
+                tamTinh={billPrice - discountAmount}
                 khuyenMai={saleAmount}
                 tongBill={finalBillPrice}
                 Sales={sales}

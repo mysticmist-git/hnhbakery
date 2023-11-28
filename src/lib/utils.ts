@@ -72,7 +72,7 @@ export function formatPrice(
   unitFormat: string = 'đồng'
 ): string {
   if (!price) {
-    return '0' + unitFormat;
+    return '0' + ' ' + unitFormat;
   }
   const formatter = new Intl.NumberFormat('vi-VN');
   return formatter.format(price) + unitFormat;

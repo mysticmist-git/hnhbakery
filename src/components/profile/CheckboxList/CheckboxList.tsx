@@ -1,6 +1,9 @@
 import { createAddress } from '@/lib/DAO/addressDAO';
+import { getProvinces } from '@/lib/DAO/provinceDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import useProvinces from '@/lib/hooks/useProvinces';
 import Address from '@/models/address';
+import Province from '@/models/province';
 import { UserTableRow } from '@/models/user';
 import { Add, Close } from '@mui/icons-material';
 import {
@@ -14,7 +17,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AddressItem from '../AddressList/AddressItem';
 
 export default function CheckboxList({
@@ -39,6 +42,15 @@ export default function CheckboxList({
   const { addresses, ...data } = userData ?? {};
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
+  const provinces = useProvinces();
+
+  //#endregion
+
+  //#region States
+
+  //#endregion
+
+  //#region UseEffects
 
   //#endregion
 
@@ -52,6 +64,7 @@ export default function CheckboxList({
     const newAddress: Omit<Address, 'id'> = {
       address: '',
       user_id: userData.id,
+      province_id: '',
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -115,6 +128,7 @@ export default function CheckboxList({
               handleSetEditItem={handleSetEditItem}
               userData={userData}
               editItem={editItem}
+              provinces={provinces}
             />
           </ListItem>
         );
