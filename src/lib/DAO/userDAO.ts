@@ -18,7 +18,16 @@ import {
   where,
 } from 'firebase/firestore';
 
+import { BillTableRow } from '@/models/bill';
+import Delivery from '@/models/delivery';
+import { FeedbackTableRow } from '@/models/feedback';
 import { COLLECTION_NAME } from '../constants';
+import { getAddress, getAddresses } from './addressDAO';
+import { getBatchById } from './batchDAO';
+import { getBills } from './billDAO';
+import { getBillItems } from './billItemDAO';
+import { getDeliveryById } from './deliveryDAO';
+import { getFeedbacks } from './feedbackDAO';
 import {
   DEFAULT_GROUP_ID,
   getGroupRefById,
@@ -26,19 +35,11 @@ import {
   getGroupsSnapshot,
   getGroupsSnapshotWithQuery,
 } from './groupDAO';
-import { BillTableRow } from '@/models/bill';
-import { getBills } from './billDAO';
-import { getBillItems } from './billItemDAO';
-import { getBatchById } from './batchDAO';
-import { getProductTypeById, getProductTypes } from './productTypeDAO';
-import { getProduct, getProducts } from './productDAO';
-import { getVariant } from './variantDAO';
-import { getSaleById } from './saleDAO';
-import { getDeliveryById } from './deliveryDAO';
 import { getPaymentMethodById } from './paymentMethodDAO';
-import { getAddress, getAddresses } from './addressDAO';
-import { FeedbackTableRow } from '@/models/feedback';
-import { getFeedbacks } from './feedbackDAO';
+import { getProduct, getProducts } from './productDAO';
+import { getProductTypeById, getProductTypes } from './productTypeDAO';
+import { getSaleById } from './saleDAO';
+import { getVariant } from './variantDAO';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -439,17 +440,23 @@ export async function getUserTableRowByUID(uid: string) {
 
     const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
 
-    const delivery = await getDeliveryById(b.delivery_id);
+    let delivery: Delivery | undefined;
+
+    try {
+      delivery = await getDeliveryById(b.delivery_id);
+    } catch {}
 
     billTableRows.push({
       ...b,
       paymentMethod: await getPaymentMethodById(b.payment_method_id),
       customer: { ...c },
       sale: sale,
-      deliveryTableRow: {
-        ...delivery!,
-        address: await getAddress(c.group_id, c.id, delivery!.address_id),
-      },
+      deliveryTableRow: delivery
+        ? {
+            ...delivery!,
+            address: await getAddress(c.group_id, c.id, delivery!.address_id),
+          }
+        : null,
       billItems: billItems,
     });
   }
