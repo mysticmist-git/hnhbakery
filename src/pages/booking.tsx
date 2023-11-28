@@ -4,10 +4,15 @@ import ActionButton from '@/components/booking/Design/ActionButton';
 import CustomText3D from '@/components/booking/Design/CustomText3D';
 import EditModel from '@/components/booking/Design/EditModel';
 import Canvas3D, { ActiveDrag } from '@/components/booking/Design/Model3D';
-import { createModel3DItem } from '@/components/booking/Design/Utils';
+import ScreenShotLoading from '@/components/booking/Design/ScreenShotLoading';
+import {
+  createModel3DItem,
+  dataURLtoFile,
+} from '@/components/booking/Design/Utils';
 import UploadStepperComponent from '@/components/booking/Upload/UploadStepperComponent';
 import { getCakeTextures } from '@/lib/DAO/cakeTextureDAO';
 import { getAllModel3d } from '@/lib/DAO/model3dDAO';
+import { useSnackbarService } from '@/lib/contexts';
 import BookingItem from '@/models/bookingItem';
 import CakeTexture from '@/models/cakeTexture';
 import Model3d from '@/models/model3d';
@@ -16,6 +21,7 @@ import {
   alpha,
   Box,
   Button,
+  CircularProgress,
   Grid,
   Link as MuiLink,
   TextField,
@@ -57,6 +63,8 @@ export type Model3DContextType = {
   editIndex: number;
   handleChangeContext?: (type: string, value: any, index?: number) => void;
   textureData?: CakeTexture[];
+  withRoomDesign: boolean;
+  reloadCanvas: () => void;
 };
 
 export const Model3DContext = createContext<Model3DContextType>({
@@ -64,10 +72,14 @@ export const Model3DContext = createContext<Model3DContextType>({
   editIndex: -1,
   handleChangeContext: () => {},
   textureData: [],
+  withRoomDesign: false,
+  reloadCanvas: () => {},
 });
 
 const Booking = () => {
   const theme = useTheme();
+
+  const handleSnackbarAlert = useSnackbarService();
 
   const [tabIndex, setTabIndex] = useState(1);
   function handleChangeTab(value: number) {
@@ -96,18 +108,23 @@ const Booking = () => {
     if (e.target.files) {
       const array = Array.from(e.target.files);
       setImageArray([...imageArray, ...array]);
+      handleSnackbarAlert('success', 'Thêm ảnh thành công!');
     }
   }
   function removeImage(index: number) {
     const newImageArray = [...imageArray];
     newImageArray.splice(index, 1);
     setImageArray(newImageArray);
+    handleSnackbarAlert('success', 'Xóa thành công');
   }
   //#endregion
 
   //#region screenshot
-  const [screenShot, setScreenShot] = useState<string>('2');
   const [canvas, setCanvas] = useState<RootState>();
+  const [keyCanvas, setKeyCanvas] = useState(0);
+  const [withRoomDesign, setWithRoomDesign] = useState<boolean>(true);
+  const [isPicturing, setIsPicturing] = useState<boolean>(false);
+  const [progress, setProgress] = useState(0);
   //#endregion
 
   //#region 3D
@@ -129,6 +146,8 @@ const Booking = () => {
               const newArray = [...prev].map((item) => {
                 return {
                   ...item,
+                  ghim: 0,
+                  scale: 1,
                 };
               });
               newArray[index] = value;
@@ -152,17 +171,18 @@ const Booking = () => {
             };
             return newArray;
           });
+          setEditIndex(-1);
+          handleSnackbarAlert('success', 'Xóa mô hình thành công!');
         }
       } else if (type === 'add') {
         setArrayModel((prev) => [...prev, createModel3DItem(value)]);
+        handleSnackbarAlert('success', 'Thêm mô hình thành công!');
       } else if (type === 'editIndex') {
         setEditIndex(value);
       }
     },
     []
   );
-
-  console.log(arrayModel);
 
   const [textureData, setTextureData] = useState<CakeTexture[]>([]);
   const [khuonBanhArray, setKhuonBanhArray] = useState<Model3d[]>([]);
@@ -187,6 +207,11 @@ const Booking = () => {
             planeId: { id: 2 },
             children: ['Trăm năm hạnh phúc'],
           })
+          // createModel3DItem({
+          //   // path: models.filter((item) => item.model_3d_type_id == '1')[2].file,
+          //   path: '/cake-pop-with-tag-001.obj',
+          //   planeId: { id: 2 },
+          // })
         );
         return newArray;
       });
@@ -195,6 +220,73 @@ const Booking = () => {
   }, []);
 
   //#endregion
+
+  useEffect(() => {
+    if (!withRoomDesign && isPicturing && canvas) {
+      const pictureTimeDelay = 500; //mili
+
+      let zoomConfig = 2.5;
+      if (arrayModel.length > 0) {
+        let maxX = 0;
+        let maxY = 0;
+        let maxZ = 0;
+
+        for (let i = 0; i < 1; i++) {
+          const box3 = arrayModel[i].box3;
+          if (box3) {
+            if (box3.max.x > maxX) maxX = box3.max.x;
+            if (box3.max.y > maxY) maxY = box3.max.y;
+            if (box3.max.z > maxZ) maxZ = box3.max.z;
+          }
+        }
+
+        zoomConfig = Math.max(maxX, maxY, maxZ) * 10;
+      }
+      const newFileArray: File[] = [];
+
+      for (let i = 0; i <= 8; i++) {
+        if (i % 2 == 0) {
+          if (i == 8) {
+            setTimeout(() => {
+              if (newFileArray.length == 4) {
+                setImageArray(newFileArray);
+              }
+              setWithRoomDesign(true);
+              canvas.camera.position.set(0, zoomConfig, zoomConfig);
+              setProgress(Math.round((i * 100) / 8));
+              setIsPicturing(false);
+              setTabIndex(0);
+              handleSnackbarAlert(
+                'success',
+                'Chụp ảnh mô hình thành công! Vui lòng thực hiện các bước tiếp theo.'
+              );
+            }, pictureTimeDelay * i);
+          } else
+            setTimeout(() => {
+              if (i == 0) canvas.camera.position.set(0, zoomConfig, zoomConfig);
+              else if (i == 2)
+                canvas.camera.position.set(zoomConfig, zoomConfig, 0);
+              else if (i == 4)
+                canvas.camera.position.set(0, zoomConfig, -1 * zoomConfig);
+              else if (i == 6)
+                canvas.camera.position.set(-1 * zoomConfig, zoomConfig, 0);
+              setProgress(Math.round((i * 100) / 8));
+            }, pictureTimeDelay * i);
+        } else {
+          setTimeout(() => {
+            const newFile = dataURLtoFile(
+              canvas.gl.domElement.toDataURL(),
+              `${(i + 1) / 2}.png`
+            );
+            if (newFile) {
+              newFileArray.push(newFile);
+            }
+            setProgress(Math.round((i * 100) / 8));
+          }, pictureTimeDelay * i);
+        }
+      }
+    }
+  }, [withRoomDesign, isPicturing]);
 
   return (
     <>
@@ -282,82 +374,12 @@ const Booking = () => {
                 editIndex: editIndex,
                 handleChangeContext: handleChangeContext,
                 textureData: textureData,
+                withRoomDesign: withRoomDesign,
+                reloadCanvas: () => {
+                  setKeyCanvas((prev) => prev + 1);
+                },
               }}
             >
-              {/* <Grid
-                item
-                xs={12}
-                lg={3}
-                display={tabIndex === 1 ? 'block' : 'none'}
-              >
-                <Box
-                  component={'div'}
-                  sx={{
-                    width: '100%',
-                    height: '80vh',
-                    minHeight: '500px',
-                    backgroundColor: 'grey.200',
-                    border: 3,
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    borderColor: 'secondary.main',
-                  }}
-                >
-                  <Box
-                        component={'img'}
-                        src={screenShot}
-                        alt={screenShot}
-                        sx={{
-                          width: '100%',
-
-                          objectFit: 'cover',
-                          objectPosition: 'center',
-                        }}
-                      />
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={async () => {
-                          if (canvas) {
-                            canvas.camera.position.set(0, 0, 2.5);
-                          }
-                        }}
-                      >
-                        Nhìn thẳng
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={async () => {
-                          if (canvas) {
-                            setScreenShot(canvas.gl.domElement.toDataURL());
-                          }
-                        }}
-                      >
-                        Bấm
-                      </Button>
-
-                  <Box
-                    component={'div'}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{ textAlign: 'center', color: 'grey.500' }}
-                    >
-                      Not Implemented
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid> */}
-
               <Grid
                 item
                 xs={12}
@@ -377,11 +399,12 @@ const Booking = () => {
                     position: 'relative',
                   }}
                 >
-                  <Canvas3D setCanvas={setCanvas} />
+                  <Canvas3D setCanvas={setCanvas} keyCanvas={keyCanvas} />
                   <ActionButton
                     khuonBanhArray={khuonBanhArray}
                     trangTriArray={trangTriArray}
                   />
+                  {isPicturing && <ScreenShotLoading progress={progress} />}
                 </Box>
               </Grid>
 
@@ -405,6 +428,32 @@ const Booking = () => {
                   }}
                 >
                   <EditModel />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} display={tabIndex === 1 ? 'block' : 'none'}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                      px: 4,
+                    }}
+                    disabled={isPicturing}
+                    onClick={() => {
+                      setWithRoomDesign(false);
+                      setIsPicturing(true);
+                    }}
+                  >
+                    Tiếp theo
+                  </Button>
                 </Box>
               </Grid>
             </Model3DContext.Provider>

@@ -4,32 +4,15 @@ import { suspend } from 'suspend-react';
 import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js';
 import { Box3, MeshStandardMaterial } from 'three';
 import { Model3DContext } from '@/pages/booking';
-
-const fonts = [
-  'Roboto',
-  'DancingScript',
-  'Pacifico',
-  'Grandstander',
-  'Corinthia',
-  'TwinkleStar',
-  'GreatVibes',
-  'Arizonia',
-  'Gluten',
-  'FleurDeLeah',
-  'Coiny',
-];
-
+import {
+  Font_List,
+  getPositionFromPlaneId,
+  getRotationFromPlaneId,
+} from '@/components/booking/Design/Utils';
+import { DraggingContext } from './Model3D';
 export default function CustomText3D({ index }: { index: number }) {
-  const [fontFileUrl, setFontFileUrl] = useState(`/fonts/${'FleurDeLeah'}.ttf`);
-  const font: any = suspend(() => {
-    const loader = new TTFLoader();
-    return new Promise((resolve) => {
-      loader.load(fontFileUrl, resolve);
-    });
-  }, [fontFileUrl]);
-
   const ref = useRef<any>(null);
-
+  const { cakeBoundingBox } = useContext(DraggingContext);
   const {
     array: arrayModel,
     handleChangeContext,
@@ -40,7 +23,16 @@ export default function CustomText3D({ index }: { index: number }) {
     return <></>;
   }
 
-  const { children, textures, scale } = arrayModel[index];
+  const { children, textures, scale, path, planeId, isText } =
+    arrayModel[index];
+
+  const font: any = suspend(() => {
+    const fontFile = path ? (path != '' ? path : Font_List[0]) : Font_List[0];
+    const loader = new TTFLoader();
+    return new Promise((resolve) => {
+      loader.load(`/fonts/${fontFile}.ttf`, resolve);
+    });
+  }, [path]);
 
   const configNumber = useMemo(() => {
     if (scale) {
@@ -86,13 +78,19 @@ export default function CustomText3D({ index }: { index: number }) {
     if (handleChangeContext) {
       let child = '';
       if (children.length == 0 || children[0] == '') {
-        child = 'text';
+        child = 'Văn bản';
       } else {
         child = children[0];
       }
       const newValue = {
         ...arrayModel[index],
+        path: path ? (path != '' ? path : Font_List[0]) : Font_List[0],
         children: [child],
+        rotation: getRotationFromPlaneId(
+          planeId ?? { id: 2 },
+          cakeBoundingBox,
+          isText ? isText : false
+        ),
         textures: [
           {
             name: '',
@@ -104,7 +102,6 @@ export default function CustomText3D({ index }: { index: number }) {
           max: box3.max,
         },
       };
-      console.log(newValue);
       handleChangeContext('array', newValue, index);
     }
   }, []);
@@ -127,8 +124,7 @@ export default function CustomText3D({ index }: { index: number }) {
         <Text3D
           ref={ref}
           font={font}
-          height={configNumber} // Độ dày
-          curveSegments={100}
+          height={configNumber * 2} // Độ dày
           bevelEnabled // Gọt cạnh - bo tròn
           bevelSize={configNumber} // Độ múp khi bo tròn
           bevelThickness={configNumber}

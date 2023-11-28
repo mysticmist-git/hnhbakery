@@ -188,7 +188,7 @@ export function getPositionFromPlaneId(
     return [0, 0, 0];
   }
 
-  const textConfig = isText ? 0.003 : 0;
+  const textConfig = isText ? 0 : 0;
   const plane = getPlane(planeId, cakeBoundingBox);
   if (plane) {
     const normal = plane.normal;
@@ -297,3 +297,59 @@ export function createModel3DItem({
     isText: isText ?? false,
   } as Model3DProps;
 }
+
+export const Font_List = [
+  'Roboto',
+  'DancingScript',
+  'Pacifico',
+  'Grandstander',
+  'Corinthia',
+  'TwinkleStar',
+  'GreatVibes',
+  'Arizonia',
+  'Gluten',
+  'FleurDeLeah',
+  'Coiny',
+];
+
+export const dataURLtoFile = (dataURL: string, fileName: string) => {
+  try {
+    // Kiểm tra tính hợp lệ của chuỗi Data URL
+    if (!dataURL.startsWith('data:image/')) {
+      throw new Error('Invalid Data URL format');
+    }
+
+    // Tách MIME type và dữ liệu base64 từ chuỗi Data URL
+    const arr = dataURL.split(',');
+
+    // Kiểm tra xem mảng có đúng 2 phần tử hay không
+    if (arr.length !== 2) {
+      throw new Error('Invalid Data URL format');
+    }
+
+    // Lấy MIME type từ chuỗi Data URL
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+
+    // Kiểm tra xem MIME type có tồn tại hay không
+    if (!mime) {
+      throw new Error('Invalid or missing MIME type in Data URL');
+    }
+
+    // Giải mã base64
+    const bstr = atob(arr[1]);
+
+    // Tạo mảng Uint8 từ dữ liệu base64
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+
+    // Tạo đối tượng File từ mảng Uint8
+    return new File([u8arr], fileName, { type: mime });
+  } catch (error: any) {
+    // Xử lý lỗi bất kỳ ở đây
+    console.error('Error converting Data URL to File:', error.message);
+    return null; // Hoặc bạn có thể return undefined hoặc một giá trị mặc định khác tùy thuộc vào yêu cầu của bạn
+  }
+};

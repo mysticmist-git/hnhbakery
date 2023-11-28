@@ -12,19 +12,14 @@ function BookingTabs({
   tabIndex: number;
   handleChangeTab: (value: number) => void;
 }) {
-  const [value, setValue] = React.useState(tabIndex ?? 0);
-
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    handleChangeTab(newValue);
   };
 
-  useEffect(() => {
-    handleChangeTab(value);
-  }, [value]);
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box component="div" sx={{ width: '100%' }}>
       <Tabs
-        value={value}
+        value={tabIndex}
         onChange={handleChange}
         centered
         textColor="secondary"

@@ -10,8 +10,6 @@ const CustomTextField: React.FC<
 > = (props, ref) => {
   const theme = useTheme();
 
-  console.log(props);
-
   return (
     <TextField
       variant="filled"

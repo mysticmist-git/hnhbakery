@@ -23,6 +23,7 @@ import {
   Menu,
   MenuItem,
   Select,
+  TextField,
   Typography,
 } from '@mui/material';
 import React, {
@@ -30,6 +31,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { ActiveDrag } from './Model3D';
@@ -52,7 +54,8 @@ function ActionButton({
   };
   //#endregion
 
-  const { array, handleChangeContext, editIndex } = useContext(Model3DContext);
+  const { array, handleChangeContext, editIndex, reloadCanvas } =
+    useContext(Model3DContext);
 
   //#region KhuonBanh
   const [openDialogKhuonBanh, setOpenDialogKhuonBanh] = React.useState(false);
@@ -87,17 +90,22 @@ function ActionButton({
       },
       {
         value: { id: 4 },
-        label: 'Mặt trái',
+        label: 'Mặt phải',
       },
       {
         value: { id: 5 },
-        label: 'Mặt phải',
+        label: 'Mặt trái',
       },
     ];
   }, []);
 
   const [selectedActiveDrag, setSelectedActiveDrag] =
     React.useState<ActiveDrag>({ id: -1 });
+  //#endregion
+
+  //#region Text
+  const [openDialogText, setOpenDialogText] = React.useState(false);
+  const [textField, setTextField] = React.useState('');
   //#endregion
 
   useEffect(() => {
@@ -139,7 +147,8 @@ function ActionButton({
             if (!handleChangeContext || editIndex <= 0) {
               return;
             }
-            handleChangeContext('delete', null, editIndex);
+            confirm('Bạn muốn xóa mô hình?') &&
+              handleChangeContext('delete', null, editIndex);
           }}
         >
           <DeleteRounded fontSize="inherit" />
@@ -196,12 +205,17 @@ function ActionButton({
           </Typography>
         </MenuItem>
 
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem
+          onClick={() => {
+            setOpenDialogText(true);
+            handleCloseMenu();
+          }}
+        >
           <ListItemIcon>
             <FormatColorTextRounded fontSize="small" />
           </ListItemIcon>
           <Typography variant="body2" noWrap>
-            Thông điệp
+            Văn bản
           </Typography>
         </MenuItem>
       </Menu>
@@ -247,7 +261,11 @@ function ActionButton({
               color="secondary"
               onClick={() => {
                 setOpenDialogKhuonBanh(false);
-                if (!selectedKhuonBanh || !handleChangeContext) {
+                if (
+                  !selectedKhuonBanh ||
+                  !handleChangeContext ||
+                  !reloadCanvas
+                ) {
                   return;
                 }
                 const newValue: Model3DProps = {
@@ -255,6 +273,7 @@ function ActionButton({
                   path: selectedKhuonBanh.file,
                 };
                 handleChangeContext('array', newValue, 0);
+                reloadCanvas();
               }}
             >
               Đổi
@@ -347,6 +366,98 @@ function ActionButton({
                 };
                 handleChangeContext('add', value);
                 setOpenDialogTrangTri(false);
+              }}
+            >
+              Thêm
+            </Button>
+          </Box>
+        </DialogContent>
+      </CustomDialog>
+
+      {/* Dialog Text */}
+      <CustomDialog
+        open={openDialogText}
+        title="Trang trí"
+        handleClose={() => {
+          setOpenDialogText(false);
+        }}
+      >
+        <DialogContent>
+          <Box
+            component={'div'}
+            sx={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <FormControl fullWidth>
+              <InputLabel color="secondary" size="small">
+                Mặt trang trí
+              </InputLabel>
+              <Select
+                size="small"
+                color="secondary"
+                value={JSON.stringify(selectedActiveDrag)}
+                label="Mặt trang trí"
+                onChange={(e: any) => {
+                  setSelectedActiveDrag(JSON.parse(e.target.value));
+                }}
+                required
+              >
+                {ActiveDragData.map((item, index) => {
+                  return (
+                    <MenuItem key={index} value={JSON.stringify(item.value)}>
+                      <Typography
+                        variant="body1"
+                        fontWeight={'regular'}
+                        sx={{
+                          py: 0.5,
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+
+            <TextField
+              value={textField}
+              onChange={(e) => {
+                setTextField(e.target.value);
+              }}
+              color="secondary"
+              size="small"
+              placeholder="Văn bản"
+              multiline
+              rows={3}
+            />
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                if (
+                  !selectedActiveDrag ||
+                  selectedActiveDrag.id == -1 ||
+                  !handleChangeContext
+                ) {
+                  return;
+                }
+
+                const value: Model3DProps = {
+                  isText: true,
+                  planeId: selectedActiveDrag,
+                  children: [textField],
+                };
+                handleChangeContext('add', value);
+                setOpenDialogText(false);
+                setTextField('');
               }}
             >
               Thêm

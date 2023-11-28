@@ -8,6 +8,7 @@ export function DangKyKhuyenMai(props: any) {
   const theme = useTheme();
   return (
     <Box
+      component="div"
       sx={{
         width: '100%',
         height: '80vh',

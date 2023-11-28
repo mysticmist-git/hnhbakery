@@ -2,6 +2,7 @@ import * as React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 // import createEmotionServer from '@emotion/server/create-instance';
 // import createEmotionCache from '@/utilities/createEmotionCache';
+import { Font_List } from '@/components/booking/Design/Utils';
 
 export default class MyDocument extends Document {
   render() {
@@ -31,6 +32,16 @@ export default class MyDocument extends Document {
 
             ::-webkit-scrollbar-thumb:hover {
               background: #555;
+            }
+
+            ${Font_List.map((fontFileUrl) => {
+              return `
+                  @font-face {
+                    font-family: ${fontFileUrl};
+                    src: url(/fonts/${fontFileUrl}.ttf);
+                  }
+                `;
+            }).join('\n')}
             }
           `}</style>
         </Head>

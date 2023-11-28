@@ -203,14 +203,18 @@ export const DraggingContext = createContext<{
 });
 
 export default function Canvas3D({
+  keyCanvas,
   setCanvas,
 }: {
+  keyCanvas: number;
   setCanvas: (state: RootState) => void;
 }) {
+  const { withRoomDesign, array } = useContext(Model3DContext);
   return (
     <>
       <Suspense fallback={<Loading />}>
         <Canvas
+          key={keyCanvas}
           onCreated={setCanvas}
           shadows
           camera={{
@@ -220,7 +224,7 @@ export default function Canvas3D({
           gl={{ preserveDrawingBuffer: true }}
           style={{ width: '100%', height: '100%' }}
         >
-          <TableModel3D />
+          {withRoomDesign && <TableModel3D />}
           <ambientLight intensity={0.3} />
           <Environment preset="city" />
           <Center>

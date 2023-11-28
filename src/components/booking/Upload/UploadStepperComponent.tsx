@@ -81,6 +81,7 @@ function UploadStepperComponent({
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           p: 4,
@@ -96,6 +97,7 @@ function UploadStepperComponent({
               <StepLabel
                 icon={
                   <Box
+                    component={'div'}
                     sx={{
                       bgcolor:
                         activeStep === index
@@ -118,7 +120,7 @@ function UploadStepperComponent({
               </StepLabel>
               <StepContent>
                 {step.content}
-                <Box>
+                <Box component={'div'}>
                   <div>
                     <Button
                       variant="contained"

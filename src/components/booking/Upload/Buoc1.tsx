@@ -17,6 +17,7 @@ export function Buoc1({
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
         }}
@@ -32,6 +33,7 @@ export function Buoc1({
         >
           {imageArray.map((item, index) => (
             <Box
+              component={'div'}
               key={index}
               sx={{
                 m: 1,
@@ -40,6 +42,7 @@ export function Buoc1({
               }}
             >
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   height: '100%',
@@ -58,6 +61,7 @@ export function Buoc1({
                     objectFit: 'cover',
                     transition: ' all 0.2s ease-in-out',
                     objectPosition: 'center',
+                    backgroundColor: 'grey.300',
                     '&:hover': {
                       transform: 'scale(1.2)',
                     },
@@ -76,7 +80,9 @@ export function Buoc1({
                     },
                   }}
                   size="small"
-                  onClick={() => removeImage(index)}
+                  onClick={() => {
+                    confirm('Bạn muốn xóa ảnh này?') && removeImage(index);
+                  }}
                 >
                   <CloseRounded
                     fontSize="inherit"
@@ -90,6 +96,7 @@ export function Buoc1({
             </Box>
           ))}
           <Box
+            component={'div'}
             sx={{
               m: 1,
               width: 248,

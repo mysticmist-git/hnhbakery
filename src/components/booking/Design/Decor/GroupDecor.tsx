@@ -116,6 +116,7 @@ function GroupDecor({ index }: { index: number }) {
         scale: 1,
         ghim: 0,
       };
+
       handleChangeContext('array', newValue, index);
     }
     pos.current = getPositionFromPlaneId(
