@@ -2,19 +2,26 @@ import CustomTextarea from '@/components/inputs/TextArea/CustomTextArea';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import { auth } from '@/firebase/config';
 import { getAddresses } from '@/lib/DAO/addressDAO';
+import { getBranches } from '@/lib/DAO/branchDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import useProvinces from '@/lib/hooks/useProvinces';
 import Address from '@/models/address';
+import Branch from '@/models/branch';
 import User from '@/models/user';
+import { Check } from '@mui/icons-material';
 import {
   Autocomplete,
   Divider,
+  FormControlLabel,
   Grid,
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
+  Switch,
+  TextField,
   Typography,
   alpha,
   useTheme,
@@ -23,7 +30,7 @@ import { Box } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import ChooseTime from '../ChooseTime';
 import UserAddressResolver from './UserAddressResolver';
@@ -47,7 +54,24 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [uid, setUid] = useState<string>('');
   const [userAddresses, setUserAddresses] = useState<Address[]>([]);
   const [selectedUserAddressIndex, setSelectedUserAddressIndex] =
-    useState<number>();
+    useState<number>(0);
+
+  const [isUsingUserAddress, setIsUsingUserAddress] = useState(true);
+
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedProvinceId, setSelectedProvinceId] = useState('');
+
+  //#endregion
+
+  //#region Memos
+
+  const availableProvinces = useMemo(() => {
+    if (!branches || branches.length <= 0) return [];
+
+    const branchProvinceIds = branches.map((b) => b.province_id);
+
+    return provinces.filter((p) => branchProvinceIds.includes(p.id));
+  }, [branches, provinces]);
 
   //#endregion
 
@@ -61,6 +85,14 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    async function getData() {
+      setBranches(await getBranches());
+    }
+
+    getData();
   }, []);
 
   useEffect(() => {
@@ -87,6 +119,12 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
 
     getData();
   }, [uid]);
+
+  useEffect(() => {
+    if (!isUsingUserAddress) return;
+
+    setForm('branchId', '');
+  }, [isUsingUserAddress, selectedUserAddressIndex, setForm]);
 
   //#endregion
 
@@ -185,51 +223,130 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
               >
                 Địa chỉ nhận bánh
               </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
-              <List>
-                {userAddresses.map((address, index) => (
-                  <ListItem key={index} sx={{ px: 0 }}>
-                    <ListItemButton
-                      selected={selectedUserAddressIndex === index}
-                      onClick={() => setSelectedUserAddressIndex(index)}
-                      sx={{
-                        border: (theme) =>
-                          `3px solid ${theme.palette.secondary.main}`,
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <ListItemText
-                        primary={address.address}
-                        secondary={
-                          provinces.find((p) => p.id === address.province_id)
-                            ?.name ?? 'Không tìm thấy'
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
 
-              <Divider sx={{ mb: 1 }} />
-              <Typography fontSize={16}>... Hoặc chọn địa chỉ mới:</Typography>
-
-              <CustomTextField
-                placeholder="Địa chỉ"
-                fullWidth
-                required
-                value={form.address}
-                onChange={(e: any) => setForm('address', e.target.value)}
-                type="text"
-                autoComplete="street-address"
-                name="streetAddress"
-                id="streetAddress"
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isUsingUserAddress}
+                    onChange={(_, checked) => setIsUsingUserAddress(checked)}
+                  />
+                }
+                label="Sử dụng địa chỉ đã lưu"
               />
             </Grid>
+
+            {isUsingUserAddress ? (
+              <Grid item xs={12}>
+                <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
+                <List>
+                  {userAddresses.map((address, index) => (
+                    <ListItem key={index} sx={{ px: 0 }}>
+                      <ListItemButton
+                        selected={selectedUserAddressIndex === index}
+                        onClick={() => setSelectedUserAddressIndex(index)}
+                        sx={{
+                          border: (theme) =>
+                            `3px solid ${theme.palette.secondary.main}`,
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <ListItemText
+                          primary={address.address}
+                          secondary={
+                            provinces.find((p) => p.id === address.province_id)
+                              ?.name ?? 'Không tìm thấy'
+                          }
+                        />
+                        <ListItemIcon
+                          sx={{
+                            visibility:
+                              selectedUserAddressIndex === index
+                                ? 'visible'
+                                : 'hidden',
+                          }}
+                        >
+                          <Check color="secondary" />
+                        </ListItemIcon>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+
+                <Divider sx={{ mt: 1 }} />
+              </Grid>
+            ) : (
+              <Grid item xs={12}>
+                <Typography fontSize={16}>Nhập địa chỉ mới:</Typography>
+
+                <CustomTextField
+                  placeholder="Địa chỉ"
+                  fullWidth
+                  required
+                  value={form.address}
+                  onChange={(e: any) => setForm('address', e.target.value)}
+                  type="text"
+                  autoComplete="street-address"
+                  name="streetAddress"
+                  id="streetAddress"
+                  sx={{ mb: 1 }}
+                  disabled={isUsingUserAddress}
+                />
+
+                <Autocomplete
+                  disabled={isUsingUserAddress}
+                  value={provinces.find((p) => p.id === selectedProvinceId)}
+                  onChange={(e, value) =>
+                    setSelectedProvinceId(value?.id ?? '')
+                  }
+                  options={[null, ...availableProvinces]}
+                  getOptionLabel={(p) => p?.name ?? 'Tất cả'}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.id === value?.id
+                  }
+                  sx={{ width: '100%' }}
+                  size="small"
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      size="small"
+                      placeholder="Tỉnh thành"
+                      InputProps={{
+                        ...params.InputProps,
+                        sx: {
+                          border: 3,
+                          borderColor: theme.palette.secondary.main,
+                          borderRadius: 2,
+                          overflow: 'hidden',
+                        },
+                      }}
+                      inputProps={{
+                        ...params.inputProps,
+                        style: {
+                          ...params.inputProps?.style,
+                          border: '0px solid transparent',
+                          fontSize: theme.typography.body2.fontSize,
+                        },
+                      }}
+                    />
+                  )}
+                />
+                <Divider sx={{ mt: 1 }} />
+              </Grid>
+            )}
+
             <Grid item xs={12}>
+              <Typography fontSize={16}>
+                Chọn chi nhánh H&H Bakery khả dụng:
+              </Typography>
               <UserAddressResolver
+                selectedProvinceId={
+                  isUsingUserAddress
+                    ? userAddresses[selectedUserAddressIndex]?.province_id ?? 0
+                    : selectedProvinceId
+                }
                 branchId={form.branchId}
+                branches={branches}
                 onBranchIdChange={handleBranchIdChange}
               />
             </Grid>
