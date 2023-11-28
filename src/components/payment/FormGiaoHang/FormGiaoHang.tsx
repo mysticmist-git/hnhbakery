@@ -8,7 +8,6 @@ import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import useProvinces from '@/lib/hooks/useProvinces';
 import Address from '@/models/address';
 import Branch from '@/models/branch';
-import User from '@/models/user';
 import { Check } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -129,7 +128,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   useEffect(() => {
     if (!isUsingUserAddress) return;
 
-    setForm('address', userAddresses[selectedUserAddressIndex].address);
+    setForm('address', userAddresses[selectedUserAddressIndex]?.address ?? '');
   }, [isUsingUserAddress, selectedUserAddressIndex, setForm, userAddresses]);
 
   //#endregion
@@ -144,8 +143,6 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   );
 
   //#endregion
-
-  console.log(form);
 
   return (
     <Box component="form" noValidate onSubmit={() => {}}>
@@ -237,6 +234,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                   <Switch
                     checked={isUsingUserAddress}
                     onChange={(_, checked) => setIsUsingUserAddress(checked)}
+                    color="secondary"
                   />
                 }
                 label="Sử dụng địa chỉ đã lưu"
@@ -371,6 +369,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
             }}
           ></Box>
         </Grid>
+
         <Grid item xs={12} md={6}>
           <Grid
             container

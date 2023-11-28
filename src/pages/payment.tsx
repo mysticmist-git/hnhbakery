@@ -59,21 +59,21 @@ const Payment = () => {
   const { billPrice, discountAmount } = useMemo(() => {
     return assembledCartItems.reduce(
       (result, item) => {
-        (result.billPrice += item.variant?.price ?? 0),
-          (result.discountAmount +=
-            item.batch?.discount?.start_at?.valueOf() ??
-            Number.MAX_VALUE < Date.now()
-              ? (item.batch?.discount.percent ?? 0) * (item.variant?.price ?? 0)
-              : 0);
+        result.billPrice += (item.variant?.price ?? 0) * item.quantity;
+        result.discountAmount +=
+          (item.batch?.discount?.start_at?.valueOf() &&
+          item.batch?.discount?.start_at < new Date()
+            ? ((item.batch?.discount.percent ?? 0) / 100) *
+              (item.variant?.price ?? 0)
+            : 0) * item.quantity;
 
         return result;
       },
-      { billPrice: 0, discountAmount: 0 }
+      { billPrice: 0, discountAmount: 0 } // Updated initial value
     );
   }, [assembledCartItems]);
-
   const finalBillPrice = useMemo(() => {
-    return billPrice - discountAmount - saleAmount - shippingFee;
+    return billPrice - discountAmount - saleAmount + shippingFee;
   }, [billPrice, discountAmount, saleAmount, shippingFee]);
 
   //#endregion
@@ -264,10 +264,7 @@ const Payment = () => {
         } else {
           setChosenSale(() => newChosenSale);
 
-          if (
-            (billPrice * newChosenSale.percent) / 100 <
-            newChosenSale.limit
-          ) {
+          if ((billPrice * newChosenSale.percent) / 100 < newChosenSale.limit) {
             setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
           } else {
             setSaleAmount(newChosenSale.limit);
@@ -299,8 +296,6 @@ const Payment = () => {
   }, []);
 
   // #endregion
-
-  console.log(deliveryForm);
 
   return (
     <Box sx={{ pb: 16 }}>
@@ -374,7 +369,7 @@ const Payment = () => {
           <Grid item xs={12} md={6}>
             <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
               <DonHangCuaBan
-                tamTinh={billPrice}
+                tamTinh={billPrice - discountAmount}
                 khuyenMai={saleAmount}
                 tongBill={finalBillPrice}
                 Sales={sales}
