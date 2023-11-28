@@ -363,10 +363,19 @@ export async function updateAddressValue(
   userGroupId: string,
   userId: string,
   addressId: string,
+  province_id: string,
   newAddress: string
 ) {
   const addressRef = getAddressRef(userGroupId, userId, addressId);
-  await updateDoc(addressRef, { address: newAddress, updated_at: new Date() });
+
+  console.log(newAddress);
+  console.log(province_id);
+
+  await updateDoc(addressRef, {
+    address: newAddress,
+    province_id: province_id,
+    updated_at: new Date(),
+  });
 }
 
 export async function deleteAddress(

@@ -3,34 +3,26 @@ import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
-import { auth, db } from '@/firebase/config';
-import { increaseDecreaseBatchQuantity, updateBatch } from '@/lib/DAO/batchDAO';
-import { createBill, getBillRef } from '@/lib/DAO/billDAO';
+import { auth } from '@/firebase/config';
+import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
+import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
-import { updateVariant } from '@/lib/DAO/variantDAO';
-import { COLLECTION_NAME, PLACEHOLDER_DELIVERY_PRICE } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { addDocToFirestore, addDocsToFirestore } from '@/lib/firestore';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
 import useCartNote from '@/lib/hooks/useCartNote';
 import useDeliveryForm from '@/lib/hooks/useDeliveryForm';
 import useSales from '@/lib/hooks/useSales';
 import useShippingFee from '@/lib/hooks/useShippingFee';
-import { BillObject, DeliveryObject, SaleObject } from '@/lib/models';
 import {
-  calculateTotalBillPrice as calculateFinalBillPrice,
-  createDeliveryData,
   mapProductBillToBillDetailObject as mapProductBillToBillItem,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/pageSpecific/payment';
 import Bill from '@/models/bill';
-import Delivery from '@/models/delivery';
 import Sale from '@/models/sale';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { collection, doc, increment, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useState } from 'react';

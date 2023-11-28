@@ -2,12 +2,33 @@ import { CustomIconButton } from '@/components/buttons';
 import { updateAddress, updateAddressValue } from '@/lib/DAO/addressDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import Address from '@/models/address';
+import Province from '@/models/province';
 import { UserTableRow } from '@/models/user';
+import { Close, Edit, Save } from '@mui/icons-material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import { InputAdornment, TextField, useTheme } from '@mui/material';
-import React, { useEffect, useRef } from 'react';
+import {
+  Autocomplete,
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  useTheme,
+} from '@mui/material';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+type AddressItemProps = {
+  textStyle: any;
+  value: Address;
+  index: number;
+  disabled: boolean;
+  editItem: { editState: boolean; index: number };
+  handleSetEditItem: (editState: boolean, index: number) => void;
+  userData: UserTableRow | undefined;
+  provinces: Province[];
+};
 
 export default function AddressItem({
   textStyle,
@@ -17,15 +38,16 @@ export default function AddressItem({
   editItem,
   handleSetEditItem,
   userData,
-}: {
-  textStyle: any;
-  value: Address;
-  index: number;
-  disabled: boolean;
-  editItem: { editState: boolean; index: number };
-  handleSetEditItem: (editState: boolean, index: number) => void;
-  userData: UserTableRow | undefined;
-}) {
+  provinces,
+}: AddressItemProps) {
+  //#region States
+
+  const [selectedProvince, setSelectedProvince] = useState<Province | null>(
+    null
+  );
+
+  //#endregion
+
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -45,18 +67,33 @@ export default function AddressItem({
     if (addressRef.current) {
       addressRef.current.value = value.address;
     }
-  }, [value]);
+
+    setSelectedProvince(
+      provinces.find((province) => province.id === value.province_id) ?? null
+    );
+  }, [provinces, value]);
 
   //#endregion
 
   //#region Handlers
 
-  const handleSave = async () => {
-    console.log(addressRef.current);
-    console.log(userData);
+  const handleSave = useCallback(async () => {
+    console.log('run');
+
+    if (!selectedProvince) {
+      handleSnackbarAlert('warning', 'Vui lòng chọn tỉnh thành!');
+      console.log('Selected province is null!');
+      return;
+    }
+
+    console.log(selectedProvince.id);
+    console.log(value.province_id);
 
     if (addressRef.current && userData) {
-      if (addressRef.current.value !== value.address) {
+      if (
+        addressRef.current.value !== value.address || 
+        selectedProvince.id !== value.province_id
+      ) {
         try {
           if (!userData?.addresses) {
             return;
@@ -66,10 +103,13 @@ export default function AddressItem({
 
           newAddresses[addressIndex].address = addressRef.current!.value;
 
+          console.log(selectedProvince);
+
           await updateAddressValue(
             userData.group_id,
             userData.id,
             newAddresses[addressIndex].id,
+            selectedProvince.id,
             addressRef.current!.value
           );
 
@@ -90,7 +130,14 @@ export default function AddressItem({
     }
 
     handleSetEditItem(false, -1);
-  };
+  }, [
+    handleSetEditItem,
+    handleSnackbarAlert,
+    index,
+    selectedProvince,
+    userData,
+    value,
+  ]);
 
   const handleCancel = () => {
     handleSnackbarAlert(
@@ -105,6 +152,28 @@ export default function AddressItem({
 
   return (
     <>
+      <Autocomplete
+        disablePortal
+        value={selectedProvince}
+        options={provinces}
+        getOptionLabel={(o) => o.name}
+        onChange={(_, value) => setSelectedProvince(value)}
+        disabled={disabled}
+        sx={{ width: 300, mr: 2 }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Tỉnh thành"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                ...textStyle,
+                borderRadius: '8px',
+              },
+            }}
+          />
+        )}
+      />
       <TextField
         label={'Địa chỉ ' + (index + 1)}
         disabled={disabled}
