@@ -126,6 +126,12 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     setForm('branchId', '');
   }, [isUsingUserAddress, selectedUserAddressIndex, setForm]);
 
+  useEffect(() => {
+    if (!isUsingUserAddress) return;
+
+    setForm('address', userAddresses[selectedUserAddressIndex].address);
+  }, [isUsingUserAddress, selectedUserAddressIndex, setForm, userAddresses]);
+
   //#endregion
 
   //#region Handlers
@@ -138,6 +144,8 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   );
 
   //#endregion
+
+  console.log(form);
 
   return (
     <Box component="form" noValidate onSubmit={() => {}}>

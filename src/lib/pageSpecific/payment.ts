@@ -21,7 +21,7 @@ export const createBillItemData = (
   const discountPercent = cartItem.batch?.discount.percent ?? 0;
 
   const totalPrice = price * cartItem.quantity;
-  const totalDiscount = (price * discountPercent) * cartItem.quantity; 
+  const totalDiscount = price * discountPercent * cartItem.quantity;
 
   const billItemData: Omit<BillItem, 'id'> = {
     bill_id: billId,
@@ -31,7 +31,7 @@ export const createBillItemData = (
     price: totalPrice,
     total_price: totalPrice,
     total_discount: totalDiscount,
-    final_price: price - totalDiscount, 
+    final_price: price - totalDiscount,
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -113,6 +113,13 @@ export const validateForm = (form: DeliveryForm): FormValidationResult => {
   if (form?.deliveryTime === '') {
     return {
       msg: 'Vui lòng chọn thời gian giao',
+      isValid: false,
+    };
+  }
+
+  if (form?.branchId === '') {
+    return {
+      msg: 'Vui lòng chọn chi nhánh',
       isValid: false,
     };
   }
