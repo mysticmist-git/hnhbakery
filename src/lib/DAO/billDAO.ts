@@ -1,4 +1,5 @@
 import Bill, { BillTableRow, billConverter } from '@/models/bill';
+import Branch from '@/models/branch';
 import User from '@/models/user';
 import {
   CollectionReference,
@@ -17,19 +18,18 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getAddress } from './addressDAO';
 import { getBatchById } from './batchDAO';
 import { getBillItems } from './billItemDAO';
+import { getBranchById } from './branchDAO';
 import { getDeliveryById } from './deliveryDAO';
 import { DEFAULT_GROUP_ID } from './groupDAO';
 import { getPaymentMethodById } from './paymentMethodDAO';
 import { getProduct } from './productDAO';
 import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
+import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
-import Branch from '@/models/branch';
-import { getBranchById } from './branchDAO';
 
 export function getBillsRef(
   groupId: string,
@@ -351,6 +351,17 @@ export async function updateBill(
 
     await updateDoc(billRef, data);
   }
+}
+
+export async function updateBillField(
+  groupId: string,
+  userId: string,
+  billId: string,
+  updateData: Partial<{
+    [key in keyof Bill]: Bill[keyof Bill];
+  }>
+) {
+  await updateDoc(getBillRef(groupId, userId, billId), updateData);
 }
 
 export async function deleteBill(
