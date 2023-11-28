@@ -1,6 +1,7 @@
 import { createAddress } from '@/lib/DAO/addressDAO';
 import { getProvinces } from '@/lib/DAO/provinceDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import useProvinces from '@/lib/hooks/useProvinces';
 import Address from '@/models/address';
 import Province from '@/models/province';
 import { UserTableRow } from '@/models/user';
@@ -41,29 +42,15 @@ export default function CheckboxList({
   const { addresses, ...data } = userData ?? {};
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
+  const provinces = useProvinces();
 
   //#endregion
 
   //#region States
 
-  const [provinces, setProvinces] = useState<Province[]>([]);
-
   //#endregion
 
-  //#region Handlers
-
-  useEffect(() => {
-    async function getData() {
-      try {
-        setProvinces(await getProvinces());
-      } catch (error) {
-        console.log('Fail to fetch provinces', error);
-        setProvinces([]);
-      }
-    }
-
-    getData();
-  }, []);
+  //#region UseEffects
 
   //#endregion
 

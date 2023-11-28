@@ -1,20 +1,12 @@
 import CustomTextarea from '@/components/inputs/TextArea/CustomTextArea';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
-import { auth } from '@/firebase/config';
 import { getAddresses } from '@/lib/DAO/addressDAO';
-import { getUserByUid } from '@/lib/DAO/userDAO';
-import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import useProvinces from '@/lib/hooks/useProvinces';
-import Address from '@/models/address';
-import User from '@/models/user';
+import useUserData from '@/lib/hooks/userUserData';
 import {
   Autocomplete,
   Divider,
   Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Typography,
   alpha,
   useTheme,
@@ -22,76 +14,39 @@ import {
 import { Box } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { onAuthStateChanged } from 'firebase/auth';
+import { Address } from 'nodemailer/lib/mailer';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import ChooseTime from '../ChooseTime';
+import { FormGiaoHangProps } from './FormGiaoHang';
 import UserAddressResolver from './UserAddressResolver';
 
-type FormGiaoHangProps = {
-  form: DeliveryForm;
-  setForm: SetDeliveryForm;
-};
-
-function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
+export function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   //#region Hooks
-
   const theme = useTheme();
   const [_, setEmail] = useLocalStorage('email', '');
   const provinces = useProvinces();
+  const userData = useUserData();
 
   //#endregion
-
   //#region States
-
-  const [uid, setUid] = useState<string>('');
   const [userAddresses, setUserAddresses] = useState<Address[]>([]);
-  const [selectedUserAddressIndex, setSelectedUserAddressIndex] =
-    useState<number>();
 
   //#endregion
-
   //#region UseEffects
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUid(user.uid);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   useEffect(() => {
     async function getData() {
-      if (!uid) {
-        setUserAddresses([]);
-        return;
-      }
-
-      const user = await getUserByUid(uid);
-
-      if (!user) {
-        setUserAddresses([]);
-        return;
-      }
-
-      const addresses = await getAddresses(user.group_id, user.id);
-      setUserAddresses(addresses);
-
-      if (addresses.length > 0) {
-        setSelectedUserAddressIndex(0);
+      try {
+        await getAddresses(userdata);
+      } finally {
       }
     }
 
-    getData();
-  }, [uid]);
+    getDataGridUtilityClass();
+  }, []);
 
   //#endregion
-
   //#region Handlers
-
   const handleBranchIdChange = useCallback(
     function (branchId) {
       setForm('branchId', branchId);
@@ -100,7 +55,6 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   );
 
   //#endregion
-
   return (
     <Box component="form" noValidate onSubmit={() => {}}>
       <Grid
@@ -187,34 +141,6 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
               </Typography>
             </Grid>
             <Grid item xs={12}>
-              <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
-              <List>
-                {userAddresses.map((address, index) => (
-                  <ListItem key={index} sx={{ px: 0 }}>
-                    <ListItemButton
-                      selected={selectedUserAddressIndex === index}
-                      onClick={() => setSelectedUserAddressIndex(index)}
-                      sx={{
-                        border: (theme) =>
-                          `3px solid ${theme.palette.secondary.main}`,
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <ListItemText
-                        primary={address.address}
-                        secondary={
-                          provinces.find((p) => p.id === address.province_id)
-                            ?.name ?? 'Không tìm thấy'
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-
-              <Divider sx={{ mb: 1 }} />
-              <Typography fontSize={16}>... Hoặc chọn địa chỉ mới:</Typography>
-
               <CustomTextField
                 placeholder="Địa chỉ"
                 fullWidth
@@ -225,6 +151,29 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                 autoComplete="street-address"
                 name="streetAddress"
                 id="streetAddress"
+              />
+
+              <Autocomplete
+                disablePortal
+                value={selectedProvince}
+                options={provinces}
+                getOptionLabel={(o) => o.name}
+                onChange={(_, value) => setSelectedProvince(value)}
+                disabled={disabled}
+                sx={{ width: 300, mr: 2 }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tỉnh thành"
+                    InputProps={{
+                      ...params.InputProps,
+                      sx: {
+                        ...textStyle,
+                        borderRadius: '8px',
+                      },
+                    }}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12}>
@@ -386,5 +335,3 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     </Box>
   );
 }
-
-export default FormGiaoHang;
