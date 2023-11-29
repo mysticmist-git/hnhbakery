@@ -109,7 +109,7 @@ export enum Path {
   PROFILE = '/profile',
 }
 
-export const PLACEHOLDER_DELIVERY_PRICE = 20000;
+export const PLACEHOLDER_DELIVERY_PRICE = 0;
 
 /**
  * Enum representing permission codes.

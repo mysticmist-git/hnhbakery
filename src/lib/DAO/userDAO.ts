@@ -42,6 +42,7 @@ import { getProduct, getProducts } from './productDAO';
 import { getProductTypeById, getProductTypes } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getVariant } from './variantDAO';
+import Address from '@/models/address';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -362,19 +363,36 @@ export async function getUserTableRows() {
 
       const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
 
-      const delivery = await getDeliveryById(b.delivery_id);
-
-      billTableRows.push({
+      let pushData: BillTableRow = {
         ...b,
         paymentMethod: await getPaymentMethodById(b.payment_method_id),
         customer: { ...c },
         sale: sale,
-        deliveryTableRow: {
-          ...delivery!,
-          address: await getAddress(c.group_id, c.id, delivery!.address_id),
-        },
+
         billItems: billItems,
-      });
+      };
+
+      let delivery: Delivery | undefined = undefined;
+      if (b.delivery_id != '') {
+        delivery = await getDeliveryById(b.delivery_id);
+      }
+
+      let address: Address | undefined = undefined;
+      if (delivery?.address && delivery.address != '') {
+        address = await getAddress(c.group_id, c.id, delivery.address);
+      }
+
+      if (delivery) {
+        pushData = {
+          ...pushData,
+          deliveryTableRow: {
+            ...delivery,
+            addressObject: address,
+          },
+        };
+      }
+
+      billTableRows.push(pushData);
     }
 
     const addresses = await getAddresses(c.group_id, c.id);
@@ -442,10 +460,15 @@ export async function getUserTableRowByUID(uid: string) {
 
     const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
 
-    let delivery: Delivery | undefined;
+    let delivery: Delivery | undefined =
+      b.delivery_id != '' ? await getDeliveryById(b.delivery_id) : undefined;
+    let addressObject: Address | undefined;
+    console.log(delivery);
 
     try {
-      delivery = await getDeliveryById(b.delivery_id);
+      if (delivery?.address && delivery.address != '') {
+        addressObject = await getAddress(c.group_id, c.id, delivery.address);
+      }
     } catch {}
 
     billTableRows.push({
@@ -455,8 +478,8 @@ export async function getUserTableRowByUID(uid: string) {
       sale: sale,
       deliveryTableRow: delivery
         ? {
-            ...delivery!,
-            address: await getAddress(c.group_id, c.id, delivery!.address_id),
+            ...delivery,
+            addressObject: addressObject,
           }
         : null,
       billItems: billItems,

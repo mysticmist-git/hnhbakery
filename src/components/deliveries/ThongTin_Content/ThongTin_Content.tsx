@@ -109,7 +109,9 @@ export default function ThongTin_Content({
             textStyle={textStyle}
             multiline
             label="Địa chỉ giao hàng"
-            value={modalDelivery?.deliveryTableRow?.address?.address ?? 'Trống'}
+            value={
+              modalDelivery?.deliveryTableRow?.addressObject?.address ?? 'Trống'
+            }
           />
         </Grid>
 

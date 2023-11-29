@@ -23,16 +23,13 @@ function BookingItemDisplay({
     undefined
   );
 
-  const [imageCakeBase, setImageCakeBase] = useState<string>('');
-
   useEffect(() => {
     async function fetch() {
+      if (!bookingItem.cake_base_id || bookingItem.cake_base_id === '') {
+        return;
+      }
       const data = await getCakeBaseById(bookingItem.cake_base_id);
       setCakeBaseData(data);
-      if (data && data.image) {
-        const image = await getDownloadUrlFromFirebaseStorage(data.image);
-        setImageCakeBase(image);
-      }
     }
     fetch();
   }, [bookingItem.cake_base_id]);

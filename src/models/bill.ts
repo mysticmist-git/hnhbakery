@@ -83,7 +83,7 @@ const billConverter: FirestoreDataConverter<Bill> = {
 export function billStateContentParse(params: BillState | undefined) {
   switch (params) {
     case 'issued':
-      return 'Lỗi';
+      return 'Chờ xử lý';
     case 'pending':
       return 'Chưa thanh toán';
     case 'paid':
@@ -105,7 +105,7 @@ export function billStateColorParse(
 ) {
   switch (value) {
     case 'issued':
-      return theme.palette.error.main;
+      return theme.palette.text.secondary;
     case 'pending':
       return theme.palette.text.secondary;
     case 'paid':

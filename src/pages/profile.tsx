@@ -368,7 +368,8 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   <Typography {...TypoStyle}>Khuyến mãi:</Typography>
 
                   <Typography {...TypoStyle}>
-                    {'-' + formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
+                    {(bill.total_discount == 0 ? '' : '-') +
+                      formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
                   </Typography>
                 </Box>
 
@@ -427,7 +428,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   <Typography {...TypoStyle}>Địa chỉ giao hàng:</Typography>
 
                   <Typography {...TypoStyle}>
-                    {bill.deliveryTableRow?.address?.address ?? 'Trống'}
+                    {bill.deliveryTableRow?.addressObject?.address ?? 'Trống'}
                   </Typography>
                 </Box>
 

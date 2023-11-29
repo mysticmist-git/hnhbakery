@@ -111,12 +111,12 @@ const Payment = () => {
         note: cartNote ?? '',
         state: 'issued',
         payment_method_id: paymentId,
-        customer_id: customer_id,
-        booking_item_id: '',
-        branch_id: deliveryForm.branchId,
-        delivery_id: deliveryId,
         sale_id: chosenSale ? chosenSale.id : '',
+        customer_id: customer_id,
+        delivery_id: deliveryId,
         paid_time: new Date(),
+        branch_id: deliveryForm.branchId,
+        booking_item_id: '',
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -328,6 +328,10 @@ const Payment = () => {
       handleSnackbarAlert('error', result.msg);
       return;
     }
+
+    // Deelte localStorage cart
+    setCart([]);
+    setCartNote('');
 
     // Tạo delivery
     let delivery_id = '';

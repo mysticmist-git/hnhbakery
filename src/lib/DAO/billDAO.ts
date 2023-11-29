@@ -30,6 +30,8 @@ import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
+import Delivery from '@/models/delivery';
+import Address from '@/models/address';
 
 export function getBillsRef(
   groupId: string,
@@ -446,17 +448,27 @@ export async function getBillTableRows(
 
       const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
 
-      const delivery = await getDeliveryById(b.delivery_id);
+      let delivery: Delivery | undefined = undefined;
+      if (b.delivery_id != '') {
+        delivery = await getDeliveryById(b.delivery_id);
+      }
+
+      let address: Address | undefined = undefined;
+      if (delivery?.address && delivery.address != '') {
+        address = await getAddress(c.group_id, c.id, delivery.address);
+      }
 
       finalBills.push({
         ...b,
         paymentMethod: await getPaymentMethodById(b.payment_method_id),
         customer: { ...c },
         sale: sale,
-        deliveryTableRow: {
-          ...delivery!,
-          address: await getAddress(c.group_id, c.id, delivery!.address_id),
-        },
+        deliveryTableRow: delivery
+          ? {
+              ...delivery,
+              addressObject: address,
+            }
+          : undefined,
         billItems: billItems,
         branch: branch,
       });
@@ -499,21 +511,31 @@ export async function getBillTableRowsByUserId(
 
     const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
 
-    const delivery = await getDeliveryById(b.delivery_id);
+    let delivery: Delivery | undefined = undefined;
+    if (b.delivery_id != '') {
+      delivery = await getDeliveryById(b.delivery_id);
+    }
+
+    let address: Address | undefined = undefined;
+    if (delivery?.address && delivery.address != '') {
+      address = await getAddress(
+        customer.group_id,
+        customer.id,
+        delivery.address
+      );
+    }
 
     finalBills.push({
       ...b,
       paymentMethod: await getPaymentMethodById(b.payment_method_id),
       customer: { ...customer },
       sale: sale,
-      deliveryTableRow: {
-        ...delivery!,
-        address: await getAddress(
-          customer.group_id,
-          customer.id,
-          delivery!.address_id
-        ),
-      },
+      deliveryTableRow: delivery
+        ? {
+            ...delivery,
+            addressObject: address,
+          }
+        : undefined,
       billItems: billItems,
       branch: await getBranchById(b.branch_id),
     });
