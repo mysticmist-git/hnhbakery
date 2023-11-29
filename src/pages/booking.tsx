@@ -13,6 +13,7 @@ import UploadStepperComponent from '@/components/booking/Upload/UploadStepperCom
 import { getCakeTextures } from '@/lib/DAO/cakeTextureDAO';
 import { getAllModel3d } from '@/lib/DAO/model3dDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import { PaymentContext } from '@/lib/contexts/paymentContext';
 import BookingItem from '@/models/bookingItem';
 import CakeTexture from '@/models/cakeTexture';
 import Model3d from '@/models/model3d';
@@ -30,7 +31,13 @@ import {
 } from '@mui/material';
 import { RootState, useThree } from '@react-three/fiber';
 import path from 'path';
-import { createContext, useCallback, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { Group, Object3DEventMap, Vector3 } from 'three';
 
 export type Model3DPropsType =
@@ -81,43 +88,19 @@ const Booking = () => {
 
   const handleSnackbarAlert = useSnackbarService();
 
-  const [tabIndex, setTabIndex] = useState(1);
+  const [tabIndex, setTabIndex] = useState(0);
   function handleChangeTab(value: number) {
     setTabIndex(value);
   }
 
-  const [bookingItem, setBookingItem] = useState<BookingItem>({
-    id: '',
-    images: [],
-    occasion: '',
-    size: '',
-    cake_base_id: '',
-    message: {
-      content: '',
-      color: '',
-    },
-    note: '',
-  });
-  const handleBookingItemChange = (key: keyof BookingItem, value: any) => {
-    setBookingItem({ ...bookingItem, [key]: value });
-  };
-
-  //#region Image
-  const [imageArray, setImageArray] = useState<File[]>([]);
-  function handleImageArrayChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files) {
-      const array = Array.from(e.target.files);
-      setImageArray([...imageArray, ...array]);
-      handleSnackbarAlert('success', 'Thêm ảnh thành công!');
-    }
-  }
-  function removeImage(index: number) {
-    const newImageArray = [...imageArray];
-    newImageArray.splice(index, 1);
-    setImageArray(newImageArray);
-    handleSnackbarAlert('success', 'Xóa thành công');
-  }
-  //#endregion
+  const {
+    bookingItem,
+    imageArray,
+    handleBookingItemChange,
+    handleImageArrayChange,
+    addImageArrayFromModel3D,
+    removeImage,
+  } = useContext(PaymentContext);
 
   //#region screenshot
   const [canvas, setCanvas] = useState<RootState>();
@@ -249,7 +232,7 @@ const Booking = () => {
           if (i == 8) {
             setTimeout(() => {
               if (newFileArray.length == 4) {
-                setImageArray(newFileArray);
+                addImageArrayFromModel3D(newFileArray);
               }
               setWithRoomDesign(true);
               canvas.camera.position.set(0, zoomConfig, zoomConfig);
@@ -287,6 +270,46 @@ const Booking = () => {
       }
     }
   }, [withRoomDesign, isPicturing]);
+
+  const checkInfor = useCallback(
+    (buoc: number) => {
+      console.log(bookingItem);
+
+      if (buoc == 1) {
+        if (imageArray.length == 0) {
+          alert('Vui lòng chọn ảnh!');
+          return false;
+        }
+      } else if (buoc == 2) {
+        if (!bookingItem.occasion || bookingItem.occasion == '') {
+          alert('Vui lòng chọn dịp!');
+          return false;
+        }
+
+        if (!bookingItem.size || bookingItem.size == '') {
+          alert('Vui lòng chọn size!');
+          return false;
+        }
+
+        if (!bookingItem.cake_base_id || bookingItem.cake_base_id == '') {
+          alert('Vui lòng chọn cốt bánh!');
+          return false;
+        }
+
+        if (
+          bookingItem.message.content == '' ||
+          bookingItem.message.color == ''
+        ) {
+          alert('Vui lòng điền thông điệp!');
+
+          return false;
+        }
+      }
+
+      return true;
+    },
+    [imageArray, bookingItem]
+  );
 
   return (
     <>
@@ -365,6 +388,7 @@ const Booking = () => {
                   removeImage: removeImage,
                 }}
                 handleBookingItemChange={handleBookingItemChange}
+                checkInfor={checkInfor}
               />
             </Grid>
 
