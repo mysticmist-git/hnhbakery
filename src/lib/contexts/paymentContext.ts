@@ -42,11 +42,11 @@ export function initPaymentContext() {
   const [bookingItem, setBookingItem] = useState<BookingItem>({
     id: '',
     images: [],
-    occasion: 'Sinh nhật',
-    size: 'Lớn',
-    cake_base_id: '1',
+    occasion: '',
+    size: '',
+    cake_base_id: '',
     message: {
-      content: 'Dui',
+      content: '',
       color: '',
     },
     note: '',

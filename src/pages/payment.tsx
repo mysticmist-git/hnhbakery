@@ -318,7 +318,8 @@ const Payment = () => {
 
   // #region Booking Item
 
-  const { isBooking, bookingItem, imageArray } = useContext(PaymentContext);
+  const { isBooking, bookingItem, imageArray, resetState } =
+    useContext(PaymentContext);
 
   const handleBookingClick = useCallback(async () => {
     const result = validateForm(deliveryForm);
@@ -328,6 +329,23 @@ const Payment = () => {
       return;
     }
 
+    // Tạo delivery
+    let delivery_id = '';
+    try {
+      const dData = createDeliveryData(deliveryForm);
+      delivery_id = await createDelivery(dData as Omit<Delivery, 'id'>);
+      console.log('delivery_id: ', delivery_id);
+    } catch (error: any) {
+      delivery_id = '';
+      handleSnackbarAlert('error', 'Tạo Delivery không thành công');
+      resetState();
+    }
+
+    if (delivery_id == '') {
+      return;
+    }
+
+    // Tạo booking item
     let bookingItem_Id = '';
     const bookingItemData: Omit<BookingItem, 'id'> = {
       images: [],
@@ -340,14 +358,18 @@ const Payment = () => {
     try {
       const refBookingItem = await createBookingItem(bookingItemData);
       bookingItem_Id = refBookingItem.id;
+      console.log('bookingItem_Id: ', bookingItem_Id);
     } catch (error: any) {
       bookingItem_Id = '';
+      handleSnackbarAlert('error', 'Tạo BookingItem không thành công');
+      resetState();
     }
 
     if (bookingItem_Id == '') {
       return;
     }
 
+    // Get User để tạo Bill
     let userData = {
       group_id: '',
       id: '',
@@ -365,17 +387,21 @@ const Payment = () => {
           id: GUEST_ID,
         };
       }
+
+      console.log('userData: ', userData);
     } catch (error: any) {
       userData = {
         group_id: DEFAULT_GROUP_ID,
         id: GUEST_ID,
       };
+      handleSnackbarAlert('error', 'Lấy User không thành công');
+      resetState();
     }
 
+    // Tạo Bill
     let billId = '';
-
     try {
-      const billData = createBillData('cash', null, userData.id);
+      const billData = createBillData('cash', null, userData.id, delivery_id);
       billData['booking_item_id'] = bookingItem_Id;
       const refBill = await createBill(
         userData.group_id,
@@ -384,38 +410,53 @@ const Payment = () => {
       );
 
       billId = refBill.id;
+      console.log('billId: ', billId);
     } catch (error: any) {
       billId = '';
+      handleSnackbarAlert('error', 'Tạo Bill không thành công');
+      resetState();
     }
 
     if (billId == '') {
       return;
     }
 
+    // Upload ảnh vào Fire storage
     const locationImage: string[] = [];
 
-    imageArray.forEach((file, i) => {
-      const storageRef = ref(storage, `/bookingImages/${billId + '_' + i}`);
-
-      uploadBytes(storageRef, file).then((snapshot) => {
-        locationImage.push(snapshot.metadata.fullPath);
-      });
-    });
+    await Promise.all(
+      imageArray.map(async (file, i) => {
+        const storageRef = ref(storage, `/bookingImages/${billId + '_' + i}`);
+        return await uploadBytes(storageRef, file).then((snapshot) => {
+          locationImage.push(snapshot.metadata.fullPath);
+        });
+      })
+    );
 
     if (locationImage.length == 0) {
+      handleSnackbarAlert('error', 'Upload ảnh không thành công');
+      resetState();
       return;
     }
 
-    bookingItemData.images = locationImage;
+    console.log('locationImage: ', locationImage);
 
+    // Cập nhật Image trong BookingItem
+    bookingItemData.images = locationImage;
     try {
       await updateBookingItem(bookingItem_Id, bookingItemData);
+      resetState();
+      router.push(`/tienmat-result?billId=${billId}`);
     } catch (error: any) {
+      handleSnackbarAlert(
+        'error',
+        'Cập nhật Image vào bookingItem không thành công'
+      );
+      resetState();
       return;
     }
-
-    createDeliveryData(deliveryForm, billId, 0);
   }, [deliveryForm]);
+
   // #endregion
   return (
     <Box component={'div'} sx={{ pb: 16 }}>
@@ -531,7 +572,7 @@ const Payment = () => {
                 </CaiKhungCoTitle>
               </Grid>
               <Grid item xs={'auto'}>
-                <CustomButton onClick={() => {}}>
+                <CustomButton onClick={handleBookingClick}>
                   <Typography
                     variant="button"
                     color={theme.palette.common.white}
