@@ -9,6 +9,7 @@ import promotionImage from '@/assets/promotion.png';
 import useLoadingService from '@/lib/hooks/useLoadingService';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import {
+  BillState as BillStateType,
   BillTableRow,
   billStateColorParse,
   billStateContentParse,
@@ -343,7 +344,7 @@ const Profile = () => {
 
 export default Profile;
 
-function BillAccordionContent({ bill }: { bill: BillTableRow }) {
+export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
   const theme = useTheme();
   return (
     <>
@@ -390,13 +391,17 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Thời gian thanh toán:</Typography>
+                {bill.state === 'paid' && (
+                  <Box component={'div'} sx={BoxStyle}>
+                    <Typography {...TypoStyle}>
+                      Thời gian thanh toán:
+                    </Typography>
 
-                  <Typography {...TypoStyle}>
-                    {formatDateString(bill.paid_time) ?? 'Trống'}
-                  </Typography>
-                </Box>
+                    <Typography {...TypoStyle}>
+                      {formatDateString(bill.paid_time) ?? 'Trống'}
+                    </Typography>
+                  </Box>
+                )}
 
                 <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Ghi chú:</Typography>
@@ -475,15 +480,17 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                 <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Địa chỉ giao hàng:</Typography>
 
-                  <Typography {...TypoStyle}>
-                    {bill.deliveryTableRow?.addressObject?.address ?? 'Trống'}
+                  <Typography {...TypoStyle} textAlign={'right'}>
+                    {bill.deliveryTableRow?.addressObject?.address ??
+                      bill.deliveryTableRow?.address ??
+                      'Trống'}
                   </Typography>
                 </Box>
 
                 <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Ghi chú:</Typography>
 
-                  <Typography {...TypoStyle}>
+                  <Typography {...TypoStyle} textAlign={'right'}>
                     {bill.deliveryTableRow?.delivery_note ?? 'Trống'}
                   </Typography>
                 </Box>
