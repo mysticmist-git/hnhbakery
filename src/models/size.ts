@@ -36,11 +36,11 @@ export function SizeNameParse(name: string | undefined): string {
   if (!name) {
     return 'Trống';
   }
-  if (name == 'lon') {
+  if (name == 'lon' || name == 'lớn' || name == 'Lớn') {
     return 'Lớn';
-  } else if (name == 'nho') {
+  } else if (name == 'nho' || name == 'nhỏ' || name == 'Nhỏ') {
     return 'Nhỏ';
-  } else if (name == 'vua') {
+  } else if (name == 'vua' || name == 'vừa' || name == 'Vừa') {
     return 'Vừa';
   }
   return name;

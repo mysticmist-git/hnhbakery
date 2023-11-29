@@ -32,6 +32,11 @@ import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
 import Delivery from '@/models/delivery';
 import Address from '@/models/address';
+import { getBookingItemById } from './bookingItemDAO';
+import { getCakeBaseById } from './cakeBaseDAO';
+import ProductType from '@/models/productType';
+import Product from '@/models/product';
+import Variant from '@/models/variant';
 
 export function getBillsRef(
   groupId: string,
@@ -432,17 +437,34 @@ export async function getBillTableRows(
 
       const billItems: BillTableRow['billItems'] = [];
       for (let bi of billitems) {
-        const batch = await getBatchById(bi.batch_id);
+        const batch =
+          bi.batch_id == '' ? undefined : await getBatchById(bi.batch_id);
+
+        let productType: ProductType | undefined = undefined;
+        let product: Product | undefined = undefined;
+        let variant: Variant | undefined = undefined;
+
+        if (
+          batch &&
+          batch.product_type_id != '' &&
+          batch.product_id != '' &&
+          batch.variant_id != ''
+        ) {
+          productType = await getProductTypeById(batch.product_type_id);
+          product = await getProduct(batch.product_type_id, batch.product_id);
+          variant = await getVariant(
+            batch.product_type_id,
+            batch.product_id,
+            batch.variant_id
+          );
+        }
+
         billItems.push({
           ...bi,
           batch: batch,
-          productType: await getProductTypeById(batch!.product_type_id),
-          product: await getProduct(batch!.product_type_id, batch!.product_id),
-          variant: await getVariant(
-            batch!.product_type_id,
-            batch!.product_id,
-            batch!.variant_id
-          ),
+          productType: productType,
+          product: product,
+          variant: variant,
         });
       }
 
@@ -458,9 +480,17 @@ export async function getBillTableRows(
         address = await getAddress(c.group_id, c.id, delivery.address);
       }
 
+      const bookingItem =
+        b.booking_item_id == ''
+          ? undefined
+          : await getBookingItemById(b.booking_item_id);
+
       finalBills.push({
         ...b,
-        paymentMethod: await getPaymentMethodById(b.payment_method_id),
+        paymentMethod:
+          b.payment_method_id == ''
+            ? undefined
+            : await getPaymentMethodById(b.payment_method_id),
         customer: { ...c },
         sale: sale,
         deliveryTableRow: delivery
@@ -471,6 +501,15 @@ export async function getBillTableRows(
           : undefined,
         billItems: billItems,
         branch: branch,
+        bookingItem: bookingItem
+          ? {
+              ...bookingItem,
+              cakeBase:
+                bookingItem.cake_base_id == ''
+                  ? undefined
+                  : await getCakeBaseById(bookingItem.cake_base_id),
+            }
+          : undefined,
       });
     }
   }
@@ -481,6 +520,9 @@ export async function getBillTableRows(
 export async function getBillTableRowsByUserId(
   userId: string
 ): Promise<BillTableRow[]> {
+  if (userId == '') {
+    return [];
+  }
   const finalBills: BillTableRow[] = [];
 
   const customer = await getUserByUid(userId);
@@ -491,21 +533,42 @@ export async function getBillTableRowsByUserId(
   const bills = await getBills(customer.group_id, customer.id);
 
   for (let b of bills) {
-    const billitems = await getBillItems(customer.group_id, customer.id, b.id);
+    const billitemsData = await getBillItems(
+      customer.group_id,
+      customer.id,
+      b.id
+    );
 
     const billItems: BillTableRow['billItems'] = [];
-    for (let bi of billitems) {
-      const batch = await getBatchById(bi.batch_id);
+    for (let bi of billitemsData) {
+      const batch =
+        bi.batch_id == '' ? undefined : await getBatchById(bi.batch_id);
+
+      let productType: ProductType | undefined = undefined;
+      let product: Product | undefined = undefined;
+      let variant: Variant | undefined = undefined;
+
+      if (
+        batch &&
+        batch.product_type_id != '' &&
+        batch.product_id != '' &&
+        batch.variant_id != ''
+      ) {
+        productType = await getProductTypeById(batch.product_type_id);
+        product = await getProduct(batch.product_type_id, batch.product_id);
+        variant = await getVariant(
+          batch.product_type_id,
+          batch.product_id,
+          batch.variant_id
+        );
+      }
+
       billItems.push({
         ...bi,
         batch: batch,
-        productType: await getProductTypeById(batch!.product_type_id),
-        product: await getProduct(batch!.product_type_id, batch!.product_id),
-        variant: await getVariant(
-          batch!.product_type_id,
-          batch!.product_id,
-          batch!.variant_id
-        ),
+        productType: productType,
+        product: product,
+        variant: variant,
       });
     }
 
@@ -516,30 +579,47 @@ export async function getBillTableRowsByUserId(
       delivery = await getDeliveryById(b.delivery_id);
     }
 
-    let address: Address | undefined = undefined;
-    if (delivery?.address && delivery.address != '') {
-      address = await getAddress(
-        customer.group_id,
-        customer.id,
-        delivery.address
-      );
-    }
+    const bookingItem =
+      b.booking_item_id == ''
+        ? undefined
+        : await getBookingItemById(b.booking_item_id);
 
     finalBills.push({
       ...b,
-      paymentMethod: await getPaymentMethodById(b.payment_method_id),
+      paymentMethod:
+        b.payment_method_id == ''
+          ? undefined
+          : await getPaymentMethodById(b.payment_method_id),
       customer: { ...customer },
       sale: sale,
       deliveryTableRow: delivery
         ? {
             ...delivery,
-            addressObject: address,
+            addressObject:
+              delivery.address == ''
+                ? undefined
+                : await getAddress(
+                    customer.group_id,
+                    customer.id,
+                    delivery.address
+                  ),
           }
         : undefined,
       billItems: billItems,
-      branch: await getBranchById(b.branch_id),
+      branch: b.branch_id == '' ? undefined : await getBranchById(b.branch_id),
+      bookingItem: bookingItem
+        ? {
+            ...bookingItem,
+            cakeBase:
+              bookingItem.cake_base_id == ''
+                ? undefined
+                : await getCakeBaseById(bookingItem.cake_base_id),
+          }
+        : undefined,
     });
   }
+
+  console.log(finalBills);
 
   return finalBills;
 }

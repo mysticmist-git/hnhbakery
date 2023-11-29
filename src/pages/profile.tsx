@@ -20,24 +20,29 @@ import {
 } from '@/models/delivery';
 import { SizeNameParse } from '@/models/size';
 import User, { UserTableRow } from '@/models/user';
-import { ExpandMore } from '@mui/icons-material';
+import { ExpandMore, SearchRounded } from '@mui/icons-material';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
+  Chip,
   Divider,
   Grid,
+  InputAdornment,
   Link,
   Skeleton,
+  TextField,
   Typography,
   TypographyProps,
   useTheme,
 } from '@mui/material';
 import { Stack } from '@mui/system';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import BookingItem from '@/models/bookingItem';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 
 const Profile = () => {
   //#region Hooks
@@ -68,8 +73,23 @@ const Profile = () => {
   useEffect(() => {
     const fetchData = async () => {
       load();
-      setUserData(await getUserTableRowByUID(user?.uid ?? ''));
+      const userData = await getUserTableRowByUID(
+        '3Kelzi2xkwRiknCpMHQCeQTZmFg2'
+      );
+      if (userData) setUserData(userData);
       stop();
+      return;
+      // try {
+      //   load();
+      //   if (user && user.uid && user.uid != '') {
+      //     const userData = await getUserTableRowByUID(user.uid);
+      //     if (userData) setUserData(userData);
+      //   }
+      //   stop();
+      // } catch (error) {
+      //   console.log(error);
+      //   stop();
+      // }
     };
 
     fetchData();
@@ -106,6 +126,11 @@ const Profile = () => {
     handleSnackbarAlert('success', 'Cập nhật thành công');
   };
 
+  //#endregion
+
+  //#region Search
+  const searchInput = useRef<HTMLInputElement>(null);
+  const [searchValue, setSearchValue] = useState<string>('');
   //#endregion
 
   return (
@@ -201,79 +226,102 @@ const Profile = () => {
               )}
             </Grid>
 
+            <Grid item xs={12}>
+              <Divider sx={{ mb: 2, mt: 4 }}>
+                <Chip label="ĐƠN HÀNG CỦA BẠN" color="secondary" />
+              </Divider>
+            </Grid>
+
             <Grid item xs={12} sm={12} md={12}>
-              <Box
-                component={'div'}
-                sx={{
-                  backgroundColor: theme.palette.common.white,
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  boxShadow: 3,
-                  p: 2,
-                }}
-              >
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  spacing={2}
-                >
-                  <Grid item xs={12}>
-                    <Typography
-                      align="center"
-                      variant="button"
-                      color={theme.palette.common.black}
-                    >
-                      Đơn hàng của bạn
-                    </Typography>
-                  </Grid>
-                </Grid>
+              <Box component={'div'}>
+                <TextField
+                  ref={searchInput}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  size="medium"
+                  fullWidth
+                  variant="outlined"
+                  color="secondary"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchRounded fontSize="inherit" />
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      fontSize: 'body1.fontSize',
+                      backgroundColor: theme.palette.common.white,
+                      overflow: 'hidden',
+                      boxShadow: 3,
+                      px: 2,
+                      borderRadius: '40px',
+                      '&:hover': {},
+                    },
+                  }}
+                  placeholder="Tìm kiếm theo mã hóa đơn, ngày giờ đặt"
+                  sx={{
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                  }}
+                />
               </Box>
             </Grid>
 
-            {userData?.bills?.map((bill) => {
-              return (
-                <>
-                  <Grid key={bill.id} item xs={12}>
-                    <Accordion
-                      sx={{
-                        border: 1,
-                        borderColor: 'black',
-                        boxShadow: 0,
-                        '&.MuiAccordion-rounded': {
-                          borderRadius: 3,
-                        },
-                        backgroundColor: 'transparent',
-                      }}
-                    >
-                      <AccordionSummary expandIcon={<ExpandMore />}>
-                        <Box
-                          component={'div'}
-                          sx={{
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            pr: 2,
-                          }}
-                        >
-                          <Typography variant="button" fontWeight={'regular'}>
-                            Mã hóa đơn: {bill.id}
-                          </Typography>
-                          <Typography variant="button" fontWeight={'regular'}>
-                            {formatDateString(bill.created_at)}
-                          </Typography>
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <BillAccordionContent bill={bill} />
-                      </AccordionDetails>
-                    </Accordion>
-                  </Grid>
-                </>
-              );
-            })}
+            {userData?.bills
+              ?.filter((bill) => {
+                if (searchValue === '') {
+                  return true;
+                }
+                return (
+                  bill.id?.toLowerCase().includes(searchValue.toLowerCase()) ||
+                  formatDateString(bill.created_at).includes(
+                    searchValue.toLowerCase()
+                  )
+                );
+              })
+              .map((bill, i) => {
+                return (
+                  <>
+                    <Grid key={bill.id} item xs={12}>
+                      <Accordion
+                        sx={{
+                          border: 1,
+                          borderColor: 'black',
+                          boxShadow: 0,
+                          '&.MuiAccordion-rounded': {
+                            borderRadius: 3,
+                          },
+                          backgroundColor: 'transparent',
+                        }}
+                      >
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box
+                            component={'div'}
+                            sx={{
+                              width: '100%',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              pr: 2,
+                            }}
+                          >
+                            <Typography variant="button" fontWeight={'regular'}>
+                              {i + 1 + '/ '} Mã hóa đơn: {bill.id}
+                            </Typography>
+                            <Typography variant="button" fontWeight={'regular'}>
+                              {formatDateString(bill.created_at)}
+                            </Typography>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <BillAccordionContent bill={bill} />
+                        </AccordionDetails>
+                      </Accordion>
+                    </Grid>
+                  </>
+                );
+              })}
 
             {(!userData?.bills || userData?.bills?.length == 0) && (
               <Grid item xs={12}>
@@ -540,9 +588,14 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
             <Typography variant="button" fontWeight={'bold'}>
               Danh sách sản phẩm
             </Typography>
-            {bill?.billItems?.map((item, index) => (
-              <BillItemsContent key={index} item={item} />
-            ))}
+            {(!bill.booking_item_id || bill.booking_item_id == '') &&
+              bill.billItems?.map((item, index) => (
+                <BillItemsContent key={index} item={item} />
+              ))}
+
+            {bill.booking_item_id != '' && bill.bookingItem && (
+              <BookingItemContent item={bill.bookingItem} />
+            )}
           </Stack>
         </Grid>
       </Grid>
@@ -565,6 +618,29 @@ const TypoStyle: TypographyProps = {
 
 function BillItemsContent({ item }: { item: BillItemTableRow }) {
   const theme = useTheme();
+
+  const [imageProduct, setImageProduct] = useState<string>('');
+  useEffect(() => {
+    async function getImage() {
+      if (
+        item.product &&
+        item.product.images.length > 0 &&
+        item.product.images[0] != ''
+      ) {
+        try {
+          const image = await getDownloadUrlFromFirebaseStorage(
+            item.product.images[0]
+          );
+          setImageProduct(image);
+        } catch (error: any) {
+          setImageProduct(promotionImage.src);
+        }
+      }
+    }
+
+    getImage();
+  }, [item.product?.images[0]]);
+
   return (
     <>
       <Box
@@ -587,8 +663,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
               component={'img'}
               loading="lazy"
               alt={item.product?.name ?? ''}
-              // src={item.product?.images[0] ?? promotionImage.src}
-              src={promotionImage.src}
+              src={imageProduct}
               sx={{
                 objectFit: 'contain',
                 width: '100%',
@@ -668,5 +743,180 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
         </Grid>
       </Box>
     </>
+  );
+}
+
+function BookingItemContent({ item }: { item: BookingItem }) {
+  const [imageSrc, setImageSrc] = useState<string[]>([]);
+  const [cakeBaseSrc, setCakeBaseSrc] = useState<string>('');
+
+  useEffect(() => {
+    async function getImage() {
+      if (item.images && item.images.length > 0) {
+        try {
+          await Promise.all(
+            item.images.map(
+              async (image) => await getDownloadUrlFromFirebaseStorage(image)
+            )
+          ).then((images) => {
+            setImageSrc(images);
+          });
+        } catch (error: any) {
+          console.log(error);
+        }
+      }
+
+      if (item.cakeBase && item.cakeBase.image != '') {
+        try {
+          const image = await getDownloadUrlFromFirebaseStorage(
+            item.cakeBase.image
+          );
+          setCakeBaseSrc(image);
+        } catch (error: any) {
+          console.log(error);
+        }
+      }
+    }
+    getImage();
+  }, [item]);
+
+  return (
+    <Box
+      component={'div'}
+      sx={{
+        width: '100%',
+        backgroundColor: 'grey.200',
+        border: 1,
+        borderRadius: 3,
+        boxShadow:
+          '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        py: 3,
+        pl: 2,
+        pr: 4,
+      }}
+    >
+      <Stack direction="column" spacing={1}>
+        <Box
+          component={'div'}
+          sx={{ ...BoxStyle, display: 'flex', flexDirection: 'column', gap: 1 }}
+        >
+          <Typography
+            {...TypoStyle}
+            sx={{
+              width: '100%',
+            }}
+          >
+            Hình ảnh sản phẩm:
+          </Typography>
+
+          <Grid container spacing={2}>
+            {imageSrc.map((image, index) => (
+              <Grid item xs={4} key={index}>
+                <Box component={'div'}>
+                  <Box
+                    component={'img'}
+                    src={image}
+                    alt={`Hình ${index + 1}`}
+                    sx={{
+                      width: '100%',
+                      aspectRatio: '1 / 0.8',
+                      objectFit: 'contain',
+                      borderRadius: 4,
+                      backgroundColor: 'grey.400',
+                    }}
+                  />
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
+        <Box component={'div'} sx={BoxStyle}>
+          <Typography {...TypoStyle}>Nhân dịp:</Typography>
+
+          <Typography {...TypoStyle}>
+            {item.occasion == '' ? 'Trống' : item.occasion}
+          </Typography>
+        </Box>
+
+        <Box component={'div'} sx={BoxStyle}>
+          <Typography {...TypoStyle}>Size:</Typography>
+
+          <Typography {...TypoStyle}>{SizeNameParse(item.size)}</Typography>
+        </Box>
+
+        <Box component={'div'} sx={BoxStyle}>
+          <Typography {...TypoStyle}>Thông điệp:</Typography>
+
+          <Typography {...TypoStyle}>
+            {item.message.content == '' ? 'Trống' : item.message.content}
+          </Typography>
+        </Box>
+
+        <Box component={'div'} sx={BoxStyle}>
+          <Typography {...TypoStyle}>Ghi chú:</Typography>
+
+          <Typography {...TypoStyle}>
+            {item.note == '' ? 'Trống' : item.note}
+          </Typography>
+        </Box>
+
+        <Box
+          component={'div'}
+          sx={{ ...BoxStyle, display: 'flex', flexDirection: 'column', gap: 1 }}
+        >
+          <Typography
+            {...TypoStyle}
+            sx={{
+              width: '100%',
+            }}
+          >
+            Cốt bánh:
+          </Typography>
+
+          <Grid container spacing={2} justifyContent={'center'}>
+            <Grid item xs={5}>
+              <Box
+                component={'div'}
+                sx={{
+                  py: 1,
+                  height: '100%',
+                }}
+              >
+                <Box
+                  component={'img'}
+                  loading="lazy"
+                  src={cakeBaseSrc}
+                  alt={item.cakeBase?.name ?? 'Cốt bánh'}
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '1 / 0.5',
+                    objectFit: 'cover',
+                    borderRadius: 4,
+                  }}
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={true}>
+              <Stack
+                direction="column"
+                spacing={1}
+                sx={{
+                  py: 1,
+                }}
+              >
+                <Typography variant="body1">
+                  {item.cakeBase?.name ?? 'Cốt bánh'}
+                </Typography>
+                <Typography {...TypoStyle}>
+                  {item.cakeBase?.description}
+                </Typography>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Box>
+      </Stack>
+    </Box>
   );
 }
