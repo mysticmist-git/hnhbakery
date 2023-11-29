@@ -21,25 +21,25 @@ import {
 } from '@/lib/contexts/homeContext';
 // import { getBestSellterProducts as getBestSellerProducts, getCollection } from '@/lib/firestore';
 // import { ProductObject, ProductTypeObject } from '@/lib/models';
+import { getBatches } from '@/lib/DAO/batchDAO';
+import { getProduct } from '@/lib/DAO/productDAO';
+import { getProductTypes } from '@/lib/DAO/productTypeDAO';
+import Batch from '@/models/batch';
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
 import { alpha } from '@mui/system';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-import { getProductTypes } from '@/lib/DAO/productTypeDAO';
-import ProductType from '@/models/productType';
-import Product from '@/models/product';
-import { getBatches } from '@/lib/DAO/batchDAO';
-import Batch from '@/models/batch';
-import { getProduct } from '@/lib/DAO/productDAO';
 
 function Home() {
   //#region States
+
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
-
-  //#endregion
-
   const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
+
+  //#endregion
 
   //#region Hooks
 
@@ -65,7 +65,7 @@ function Home() {
           bestSellersPromise.status === 'fulfilled'
             ? bestSellersPromise.value
             : [];
-        console.log(productTypes);
+
         setProductTypes(productTypes);
         setBestSellers(bestSellers);
       } catch (error: any) {
@@ -209,6 +209,9 @@ function Home() {
   );
 }
 
+// TODO: These should be bring to a seperate file
+//#region Functions
+
 const getHomeProductTypes = async () => {
   const productTypes: ProductType[] = await getProductTypes();
 
@@ -270,5 +273,7 @@ async function getBestSellerProducts(): Promise<Product[]> {
 
   return productResult;
 }
+
+//#endregion
 
 export default Home;
