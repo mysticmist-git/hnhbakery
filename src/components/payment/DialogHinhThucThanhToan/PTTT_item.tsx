@@ -29,7 +29,7 @@ export default function PTTT_item({
       onClick={() => onClick()}
       sx={{
         width: '100%',
-        height: '30vh',
+        aspectRatio: '1/1',
         overflow: 'hidden',
         borderRadius: '8px',
         position: 'relative',

@@ -74,7 +74,7 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
         '& .MuiDialog-paper': {
           backgroundColor: theme.palette.common.white,
           borderRadius: '8px',
-          width: { md: '50vw', xs: '85vw' },
+          minWidth: '70vw',
         },
         transition: 'all 0.5s ease-in-out',
       }}
@@ -109,7 +109,7 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
           spacing={2}
         >
           {PTTTs.map((item, index) => (
-            <Grid item key={index} xs={12}>
+            <Grid item key={index} xs={4}>
               <PTTT_item
                 item={item}
                 onClick={() => handlePayment(item.id, item.name)}
