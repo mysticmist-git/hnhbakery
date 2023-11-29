@@ -179,7 +179,7 @@ const MyModal = ({
             Chi tiết đơn hàng
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -190,7 +190,7 @@ const MyModal = ({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 2 }}>
+          <Box component={'div'} sx={{ py: 2 }}>
             <Grid
               container
               direction="row"
@@ -200,8 +200,9 @@ const MyModal = ({
             >
               {/* Thông tin */}
               <Grid item xs={12} md={6} lg={5} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -230,8 +231,9 @@ const MyModal = ({
 
               {/* Sales và deliver */}
               <Grid item xs={12} md={6} lg={7} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -260,8 +262,9 @@ const MyModal = ({
 
               {/* Người nhận */}
               <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -282,6 +285,7 @@ const MyModal = ({
 
                     {modalBill?.deliveryTableRow?.state === 'issued' ? (
                       <Box
+                        component={'div'}
                         sx={{
                           display: 'flex',
                           flexDirection: 'row',
@@ -315,6 +319,7 @@ const MyModal = ({
                   </Box>
 
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -512,8 +517,9 @@ const MyModal = ({
 
               {/* Danh sách sản phẩm */}
               <Grid item xs={12} md={12} lg={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',

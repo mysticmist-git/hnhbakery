@@ -114,6 +114,7 @@ const ProductTypeForm = (
     <Grid container columnSpacing={2}>
       <Grid item xs={5.5}>
         <Box
+          component={'div'}
           sx={{
             display: 'flex',
             gap: '1rem',
@@ -210,6 +211,7 @@ const ProductTypeForm = (
       <Grid item xs={5.5}>
         <Stack spacing={1}>
           <Box
+            component={'div'}
             sx={{
               position: 'relative',
               width: '100%',

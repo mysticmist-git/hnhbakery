@@ -169,7 +169,7 @@ export default function BranchTable({
       hideable: false,
       renderCell: (params) => {
         return (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box component={'div'} sx={{ display: 'flex', gap: 1 }}>
             <Button
               variant="contained"
               size="small"

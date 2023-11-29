@@ -141,6 +141,7 @@ const Profile = () => {
 
       {!user ? undefined : (
         <Box
+          component={'div'}
           sx={{
             pt: 6,
             pb: 12,
@@ -164,6 +165,7 @@ const Profile = () => {
                 />
               ) : (
                 <Box
+                  component={'div'}
                   sx={{
                     backgroundColor: theme.palette.common.white,
                     borderRadius: '16px',
@@ -201,6 +203,7 @@ const Profile = () => {
 
             <Grid item xs={12} sm={12} md={12}>
               <Box
+                component={'div'}
                 sx={{
                   backgroundColor: theme.palette.common.white,
                   borderRadius: '16px',
@@ -246,6 +249,7 @@ const Profile = () => {
                     >
                       <AccordionSummary expandIcon={<ExpandMore />}>
                         <Box
+                          component={'div'}
                           sx={{
                             width: '100%',
                             display: 'flex',
@@ -304,18 +308,18 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
       >
         <Grid item md={5} xs={12}>
           <Stack direction="column" spacing={1} divider={<Divider flexItem />}>
-            <Box>
+            <Box component={'div'}>
               <Stack direction="column" spacing={1}>
                 <Typography variant="button" fontWeight={'bold'}>
                   Thông tin đơn hàng
                 </Typography>
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Mã hóa đơn:</Typography>
 
                   <Typography {...TypoStyle}>{bill.id ?? 'Trống'}</Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Trạng thái:</Typography>
 
                   <Typography
@@ -330,7 +334,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Hình thức thanh toán:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -338,7 +342,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Thời gian thanh toán:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -346,13 +350,13 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Ghi chú:</Typography>
 
                   <Typography {...TypoStyle}>{bill.note ?? 'Trống'}</Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Tổng tiền:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -360,7 +364,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Khuyến mãi:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -368,7 +372,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Thành tiền:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -378,13 +382,13 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
               </Stack>
             </Box>
 
-            <Box>
+            <Box component={'div'}>
               <Stack direction="column" spacing={1}>
                 <Typography variant="button" fontWeight={'bold'}>
                   Thông tin vận chuyển
                 </Typography>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Người nhận:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -392,7 +396,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Số điện thoại:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -400,7 +404,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Ngày đặt giao:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -411,7 +415,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Thời gian đặt giao:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -419,7 +423,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Địa chỉ giao hàng:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -427,7 +431,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Ghi chú:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -435,7 +439,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Trạng thái:</Typography>
 
                   <Typography
@@ -456,6 +460,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
             </Box>
 
             <Box
+              component={'div'}
               sx={{
                 display: bill.sale ? 'block' : 'none',
               }}
@@ -476,7 +481,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   }}
                 />
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Tên khuyến mãi:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -484,7 +489,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Chương trình giảm giá:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -495,7 +500,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Mã code:</Typography>
 
                   <Typography
@@ -507,7 +512,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Thời gian áp dụng:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -517,7 +522,7 @@ function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   </Typography>
                 </Box>
 
-                <Box sx={BoxStyle}>
+                <Box component={'div'} sx={BoxStyle}>
                   <Typography {...TypoStyle}>Mô tả:</Typography>
 
                   <Typography {...TypoStyle}>
@@ -562,6 +567,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           backgroundColor: 'grey.200',
@@ -595,7 +601,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
             <Stack direction="column" spacing={1}>
               <Typography variant="body1">{item.product?.name}</Typography>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Size:</Typography>
 
                 <Typography {...TypoStyle}>
@@ -603,19 +609,19 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
                 </Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Vật liệu:</Typography>
 
                 <Typography {...TypoStyle}>{item.variant?.material}</Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Số lượng:</Typography>
 
                 <Typography {...TypoStyle}>{item.amount ?? '0'}</Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Ngày sản xuất:</Typography>
 
                 <Typography {...TypoStyle}>
@@ -623,7 +629,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
                 </Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Ngày hết hạn:</Typography>
 
                 <Typography {...TypoStyle}>
@@ -631,7 +637,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
                 </Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Giá bán:</Typography>
 
                 <Typography {...TypoStyle}>
@@ -639,7 +645,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
                 </Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Giảm giá:</Typography>
 
                 <Typography {...TypoStyle}>
@@ -649,7 +655,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
                 </Typography>
               </Box>
 
-              <Box sx={BoxStyle}>
+              <Box component={'div'} sx={BoxStyle}>
                 <Typography {...TypoStyle}>Thành tiền:</Typography>
 
                 <Typography {...TypoStyle}>

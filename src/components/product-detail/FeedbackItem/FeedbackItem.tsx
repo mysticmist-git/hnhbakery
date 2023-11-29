@@ -40,6 +40,7 @@ const FeedbackItem = ({
       >
         <Grid item xs={'auto'}>
           <Box
+            component={'div'}
             sx={{
               borderRadius: '50%',
               position: 'relative',
@@ -54,7 +55,10 @@ const FeedbackItem = ({
           </Box>
         </Grid>
         <Grid item xs={true}>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box
+            component={'div'}
+            sx={{ display: 'flex', flexDirection: 'column' }}
+          >
             <Typography
               variant="body1"
               sx={{
@@ -83,6 +87,7 @@ const FeedbackItem = ({
         </Grid>
         <Grid item xs={12}>
           <Box
+            component={'div'}
             sx={{
               borderBottom: 0.5,
               pt: 1.5,

@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 //#endregion
 export default function BottomSlideInDiv(props: any) {
   return (
-    <Box>{props.children}</Box>
+    <Box component={'div'}>{props.children}</Box>
     // <motion.div
     //   initial={{ opacity: 1, y: 100 }}
     //   whileInView={{

@@ -112,9 +112,10 @@ export default function RowModalLayout({
       }}
       disableScrollLock={false}
     >
-      <Box sx={formStyle}>
+      <Box component={'div'} sx={formStyle}>
         <Grid item xs={12}>
           <Box
+            component={'div'}
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -129,6 +130,7 @@ export default function RowModalLayout({
               {getTitle()}
             </Typography>
             <Box
+              component={'div'}
               sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -203,6 +205,7 @@ export default function RowModalLayout({
               }}
             />
             <Box
+              component={'div'}
               sx={{
                 display: 'flex',
                 justifyContent: 'end',

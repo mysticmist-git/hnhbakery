@@ -66,6 +66,7 @@ const RightMenu = (props: any) => {
         <ShoppingCart />
         {cartCount > 0 && (
           <Box
+            component={'div'}
             sx={{
               position: 'absolute',
               right: '60%',

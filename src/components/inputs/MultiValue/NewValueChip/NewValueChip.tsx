@@ -18,6 +18,7 @@ const NewValueChip = ({
 }) => {
   return (
     <Box
+      component={'div'}
       sx={{
         backgroundColor: '#eee',
         borderRadius: '1rem',

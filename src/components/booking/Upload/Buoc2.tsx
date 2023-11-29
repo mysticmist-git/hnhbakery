@@ -132,8 +132,9 @@ const ChooseMessageColor = ({
 
   return (
     <>
-      <Box sx={{ width: '100%' }}>
+      <Box component={'div'} sx={{ width: '100%' }}>
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             direction: 'row',
@@ -247,6 +248,7 @@ export function Buoc2({
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           pt: 1,
@@ -313,6 +315,7 @@ export function Buoc2({
                 >
                   <CakeBaseImg src={option.image} />
                   <Box
+                    component={'div'}
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',

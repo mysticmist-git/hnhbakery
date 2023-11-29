@@ -87,7 +87,7 @@ const Playground = () => {
   //#endregion
 
   return (
-    <Box padding={8} paddingTop={32}>
+    <Box component={'div'} padding={8} paddingTop={32}>
       <Button onClick={insertLocationsAsync} variant="contained">
         Insert location
       </Button>

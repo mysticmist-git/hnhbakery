@@ -106,7 +106,7 @@ export default function MyModal({
             Chi tiết giao hàng
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -117,7 +117,7 @@ export default function MyModal({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 2 }}>
+          <Box component={'div'} sx={{ py: 2 }}>
             <Grid
               container
               direction="row"
@@ -127,8 +127,9 @@ export default function MyModal({
             >
               {/* Thông tin giao hàng */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -148,6 +149,7 @@ export default function MyModal({
                     </Typography>
                   </Box>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -163,8 +165,9 @@ export default function MyModal({
 
               {/* Thông tin đơn hàng */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -184,6 +187,7 @@ export default function MyModal({
                     </Typography>
                   </Box>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -199,8 +203,9 @@ export default function MyModal({
 
               {/* Chi tiết đơn hàng */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -220,6 +225,7 @@ export default function MyModal({
                     </Typography>
                   </Box>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -237,7 +243,7 @@ export default function MyModal({
         </DialogContent>
 
         <DialogActions>
-          <Box sx={{ width: '100%' }} textAlign={'center'}>
+          <Box component={'div'} sx={{ width: '100%' }} textAlign={'center'}>
             {modalDelivery?.deliveryTableRow?.state === 'delivering' && (
               <Button
                 onClick={async () => {

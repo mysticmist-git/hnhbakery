@@ -103,7 +103,7 @@ function MyModal({
             Chi tiết liên hệ
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -114,7 +114,7 @@ function MyModal({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 2 }}>
+          <Box component={'div'} sx={{ py: 2 }}>
             <Grid
               container
               direction="row"
@@ -123,8 +123,9 @@ function MyModal({
               spacing={2}
             >
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -144,6 +145,7 @@ function MyModal({
                     </Typography>
                   </Box>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -160,7 +162,11 @@ function MyModal({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Box sx={{ width: '100%', pb: 2 }} textAlign={'center'}>
+          <Box
+            component={'div'}
+            sx={{ width: '100%', pb: 2 }}
+            textAlign={'center'}
+          >
             <Button
               variant="contained"
               color="secondary"

@@ -191,6 +191,7 @@ const SignUpForm = ({
 
         <Grid item xs={12}>
           <Box
+            component={'div'}
             sx={{
               display: 'flex',
               alignItems: 'center',

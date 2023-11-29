@@ -234,6 +234,7 @@ function CakeCard({
           </Grid>
           <Grid item xs={viewState == 'list' ? 'auto' : 'auto'}>
             <Box
+              component={'div'}
               sx={{
                 bgcolor: theme.palette.secondary.main,
                 borderRadius: '8px',

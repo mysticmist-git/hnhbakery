@@ -103,6 +103,7 @@ export default function AddressList({
       >
         <Grid item xs={12}>
           <Box
+            component={'div'}
             display={'flex'}
             justifyContent="space-between"
             alignItems="center"

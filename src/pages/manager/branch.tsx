@@ -94,7 +94,11 @@ const Branch = () => {
 
   return (
     <>
-      <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
+      <Box
+        component={'div'}
+        width={'100%'}
+        sx={{ p: 2, pr: 3, overflow: 'hidden' }}
+      >
         {canBeAccessed ? (
           <Grid
             container
@@ -117,7 +121,7 @@ const Branch = () => {
             </Grid>
 
             <Grid item xs={12} md={'auto'}>
-              <Box>
+              <Box component={'div'}>
                 <StaticDatePicker
                   sx={{
                     background: 'white',
@@ -153,8 +157,9 @@ const Branch = () => {
             </Grid>
 
             <Grid item xs={12} md={true}>
-              <Box sx={StyleCuaCaiBox}>
+              <Box component={'div'} sx={StyleCuaCaiBox}>
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     display: 'flex',
@@ -174,6 +179,7 @@ const Branch = () => {
                   </Typography>
                 </Box>
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -192,8 +198,9 @@ const Branch = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Box sx={StyleCuaCaiBox}>
+              <Box component={'div'} sx={StyleCuaCaiBox}>
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     display: 'flex',
@@ -289,8 +296,9 @@ const Branch = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Box sx={StyleCuaCaiBox}>
+              <Box component={'div'} sx={StyleCuaCaiBox}>
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     display: 'flex',

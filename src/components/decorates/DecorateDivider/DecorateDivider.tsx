@@ -11,6 +11,7 @@ export default function SolidDownWhite(props: any) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           ...props.sx,
           height: '80px',
@@ -27,6 +28,7 @@ export function SolidUpWhite(props: any) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           ...props.sx,
           height: '80px',
@@ -44,6 +46,7 @@ export function DashUpWhite(props: any) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           ...props.sx,
           height: '80px',
@@ -61,6 +64,7 @@ export function DashDownWhite(props: any) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           ...props.sx,
           height: '80px',

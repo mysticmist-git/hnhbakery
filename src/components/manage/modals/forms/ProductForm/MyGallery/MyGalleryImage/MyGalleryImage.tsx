@@ -15,6 +15,7 @@ const MyGalleryImage = ({
 }) => {
   return (
     <Box
+      component={'div'}
       position="relative"
       sx={{
         '&:hover > button': {

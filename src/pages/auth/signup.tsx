@@ -164,6 +164,7 @@ const SignUp = () => {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           backgroundImage: `url(${bg2.src})`,
           backgroundRepeat: 'no-repeat',
@@ -173,6 +174,7 @@ const SignUp = () => {
         }}
       >
         <Box
+          component={'div'}
           sx={{
             height: 'auto',
             pt: 24,
@@ -197,6 +199,7 @@ const SignUp = () => {
           >
             <Grid item xs={12} sm={9} md={6} lg={6}>
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   height: '100%',

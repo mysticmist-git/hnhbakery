@@ -146,7 +146,7 @@ function UserGroupItem({
       hideable: false,
       renderCell: (params) => {
         return (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box component={'div'} sx={{ display: 'flex', gap: 1 }}>
             {/* <Button
             variant="contained"
             size="small"
@@ -279,7 +279,7 @@ function UserGroupItem({
 
           <Divider sx={{ my: 1 }} />
 
-          <Box p={2} m={1}>
+          <Box component={'div'} p={2} m={1}>
             {userData && userData.length > 0 ? (
               <DataGrid
                 rows={userData ?? []}
@@ -291,6 +291,7 @@ function UserGroupItem({
               />
             ) : (
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   justifyContent: 'center',

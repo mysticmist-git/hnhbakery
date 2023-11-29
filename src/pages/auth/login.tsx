@@ -109,6 +109,7 @@ const Login = () => {
 
   return (
     <Box
+      component={'div'}
       sx={{
         backgroundImage: `url(${bg2.src})`,
         backgroundRepeat: 'no-repeat',
@@ -118,6 +119,7 @@ const Login = () => {
       }}
     >
       <Box
+        component={'div'}
         sx={{
           height: 'auto',
           pt: 24,
@@ -163,6 +165,7 @@ const Login = () => {
                 display={{ xs: 'none', md: 'block' }}
               >
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -173,6 +176,7 @@ const Login = () => {
                   }}
                 >
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       height: '100%',

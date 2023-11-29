@@ -285,7 +285,7 @@ function ProductDetail() {
 
   return (
     <>
-      <Box>
+      <Box component={'div'}>
         <ImageBackground>
           <Grid
             container
@@ -333,7 +333,7 @@ function ProductDetail() {
           </Grid>
         </ImageBackground>
 
-        <Box sx={{ px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box component={'div'} sx={{ px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
           <Grid
             container
             direction={'row'}
@@ -367,7 +367,7 @@ function ProductDetail() {
           </Grid>
         </Box>
 
-        <Box sx={{ py: 8 }}>
+        <Box component={'div'} sx={{ py: 8 }}>
           <CustomCardSlider
             duration={1000}
             imageHeight="184px"

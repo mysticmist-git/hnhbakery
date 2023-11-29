@@ -9,6 +9,7 @@ export default function ProductTypeRenderOption({
   return (
     <Box {...props} component={'li'} key={option.id}>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           display: 'flex',

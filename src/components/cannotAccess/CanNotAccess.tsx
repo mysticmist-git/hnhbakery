@@ -5,6 +5,7 @@ export function CanNotAccess() {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           display: 'flex',
           justifyContent: 'center',

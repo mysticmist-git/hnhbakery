@@ -79,7 +79,11 @@ const Branches = () => {
 
   return (
     <>
-      <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
+      <Box
+        component={'div'}
+        width={'100%'}
+        sx={{ p: 2, pr: 3, overflow: 'hidden' }}
+      >
         <Grid
           container
           justifyContent={'center'}

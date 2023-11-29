@@ -124,7 +124,11 @@ const Order = () => {
 
   return (
     <>
-      <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
+      <Box
+        component={'div'}
+        width={'100%'}
+        sx={{ p: 2, pr: 3, overflow: 'hidden' }}
+      >
         {canBeAccessed ? (
           <Grid
             container
@@ -158,7 +162,7 @@ const Order = () => {
 
             <Grid item xs={12}>
               {/* Table */}
-              <Box width={'100%'}>
+              <Box component={'div'} width={'100%'}>
                 <BillTable
                   billsData={billsData}
                   handleViewBill={handleViewBillModalChiTiet}

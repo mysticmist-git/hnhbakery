@@ -56,6 +56,7 @@ function ProductList({
         ))}
         {batches.length <= 0 && (
           <Box
+            component={'div'}
             sx={{
               width: '100%',
               display: 'flex',

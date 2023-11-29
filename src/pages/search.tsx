@@ -92,7 +92,7 @@ const Search = () => {
         productInfor: productInforState,
       }}
     >
-      <Box>
+      <Box component={'div'}>
         <ImageBackground>
           <Grid
             sx={{ px: 6 }}
@@ -123,6 +123,7 @@ const Search = () => {
         </ImageBackground>
 
         <Box
+          component={'div'}
           sx={{
             pt: 6,
             pb: 12,

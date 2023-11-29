@@ -98,7 +98,7 @@ export default function MyModal({
             Chi tiết Chi nhánh
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -109,7 +109,7 @@ export default function MyModal({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 2 }}>
+          <Box component={'div'} sx={{ py: 2 }}>
             <Grid
               container
               direction="row"
@@ -119,8 +119,9 @@ export default function MyModal({
             >
               {/* Thông tin branch */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -141,6 +142,7 @@ export default function MyModal({
                   </Box>
 
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -210,8 +212,9 @@ export default function MyModal({
 
               {/* Thông tin người quản lý */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -232,6 +235,7 @@ export default function MyModal({
                   </Box>
 
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,

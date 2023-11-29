@@ -33,6 +33,7 @@ function Layout({ children }: { children: any }) {
           sx={{ transition: 'all 0.05s linear' }}
         >
           <Box
+            component={'div'}
             sx={{
               minHeight: { md: '100vh', xs: 'auto' },
               height: { md: '100%', xs: 'auto' },
@@ -50,6 +51,7 @@ function Layout({ children }: { children: any }) {
             >
               <Grid item xs={12}>
                 <Box
+                  component={'div'}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',

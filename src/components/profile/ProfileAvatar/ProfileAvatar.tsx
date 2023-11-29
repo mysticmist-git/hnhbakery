@@ -32,6 +32,7 @@ function ProfileAvatar({
 
   return (
     <Box
+      component={'div'}
       sx={{
         width: '100%',
         aspectRatio: 1,

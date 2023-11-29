@@ -261,7 +261,7 @@ const Products = () => {
 
   return (
     <>
-      <Box>
+      <Box component={'div'}>
         <ImageBackground>
           <Grid
             sx={{ px: 6 }}
@@ -292,7 +292,10 @@ const Products = () => {
         </ImageBackground>
 
         <BottomSlideInDiv>
-          <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+          <Box
+            component={'div'}
+            sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
+          >
             <Grid
               container
               direction={'row'}
@@ -302,6 +305,7 @@ const Products = () => {
             >
               <Grid item xs={12}>
                 <Box
+                  component={'div'}
                   sx={{
                     borderRadius: '8px',
                     overflow: 'hidden',

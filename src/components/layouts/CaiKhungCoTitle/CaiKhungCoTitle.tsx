@@ -9,6 +9,7 @@ export default function CaiKhungCoTitle(props: any) {
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           border: 3,
           borderColor: theme.palette.secondary.main,
@@ -22,6 +23,7 @@ export default function CaiKhungCoTitle(props: any) {
         }}
       >
         <Box
+          component={'div'}
           sx={{
             alignSelf: 'stretch',
             p: 2,
@@ -38,6 +40,7 @@ export default function CaiKhungCoTitle(props: any) {
           </Typography>
         </Box>
         <Box
+          component={'div'}
           sx={{
             alignSelf: 'stretch',
             justifySelf: 'stretch',

@@ -154,7 +154,7 @@ export default function MyModalAdd({
             Thêm khuyến mãi
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -165,7 +165,7 @@ export default function MyModalAdd({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 3 }}>
+          <Box component={'div'} sx={{ py: 3 }}>
             <Grid
               container
               direction="row"
@@ -349,6 +349,7 @@ export default function MyModalAdd({
 
         <DialogActions>
           <Box
+            component={'div'}
             sx={{
               display: 'flex',
               gap: 1,

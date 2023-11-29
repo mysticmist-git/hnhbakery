@@ -85,6 +85,7 @@ export default function CustomCard(props: any) {
           >
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   height: imageHeight,
