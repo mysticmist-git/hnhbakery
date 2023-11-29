@@ -65,7 +65,7 @@ const Deliveries = () => {
         }
         setCanBeAccessed(true);
 
-        const finalBills: BillTableRow[] = await getBillTableRows();
+        const finalBills: BillTableRow[] = await getBillTableRows(branch);
         setDeliveries(() => finalBills || []);
       } catch (error) {
         console.log(error);
@@ -73,7 +73,7 @@ const Deliveries = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   const handleDeliveryDataChange = (value: BillTableRow) => {
     setDeliveries(() => {

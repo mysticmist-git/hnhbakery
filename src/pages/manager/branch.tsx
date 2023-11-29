@@ -94,7 +94,7 @@ const Branch = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   return (
     <>

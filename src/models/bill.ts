@@ -43,7 +43,7 @@ type Bill = WithCreatedUpdated &
     sale_id: string;
     customer_id: string;
     delivery_id: string;
-    paid_time: Date;
+    paid_time?: Date;
     branch_id: string;
     booking_item_id: string;
   };
@@ -72,7 +72,7 @@ const billConverter: FirestoreDataConverter<Bill> = {
     const convertedData: Bill = {
       ...data,
       id: snapshot.id,
-      paid_time: data.paid_time.toDate(),
+      paid_time: data.paid_time?.toDate(),
       created_at: data.created_at.toDate(),
       updated_at: data.updated_at.toDate(),
     } as Bill;
