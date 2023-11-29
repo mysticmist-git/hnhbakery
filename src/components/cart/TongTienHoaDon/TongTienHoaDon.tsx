@@ -13,6 +13,7 @@ function TongTienHoaDon({ totalPrice }: TongTienHoaDonProps) {
 
   return (
     <Box
+      component={'div'}
       sx={{
         border: 3,
         borderColor: theme.palette.secondary.main,
@@ -26,6 +27,7 @@ function TongTienHoaDon({ totalPrice }: TongTienHoaDonProps) {
       }}
     >
       <Box
+        component={'div'}
         sx={{
           alignSelf: 'stretch',
           p: 2,
@@ -41,6 +43,7 @@ function TongTienHoaDon({ totalPrice }: TongTienHoaDonProps) {
         </Typography>
       </Box>
       <Box
+        component={'div'}
         sx={{
           alignSelf: 'stretch',
           p: 2,
@@ -68,6 +71,7 @@ function TongTienHoaDon({ totalPrice }: TongTienHoaDonProps) {
         </Typography>
       </Box>
       <Box
+        component={'div'}
         sx={{
           alignSelf: 'stretch',
           p: 2,

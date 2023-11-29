@@ -53,6 +53,7 @@ export default function PTTT_item({
         }}
       />
       <Box
+        component={'div'}
         sx={{
           position: 'absolute',
           top: 0,

@@ -112,7 +112,7 @@ const ChooseTime = (props: any) => {
                 : () => {}
             }
           >
-            <Box>
+            <Box component={'div'}>
               <Typography variant="button" color={theme.palette.secondary.main}>
                 {option.label}
               </Typography>
@@ -135,7 +135,7 @@ const ChooseTime = (props: any) => {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <Box textAlign={'center'}>
+          <Box component={'div'} textAlign={'center'}>
             <CustomTextField
               required
               fullWidth

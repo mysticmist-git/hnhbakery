@@ -49,8 +49,8 @@ const ForgetPasswordPage = () => {
   };
 
   return (
-    <Box>
-      <Box>
+    <Box component={'div'}>
+      <Box component={'div'}>
         <Imagebackground>
           <Grid
             sx={{ px: 6 }}
@@ -90,7 +90,10 @@ const ForgetPasswordPage = () => {
           </Grid>
         </Imagebackground>
 
-        <Box sx={{ pt: 6, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box
+          component={'div'}
+          sx={{ pt: 6, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
+        >
           <Grid
             container
             spacing={2}
@@ -99,6 +102,7 @@ const ForgetPasswordPage = () => {
           >
             <Grid item xs={12} lg={6}>
               <Box
+                component={'div'}
                 sx={{
                   p: 2,
                   py: 4,
@@ -114,6 +118,7 @@ const ForgetPasswordPage = () => {
                   alignItems={'center'}
                 >
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       height: '300px',

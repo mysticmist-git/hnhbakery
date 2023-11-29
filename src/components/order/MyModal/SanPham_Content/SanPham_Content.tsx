@@ -54,6 +54,7 @@ export default function SanPham_Content({
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           display: 'flex',

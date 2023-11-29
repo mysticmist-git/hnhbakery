@@ -20,6 +20,7 @@ export default function ThongTin_Content({
   return (
     <>
       <Box
+        component={'div'}
         sx={{
           width: '100%',
           display: 'flex',
@@ -63,6 +64,7 @@ export default function ThongTin_Content({
           }}
         />
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             display: 'flex',

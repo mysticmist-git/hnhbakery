@@ -124,6 +124,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                     <Grid item xs={12} pb={1}>
                       <Link href={item.href}>
                         <Box
+                          component={'div'}
                           sx={{
                             width: '100%',
                             height: imageHeight,
@@ -221,6 +222,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
         {items.map((item, index) => (
           <Grid item xs={12} key={index}>
             <Box
+              component={'div'}
               sx={{
                 border: 3,
                 borderColor: theme.palette.secondary.main,
@@ -237,6 +239,7 @@ function ProductTable({ items, onChange }: ProductTableProps) {
                 <Grid item xs={5} alignSelf={'stretch'}>
                   <Link href={item.href}>
                     <Box
+                      component={'div'}
                       sx={{
                         width: '100%',
                         height: '100%',

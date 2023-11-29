@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 const ThankYou = () => {
   return (
     <Box
+      component={'div'}
       sx={{
         my: 30,
         display: 'flex',

@@ -7,6 +7,7 @@ const ContactWrapper = ({ children = '' }: { children?: React.ReactNode }) => {
   const theme = useTheme();
   return (
     <Box
+      component={'div'}
       sx={{
         mt: 8,
         bgcolor: theme.palette.common.white,
@@ -36,6 +37,7 @@ const ContactWrapper = ({ children = '' }: { children?: React.ReactNode }) => {
         </Grid>
         <Grid item xs={12} md={6} lg={6}>
           <Box
+            component={'div'}
             sx={{
               p: 4,
             }}

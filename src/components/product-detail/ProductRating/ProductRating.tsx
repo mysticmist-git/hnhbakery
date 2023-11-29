@@ -19,7 +19,7 @@ function ProductRating({
   const sizeProps = isSmallScreen ? { size: 'medium' } : { size };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+    <Box component={'div'} sx={{ display: 'flex', alignItems: 'flex-end' }}>
       <Rating
         value={Number.isNaN(rating) ? 0 : rating}
         sx={{ color: theme.palette.secondary.main }}

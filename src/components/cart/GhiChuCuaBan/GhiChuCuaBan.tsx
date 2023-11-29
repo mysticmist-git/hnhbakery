@@ -27,6 +27,7 @@ function GhiChuCuaBan({ note: paramNote, onChange }: GhiChuCuaBanProps) {
 
   return (
     <Box
+      component={'div'}
       sx={{
         border: 3,
         borderColor: theme.palette.secondary.main,
@@ -40,6 +41,7 @@ function GhiChuCuaBan({ note: paramNote, onChange }: GhiChuCuaBanProps) {
       }}
     >
       <Box
+        component={'div'}
         sx={{
           alignSelf: 'stretch',
           p: 2,
@@ -56,6 +58,7 @@ function GhiChuCuaBan({ note: paramNote, onChange }: GhiChuCuaBanProps) {
         </Typography>
       </Box>
       <Box
+        component={'div'}
         sx={{
           alignSelf: 'stretch',
           justifySelf: 'stretch',

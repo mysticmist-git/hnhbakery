@@ -198,6 +198,7 @@ export default function DeliveryTable({
       renderCell(params) {
         return (
           <Box
+            component={'div'}
             sx={{
               color: deliveryStateColorParse(
                 theme,
@@ -220,7 +221,7 @@ export default function DeliveryTable({
       hideable: false,
       renderCell: (params) => {
         return (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box component={'div'} sx={{ display: 'flex', gap: 1 }}>
             <Button
               variant="contained"
               size="small"

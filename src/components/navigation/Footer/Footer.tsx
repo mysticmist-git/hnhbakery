@@ -71,6 +71,7 @@ const Footer = () => {
     <>
       <BottomSlideInDiv>
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             mt: '50px',
@@ -80,6 +81,7 @@ const Footer = () => {
           }}
         >
           <Box
+            component={'div'}
             sx={{
               height: '80px',
               backgroundImage: `url(${bg9.src})`,
@@ -92,6 +94,7 @@ const Footer = () => {
             }}
           ></Box>
           <Box
+            component={'div'}
             sx={{
               bgcolor: theme.palette.secondary.dark,
               height: 'auto',

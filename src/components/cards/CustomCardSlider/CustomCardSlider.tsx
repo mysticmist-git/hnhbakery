@@ -80,7 +80,7 @@ export default function CustomCardSlider(props: any) {
         height={'auto'}
       >
         <Grid item xs={12}>
-          <Box>
+          <Box component={'div'}>
             <Typography
               variant="h2"
               color={theme.palette.secondary.main}
@@ -91,7 +91,7 @@ export default function CustomCardSlider(props: any) {
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <Box>
+          <Box component={'div'}>
             <Carousel
               animation="slide"
               cycleNavigation={false}

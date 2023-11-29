@@ -135,6 +135,7 @@ export default function CheckboxList({
       })}
 
       <Box
+        component={'div'}
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <Button

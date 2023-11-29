@@ -160,6 +160,7 @@ const Authorize = () => {
             <UserGroupAccordions groups={groups ?? []} />
           ) : (
             <Box
+              component={'div'}
               sx={{
                 display: 'flex',
                 flexDirection: 'column',

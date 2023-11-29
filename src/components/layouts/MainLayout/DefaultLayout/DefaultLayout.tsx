@@ -8,6 +8,7 @@ const Layout = ({ children }: { children: any }) => {
     <>
       <Navbar />
       <Box
+        component={'div'}
         sx={{
           minHeight: '60vh',
         }}

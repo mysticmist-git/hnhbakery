@@ -33,6 +33,7 @@ const MyGalleryImageNewButton = ({
 
   return (
     <Box
+      component={'div'}
       width={172}
       height={240}
       sx={{

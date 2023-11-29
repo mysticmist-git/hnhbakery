@@ -126,6 +126,7 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
         }}
       >
         <Box
+          component={'div'}
           sx={{
             boxShadow: 2,
           }}

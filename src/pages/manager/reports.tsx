@@ -165,7 +165,11 @@ const Report = () => {
 
   return (
     <>
-      <Box width={'100%'} sx={{ p: 2, pr: 3, overflow: 'hidden' }}>
+      <Box
+        component={'div'}
+        width={'100%'}
+        sx={{ p: 2, pr: 3, overflow: 'hidden' }}
+      >
         <Grid
           container
           justifyContent={'center'}
@@ -198,6 +202,7 @@ const Report = () => {
 
           <Grid item xs={12} lg={6}>
             <Box
+              component={'div'}
               sx={{
                 mx: 2,
                 p: 2,
@@ -220,6 +225,7 @@ const Report = () => {
 
           <Grid item xs={12} lg={6}>
             <Box
+              component={'div'}
               sx={{
                 mx: 2,
                 p: 2,
@@ -268,11 +274,13 @@ const Report = () => {
 
           <Grid item xs={12} lg={12}>
             <Box
+              component={'div'}
               sx={{
                 ...StyleCuaCaiBox,
               }}
             >
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   display: 'flex',
@@ -286,7 +294,7 @@ const Report = () => {
                 <Typography variant="button" color={theme.palette.common.black}>
                   Sản phẩm bán được
                 </Typography>
-                <Box>
+                <Box component={'div'}>
                   <Outlined_TextField
                     size="small"
                     textStyle={textStyle}
@@ -314,6 +322,7 @@ const Report = () => {
               </Box>
 
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   p: 2,
@@ -336,11 +345,13 @@ const Report = () => {
 
           <Grid item xs={12} lg={12}>
             <Box
+              component={'div'}
               sx={{
                 ...StyleCuaCaiBox,
               }}
             >
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   display: 'flex',
@@ -354,7 +365,7 @@ const Report = () => {
                 <Typography variant="button" color={theme.palette.common.black}>
                   Sản phẩm hao hụt
                 </Typography>
-                <Box>
+                <Box component={'div'}>
                   <Outlined_TextField
                     size="small"
                     textStyle={textStyle}
@@ -382,6 +393,7 @@ const Report = () => {
               </Box>
 
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   p: 2,

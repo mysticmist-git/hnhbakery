@@ -62,7 +62,7 @@ export default function ModalState({
           }}
         >
           <DialogTitle>
-            <Box>
+            <Box component={'div'}>
               <CustomIconButton
                 onClick={handleClose}
                 sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -87,6 +87,7 @@ export default function ModalState({
           </DialogContent>
           <DialogActions>
             <Box
+              component={'div'}
               sx={{
                 display: 'flex',
                 gap: 1,

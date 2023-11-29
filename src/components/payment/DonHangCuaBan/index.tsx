@@ -92,6 +92,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   borderBottom: 1.5,
                   borderColor: theme.palette.text.secondary,
@@ -102,6 +103,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -129,6 +131,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -156,6 +159,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -183,6 +187,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   borderBottom: 1.5,
                   borderColor: theme.palette.text.secondary,
@@ -193,6 +198,7 @@ export default function DonHangCuaBan(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',

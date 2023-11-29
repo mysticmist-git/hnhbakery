@@ -67,6 +67,7 @@ export default function ThongTin_Content({
         </Grid> */}
         <Grid item xs={12} md={4} lg={6} alignSelf={'stretch'}>
           <Box
+            component={'div'}
             sx={{
               width: '100%',
               display: 'flex',
@@ -122,6 +123,7 @@ export default function ThongTin_Content({
         </Grid>
         <Grid item xs={12} md={4} lg={6} alignSelf={'stretch'}>
           <Box
+            component={'div'}
             sx={{
               width: '100%',
               display: 'flex',

@@ -155,7 +155,7 @@ export default function EditModal({
             Chỉnh sửa chi nhánh
           </Typography>
 
-          <Box>
+          <Box component={'div'}>
             <CustomIconButton
               onClick={handleClose}
               sx={{ position: 'absolute', top: '8px', right: '8px' }}
@@ -166,7 +166,7 @@ export default function EditModal({
         </DialogTitle>
 
         <DialogContent>
-          <Box sx={{ py: 2 }}>
+          <Box component={'div'} sx={{ py: 2 }}>
             <Grid
               container
               direction="row"
@@ -176,8 +176,9 @@ export default function EditModal({
             >
               {/* Thông tin branch */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -198,6 +199,7 @@ export default function EditModal({
                   </Box>
 
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -233,8 +235,9 @@ export default function EditModal({
 
               {/* Người quản lý */}
               <Grid item xs={12} alignSelf={'stretch'}>
-                <Box sx={StyleCuaCaiBox}>
+                <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -255,6 +258,7 @@ export default function EditModal({
                   </Box>
 
                   <Box
+                    component={'div'}
                     sx={{
                       width: '100%',
                       p: 2,
@@ -292,7 +296,7 @@ export default function EditModal({
                             }}
                             control={<Checkbox color="secondary" />}
                             label={
-                              <Box sx={{ width: '500px' }}>
+                              <Box component={'div'} sx={{ width: '500px' }}>
                                 <Outlined_TextField
                                   textStyle={textStyle}
                                   multiline

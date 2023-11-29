@@ -44,7 +44,10 @@ const LeftProfileColumn = ({
       spacing={2}
     >
       <Grid item xs={12}>
-        <Box sx={{ p: { xs: 2, sm: 2, md: 2, lg: 4 }, width: '100%' }}>
+        <Box
+          component={'div'}
+          sx={{ p: { xs: 2, sm: 2, md: 2, lg: 4 }, width: '100%' }}
+        >
           <ProfileAvatar
             image={image}
             onUpdateUserData={onUpdateUserData}

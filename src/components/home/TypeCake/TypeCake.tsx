@@ -17,7 +17,7 @@ function TypeCakes(props: any) {
       >
         {props.title}
       </Typography>
-      <Box sx={{ pt: 4 }}>
+      <Box component={'div'} sx={{ pt: 4 }}>
         <Grid
           container
           direction={'row'}

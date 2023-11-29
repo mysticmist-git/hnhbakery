@@ -320,7 +320,7 @@ function ProductForm(
 
   return (
     <>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Box component={'div'} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           value={tabValue}
           onChange={handleChange}

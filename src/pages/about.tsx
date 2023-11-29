@@ -60,7 +60,7 @@ const About = () => {
   const theme = useTheme();
   return (
     <>
-      <Box>
+      <Box component={'div'}>
         <ImageBackground height="100vh" minHeight="600px" image={cake1.src}>
           <Grid
             container
@@ -129,6 +129,7 @@ const About = () => {
         </ImageBackground>
 
         <Box
+          component={'div'}
           sx={{
             pt: 6,
             pb: 16,
@@ -186,6 +187,7 @@ const About = () => {
                 key={index}
               >
                 <Box
+                  component={'div'}
                   sx={{
                     width: '100%',
                     display: 'flex',
@@ -195,6 +197,7 @@ const About = () => {
                   }}
                 >
                   <Box
+                    component={'div'}
                     sx={{ position: 'relative', width: '100%', height: '84px' }}
                   >
                     <Box
@@ -227,6 +230,7 @@ const About = () => {
 
             <Grid item xs={12} sx={{ mt: 12 }}>
               <Box
+                component={'div'}
                 sx={{
                   width: '100%',
                   borderRadius: '8px',
@@ -239,6 +243,7 @@ const About = () => {
                 }}
               >
                 <Box
+                  component={'div'}
                   sx={{
                     backgroundColor: alpha(theme.palette.common.black, 0.3),
                     height: '100%',

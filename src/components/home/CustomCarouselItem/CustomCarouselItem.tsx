@@ -11,7 +11,10 @@ function CustomCarouselItem(props: any) {
   };
   return (
     <>
-      <Box sx={{ height: height, width: '100%', position: 'relative' }}>
+      <Box
+        component={'div'}
+        sx={{ height: height, width: '100%', position: 'relative' }}
+      >
         <Link href={image.href} style={{ textDecoration: 'none' }}>
           {isLoading ? (
             <Skeleton variant="rectangular" width={'100%'} height={height} />

@@ -51,6 +51,7 @@ function DanhSachSanPham_Item(props: any) {
       >
         <Grid item xs={4} alignSelf={'stretch'}>
           <Box
+            component={'div'}
             sx={{
               width: '100%',
               height: '100%',
@@ -95,6 +96,7 @@ function DanhSachSanPham_Item(props: any) {
           >
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -116,6 +118,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -137,6 +140,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -158,6 +162,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -179,6 +184,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -206,6 +212,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -233,6 +240,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -247,6 +255,7 @@ function DanhSachSanPham_Item(props: any) {
                   Giá bán /sản phẩm:{' '}
                 </Typography>
                 <Box
+                  component={'div'}
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -287,6 +296,7 @@ function DanhSachSanPham_Item(props: any) {
 
             <Grid item xs={12}>
               <Box
+                component={'div'}
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',

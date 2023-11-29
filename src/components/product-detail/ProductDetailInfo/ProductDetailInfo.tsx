@@ -121,6 +121,7 @@ function ProductDetailInfo({
 
       <Grid item xs={12} md={8} lg={6}>
         <Box
+          component={'div'}
           sx={{
             height: '100%',
             border: 3,
@@ -300,6 +301,7 @@ function ProductDetailInfo({
       {productDetail?.variants && productDetail.variants.length > 0 ? (
         <Grid item xs={12} md={8} lg={6}>
           <Box
+            component={'div'}
             sx={{
               height: '100%',
               border: 3,

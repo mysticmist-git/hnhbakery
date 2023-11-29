@@ -57,6 +57,7 @@ function RenderSaleItem(props: any) {
         >
           <Grid item xs={5} alignSelf={'stretch'}>
             <Box
+              component={'div'}
               sx={{
                 width: '100%',
                 height: '100%',

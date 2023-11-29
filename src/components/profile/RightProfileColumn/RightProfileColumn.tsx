@@ -56,6 +56,7 @@ const RightProfileColumn = ({
     >
       <Grid item xs={12}>
         <Box
+          component={'div'}
           sx={{
             backgroundColor: theme.palette.common.white,
             borderRadius: '16px',
@@ -134,6 +135,7 @@ const RightProfileColumn = ({
 
       <Grid item xs={12}>
         <Box
+          component={'div'}
           sx={{
             backgroundColor: theme.palette.common.white,
             borderRadius: '16px',
@@ -189,6 +191,7 @@ const RightProfileColumn = ({
             <Grid item xs={12}>
               {userData?.type === 'google' && (
                 <Box
+                  component={'div'}
                   sx={{
                     borderRadius: '8px',
                     border: 0.5,
@@ -227,6 +230,7 @@ const RightProfileColumn = ({
 
       <Grid item xs={12}>
         <Box
+          component={'div'}
           sx={{
             backgroundColor: theme.palette.common.white,
             borderRadius: '16px',

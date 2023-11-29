@@ -63,6 +63,7 @@ function CustomToolBarContent(props: any) {
       >
         <Grid item md={3} sx={{ display: { xs: 'none', lg: 'block' } }}>
           <Box
+            component={'div'}
             sx={{
               position: 'absolute',
               top: 0,

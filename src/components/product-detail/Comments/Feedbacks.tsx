@@ -101,6 +101,7 @@ function Feedbacks({
 
         <Grid item xs={12} md={8} lg={12}>
           <Box
+            component={'div'}
             sx={{
               backgroundColor: 'white',
               border: 3,
@@ -119,6 +120,7 @@ function Feedbacks({
             >
               <Grid item xs={12}>
                 <Box
+                  component={'div'}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -126,6 +128,7 @@ function Feedbacks({
                   }}
                 >
                   <Box
+                    component={'div'}
                     sx={{
                       display: 'flex',
                       justifyContent: 'center',
@@ -134,6 +137,7 @@ function Feedbacks({
                     }}
                   >
                     <Box
+                      component={'div'}
                       sx={{
                         display: 'flex',
                         justifyContent: 'center',
@@ -195,6 +199,7 @@ function Feedbacks({
 
         <Grid item xs={12} md={8} lg={12} sx={{ display: 'none' }}>
           <Box
+            component={'div'}
             sx={{
               display: 'flex',
               justifyContent: 'center',

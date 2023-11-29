@@ -89,7 +89,7 @@ function Cart() {
   //#endregion
 
   return (
-    <Box>
+    <Box component={'div'}>
       <ImageBackground>
         <Grid
           container
@@ -138,7 +138,10 @@ function Cart() {
       </ImageBackground>
 
       <BottomSlideInDiv>
-        <Box sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box
+          component={'div'}
+          sx={{ pt: 4, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
+        >
           <Grid
             container
             direction={'row'}
@@ -150,6 +153,7 @@ function Cart() {
               <>
                 <Grid item xs={12}>
                   <Box
+                    component={'div'}
                     sx={{
                       display: 'flex',
                       justifyContent: 'center',
@@ -186,6 +190,7 @@ function Cart() {
               <>
                 <Grid item xs={12}>
                   <Box
+                    component={'div'}
                     sx={{
                       display: 'flex',
                       justifyContent: 'end',
@@ -209,6 +214,7 @@ function Cart() {
 
                 <Grid item xs={12}>
                   <Box
+                    component={'div'}
                     sx={{
                       bgcolor: theme.palette.secondary.main,
                       borderRadius: '8px',

@@ -124,8 +124,9 @@ export default function ThongTin_Content({
 
   return (
     <>
-      <Box sx={StyleCuaCaiBox}>
+      <Box component={'div'} sx={StyleCuaCaiBox}>
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             display: 'flex',
@@ -143,6 +144,7 @@ export default function ThongTin_Content({
 
           {modalSale?.active && (
             <Box
+              component={'div'}
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -170,6 +172,7 @@ export default function ThongTin_Content({
           )}
         </Box>
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             p: 2,

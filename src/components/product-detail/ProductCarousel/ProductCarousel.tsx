@@ -18,6 +18,7 @@ function ProductCarousel({ images }: ProductCarouselProps) {
 
   return (
     <Box
+      component={'div'}
       sx={{
         position: 'relative',
         border: 3,
@@ -40,6 +41,7 @@ function ProductCarousel({ images }: ProductCarouselProps) {
       </Carousel>
 
       <Box
+        component={'div'}
         sx={{
           position: 'absolute',
           bottom: 0,
@@ -88,6 +90,7 @@ function CarouselItem({ Image, image }: any) {
 
   return (
     <Box
+      component={'div'}
       sx={{
         height: '50vh',
         width: '100%',
@@ -129,6 +132,7 @@ function CarouselMiniImageItem({
   return (
     <Grid item>
       <Box
+        component={'div'}
         sx={{
           height: index == activeIndex ? '9vh' : '6vh',
           width: index == activeIndex ? '12vh' : '6vh',

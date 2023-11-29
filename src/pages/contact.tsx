@@ -14,7 +14,7 @@ const Contact = () => {
 
   return (
     <>
-      <Box>
+      <Box component={'div'}>
         <ImageBackground>
           <Grid
             sx={{ px: 6 }}
@@ -51,7 +51,10 @@ const Contact = () => {
           </Grid>
         </ImageBackground>
 
-        <Box sx={{ pt: 0, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+        <Box
+          component={'div'}
+          sx={{ pt: 0, pb: 16, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}
+        >
           <Grid
             container
             direction={'row'}

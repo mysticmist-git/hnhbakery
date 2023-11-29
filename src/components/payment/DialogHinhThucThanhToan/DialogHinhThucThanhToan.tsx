@@ -91,7 +91,7 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
           Chọn phương thức thanh toán
         </Typography>
 
-        <Box>
+        <Box component={'div'}>
           <CustomIconButton
             onClick={handleClose}
             sx={{ position: 'absolute', top: '8px', right: '8px' }}

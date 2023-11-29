@@ -15,6 +15,7 @@ const ImageBackground = (props: any) => {
     <TopSlideInDiv_Appear>
       <TopSlideInDiv_Loof>
         <Box
+          component={'div'}
           sx={{
             width: '100%',
             minHeight: minHeight,
@@ -26,6 +27,7 @@ const ImageBackground = (props: any) => {
           }}
         >
           <Box
+            component={'div'}
             sx={{
               width: '100%',
               height: '100%',
@@ -46,6 +48,7 @@ const ImageBackground = (props: any) => {
               }}
             />
             <Box
+              component={'div'}
               sx={{
                 height: '48px',
                 width: '100%',

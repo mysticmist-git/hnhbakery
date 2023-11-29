@@ -55,7 +55,7 @@ const PaymentResult = () => {
   }, [router.query]);
 
   return (
-    <Box sx={{ pb: 16 }}>
+    <Box component={'div'} sx={{ pb: 16 }}>
       <ImageBackground>
         <Grid
           container
@@ -87,7 +87,7 @@ const PaymentResult = () => {
         </Grid>
       </ImageBackground>
 
-      <Box sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
+      <Box component={'div'} sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
         <Grid
           container
           direction={'column'}
