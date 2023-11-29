@@ -1,8 +1,8 @@
 import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
-import { auth, db } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import { updateBillField } from '@/lib/DAO/billDAO';
-import { getUserByUid } from '@/lib/DAO/userDAO';
+import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import User from '@/models/user';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
@@ -111,6 +111,16 @@ const PaymentResult = () => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         getUserByUid(user.uid)
+          .then((fetchedUserData) => setUserData(fetchedUserData ?? null))
+          .catch(() => {
+            console.log('Fail to fetch user data!');
+            handlerSnackbarAlert(
+              'warning',
+              'Không thể lấy dữ liệu người dùng!'
+            );
+          });
+      } else {
+        getGuestUser()
           .then((fetchedUserData) => setUserData(fetchedUserData ?? null))
           .catch(() => {
             console.log('Fail to fetch user data!');

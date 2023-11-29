@@ -95,7 +95,7 @@ const Payment = () => {
       chosenSale: Sale | null,
       customer_id: string
     ): Omit<Bill, 'id' | 'paid_time'> {
-      let billData: Omit<Bill, 'id' | 'paid_time'> = {
+      let billData: Omit<Bill, 'id'> = {
         total_price: billPrice,
         total_discount: discountAmount,
         sale_price: saleAmount,
@@ -108,6 +108,7 @@ const Payment = () => {
         branch_id: deliveryForm.branchId,
         delivery_id: '',
         sale_id: chosenSale ? chosenSale.id : '',
+        paid_time: new Date(),
         created_at: new Date(),
         updated_at: new Date(),
       };
