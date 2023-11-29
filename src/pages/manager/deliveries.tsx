@@ -39,7 +39,9 @@ const Deliveries = () => {
 
   //#region UserData - Trường hợp là quản lý chi nhánh - Check xem họ là quản lý của chi nhánh nào?
   const [user, userLoading, userError] = useAuthState(auth);
-  const [canBeAccessed, setCanBeAccessed] = useState(true);
+  const [canBeAccessed, setCanBeAccessed] = useState<boolean | undefined>(
+    undefined
+  );
   // const [userData, setUserData] = React.useState<User | undefined>(undefined);
 
   //#endregion
@@ -67,6 +69,7 @@ const Deliveries = () => {
         setDeliveries(() => finalBills || []);
       } catch (error) {
         console.log(error);
+        setCanBeAccessed(false);
       }
     };
     fetchData();
@@ -121,7 +124,7 @@ const Deliveries = () => {
         width={'100%'}
         sx={{ p: 2, pr: 3, overflow: 'hidden' }}
       >
-        {canBeAccessed ? (
+        {canBeAccessed == true && (
           <Grid
             container
             justifyContent={'center'}
@@ -177,9 +180,8 @@ const Deliveries = () => {
               />
             </Grid>
           </Grid>
-        ) : (
-          <CanNotAccess />
         )}
+        {canBeAccessed == false && <CanNotAccess />}
       </Box>
     </>
   );
