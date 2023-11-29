@@ -7,13 +7,13 @@ import {
   WithFieldValue,
 } from 'firebase/firestore';
 import { BillItemTableRow } from './billItem';
+import Branch from './branch';
 import WithCreatedUpdated from './created_updated';
 import Delivery, { DeliveryTableRow } from './delivery';
 import PaymentMethod from './paymentMethod';
 import Sale from './sale';
 import User from './user';
 import WithId from './withId';
-import Branch from './branch';
 
 /**
  * State of a bill
@@ -52,7 +52,7 @@ type BillTableRow = Bill & {
   paymentMethod?: PaymentMethod;
   customer?: User;
   sale?: Sale;
-  deliveryTableRow?: DeliveryTableRow;
+  deliveryTableRow?: DeliveryTableRow | null;
   billItems?: BillItemTableRow[];
   branch?: Branch;
 };

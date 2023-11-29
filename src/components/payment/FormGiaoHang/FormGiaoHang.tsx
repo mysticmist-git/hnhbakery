@@ -46,8 +46,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [_, setEmail] = useLocalStorage('email', '');
   const provinces = useProvinces();
 
-  //#endregion
-
+  //#endregio
   //#region States
 
   const [uid, setUid] = useState<string>('');
@@ -60,8 +59,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState('');
 
-  //#endregion
-
+  //#endregio
   //#region Memos
 
   const availableProvinces = useMemo(() => {
@@ -72,8 +70,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     return provinces.filter((p) => branchProvinceIds.includes(p.id));
   }, [branches, provinces]);
 
-  //#endregion
-
+  //#endregio
   //#region UseEffects
 
   useEffect(() => {
@@ -120,7 +117,9 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   }, [uid]);
 
   useEffect(() => {
-    if (!isUsingUserAddress) return;
+    if (!isUsingUserAddress) {
+      setForm('address', '');
+    }
 
     setForm('branchId', '');
   }, [isUsingUserAddress, selectedUserAddressIndex, setForm]);
@@ -131,8 +130,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     setForm('address', userAddresses[selectedUserAddressIndex]?.address ?? '');
   }, [isUsingUserAddress, selectedUserAddressIndex, setForm, userAddresses]);
 
-  //#endregion
-
+  //#endregio
   //#region Handlers
 
   const handleBranchIdChange = useCallback(

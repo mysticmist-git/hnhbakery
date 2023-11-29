@@ -1,6 +1,6 @@
 import { ProductTableRow } from '@/models/product';
 import ProductType from '@/models/productType';
-import { useMediaQuery, Typography, Grid, useTheme } from '@mui/material';
+import { Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
@@ -126,7 +126,7 @@ export default function CustomCardSlider(props: any) {
                                 image: _item.image,
                                 name: _item.name,
                                 description: _item.description,
-                                href: _item.id,
+                                href: `/product-detail?id=${_item.id}`,
                               }}
                               buttonOnclick={buttonOnclick}
                             />

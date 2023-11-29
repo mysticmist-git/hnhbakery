@@ -3,18 +3,8 @@ import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
 import { ProductList, TypeSort, TypeView } from '@/components/products';
 import FilterComponent from '@/components/products/Filter/Filter';
-import ProductsContext from '@/lib/contexts/productsContext';
-import { getAvailableBatchById, getAvailableBatches } from '@/lib/DAO/batchDAO';
-import {
-  getAvailableProductTypeTableRows,
-  getProductTypes,
-} from '@/lib/DAO/productTypeDAO';
-import { fetchAvailableBatches } from '@/lib/firestore';
-import { BatchObject } from '@/lib/models';
-import { cachedCreateProductsOnProductsPage } from '@/lib/pageSpecific/products';
-import { filterDuplicatesById } from '@/lib/utils';
-import Batch, { BatchTableRow } from '@/models/batch';
-import ProductType, { ProductTypeTableRow } from '@/models/productType';
+import { getAvailableBatches } from '@/lib/DAO/batchDAO';
+import { BatchTableRow } from '@/models/batch';
 import {
   alpha,
   Box,
@@ -25,7 +15,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export type Filter = {
   sort: number;
