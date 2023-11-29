@@ -1,6 +1,9 @@
 import { CustomTextFieldWithLabel } from '@/components/inputs/textFields';
+import { auth } from '@/firebase/config';
+import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
 import { getVariants } from '@/lib/DAO/variantDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import { getProductTypeWithCount } from '@/lib/firestore';
@@ -8,6 +11,7 @@ import { ModalFormProps } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
 import Product from '@/models/product';
 import { ModalBatch, ProductTypeWithCount } from '@/models/storageModels';
+import User from '@/models/user';
 import Variant from '@/models/variant';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import {
@@ -20,6 +24,7 @@ import {
 } from '@mui/material';
 import { renderTimeViewClock } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import { onAuthStateChanged } from 'firebase/auth';
 import { memo, useCallback, useEffect, useState } from 'react';
 import CustomDateTimePicker from './CustomDateTimePicker';
 import ProductTypeRenderOption from './ProductTypeRenderOption';
@@ -88,6 +93,8 @@ export default memo(function BatchForm(props: BatchFormProps) {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
 
   const [firstTime, setFirstTime] = useState(true);
+
+  const [userData, setUserData] = useState<User | null>(null);
 
   //#endregion
 
@@ -230,6 +237,29 @@ export default memo(function BatchForm(props: BatchFormProps) {
     setDiscountAmount(() => calculateDiscountMoney());
   }, [calculateDiscountMoney, props.data?.discount.percent]);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+
+      getUserByUid(user.uid)
+        .then((user) => setUserData(user ?? null))
+        .catch(() => setUserData(null));
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (userData) {
+      getBranchByManager(userData)
+        .then((branch) => handleFieldChange('branch_id', branch?.id ?? ''))
+        .catch(() => handleFieldChange('branch_id', ''));
+    }
+  }, [handleFieldChange, userData]);
+
   //#endregion
 
   //#region Handlers
@@ -254,8 +284,6 @@ export default memo(function BatchForm(props: BatchFormProps) {
   }
 
   //#endregion
-
-  console.log(props.data);
 
   return (
     <>

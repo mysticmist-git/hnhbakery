@@ -4,6 +4,7 @@ import {
   fetchProductsForStoragePage,
 } from '@/lib/firestore';
 import { BaseModel } from '@/models/storageModels';
+import User from '@/models/user';
 
 export interface StorageDocsFactory {
   createDocs(): Promise<BaseModel[]>;
@@ -24,8 +25,14 @@ export class ProductStorageDocsFetcher implements StorageDocsFactory {
 }
 
 export class BatchStorageDocsFetcher implements StorageDocsFactory {
+  private user: User;
+
+  constructor(user: User) {
+    this.user = user;
+  }
+
   async createDocs(): Promise<BaseModel[]> {
-    const docs = await fetchBatchesForStoragePage();
+    const docs = await fetchBatchesForStoragePage(this.user);
     return docs;
   }
 }

@@ -42,10 +42,12 @@ import {
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 import { getBatches, getBatchesWithQuery } from './DAO/batchDAO';
+import { getBranchByManager } from './DAO/branchDAO';
 import { createContact } from './DAO/contactDAO';
 import { getAllProducts } from './DAO/productDAO';
 import { getProductTypeById, getProductTypes } from './DAO/productTypeDAO';
 import { getSizes } from './DAO/sizeDAO';
+import { getUserByUid } from './DAO/userDAO';
 import { getVariant, getVariantsRef } from './DAO/variantDAO';
 import { COLLECTION_NAME, DETAIL_PATH } from './constants';
 import {
@@ -57,6 +59,7 @@ import {
 } from './models';
 import { AssembledProduct } from './types/products';
 import { filterDuplicates } from './utils';
+import User from '@/models/user';
 
 //#region Document Related Functions
 
@@ -494,11 +497,20 @@ export const fetchProductsForStoragePage = async (): Promise<
   return storageProducts;
 };
 
-export const fetchBatchesForStoragePage = async (): Promise<StorageBatch[]> => {
+export const fetchBatchesForStoragePage = async (
+  user: User
+): Promise<StorageBatch[]> => {
   const storageBatches: StorageBatch[] = [];
 
   try {
-    const batches = await getBatches();
+    const branch = await getBranchByManager(user);
+
+    if (!branch) {
+      // TODO: Please handle this
+      return [];
+    }
+
+    const batches = await getBatchesWithQuery(where('branch_id', '==', branch?.id));
     const sizes = await getSizes();
 
     for (const b of batches) {
