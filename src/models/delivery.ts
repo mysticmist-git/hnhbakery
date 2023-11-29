@@ -21,12 +21,12 @@ type Delivery = WithCreatedUpdated &
     name: string;
     tel: string;
     mail: string;
-    address_id: string;
+    address: string;
     delivery_note: string;
     cancel_note: string;
     image: string;
-    ship_date: Date;
     ship_time: string;
+    ship_date: Date;
     start_at: Date;
     end_at: Date;
     state: DeliveryState;

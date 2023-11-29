@@ -1,8 +1,12 @@
 import { TableActionButton } from '@/components/buttons';
 import DialogButton from '@/components/buttons/DialogButton';
+import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import { SimpleDialog } from '@/components/dialogs';
 import { RowModal } from '@/components/manage/modals/rowModals';
 import CustomDataTable from '@/components/manage/tables/CustomDataTable';
+import { auth } from '@/firebase/config';
+import { getBranchByManager } from '@/lib/DAO/branchDAO';
+import { getUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
@@ -27,8 +31,10 @@ import {
   ManageState,
 } from '@/lib/types/manage';
 import { BaseModel } from '@/models/storageModels';
+import User from '@/models/user';
 import { Add, RestartAlt } from '@mui/icons-material';
 import { Box, Divider, Grid, Typography } from '@mui/material';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
   FunctionComponent,
   useEffect,
@@ -37,6 +43,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { reduceEachTrailingCommentRange } from 'typescript';
 
 interface BranchStorageProps {}
 
@@ -52,6 +59,9 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   const dataManager: DataManagerStrategy = useMemo(() => {
     return new BatchDataManagerStrategy(dispatch);
   }, []);
+
+  const [userData, setUserData] = useState<User | null>(null);
+  const [canBeAccessed, setCanBeAccessed] = useState<boolean | undefined>();
 
   //#endregion
 
@@ -107,8 +117,25 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   //#region UseEffects
 
   useEffect(() => {
-    const fetchData = async () => {
-      const fetcher = new BatchStorageDocsFetcher();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+
+      getUserByUid(user.uid)
+        .then((user) => setUserData(user ?? null))
+        .catch(() => setUserData(null));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [handleSnackbarAlert]);
+
+  useEffect(() => {
+    const fetchData = async (userData: User) => {
+      const fetcher = new BatchStorageDocsFetcher(userData);
 
       let mainDocs: BaseModel[] = [];
 
@@ -126,12 +153,39 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
       });
     };
 
+    const checkUserAccess = async (userData: User): Promise<boolean> => {
+      try {
+        const branch = await getBranchByManager(userData);
+
+        if (!branch) {
+          setCanBeAccessed(false);
+          return false;
+        }
+        setCanBeAccessed(true);
+        return true;
+      } catch {
+        setCanBeAccessed(false);
+        return true;
+      }
+    };
+
+    if (!userData) {
+      return;
+    }
+
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
       payload: null,
     });
-    fetchData();
-  }, [handleSnackbarAlert]);
+
+    checkUserAccess(userData)
+      .then((canAccess) => {
+        if (canAccess) fetchData(userData);
+      })
+      .catch((canAccess) => {
+        if (canAccess) fetchData(userData);
+      });
+  }, [userData]);
 
   // TODO: Remove this when DataManager is refactored / fix.
   // useEffect(() => {
@@ -403,6 +457,8 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   }
 
   async function handleReloadTable() {
+    if (!userData) return;
+
     setLoading(true);
 
     dispatch({
@@ -412,7 +468,7 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
 
     let factory: StorageDocsFactory | null = null;
 
-    factory = new BatchStorageDocsFetcher();
+    factory = new BatchStorageDocsFetcher(userData);
 
     if (!factory) {
       handleSnackbarAlert('error', 'Lỗi khi tải lại');
@@ -438,131 +494,136 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
 
   return (
     <>
-      <Box
-        component={'div'}
-        width={'100%'}
-        sx={{ p: 2, pr: 3, overflow: 'hidden' }}
-      >
-        <Grid
-          container
-          justifyContent={'center'}
-          alignItems={'center'}
-          spacing={2}
-        >
-          <Grid item xs={12}>
-            <Typography sx={{ color: 'common.black' }} variant="h4">
-              Quản lý kho chi nhánh
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography>Quản lý lô bánh</Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-
-          {/* Manage Buttons */}
-          <Grid item xs={12}>
-            <Box
-              component={'div'}
-              sx={{
-                display: 'flex',
-                justifyContent: 'end',
-                alignItems: 'center',
-                flexDirection: 'row',
-                gap: 1,
-                py: 2,
-              }}
+      {canBeAccessed == true && (
+        <>
+          <Box
+            component={'div'}
+            width={'100%'}
+            sx={{ p: 2, pr: 3, overflow: 'hidden' }}
+          >
+            <Grid
+              container
+              justifyContent={'center'}
+              alignItems={'center'}
+              spacing={2}
             >
-              <TableActionButton
-                startIcon={<RestartAlt />}
-                onClick={handleReloadTable}
-                sx={{
-                  px: 2,
-                }}
-              >
-                Tải lại
-              </TableActionButton>
+              <Grid item xs={12}>
+                <Typography sx={{ color: 'common.black' }} variant="h4">
+                  Quản lý kho chi nhánh
+                </Typography>
+              </Grid>
 
-              <TableActionButton
-                startIcon={<Add />}
-                variant="contained"
-                onClick={handleNewRow}
-              >
-                Thêm mới
-              </TableActionButton>
-            </Box>
-          </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
 
-          <Grid item xs={12}>
-            <CustomDataTable
-              mainDocs={state.mainDocs}
-              collectionName={COLLECTION_NAME.BATCHES}
-              handleViewRow={handleViewRow}
+              <Grid item xs={12}>
+                <Typography>Quản lý lô bánh</Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+
+              {/* Manage Buttons */}
+              <Grid item xs={12}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'end',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 1,
+                    py: 2,
+                  }}
+                >
+                  <TableActionButton
+                    startIcon={<RestartAlt />}
+                    onClick={handleReloadTable}
+                    sx={{
+                      px: 2,
+                    }}
+                  >
+                    Tải lại
+                  </TableActionButton>
+
+                  <TableActionButton
+                    startIcon={<Add />}
+                    variant="contained"
+                    onClick={handleNewRow}
+                  >
+                    Thêm mới
+                  </TableActionButton>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12}>
+                <CustomDataTable
+                  mainDocs={state.mainDocs}
+                  collectionName={COLLECTION_NAME.BATCHES}
+                  handleViewRow={handleViewRow}
+                  handleDeleteRow={handleDeleteRow}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Dialogs */}
+          <SimpleDialog
+            open={dialogOpen}
+            onClose={handleDialogCloseWithConfirm}
+            title={'Xóa?'}
+            content={'Bạn có chắc muốn xóa hàng này?'}
+            actions={
+              <>
+                <DialogButton
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.common.gray,
+                    '&:hover': {
+                      backgroundColor: (theme) => theme.palette.common.darkGray,
+                    },
+                  }}
+                  onClick={() => handleDialogCloseWithConfirm('close')}
+                >
+                  Đóng
+                </DialogButton>
+                <DialogButton
+                  onClick={() => handleDialogCloseWithConfirm('confirm')}
+                >
+                  Xóa
+                </DialogButton>
+              </>
+            }
+          />
+
+          {/* Modals */}
+          {state.crudModalOpen && (
+            <RowModal
+              open={state.crudModalOpen}
+              mode={state.crudModalMode}
               handleDeleteRow={handleDeleteRow}
+              handleModalClose={handleModalClose}
+              handleToggleModalEditMode={handleToggleModalEditMode}
+              handleCancelUpdateData={handleCancelUpdateData}
+              onDataChange={handleOnDataChange}
+              data={state.modalData}
+              collectionName={COLLECTION_NAME.BATCHES}
+              handleAddRow={handleAddRow}
+              handleUpdateRow={handleUpdateRow}
+              handleResetForm={handleResetForm}
+              ref={rowModalRef}
+              disabled={state.loading}
+              loading={state.loading}
             />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Dialogs */}
-      <SimpleDialog
-        open={dialogOpen}
-        onClose={handleDialogCloseWithConfirm}
-        title={'Xóa?'}
-        content={'Bạn có chắc muốn xóa hàng này?'}
-        actions={
-          <>
-            <DialogButton
-              sx={{
-                backgroundColor: (theme) => theme.palette.common.gray,
-                '&:hover': {
-                  backgroundColor: (theme) => theme.palette.common.darkGray,
-                },
-              }}
-              onClick={() => handleDialogCloseWithConfirm('close')}
-            >
-              Đóng
-            </DialogButton>
-            <DialogButton
-              onClick={() => handleDialogCloseWithConfirm('confirm')}
-            >
-              Xóa
-            </DialogButton>
-          </>
-        }
-      />
-
-      {/* Modals */}
-      {state.crudModalOpen && (
-        <RowModal
-          open={state.crudModalOpen}
-          mode={state.crudModalMode}
-          handleDeleteRow={handleDeleteRow}
-          handleModalClose={handleModalClose}
-          handleToggleModalEditMode={handleToggleModalEditMode}
-          handleCancelUpdateData={handleCancelUpdateData}
-          onDataChange={handleOnDataChange}
-          data={state.modalData}
-          collectionName={COLLECTION_NAME.BATCHES}
-          handleAddRow={handleAddRow}
-          handleUpdateRow={handleUpdateRow}
-          handleResetForm={handleResetForm}
-          ref={rowModalRef}
-          disabled={state.loading}
-          loading={state.loading}
-        />
+          )}
+        </>
       )}
+      {canBeAccessed == false && <CanNotAccess />}
     </>
   );
 };

@@ -48,7 +48,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [_, setEmail] = useLocalStorage('email', '');
   const provinces = useProvinces();
 
-  //#endregio
+  //#endregion
   //#region States
 
   const [isGuest, setIsGuest] = useState(true);
@@ -62,7 +62,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState('');
 
-  //#endregio
+  //#endregion
   //#region Memos
 
   const availableProvinces = useMemo(() => {
@@ -73,7 +73,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     return provinces.filter((p) => branchProvinceIds.includes(p.id));
   }, [branches, provinces]);
 
-  //#endregio
+  //#endregion
   //#region UseEffects
 
   useEffect(() => {
@@ -112,6 +112,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
         setForm('customerName', userData.name);
         setForm('tel', userData.tel);
         setForm('email', userData.mail);
+        setEmail(userData.mail);
 
         if (addresses.length > 0) {
           setSelectedUserAddressIndex(0);
@@ -120,7 +121,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     }
 
     getData();
-  }, [setForm, userData]);
+  }, [setEmail, setForm, userData]);
 
   useEffect(() => {
     if (!isUsingUserAddress) {
@@ -142,7 +143,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     }
   }, [isGuest]);
 
-  //#endregio
+  //#endregion
   //#region Handlers
 
   const handleBranchIdChange = useCallback(

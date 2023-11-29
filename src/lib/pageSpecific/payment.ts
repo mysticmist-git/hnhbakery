@@ -1,16 +1,24 @@
 import { AssembledCartItem } from '@/@types/cart';
 import { DeliveryForm } from '@/lib/hooks/useDeliveryForm';
-import { BillDetailObject, DeliveryObject } from '@/lib/models';
 import { FormValidationResult } from '@/lib/types/payment';
 import BillItem from '@/models/billItem';
 import Delivery from '@/models/delivery';
 
-export function createDeliveryData(
-  form: DeliveryForm,
-  billId: string,
-  price: number
-): Delivery {
-  throw new Error('Not implemented');
+export function createDeliveryData(form: DeliveryForm): Partial<Delivery> {
+  const deliveryData: Partial<Delivery> = {
+    name: form.customerName,
+    tel: form.tel,
+    mail: form.email,
+    address: form.address,
+    delivery_note: form.note,
+    state: 'issued',
+    ship_time: form.deliveryTime,
+    ship_date: form.deliveryDate,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  return deliveryData;
 }
 
 export const createBillItemData = (
