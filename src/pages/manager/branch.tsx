@@ -79,6 +79,7 @@ const Branch = () => {
           return;
         }
         const branch = await getBranchByManager(userData);
+
         if (!branch) {
           setCanBeAccessed(false);
           return;

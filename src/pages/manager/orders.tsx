@@ -107,6 +107,8 @@ const Order = () => {
           return;
         }
         const branch = await getBranchByManager(userData);
+        console.log(branch);
+
         if (!branch) {
           setCanBeAccessed(false);
           return;

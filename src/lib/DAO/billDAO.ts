@@ -418,54 +418,53 @@ export async function getBillTableRows(
   const finalBills: BillTableRow[] = [];
 
   const groups = await getGroups();
-  for (let g of groups) {
-    const customers = await getUsers(g.id);
-    for (let c of customers) {
-      const bills = branch
-        ? (await getBills(c.group_id, c.id)).filter(
-            (b) => b.branch_id == branch.id
-          )
-        : await getBills(c.group_id, c.id);
 
-      for (let b of bills) {
-        const billitems = await getBillItems(c.group_id, c.id, b.id);
+  console.log(groups);
 
-        const billItems: BillTableRow['billItems'] = [];
-        for (let bi of billitems) {
-          const batch = await getBatchById(bi.batch_id);
-          billItems.push({
-            ...bi,
-            batch: batch,
-            productType: await getProductTypeById(batch!.product_type_id),
-            product: await getProduct(
-              batch!.product_type_id,
-              batch!.product_id
-            ),
-            variant: await getVariant(
-              batch!.product_type_id,
-              batch!.product_id,
-              batch!.variant_id
-            ),
-          });
-        }
+  const customers = await getUsers(DEFAULT_GROUP_ID);
 
-        const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+  for (let c of customers) {
+    const bills = branch
+      ? (await getBills(c.group_id, c.id)).filter(
+          (b) => b.branch_id == branch.id
+        )
+      : await getBills(c.group_id, c.id);
 
-        const delivery = await getDeliveryById(b.delivery_id);
+    for (let b of bills) {
+      const billitems = await getBillItems(c.group_id, c.id, b.id);
 
-        finalBills.push({
-          ...b,
-          paymentMethod: await getPaymentMethodById(b.payment_method_id),
-          customer: { ...c },
-          sale: sale,
-          deliveryTableRow: {
-            ...delivery!,
-            address: await getAddress(c.group_id, c.id, delivery!.address_id),
-          },
-          billItems: billItems,
-          branch: branch,
+      const billItems: BillTableRow['billItems'] = [];
+      for (let bi of billitems) {
+        const batch = await getBatchById(bi.batch_id);
+        billItems.push({
+          ...bi,
+          batch: batch,
+          productType: await getProductTypeById(batch!.product_type_id),
+          product: await getProduct(batch!.product_type_id, batch!.product_id),
+          variant: await getVariant(
+            batch!.product_type_id,
+            batch!.product_id,
+            batch!.variant_id
+          ),
         });
       }
+
+      const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+      const delivery = await getDeliveryById(b.delivery_id);
+
+      finalBills.push({
+        ...b,
+        paymentMethod: await getPaymentMethodById(b.payment_method_id),
+        customer: { ...c },
+        sale: sale,
+        deliveryTableRow: {
+          ...delivery!,
+          address: await getAddress(c.group_id, c.id, delivery!.address_id),
+        },
+        billItems: billItems,
+        branch: branch,
+      });
     }
   }
 
