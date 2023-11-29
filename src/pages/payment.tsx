@@ -7,6 +7,7 @@ import { auth } from '@/firebase/config';
 import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
 import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
+import { createDelivery } from '@/lib/DAO/deliveryDAO';
 import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
@@ -16,11 +17,13 @@ import useDeliveryForm from '@/lib/hooks/useDeliveryForm';
 import useSales from '@/lib/hooks/useSales';
 import useShippingFee from '@/lib/hooks/useShippingFee';
 import {
+  createDeliveryData,
   mapProductBillToBillDetailObject as mapProductBillToBillItem,
   sendPaymentRequestToVNPay,
   validateForm,
 } from '@/lib/pageSpecific/payment';
 import Bill from '@/models/bill';
+import Delivery from '@/models/delivery';
 import Sale from '@/models/sale';
 import User from '@/models/user';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
@@ -93,7 +96,8 @@ const Payment = () => {
     function (
       paymentId: string,
       chosenSale: Sale | null,
-      customer_id: string
+      customer_id: string,
+      deliveryId: string
     ): Omit<Bill, 'id' | 'paid_time'> {
       let billData: Omit<Bill, 'id'> = {
         total_price: billPrice,
@@ -106,7 +110,7 @@ const Payment = () => {
         customer_id: customer_id,
         booking_item_id: '',
         branch_id: deliveryForm.branchId,
-        delivery_id: '',
+        delivery_id: deliveryId,
         sale_id: chosenSale ? chosenSale.id : '',
         paid_time: new Date(),
         created_at: new Date(),
@@ -146,7 +150,18 @@ const Payment = () => {
         throw new Error('User not found!');
       }
 
-      const billData = createBillData(paymentId, chosenSale, userData.id);
+      const deliveryData = createDeliveryData(deliveryForm);
+
+      const deliveryId = await createDelivery(
+        deliveryData as Omit<Delivery, 'id'>
+      );
+
+      const billData = createBillData(
+        paymentId,
+        chosenSale,
+        userData.id,
+        deliveryId
+      );
 
       const billRef = await createBill(
         userData?.group_id,
@@ -176,7 +191,7 @@ const Payment = () => {
 
       return { ...billData, id: billRef.id };
     },
-    [assembledCartItems, createBillData, user]
+    [assembledCartItems, createBillData, deliveryForm, user]
   );
 
   //#endregion
