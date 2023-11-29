@@ -218,7 +218,7 @@ const Payment = () => {
         setCart([]);
         setCartNote('');
 
-        if (type === 'Thanh toán khi nhận hàng') {
+        if (type === 'Tiền mặt') {
           router.push(`/tienmat-result?billId=${billData.id}`);
         } else {
           const reqData = {
