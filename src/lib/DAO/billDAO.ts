@@ -416,11 +416,6 @@ export async function getBillTableRows(
   branch?: Branch
 ): Promise<BillTableRow[]> {
   const finalBills: BillTableRow[] = [];
-
-  const groups = await getGroups();
-
-  console.log(groups);
-
   const customers = await getUsers(DEFAULT_GROUP_ID);
 
   for (let c of customers) {

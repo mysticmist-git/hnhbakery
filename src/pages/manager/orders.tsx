@@ -107,7 +107,6 @@ const Order = () => {
           return;
         }
         const branch = await getBranchByManager(userData);
-        console.log(branch);
 
         if (!branch) {
           setCanBeAccessed(false);
@@ -123,7 +122,7 @@ const Order = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   const theme = useTheme();
 
