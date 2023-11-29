@@ -3,24 +3,30 @@ import { CaiKhungCoTitle } from '@/components/layouts';
 import { useSnackbarService } from '@/lib/contexts';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
-import { memo, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 const PaymentResult = () => {
   const theme = useTheme();
   const handlerSnackbarAlert = useSnackbarService();
 
-  const [isSuccess, setIsSuccess] = useState<boolean>(true);
   const [responseMessage, setResponseMessage] = useState<string>(
     'Cảm ơn vì đã sử dụng dịch vụ của H&H, đây là mã hóa đơn của bạn'
   );
+  const [isProcessed, setIsProcessed] = useState(false);
 
-  const [email, setEmail] = useLocalStorage<string>('email', '');
+  const [email] = useLocalStorage<string>('email', '');
 
   const router = useRouter();
 
-  const sendBillToMail = async () => {
+  const { billId } = useMemo(() => {
+    return router.query;
+  }, [router.query]);
+
+  const sendBillToMail = useCallback(async () => {
     try {
+      console.log(email);
+
       const sendMailResponse = await fetch('/api/send-mail', {
         method: 'POST',
         headers: {
@@ -48,11 +54,14 @@ const PaymentResult = () => {
     } catch (error: any) {
       console.log(error);
     }
-  };
+  }, [billId, email, handlerSnackbarAlert]);
 
-  const { billId } = useMemo(() => {
-    return router.query;
-  }, [router.query]);
+  useEffect(() => {
+    if (!isProcessed) {
+      sendBillToMail();
+      setIsProcessed(true);
+    }
+  }, [isProcessed, sendBillToMail]);
 
   return (
     <Box component={'div'} sx={{ pb: 16 }}>

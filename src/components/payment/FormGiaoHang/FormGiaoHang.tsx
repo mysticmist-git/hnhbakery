@@ -48,6 +48,8 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   const [_, setEmail] = useLocalStorage('email', '');
   const provinces = useProvinces();
 
+  //#endregion
+
   //#endregio
   //#region States
 
@@ -112,6 +114,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
         setForm('customerName', userData.name);
         setForm('tel', userData.tel);
         setForm('email', userData.mail);
+        setEmail(userData.mail);
 
         if (addresses.length > 0) {
           setSelectedUserAddressIndex(0);
@@ -120,7 +123,7 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
     }
 
     getData();
-  }, [setForm, userData]);
+  }, [setEmail, setForm, userData]);
 
   useEffect(() => {
     if (!isUsingUserAddress) {

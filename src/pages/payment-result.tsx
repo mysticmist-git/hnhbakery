@@ -71,6 +71,7 @@ const PaymentResult = () => {
   //#endregion
   //#region Handlers
 
+  // TODO: This should be in a seperate module
   const sendBillToMail = useCallback(async () => {
     try {
       console.log(email);
