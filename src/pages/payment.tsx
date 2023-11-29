@@ -7,7 +7,7 @@ import { auth } from '@/firebase/config';
 import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
 import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
-import { getUserByUid } from '@/lib/DAO/userDAO';
+import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
@@ -22,6 +22,7 @@ import {
 } from '@/lib/pageSpecific/payment';
 import Bill from '@/models/bill';
 import Sale from '@/models/sale';
+import User from '@/models/user';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -91,12 +92,9 @@ const Payment = () => {
   const createBillData = useCallback(
     function (
       paymentId: string,
-      chosenSale: Sale | null
+      chosenSale: Sale | null,
+      customer_id: string
     ): Omit<Bill, 'id' | 'paid_time'> {
-      if (!user) {
-        throw new Error('User not found!');
-      }
-
       let billData: Omit<Bill, 'id' | 'paid_time'> = {
         total_price: billPrice,
         total_discount: discountAmount,
@@ -105,7 +103,7 @@ const Payment = () => {
         note: cartNote ?? '',
         state: 'issued',
         payment_method_id: paymentId,
-        customer_id: user.uid,
+        customer_id: customer_id,
         booking_item_id: '',
         branch_id: deliveryForm.branchId,
         delivery_id: '',
@@ -123,7 +121,6 @@ const Payment = () => {
       discountAmount,
       finalBillPrice,
       saleAmount,
-      user,
     ]
   );
 
@@ -132,21 +129,23 @@ const Payment = () => {
       paymentId: string | undefined,
       chosenSale: Sale | null
     ): Promise<Omit<Bill, 'paid_time'>> {
-      if (!user) {
-        throw new Error('Please login!');
+      if (!paymentId) {
+        throw new Error('Payment method is not selected/defined!');
       }
 
-      const userData = await getUserByUid(user.uid);
+      let userData: User | null;
+
+      if (user) {
+        userData = (await getUserByUid(user.uid)) ?? null;
+      } else {
+        userData = (await getGuestUser()) ?? null;
+      }
 
       if (!userData) {
         throw new Error('User not found!');
       }
 
-      if (!paymentId) {
-        throw new Error('paymentId is required');
-      }
-
-      const billData = createBillData(paymentId, chosenSale);
+      const billData = createBillData(paymentId, chosenSale, userData.id);
 
       const billRef = await createBill(
         userData?.group_id,
@@ -162,8 +161,8 @@ const Payment = () => {
       await Promise.all(
         billItemsData.map(async (item) => {
           await createBillItem(
-            userData.group_id,
-            userData.id,
+            userData!.group_id,
+            userData!.id,
             billRef.id,
             item
           );

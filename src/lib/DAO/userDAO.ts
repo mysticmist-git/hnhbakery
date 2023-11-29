@@ -30,6 +30,8 @@ import { getDeliveryById } from './deliveryDAO';
 import { getFeedbacks } from './feedbackDAO';
 import {
   DEFAULT_GROUP_ID,
+  GUEST_ID,
+  getDefaultGroup,
   getGroupRefById,
   getGroupsRef,
   getGroupsSnapshot,
@@ -495,4 +497,18 @@ export async function getUserTableRowByUID(uid: string) {
   };
 
   return finalUser;
+}
+
+// TODO: this GET service method is not align with system interface
+//       fix it later.
+export async function getGuestUser() {
+  const ref = doc(
+    getGroupRefById(DEFAULT_GROUP_ID),
+    COLLECTION_NAME.USERS,
+    GUEST_ID
+  ).withConverter(userConverter);
+
+  const user = await getDoc(ref);
+
+  return user.data();
 }

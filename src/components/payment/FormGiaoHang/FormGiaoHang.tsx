@@ -3,11 +3,13 @@ import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import { auth } from '@/firebase/config';
 import { getAddresses } from '@/lib/DAO/addressDAO';
 import { getBranches } from '@/lib/DAO/branchDAO';
-import { getUserByUid } from '@/lib/DAO/userDAO';
+import { GUEST_ID } from '@/lib/DAO/groupDAO';
+import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { DeliveryForm, SetDeliveryForm } from '@/lib/hooks/useDeliveryForm';
 import useProvinces from '@/lib/hooks/useProvinces';
 import Address from '@/models/address';
 import Branch from '@/models/branch';
+import User from '@/models/user';
 import { Check } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -49,7 +51,8 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   //#endregio
   //#region States
 
-  const [uid, setUid] = useState<string>('');
+  const [isGuest, setIsGuest] = useState(true);
+  const [userData, setUserData] = useState<User | null>(null);
   const [userAddresses, setUserAddresses] = useState<Address[]>([]);
   const [selectedUserAddressIndex, setSelectedUserAddressIndex] =
     useState<number>(0);
@@ -76,45 +79,48 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUid(user.uid);
+        getUserByUid(user.uid).then((user) => setUserData(user ?? null));
+      } else {
+        getGuestUser().then((user) => setUserData(user ?? null));
       }
     });
+
+    async function getData() {
+      setBranches(await getBranches());
+    }
+
+    getData();
 
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     async function getData() {
-      setBranches(await getBranches());
-    }
-
-    getData();
-  }, []);
-
-  useEffect(() => {
-    async function getData() {
-      if (!uid) {
+      if (!userData) {
         setUserAddresses([]);
         return;
       }
 
-      const user = await getUserByUid(uid);
+      let isGuest = userData.id === GUEST_ID;
+      setIsGuest(isGuest);
 
-      if (!user) {
+      if (isGuest) {
         setUserAddresses([]);
-        return;
-      }
+      } else {
+        const addresses = await getAddresses(userData.group_id, userData.id);
+        setUserAddresses(addresses);
+        setForm('customerName', userData.name);
+        setForm('tel', userData.tel);
+        setForm('email', userData.mail);
 
-      const addresses = await getAddresses(user.group_id, user.id);
-      setUserAddresses(addresses);
-
-      if (addresses.length > 0) {
-        setSelectedUserAddressIndex(0);
+        if (addresses.length > 0) {
+          setSelectedUserAddressIndex(0);
+        }
       }
     }
 
     getData();
-  }, [uid]);
+  }, [setForm, userData]);
 
   useEffect(() => {
     if (!isUsingUserAddress) {
@@ -129,6 +135,12 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
 
     setForm('address', userAddresses[selectedUserAddressIndex]?.address ?? '');
   }, [isUsingUserAddress, selectedUserAddressIndex, setForm, userAddresses]);
+
+  useEffect(() => {
+    if (isGuest) {
+      setIsUsingUserAddress(false);
+    }
+  }, [isGuest]);
 
   //#endregio
   //#region Handlers
@@ -236,51 +248,64 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                   />
                 }
                 label="Sử dụng địa chỉ đã lưu"
+                sx={isGuest ? { display: 'none' } : {}}
               />
             </Grid>
 
             {isUsingUserAddress ? (
               <Grid item xs={12}>
                 <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
-                <List>
-                  {userAddresses.map((address, index) => (
-                    <ListItem key={index} sx={{ px: 0 }}>
-                      <ListItemButton
-                        selected={selectedUserAddressIndex === index}
-                        onClick={() => setSelectedUserAddressIndex(index)}
-                        sx={{
-                          border: (theme) =>
-                            `3px solid ${theme.palette.secondary.main}`,
-                          borderRadius: '8px',
-                        }}
-                      >
-                        <ListItemText
-                          primary={address.address}
-                          secondary={
-                            provinces.find((p) => p.id === address.province_id)
-                              ?.name ?? 'Không tìm thấy'
-                          }
-                        />
-                        <ListItemIcon
+
+                {userAddresses && userAddresses.length > 0 ? (
+                  <List>
+                    {userAddresses.map((address, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemButton
+                          selected={selectedUserAddressIndex === index}
+                          onClick={() => setSelectedUserAddressIndex(index)}
                           sx={{
-                            visibility:
-                              selectedUserAddressIndex === index
-                                ? 'visible'
-                                : 'hidden',
+                            border: (theme) =>
+                              `3px solid ${theme.palette.secondary.main}`,
+                            borderRadius: '8px',
                           }}
                         >
-                          <Check color="secondary" />
-                        </ListItemIcon>
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
+                          <ListItemText
+                            primary={address.address}
+                            secondary={
+                              provinces.find(
+                                (p) => p.id === address.province_id
+                              )?.name ?? 'Không tìm thấy'
+                            }
+                          />
+                          <ListItemIcon
+                            sx={{
+                              visibility:
+                                selectedUserAddressIndex === index
+                                  ? 'visible'
+                                  : 'hidden',
+                            }}
+                          >
+                            <Check color="secondary" />
+                          </ListItemIcon>
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography
+                    fontSize={16}
+                    fontStyle={'italic'}
+                    fontWeight={'regular'}
+                  >
+                    Bạn chưa lưu địa chỉ nào!
+                  </Typography>
+                )}
 
                 <Divider sx={{ mt: 1 }} />
               </Grid>
             ) : (
               <Grid item xs={12}>
-                <Typography fontSize={16}>Nhập địa chỉ mới:</Typography>
+                <Typography fontSize={16}>Nhập địa chỉ:</Typography>
 
                 <CustomTextField
                   placeholder="Địa chỉ"
@@ -292,49 +317,9 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                   autoComplete="street-address"
                   name="streetAddress"
                   id="streetAddress"
-                  sx={{ mb: 1 }}
                   disabled={isUsingUserAddress}
                 />
 
-                <Autocomplete
-                  disabled={isUsingUserAddress}
-                  value={provinces.find((p) => p.id === selectedProvinceId)}
-                  onChange={(e, value) =>
-                    setSelectedProvinceId(value?.id ?? '')
-                  }
-                  options={[null, ...availableProvinces]}
-                  getOptionLabel={(p) => p?.name ?? 'Tất cả'}
-                  isOptionEqualToValue={(option, value) =>
-                    option?.id === value?.id
-                  }
-                  sx={{ width: '100%' }}
-                  size="small"
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      size="small"
-                      placeholder="Tỉnh thành"
-                      InputProps={{
-                        ...params.InputProps,
-                        sx: {
-                          border: 3,
-                          borderColor: theme.palette.secondary.main,
-                          borderRadius: 2,
-                          overflow: 'hidden',
-                        },
-                      }}
-                      inputProps={{
-                        ...params.inputProps,
-                        style: {
-                          ...params.inputProps?.style,
-                          border: '0px solid transparent',
-                          fontSize: theme.typography.body2.fontSize,
-                        },
-                      }}
-                    />
-                  )}
-                />
                 <Divider sx={{ mt: 1 }} />
               </Grid>
             )}
@@ -343,6 +328,52 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
               <Typography fontSize={16}>
                 Chọn chi nhánh H&H Bakery khả dụng:
               </Typography>
+
+              <Autocomplete
+                disabled={isUsingUserAddress}
+                value={provinces.find((p) => p.id === selectedProvinceId)}
+                onChange={(e, value) => setSelectedProvinceId(value?.id ?? '')}
+                options={[null, ...availableProvinces]}
+                getOptionLabel={(p) => p?.name ?? 'Tất cả'}
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                sx={[
+                  { width: '100%', mb: 1 },
+                  isUsingUserAddress ? { display: 'none' } : {},
+                ]}
+                size="small"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    size="small"
+                    placeholder="Tỉnh thành"
+                    InputProps={{
+                      ...params.InputProps,
+                      sx: {
+                        border: 3,
+                        borderColor: theme.palette.secondary.main,
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                      },
+                    }}
+                    inputProps={{
+                      ...params.inputProps,
+                      style: {
+                        ...params.inputProps?.style,
+                        border: '0px solid transparent',
+                        fontSize: theme.typography.body2.fontSize,
+                      },
+                    }}
+                  />
+                )}
+              />
+
+              <Divider
+                sx={[{ my: 1 }, isUsingUserAddress ? { display: 'none' } : {}]}
+              />
+
               <UserAddressResolver
                 selectedProvinceId={
                   isUsingUserAddress
