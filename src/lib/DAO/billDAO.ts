@@ -23,7 +23,7 @@ import { getBatchById } from './batchDAO';
 import { getBillItems } from './billItemDAO';
 import { getBranchById } from './branchDAO';
 import { getDeliveryById } from './deliveryDAO';
-import { DEFAULT_GROUP_ID } from './groupDAO';
+import { DEFAULT_GROUP_ID, getGroups } from './groupDAO';
 import { getPaymentMethodById } from './paymentMethodDAO';
 import { getProduct } from './productDAO';
 import { getProductTypeById } from './productTypeDAO';
@@ -416,49 +416,56 @@ export async function getBillTableRows(
   branch?: Branch
 ): Promise<BillTableRow[]> {
   const finalBills: BillTableRow[] = [];
-  const customers = await getUsers(DEFAULT_GROUP_ID);
-  for (let c of customers) {
-    const bills = branch
-      ? (await getBills(c.group_id, c.id)).filter(
-          (b) => b.branch_id == branch.id
-        )
-      : await getBills(c.group_id, c.id);
 
-    for (let b of bills) {
-      const billitems = await getBillItems(c.group_id, c.id, b.id);
+  const groups = await getGroups();
+  for (let g of groups) {
+    const customers = await getUsers(g.id);
+    for (let c of customers) {
+      const bills = branch
+        ? (await getBills(c.group_id, c.id)).filter(
+            (b) => b.branch_id == branch.id
+          )
+        : await getBills(c.group_id, c.id);
 
-      const billItems: BillTableRow['billItems'] = [];
-      for (let bi of billitems) {
-        const batch = await getBatchById(bi.batch_id);
-        billItems.push({
-          ...bi,
-          batch: batch,
-          productType: await getProductTypeById(batch!.product_type_id),
-          product: await getProduct(batch!.product_type_id, batch!.product_id),
-          variant: await getVariant(
-            batch!.product_type_id,
-            batch!.product_id,
-            batch!.variant_id
-          ),
+      for (let b of bills) {
+        const billitems = await getBillItems(c.group_id, c.id, b.id);
+
+        const billItems: BillTableRow['billItems'] = [];
+        for (let bi of billitems) {
+          const batch = await getBatchById(bi.batch_id);
+          billItems.push({
+            ...bi,
+            batch: batch,
+            productType: await getProductTypeById(batch!.product_type_id),
+            product: await getProduct(
+              batch!.product_type_id,
+              batch!.product_id
+            ),
+            variant: await getVariant(
+              batch!.product_type_id,
+              batch!.product_id,
+              batch!.variant_id
+            ),
+          });
+        }
+
+        const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+        const delivery = await getDeliveryById(b.delivery_id);
+
+        finalBills.push({
+          ...b,
+          paymentMethod: await getPaymentMethodById(b.payment_method_id),
+          customer: { ...c },
+          sale: sale,
+          deliveryTableRow: {
+            ...delivery!,
+            address: await getAddress(c.group_id, c.id, delivery!.address_id),
+          },
+          billItems: billItems,
+          branch: branch,
         });
       }
-
-      const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-      const delivery = await getDeliveryById(b.delivery_id);
-
-      finalBills.push({
-        ...b,
-        paymentMethod: await getPaymentMethodById(b.payment_method_id),
-        customer: { ...c },
-        sale: sale,
-        deliveryTableRow: {
-          ...delivery!,
-          address: await getAddress(c.group_id, c.id, delivery!.address_id),
-        },
-        billItems: billItems,
-        branch: branch,
-      });
     }
   }
 

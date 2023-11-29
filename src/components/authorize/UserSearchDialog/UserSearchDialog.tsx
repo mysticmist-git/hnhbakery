@@ -146,7 +146,7 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
           <TextField
             color="secondary"
             fullWidth
-            label="Tên nhân viên"
+            label="Tên người dùng"
             onChange={(e) => {
               setNewUser({
                 ...newUser!,

@@ -36,6 +36,7 @@ import { getBranches, updateBranch } from '@/lib/DAO/branchDAO';
 import {
   DEFAULT_GROUP_ID,
   DEV_GROUP_ID,
+  GUEST_ID,
   MANAGER_GROUP_ID,
 } from '@/lib/DAO/groupDAO';
 
@@ -111,6 +112,14 @@ function UserGroupItem({
       hideable: false,
     },
     {
+      field: 'mail',
+      headerName: 'Mail',
+      width: 130,
+      flex: 1,
+      disableColumnMenu: true,
+      hideable: false,
+    },
+    {
       field: 'name',
       headerName: 'Tên',
       width: 130,
@@ -148,20 +157,22 @@ function UserGroupItem({
         return (
           <Box component={'div'} sx={{ display: 'flex', gap: 1 }}>
             {/* <Button
-            variant="contained"
-            size="small"
-            color="secondary"
-            onClick={() => {
-              viewUser(params.row);
-            }}
-          >
-            Chi tiết
-          </Button> */}
+              variant="contained"
+              size="small"
+              color="secondary"
+              onClick={() => {
+                viewUser(params.row);
+              }}
+            >
+              Chi tiết
+            </Button> */}
             <Button
               variant="contained"
               color="error"
               size="small"
-              disabled={params.row.state === 1 || params.row.state === -1}
+              disabled={
+                params.row.active === false || params.row.id == GUEST_ID
+              }
               onClick={() => {
                 setDeleteUser(params.row);
               }}
