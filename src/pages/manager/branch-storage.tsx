@@ -3,6 +3,8 @@ import DialogButton from '@/components/buttons/DialogButton';
 import { SimpleDialog } from '@/components/dialogs';
 import { RowModal } from '@/components/manage/modals/rowModals';
 import CustomDataTable from '@/components/manage/tables/CustomDataTable';
+import { auth } from '@/firebase/config';
+import { getUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import {
@@ -27,8 +29,10 @@ import {
   ManageState,
 } from '@/lib/types/manage';
 import { BaseModel } from '@/models/storageModels';
+import User from '@/models/user';
 import { Add, RestartAlt } from '@mui/icons-material';
 import { Box, Divider, Grid, Typography } from '@mui/material';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
   FunctionComponent,
   useEffect,
@@ -37,6 +41,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { reduceEachTrailingCommentRange } from 'typescript';
 
 interface BranchStorageProps {}
 
@@ -52,6 +57,8 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   const dataManager: DataManagerStrategy = useMemo(() => {
     return new BatchDataManagerStrategy(dispatch);
   }, []);
+
+  const [userData, setUserData] = useState<User | null>(null);
 
   //#endregion
 
@@ -107,8 +114,25 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   //#region UseEffects
 
   useEffect(() => {
-    const fetchData = async () => {
-      const fetcher = new BatchStorageDocsFetcher();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setUserData(null);
+        return;
+      }
+
+      getUserByUid(user.uid)
+        .then((user) => setUserData(user ?? null))
+        .catch(() => setUserData(null));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [handleSnackbarAlert]);
+
+  useEffect(() => {
+    const fetchData = async (userData: User) => {
+      const fetcher = new BatchStorageDocsFetcher(userData);
 
       let mainDocs: BaseModel[] = [];
 
@@ -126,12 +150,15 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
       });
     };
 
+    if (!userData) return;
+
     dispatch({
       type: ManageActionType.SET_MAIN_DOCS,
       payload: null,
     });
-    fetchData();
-  }, [handleSnackbarAlert]);
+
+    fetchData(userData);
+  }, [userData]);
 
   // TODO: Remove this when DataManager is refactored / fix.
   // useEffect(() => {
@@ -403,6 +430,8 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   }
 
   async function handleReloadTable() {
+    if (!userData) return;
+
     setLoading(true);
 
     dispatch({
@@ -412,7 +441,7 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
 
     let factory: StorageDocsFactory | null = null;
 
-    factory = new BatchStorageDocsFetcher();
+    factory = new BatchStorageDocsFetcher(userData);
 
     if (!factory) {
       handleSnackbarAlert('error', 'Lỗi khi tải lại');
