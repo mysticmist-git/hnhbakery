@@ -1,4 +1,9 @@
+import Batch from '@/models/batch';
+import Color from '@/models/color';
+import { FeedbackTableRow } from '@/models/feedback';
 import Product, { ProductDetail, productConverter } from '@/models/product';
+import { ProductTypeTableRow } from '@/models/productType';
+import { VariantTableRow } from '@/models/variant';
 import {
   DocumentReference,
   DocumentSnapshot,
@@ -14,22 +19,17 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
+import { getBatchById } from './batchDAO';
+import { getColorById } from './colorDAO';
+import { getFeedbacks } from './feedbackDAO';
 import {
   getProductTypeById,
   getProductTypes,
   getProductTypesRef,
   getProductTypesSnapshot,
 } from './productTypeDAO';
-import { getBatchById } from './batchDAO';
-import { VariantTableRow } from '@/models/variant';
-import { getVariants } from './variantDAO';
-import Batch from '@/models/batch';
-import { FeedbackTableRow } from '@/models/feedback';
-import { getFeedbacks } from './feedbackDAO';
 import { getUser } from './userDAO';
-import Color from '@/models/color';
-import { getColorById } from './colorDAO';
-import { ProductTypeTableRow } from '@/models/productType';
+import { getVariants } from './variantDAO';
 
 export function getProductsRef(productTypeId: string) {
   return collection(
@@ -148,13 +148,11 @@ export async function deleteProduct(productTypeId: string, id: string) {
   return await deleteDoc(getProductRef(productTypeId, id));
 }
 
-export async function getProductDetail(batch_id: string) {
-  let batch = await getBatchById(batch_id);
-  if (!batch) {
-    return;
-  }
-
-  let product = await getProduct(batch.product_type_id, batch.product_id);
+export async function getProductDetail(
+  productTypeId: string,
+  productId: string
+) {
+  let product = await getProduct(productTypeId, productId);
 
   if (!product) {
     return;
@@ -168,9 +166,10 @@ export async function getProductDetail(batch_id: string) {
 
   // variants
   let variantTableRows: VariantTableRow[] = [];
-  let variants = await getVariants(batch.product_type_id, batch.product_id);
+  let variants = await getVariants(productTypeId, productId);
   await Promise.all(
     variants.map(async (variant) => {
+      console.log(variant);
       const batches: Batch[] = [];
       await Promise.all(
         variant.batches.map(async (batch) => {
@@ -194,7 +193,7 @@ export async function getProductDetail(batch_id: string) {
 
   // feedbacks
   let feebackTableRows: FeedbackTableRow[] = [];
-  let feebacks = await getFeedbacks(batch.product_type_id, batch.product_id);
+  let feebacks = await getFeedbacks(productTypeId, productId);
   await Promise.all(
     feebacks.map(async (feedback) => {
       let user = await getUser(feedback.product_id, feedback.user_id);
@@ -217,13 +216,14 @@ export async function getProductDetail(batch_id: string) {
   );
 
   // productTypeTableRow yêu ai?
-  let productType = await getProductTypeById(batch.product_type_id);
+  let productType = await getProductTypeById(productTypeId);
   if (!productType) {
     return;
   }
-  let products = (await getProducts(batch.product_type_id)).filter(
-    (product) => product.id != batch!.product_id
+  let products = (await getProducts(productTypeId)).filter(
+    (product) => product.product_type_id === productTypeId
   );
+
   let productTypeTableRow: ProductTypeTableRow = {
     ...productType,
     products: products,

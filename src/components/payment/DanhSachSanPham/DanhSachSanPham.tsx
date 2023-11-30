@@ -4,7 +4,6 @@ import DanhSachSanPham_Item from './DanhSachSanPham_Item';
 
 export default function DanhSachSanPham(props: any) {
   const { Products } = props;
-  const theme = useTheme();
 
   return (
     <>

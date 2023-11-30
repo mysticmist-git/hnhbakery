@@ -1,5 +1,7 @@
 import { CustomIconButton } from '@/components/buttons';
-import ProductsContext from '@/lib/contexts/productsContext';
+import {
+  getDownloadUrlFromFirebaseStorage,
+} from '@/lib/firestore';
 import { formatPrice } from '@/lib/utils';
 import { BatchTableRow } from '@/models/batch';
 import { ShoppingCart } from '@mui/icons-material';
@@ -14,7 +16,7 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useContext, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // type CakeCardProps = {
 //   name: string;
@@ -61,6 +63,16 @@ function CakeCard({
     },
   };
 
+  const [img, setImg] = useState('');
+
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(batch.product?.images[0] ?? '')
+      .then((url) => {
+        setImg(url);
+      })
+      .catch(() => setImg(''));
+  }, [batch.product?.images]);
+
   return (
     <Card
       onMouseOver={() => setCardHover(true)}
@@ -76,7 +88,10 @@ function CakeCard({
     >
       <CardActionArea
         LinkComponent={Link}
-        href={`/product-detail?id=${batch.product?.id}` ?? ''}
+        href={
+          `/product-detail?type_id=${batch.productType?.id}&id=${batch.product?.id}` ??
+          ''
+        }
         sx={{
           width: viewState == 'list' ? '50%' : '100%',
           height: viewState == 'list' ? imageHeightList : imageHeight,
@@ -87,7 +102,7 @@ function CakeCard({
           component={Image}
           sx={cardHover ? imageStyles.cardHovered : imageStyles.cardNormal}
           alt=""
-          src={batch.product?.images[0] ?? ''}
+          src={img}
           loading="lazy"
         />
       </CardActionArea>

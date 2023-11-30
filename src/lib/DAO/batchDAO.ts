@@ -73,7 +73,10 @@ export async function increaseDecreaseBatchQuantity(
   id: string,
   quantity: number
 ) {
-  await updateDoc(getBatchRefById(id), { quantity: increment(quantity), updated_at: new Date(), });
+  await updateDoc(getBatchRefById(id), {
+    quantity: increment(quantity),
+    updated_at: new Date(),
+  });
 }
 
 export async function deleteBatch(id: string) {
@@ -97,18 +100,22 @@ export async function getAvailableBatches(onlyFirstBatch: boolean = false) {
 
   const finalBatches: BatchTableRow[] = [];
   for (let p of productTypes) {
+    console.log(p);
     if (!p.products || p.products.length === 0) {
       continue;
     }
     for (let product of p.products) {
+      console.log(product);
       if (!product.variants || product.variants.length === 0) {
         continue;
       }
       for (let v of product.variants) {
+        console.log(v);
         if (!v.batches || v.batches.length === 0) {
           continue;
         }
         for (let b of v.batches) {
+          console.log(b);
           const batch = await getAvailableBatchById(b);
 
           if (batch) {

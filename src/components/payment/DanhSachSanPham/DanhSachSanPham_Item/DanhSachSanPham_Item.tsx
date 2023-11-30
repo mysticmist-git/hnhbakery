@@ -1,15 +1,45 @@
 import { AssembledCartItem } from '@/@types/cart';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 function DanhSachSanPham_Item(props: any) {
+  //#region Top
+
   const { item }: { item: AssembledCartItem } = props;
 
+  //#endregion
+
+  //#region Hooks
+
   const theme = useTheme();
+
+  //#endregion
+
+  //#region States
+
   const [isHover, setIsHover] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [img, setImg] = useState('');
+
+  //#endregion
+
+  //#region useEffects
+
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(item.image)
+      .then((url) => {
+        setImg(url);
+      })
+      .catch(() => setImg(''));
+  }, [item.image]);
+
+  //#endregion
+
+  //#region Memos
 
   const style = {
     normal: {
@@ -29,11 +59,15 @@ function DanhSachSanPham_Item(props: any) {
     return price * item.quantity;
   }, [item.discountAmount, item.quantity, item.variant?.price]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  //#endregion
+
+  //#region Handlers
 
   const handleImageLoad = () => {
     setIsLoading(false);
   };
+
+  //#endregion
 
   return (
     <>
@@ -73,7 +107,7 @@ function DanhSachSanPham_Item(props: any) {
             ) : null}
             <Box
               component={Image}
-              src={item.image}
+              src={img}
               alt={`${item.product?.name} image`}
               loading="lazy"
               fill={true}
@@ -108,7 +142,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Tên sản phẩm:{' '}
+                  Tên sản phẩm:
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
                   {item.product?.name ?? ''}
@@ -130,7 +164,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Kích cỡ:{' '}
+                  Kích cỡ:
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
                   {item.variant?.size ?? ''}
@@ -152,7 +186,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Vật liệu:{' '}
+                  Vật liệu:
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
                   {item.product?.name ?? ''}
@@ -174,7 +208,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Số lượng:{' '}
+                  Số lượng:
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
                   {item.quantity}
@@ -196,7 +230,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Sản xuất:{' '}
+                  Sản xuất:
                 </Typography>
                 <Typography
                   variant="body2"
@@ -224,7 +258,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Hết hạn:{' '}
+                  Hết hạn:
                 </Typography>
                 <Typography
                   variant="body2"
@@ -252,7 +286,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="button"
                   color={theme.palette.text.secondary}
                 >
-                  Giá bán /sản phẩm:{' '}
+                  Giá bán /sản phẩm:
                 </Typography>
                 <Box
                   component={'div'}
@@ -312,7 +346,7 @@ function DanhSachSanPham_Item(props: any) {
                   variant="body1"
                   color={theme.palette.text.secondary}
                 >
-                  Tổng:{' '}
+                  Tổng:
                 </Typography>
                 <Typography
                   variant="body1"

@@ -1,4 +1,5 @@
 import { db } from '@/firebase/config';
+import { ProductTableRow } from '@/models/product';
 import ProductType, {
   ProductTypeTableRow,
   productTypeConverter,
@@ -18,10 +19,9 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
-import { ProductTableRow } from '@/models/product';
+import { getFeedbacks } from './feedbackDAO';
 import { getProducts } from './productDAO';
 import { getVariants } from './variantDAO';
-import { getFeedbacks } from './feedbackDAO';
 
 export function getProductTypesRef() {
   return collection(db, COLLECTION_NAME.PRODUCT_TYPES).withConverter(
@@ -129,24 +129,29 @@ export async function getProductTypeTableRows() {
 export async function getAvailableProductTypeTableRows() {
   const productTypeTableRows: ProductTypeTableRow[] = [];
   const productTypes = (await getProductTypes()).filter((pro) => pro.active);
+
   for (let pro of productTypes) {
     const productTableRows: ProductTableRow[] = [];
     const products = (await getProducts(pro.id)).filter((p) => p.active);
+
     for (let p of products) {
       const variants = (await getVariants(pro.id, p.id)).filter(
         (v) => v.active
       );
       const feedbacks = await getFeedbacks(pro.id, p.id);
+
       productTableRows.push({
         ...p,
         variants: variants,
         feedbacks: feedbacks,
       });
     }
+
     productTypeTableRows.push({
       ...pro,
       products: productTableRows,
     });
   }
+
   return productTypeTableRows;
 }

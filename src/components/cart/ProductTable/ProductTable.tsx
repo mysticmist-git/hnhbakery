@@ -1,5 +1,7 @@
 import { AssembledCartItem } from '@/@types/cart';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { formatDateString } from '@/lib/utils';
+import batch from '@/models/batch';
 import {
   Box,
   Grid,
@@ -15,7 +17,7 @@ import {
   useTheme,
 } from '@mui/material';
 import Image from 'next/image';
-import { useCallback } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import UI_Delete from '../UI_Delete';
 import UI_Name from '../UI_Name';
 import UI_Price from '../UI_Price';
@@ -106,102 +108,13 @@ function ProductTable({ items, onChange }: ProductTableProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((item) => (
-              <TableRow
-                key={item.id}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                }}
-              >
-                <TableCell component="th" scope="row" align="center">
-                  <Grid
-                    container
-                    direction={'row'}
-                    alignItems={'center'}
-                    spacing={0}
-                    justifyContent={'center'}
-                  >
-                    <Grid item xs={12} pb={1}>
-                      <Link href={item.href}>
-                        <Box
-                          component={'div'}
-                          sx={{
-                            width: '100%',
-                            height: imageHeight,
-                            border: 3,
-                            borderColor: theme.palette.secondary.main,
-                            overflow: 'hidden',
-                            borderRadius: '8px',
-                            position: 'relative',
-                          }}
-                        >
-                          <Box
-                            component={Image}
-                            src={item.image ?? ''}
-                            alt={'Image for cart item'}
-                            loading="lazy"
-                            fill={true}
-                            sx={{
-                              objectFit: 'cover',
-                              cursor: 'pointer',
-                              transition: 'transform 0.3s ease-in-out',
-                              ':hover': {
-                                transform: 'scale(1.3) rotate(5deg)',
-                              },
-                            }}
-                          />
-                        </Box>
-                      </Link>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Name name={item.product?.name} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_SizeMaterial
-                        size={item.variant?.size}
-                        material={item.variant?.material}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography
-                        variant={'button'}
-                        color={theme.palette.text.secondary}
-                      >
-                        Hết hạn:{' '}
-                        {formatDateString(item.batch?.exp ?? new Date())}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Price
-                    price={item.variant?.price}
-                    discounted={item.discounted}
-                    discountAmount={item.discountAmount}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Quantity
-                    value={item.quantity}
-                    min={1}
-                    max={resolveBatchMax(
-                      item.batch?.quantity,
-                      item.batch?.sold
-                    )}
-                    onChange={(value) => handleQuantityChange(value, item)}
-                    justifyContent={'center'}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_TotalPrice
-                    price={(item.variant?.price ?? 0) * item.quantity}
-                    discountAmount={item.discountAmount * item.quantity}
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <UI_Delete row={item} onDelete={handleDeleteRow} />
-                </TableCell>
-              </TableRow>
+            {items.map((item, index) => (
+              <ProductItem1
+                key={index}
+                handleQuantityChange={handleQuantityChange}
+                handleDeleteRow={handleDeleteRow}
+                item={item}
+              />
             ))}
           </TableBody>
         </Table>
@@ -220,110 +133,243 @@ function ProductTable({ items, onChange }: ProductTableProps) {
         }}
       >
         {items.map((item, index) => (
-          <Grid item xs={12} key={index}>
-            <Box
-              component={'div'}
-              sx={{
-                border: 3,
-                borderColor: theme.palette.secondary.main,
-                borderRadius: '8px',
-                overflow: 'hidden',
-              }}
-            >
-              <Grid
-                container
-                justifyContent={'center'}
-                alignItems={'center'}
-                spacing={2}
-              >
-                <Grid item xs={5} alignSelf={'stretch'}>
-                  <Link href={item.href}>
-                    <Box
-                      component={'div'}
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        overflow: 'hidden',
-                        position: 'relative',
-                      }}
-                    >
-                      <Box
-                        component={Image}
-                        src={item.image ?? ''}
-                        alt={'Cart Item Image'}
-                        loading="lazy"
-                        fill={true}
-                        sx={{
-                          objectFit: 'cover',
-                          cursor: 'pointer',
-                          transition: 'transform 0.3s ease-in-out',
-                          ':hover': {
-                            transform: 'scale(1.3) rotate(5deg)',
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Link>
-                </Grid>
-                <Grid item xs={7}>
-                  <Grid
-                    container
-                    direction={'row'}
-                    alignItems={'center'}
-                    justifyContent={'center'}
-                    spacing={0.5}
-                    sx={{
-                      py: 1,
-                    }}
-                  >
-                    <Grid item xs={12}>
-                      <UI_Name name={item.product?.name} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_SizeMaterial
-                        size={item.variant?.size}
-                        material={item.variant?.material}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Price
-                        price={item.variant?.price}
-                        discounted={item.discounted}
-                        discountAmount={item.discountAmount}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Quantity
-                        value={item.quantity}
-                        min={1}
-                        max={resolveBatchMax(
-                          item.batch?.quantity,
-                          item.batch?.sold
-                        )}
-                        onChange={(quantity: number) =>
-                          handleQuantityChange(quantity, item)
-                        }
-                        justifyContent={'center'}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_TotalPrice
-                        price={item.variant?.price}
-                        discountAmount={item.discountAmount}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <UI_Delete row={item} onDelete={handleDeleteRow} />
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Box>
-          </Grid>
+          <ProductItem
+            key={index}
+            item={item}
+            handleQuantityChange={handleQuantityChange}
+            handleDeleteRow={handleDeleteRow}
+          />
         ))}
       </Grid>
     </>
   );
 }
+
+const ProductItem1: FC<{
+  handleQuantityChange: (quantity: number, item: AssembledCartItem) => void;
+  item: AssembledCartItem;
+  handleDeleteRow: (id: string) => void;
+}> = ({ handleQuantityChange, item, handleDeleteRow }) => {
+  const imageHeight = '25vh';
+  const theme = useTheme();
+
+  const [img, setImg] = useState('');
+
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(item.image)
+      .then((url) => {
+        setImg(url);
+      })
+      .catch(() => setImg(''));
+  }, [item.image]);
+
+  return (
+    <TableRow
+      sx={{
+        '&:last-child td, &:last-child th': { border: 0 },
+      }}
+    >
+      <TableCell component="th" scope="row" align="center">
+        <Grid
+          container
+          direction={'row'}
+          alignItems={'center'}
+          spacing={0}
+          justifyContent={'center'}
+        >
+          <Grid item xs={12} pb={1}>
+            <Link href={item.href}>
+              <Box
+                component={'div'}
+                sx={{
+                  width: '100%',
+                  height: imageHeight,
+                  border: 3,
+                  borderColor: theme.palette.secondary.main,
+                  overflow: 'hidden',
+                  borderRadius: '8px',
+                  position: 'relative',
+                }}
+              >
+                <Box
+                  component={Image}
+                  src={img}
+                  alt={'Image for cart item'}
+                  loading="lazy"
+                  fill={true}
+                  sx={{
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s ease-in-out',
+                    ':hover': {
+                      transform: 'scale(1.3) rotate(5deg)',
+                    },
+                  }}
+                />
+              </Box>
+            </Link>
+          </Grid>
+          <Grid item xs={12}>
+            <UI_Name name={item.product?.name} />
+          </Grid>
+          <Grid item xs={12}>
+            <UI_SizeMaterial
+              size={item.variant?.size}
+              material={item.variant?.material}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant={'button'} color={theme.palette.text.secondary}>
+              Hết hạn: {formatDateString(item.batch?.exp ?? new Date())}
+            </Typography>
+          </Grid>
+        </Grid>
+      </TableCell>
+      <TableCell align="center">
+        <UI_Price
+          price={item.variant?.price}
+          discounted={item.discounted}
+          discountAmount={item.discountAmount}
+        />
+      </TableCell>
+      <TableCell align="center">
+        <UI_Quantity
+          value={item.quantity}
+          min={1}
+          max={resolveBatchMax(item.batch?.quantity, item.batch?.sold)}
+          onChange={(value) => handleQuantityChange(value, item)}
+          justifyContent={'center'}
+        />
+      </TableCell>
+      <TableCell align="center">
+        <UI_TotalPrice
+          price={(item.variant?.price ?? 0) * item.quantity}
+          discountAmount={item.discountAmount * item.quantity}
+        />
+      </TableCell>
+      <TableCell align="center">
+        <UI_Delete row={item} onDelete={handleDeleteRow} />
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const ProductItem: FC<{
+  handleQuantityChange: (quantity: number, item: AssembledCartItem) => void;
+  item: AssembledCartItem;
+  handleDeleteRow: (id: string) => void;
+}> = ({ handleQuantityChange, item, handleDeleteRow }) => {
+  const theme = useTheme();
+
+  const [img, setImg] = useState('');
+
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(item.image)
+      .then((url) => {
+        setImg(url);
+      })
+      .catch(() => setImg(''));
+  }, [item.image]);
+
+  return (
+    <Grid item xs={12}>
+      <Box
+        component={'div'}
+        sx={{
+          border: 3,
+          borderColor: theme.palette.secondary.main,
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}
+      >
+        <Grid
+          container
+          justifyContent={'center'}
+          alignItems={'center'}
+          spacing={2}
+        >
+          <Grid item xs={5} alignSelf={'stretch'}>
+            <Link href={item.href}>
+              <Box
+                component={'div'}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                <Box
+                  component={Image}
+                  src={img}
+                  alt={'Cart Item Image'}
+                  loading="lazy"
+                  fill={true}
+                  sx={{
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s ease-in-out',
+                    ':hover': {
+                      transform: 'scale(1.3) rotate(5deg)',
+                    },
+                  }}
+                />
+              </Box>
+            </Link>
+          </Grid>
+          <Grid item xs={7}>
+            <Grid
+              container
+              direction={'row'}
+              alignItems={'center'}
+              justifyContent={'center'}
+              spacing={0.5}
+              sx={{
+                py: 1,
+              }}
+            >
+              <Grid item xs={12}>
+                <UI_Name name={item.product?.name} />
+              </Grid>
+              <Grid item xs={12}>
+                <UI_SizeMaterial
+                  size={item.variant?.size}
+                  material={item.variant?.material}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <UI_Price
+                  price={item.variant?.price}
+                  discounted={item.discounted}
+                  discountAmount={item.discountAmount}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <UI_Quantity
+                  value={item.quantity}
+                  min={1}
+                  max={resolveBatchMax(item.batch?.quantity, item.batch?.sold)}
+                  onChange={(quantity: number) =>
+                    handleQuantityChange(quantity, item)
+                  }
+                  justifyContent={'center'}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <UI_TotalPrice
+                  price={(item.variant?.price ?? 0) * item.quantity}
+                  discountAmount={item.discountAmount * item.quantity}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <UI_Delete row={item} onDelete={handleDeleteRow} />
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Box>
+    </Grid>
+  );
+};
 
 export default ProductTable;
