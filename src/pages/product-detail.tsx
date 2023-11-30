@@ -117,6 +117,8 @@ function ProductDetail() {
 
   // #endregion
 
+  //#region Handlers
+
   const handleAddToCart = useCallback(() => {
     setIsLoading(true);
 
@@ -190,6 +192,10 @@ function ProductDetail() {
     user?.uid,
   ]);
 
+  //#endregion
+
+  //#region UseMemos
+
   const batchOptions: Batch[] = useMemo(() => {
     if (!selectedVariant || !productDetail) return [];
 
@@ -199,6 +205,8 @@ function ProductDetail() {
 
     return batches;
   }, [productDetail, selectedVariant]);
+
+  //#endregion
 
   // const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
   //   product
@@ -235,30 +243,35 @@ function ProductDetail() {
   //   handleAddToCart,
   // ]);
 
+  //#region UseEffects
+
   useEffect(() => {
     const fetchData = async () => {
-      const batch_id = router.query.id;
+      const { type_id, id } = router.query;
+
+      console.log('type_id', type_id);
+      console.log('id', id);
 
       try {
-        const finalDetail = await getProductDetail(batch_id as string);
+        const finalDetail = await getProductDetail(
+          type_id as string,
+          id as string
+        );
+
         setSimiliarProducts(
           (await getProductTypes()).filter(
             (p) => p.id !== finalDetail?.product_type_id && p.active
           )
         );
+
         setProductDetail(finalDetail);
       } catch (error) {
         console.log(error);
-        return {
-          props: {
-            invalid: true,
-          },
-        };
       }
     };
 
     fetchData();
-  }, [router.query.id]);
+  }, [router.query]);
 
   console.log(productDetail);
 
@@ -282,6 +295,8 @@ function ProductDetail() {
   useEffect(() => {
     setBackdropOpen(() => isAdding);
   }, [isAdding]);
+
+  //#endregion
 
   return (
     <>

@@ -64,13 +64,11 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   const [canBeAccessed, setCanBeAccessed] = useState<boolean | undefined>();
 
   //#endregion
-
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
-
   //#region Methods
 
   /**
@@ -107,13 +105,11 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   }
 
   //#endregion
-
   //#region Refs
 
   const rowModalRef = useRef<FormRef>(null);
 
   //#endregion
-
   //#region UseEffects
 
   useEffect(() => {
@@ -194,11 +190,9 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
   // }, [updateDataManagerStrategy, updateSelectedCRUDTargetToMatch]);
 
   //#endregion
-
   //#region useMemos
 
   // #endregion
-
   //#region Handlers
 
   function handleNewRow() {

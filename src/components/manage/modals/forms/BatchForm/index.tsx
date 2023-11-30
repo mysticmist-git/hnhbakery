@@ -5,7 +5,6 @@ import { getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { getVariants } from '@/lib/DAO/variantDAO';
-import { useSnackbarService } from '@/lib/contexts';
 import { getProductTypeWithCount } from '@/lib/firestore';
 import { ModalFormProps } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';

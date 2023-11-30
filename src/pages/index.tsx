@@ -232,7 +232,7 @@ const getHomeBestSellers = async () => {
     bestSellers.map((product) => ({
       ...product,
       image: product.images[0] || '',
-      href: `/product-detail?id=${product.id}`,
+      href: `/product-detail?type_id=${product.product_type_id}&id=${product.id}`,
     })) ?? []
   );
 };
