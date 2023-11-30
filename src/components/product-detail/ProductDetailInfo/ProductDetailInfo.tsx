@@ -5,6 +5,7 @@ import { ProductDetailInfoProps } from '@/lib/types/product-detail';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import {
   Box,
+  Button,
   Grid,
   Stack,
   Typography,
@@ -20,6 +21,7 @@ import { ProductDetail } from '@/models/product';
 import { VariantTableRow } from '@/models/variant';
 import Batch from '@/models/batch';
 import { SizeNameParse } from '@/models/size';
+import { useRouter } from 'next/router';
 
 function ProductDetailInfo({
   productDetail,
@@ -43,6 +45,7 @@ function ProductDetailInfo({
   handleAddToCart: () => void;
 }) {
   const theme = useTheme();
+  const router = useRouter();
 
   const [minPrice, maxPrice, priceValue]: [
     minPrice: number,
@@ -118,6 +121,40 @@ function ProductDetailInfo({
       <Grid item xs={12}>
         <ProductCarousel images={productDetail?.images ?? []} />
       </Grid>
+
+      {!isProductAvailable && (
+        <Grid item xs={12}>
+          <Box
+            component={'div'}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ textAlign: 'center', color: 'grey.700' }}
+            >
+              Sản phẩm đã hết hàng vui lòng chọn sản phẩm khác hoặc liên hệ cửa
+              hàng để được tư vấn.
+            </Typography>
+
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 2, minWidth: 200 }}
+              onClick={() => {
+                router.push('/contact');
+              }}
+            >
+              Liên hệ
+            </Button>
+          </Box>
+        </Grid>
+      )}
 
       <Grid item xs={12} md={8} lg={6}>
         <Box
@@ -298,203 +335,206 @@ function ProductDetailInfo({
         </Box>
       </Grid>
 
-      {productDetail?.variants && productDetail.variants.length > 0 ? (
-        <Grid item xs={12} md={8} lg={6}>
-          <Box
-            component={'div'}
-            sx={{
-              height: '100%',
-              border: 3,
-              borderColor: theme.palette.secondary.main,
-              borderRadius: '8px',
-              overflow: 'hidden',
-              p: 3,
-              backgroundColor: 'white',
-            }}
-          >
-            <Grid
-              container
-              direction={'row'}
-              justifyContent={'center'}
-              alignItems={'center'}
-              spacing={2}
+      {productDetail?.variants &&
+        productDetail.variants.length > 0 &&
+        isProductAvailable && (
+          <Grid item xs={12} md={8} lg={6}>
+            <Box
+              component={'div'}
+              sx={{
+                height: '100%',
+                border: 3,
+                borderColor: theme.palette.secondary.main,
+                borderRadius: '8px',
+                overflow: 'hidden',
+                p: 3,
+                backgroundColor: 'white',
+              }}
             >
-              <Grid item xs={12}>
-                <Typography variant="h2" color={theme.palette.secondary.main}>
-                  Phần bạn chọn
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={3}>
-                    <Typography {...typoHeadStyle}>Biến thể:</Typography>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <CheckboxButtonGroup
-                      options={
-                        productDetail?.variants.filter(
-                          (v) => v.batcheObjects && v.batcheObjects?.length > 0
-                        ) ?? []
-                      }
-                      value={variant}
-                      getOptionLabel={(o) =>
-                        `${o.material} - ${SizeNameParse(o.size)}`
-                      }
-                      onChange={onVariantChange}
-                      valueEqualOption={(value, option) =>
-                        value?.id === option.id
-                      }
-                    />
-                  </Grid>
+              <Grid
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                alignItems={'center'}
+                spacing={2}
+              >
+                <Grid item xs={12}>
+                  <Typography variant="h2" color={theme.palette.secondary.main}>
+                    Phần bạn chọn
+                  </Typography>
                 </Grid>
-              </Grid>
 
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={3}>
-                    <Typography {...typoHeadStyle}>Ngày hết hạn:</Typography>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <CheckboxButtonGroup
-                      options={batchOptions ?? []}
-                      value={batch}
-                      getOptionLabel={(batch) => {
-                        return formatDateString(batch?.exp);
-                      }}
-                      onChange={onBatchChange}
-                      valueEqualOption={(value, option) =>
-                        value?.id === option.id
-                      }
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={3}>
-                    <Typography {...typoHeadStyle}>Số lượng:</Typography>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <NumberInputWithButtons
-                      min={1}
-                      max={maxQuantity}
-                      value={quantity}
-                      onChange={onQuantityChange}
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              <MyDivider />
-
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={3}>
-                    <Typography {...typoHeadStyle}>Giá:</Typography>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <Stack direction={'row'} gap={1}>
-                      <Typography
-                        {...typoContentStyle}
-                        sx={
-                          itemDiscountPrice > 0
-                            ? {
-                                textDecoration: 'line-through',
-                              }
-                            : {}
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <Grid item xs={3}>
+                      <Typography {...typoHeadStyle}>Biến thể:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <CheckboxButtonGroup
+                        options={
+                          productDetail?.variants.filter(
+                            (v) =>
+                              v.batcheObjects && v.batcheObjects?.length > 0
+                          ) ?? []
                         }
-                      >
-                        {formatPrice(itemPrice)}
-                      </Typography>
-                      {itemDiscountPrice > 0 && (
+                        value={variant}
+                        getOptionLabel={(o) =>
+                          `${o.material} - ${SizeNameParse(o.size)}`
+                        }
+                        onChange={onVariantChange}
+                        valueEqualOption={(value, option) =>
+                          value?.id === option.id
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <Grid item xs={3}>
+                      <Typography {...typoHeadStyle}>Ngày hết hạn:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <CheckboxButtonGroup
+                        options={batchOptions ?? []}
+                        value={batch}
+                        getOptionLabel={(batch) => {
+                          return formatDateString(batch?.exp);
+                        }}
+                        onChange={onBatchChange}
+                        valueEqualOption={(value, option) =>
+                          value?.id === option.id
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <Grid item xs={3}>
+                      <Typography {...typoHeadStyle}>Số lượng:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <NumberInputWithButtons
+                        min={1}
+                        max={maxQuantity}
+                        value={quantity}
+                        onChange={onQuantityChange}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <MyDivider />
+
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <Grid item xs={3}>
+                      <Typography {...typoHeadStyle}>Giá:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <Stack direction={'row'} gap={1}>
                         <Typography
                           {...typoContentStyle}
-                          sx={{
-                            color: theme.palette.secondary.main,
-                          }}
+                          sx={
+                            itemDiscountPrice > 0
+                              ? {
+                                  textDecoration: 'line-through',
+                                }
+                              : {}
+                          }
                         >
-                          {formatPrice(itemDiscountPrice)}
+                          {formatPrice(itemPrice)}
                         </Typography>
-                      )}
-                    </Stack>
+                        {itemDiscountPrice > 0 && (
+                          <Typography
+                            {...typoContentStyle}
+                            sx={{
+                              color: theme.palette.secondary.main,
+                            }}
+                          >
+                            {formatPrice(itemDiscountPrice)}
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
 
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <Grid item xs={3}>
-                    <Typography {...typoHeadStyle}>Tổng tiền:</Typography>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <Typography {...typoContentStyle}>
-                      {formatPrice(
-                        discountTotalPrice > 0 ? discountTotalPrice : totalPrice
-                      )}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              <MyDivider />
-
-              <Grid item xs={12}>
-                <Grid
-                  container
-                  direction={'row'}
-                  justifyContent={'center'}
-                  alignItems={'start'}
-                >
-                  <CustomButton
-                    onClick={() => handleAddToCart()}
-                    sx={{
-                      py: 1,
-                      width: '100%',
-                      borderRadius: '8px',
-                    }}
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
                   >
-                    <Typography
-                      variant="body1"
-                      color={theme.palette.common.white}
+                    <Grid item xs={3}>
+                      <Typography {...typoHeadStyle}>Tổng tiền:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <Typography {...typoContentStyle}>
+                        {formatPrice(
+                          discountTotalPrice > 0
+                            ? discountTotalPrice
+                            : totalPrice
+                        )}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <MyDivider />
+
+                <Grid item xs={12}>
+                  <Grid
+                    container
+                    direction={'row'}
+                    justifyContent={'center'}
+                    alignItems={'start'}
+                  >
+                    <CustomButton
+                      onClick={() => handleAddToCart()}
+                      sx={{
+                        py: 1,
+                        width: '100%',
+                        borderRadius: '8px',
+                      }}
                     >
-                      Thêm vào giỏ hàng
-                    </Typography>
-                  </CustomButton>
+                      <Typography
+                        variant="body1"
+                        color={theme.palette.common.white}
+                      >
+                        Thêm vào giỏ hàng
+                      </Typography>
+                    </CustomButton>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          </Box>
-        </Grid>
-      ) : (
-        <></>
-      )}
+            </Box>
+          </Grid>
+        )}
     </Grid>
   );
 }

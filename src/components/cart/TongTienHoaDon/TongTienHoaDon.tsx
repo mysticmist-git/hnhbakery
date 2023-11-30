@@ -67,7 +67,7 @@ function TongTienHoaDon({ totalPrice }: TongTienHoaDonProps) {
           variant="body1"
           color={theme.palette.common.black}
         >
-          {formatPrice(totalPrice)}
+          {formatPrice(totalPrice, ' đồng')}
         </Typography>
       </Box>
       <Box

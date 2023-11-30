@@ -64,6 +64,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
         <TextField
           name="feedback-comment"
           label="Comment"
+          color="secondary"
           value={comment}
           onChange={handleCommentChange}
           fullWidth

@@ -189,7 +189,7 @@ function DanhSachSanPham_Item(props: any) {
                   Vật liệu:
                 </Typography>
                 <Typography variant="body2" color={theme.palette.common.black}>
-                  {item.product?.name ?? ''}
+                  {item.variant?.material ?? ''}
                 </Typography>
               </Box>
             </Grid>
@@ -305,7 +305,7 @@ function DanhSachSanPham_Item(props: any) {
                       lineHeight: theme.typography.button.lineHeight,
                     }}
                   >
-                    {formatPrice(item.variant?.price ?? 0)}
+                    {formatPrice(item.variant?.price ?? 0, ' đồng')}
                   </Typography>
                   {item.discounted && (
                     <Typography
@@ -356,7 +356,7 @@ function DanhSachSanPham_Item(props: any) {
                     fontWeight: 'bold',
                   }}
                 >
-                  {formatPrice(totalPrice)}
+                  {formatPrice(totalPrice, ' đồng')}
                 </Typography>
               </Box>
             </Grid>

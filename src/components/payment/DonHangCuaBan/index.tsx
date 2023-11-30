@@ -3,6 +3,9 @@ import { formatPrice } from '@/lib/utils';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import CustomTextField from '../../inputs/textFields/CustomTextField';
 import RenderSale from '../RenderSale';
+import { useState } from 'react';
+import RenderSaleItem from '../RenderSale/RenderSaleItem';
+import { useSnackbarService } from '@/lib/contexts';
 
 export default function DonHangCuaBan(props: any) {
   const {
@@ -16,6 +19,9 @@ export default function DonHangCuaBan(props: any) {
     chosenSale,
   } = props;
   const theme = useTheme();
+
+  const [saleCode, setSaleCode] = useState('');
+  const handleSnackbarAlert = useSnackbarService();
   return (
     <>
       <Grid
@@ -25,8 +31,19 @@ export default function DonHangCuaBan(props: any) {
         alignItems={'start'}
         spacing={1}
       >
-        <Grid item xs={12} sx={{ display: 'none' }}>
-          <Box component="form" noValidate onSubmit={TimKiemMaSale}>
+        <Grid item xs={12}>
+          <Box
+            component="form"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (saleCode === '') {
+                handleSnackbarAlert('warning', 'Mã khuyến mãi đang trống!');
+                return;
+              }
+              TimKiemMaSale(saleCode);
+            }}
+          >
             <Grid
               container
               direction={'row'}
@@ -41,6 +58,8 @@ export default function DonHangCuaBan(props: any) {
                   type="text"
                   name="saleCode"
                   id="saleCode"
+                  value={saleCode}
+                  onChange={(e) => setSaleCode(e.target.value)}
                 />
               </Grid>
               <Grid item xs={'auto'}>
@@ -72,7 +91,15 @@ export default function DonHangCuaBan(props: any) {
             alignItems={'start'}
             spacing={1}
           >
-            <RenderSale
+            {chosenSale && (
+              <RenderSaleItem
+                sale={chosenSale}
+                chosenSale={chosenSale}
+                handleChooseSale={handleChooseSale}
+              />
+            )}
+
+            {/* <RenderSale
               Sales={Sales}
               chosenSale={chosenSale}
               handleChooseSale={handleChooseSale}
@@ -88,7 +115,7 @@ export default function DonHangCuaBan(props: any) {
               >
                 Không tồn tại khuyến mãi công khai nào
               </Typography>
-            )}
+            )} */}
 
             <Grid item xs={12}>
               <Box
@@ -124,7 +151,7 @@ export default function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {formatPrice(tamTinh)}
+                  {formatPrice(tamTinh, ' đồng')}
                 </Typography>
               </Box>
             </Grid>
@@ -152,7 +179,7 @@ export default function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {formatPrice(showDeliveryPrice)}
+                  {formatPrice(showDeliveryPrice, ' đồng')}
                 </Typography>
               </Box>
             </Grid>
@@ -180,7 +207,7 @@ export default function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.common.black}
                 >
-                  {formatPrice(-1 * khuyenMai)}
+                  {formatPrice(-1 * khuyenMai, ' đồng')}
                 </Typography>
               </Box>
             </Grid>
@@ -219,7 +246,7 @@ export default function DonHangCuaBan(props: any) {
                   }}
                   color={theme.palette.secondary.main}
                 >
-                  {formatPrice(tongBill)}
+                  {formatPrice(tongBill, ' đồng')}
                 </Typography>
               </Box>
             </Grid>

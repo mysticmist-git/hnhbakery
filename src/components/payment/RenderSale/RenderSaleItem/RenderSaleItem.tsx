@@ -12,14 +12,25 @@ import { ref } from 'firebase/storage';
 import Image from 'next/image';
 import { memo, useMemo, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
-
+import promotionImage from '@/assets/promotion.png';
 function RenderSaleItem(props: any) {
   const theme = useTheme();
   const { sale, chosenSale, handleChooseSale } = props;
-  const { id, name, code, image, percent, maxSalePrice, end_at } =
-    useMemo(() => {
-      return sale;
-    }, [sale]);
+  const {
+    id,
+    name,
+    code,
+    description,
+    percent,
+    limit,
+    image,
+    start_at,
+    end_at,
+    created_at,
+    updated_at,
+  } = useMemo(() => {
+    return sale;
+  }, [sale]);
 
   const [isHover, setIsHover] = useState(false);
 
@@ -70,7 +81,7 @@ function RenderSaleItem(props: any) {
               {!loading && (
                 <Box
                   component={Image}
-                  src={downloadURL ?? ''}
+                  src={downloadURL ?? promotionImage.src}
                   alt={name}
                   loading="lazy"
                   fill={true}
@@ -121,7 +132,7 @@ function RenderSaleItem(props: any) {
                   {'Giảm: ' +
                     percent +
                     '%, tối đa ' +
-                    formatPrice(maxSalePrice)}
+                    formatPrice(limit, ' đồng')}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
@@ -137,7 +148,7 @@ function RenderSaleItem(props: any) {
               color="secondary"
               checked={chosenSale && id === chosenSale.id}
               onChange={() => {
-                handleChooseSale(sale);
+                // handleChooseSale(sale);
               }}
             />
           </Grid>

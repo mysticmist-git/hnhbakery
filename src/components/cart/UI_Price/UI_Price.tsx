@@ -25,11 +25,12 @@ export default function UI_Price({
           opacity: discounted ? 0.5 : 1,
         }}
       >
-        {formatPrice(price) + (isMd ? '' : ' /sản phẩm')}
+        {formatPrice(price, ' đồng') + (isMd ? '' : ' /sản phẩm')}
       </Typography>
       {discounted && (
         <Typography variant={'button'} color={theme.palette.common.black}>
-          {formatPrice(price - discountAmount) + (isMd ? '' : ' /sản phẩm')}
+          {formatPrice(price - discountAmount, ' đồng') +
+            (isMd ? '' : ' /sản phẩm')}
         </Typography>
       )}
     </Stack>

@@ -38,18 +38,21 @@ import { ref, uploadBytes } from 'firebase/storage';
 import { DEFAULT_GROUP_ID, GUEST_ID } from '@/lib/DAO/groupDAO';
 import BookingItem from '@/models/bookingItem';
 import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
+import { getSales } from '@/lib/DAO/saleDAO';
 // #endregion
 
 const Payment = () => {
   //#region States
-  const { value: sales } = useSales();
   const [user] = useAuthState(auth);
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
   const [cartNote, setCartNote] = useCartNote();
-  const [saleAmount, setSaleAmount] = useState(0);
+  //
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [salePrice, setSalePrice] = useState(0);
   const [chosenSale, setChosenSale] = useState<Sale | null>(null);
+  //
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deliveryForm, setDeliveryForm] = useDeliveryForm();
   const shippingFee = useShippingFee();
@@ -81,8 +84,8 @@ const Payment = () => {
     );
   }, [assembledCartItems]);
   const finalBillPrice = useMemo(() => {
-    return billPrice - discountAmount - saleAmount + shippingFee;
-  }, [billPrice, discountAmount, saleAmount, shippingFee]);
+    return billPrice - discountAmount - salePrice + shippingFee;
+  }, [billPrice, discountAmount, salePrice, shippingFee]);
 
   //#endregion
   //#region useEffects
@@ -92,6 +95,25 @@ const Payment = () => {
       reloadAssembledCartItems(cart);
     }
   }, [cart, reloadAssembledCartItems]);
+
+  useEffect(() => {
+    async function get() {
+      const sales = await getSales();
+      setSales(
+        sales.filter((sale) => {
+          if (!sale.active) {
+            return false;
+          }
+          if (sale.end_at.getTime() < new Date().getTime()) {
+            return false;
+          } else {
+            return true;
+          }
+        })
+      );
+    }
+    get();
+  }, []);
 
   //#endregion
   //#region Methods
@@ -106,7 +128,7 @@ const Payment = () => {
       let billData: Omit<Bill, 'id'> = {
         total_price: billPrice,
         total_discount: discountAmount,
-        sale_price: saleAmount,
+        sale_price: salePrice,
         final_price: finalBillPrice,
         note: cartNote ?? '',
         state: 'issued',
@@ -129,7 +151,7 @@ const Payment = () => {
       deliveryForm.branchId,
       discountAmount,
       finalBillPrice,
-      saleAmount,
+      salePrice,
     ]
   );
 
@@ -279,18 +301,18 @@ const Payment = () => {
       if (newChosenSale) {
         if (newChosenSale.id === chosenSale?.id) {
           setChosenSale(() => null);
-          setSaleAmount(() => 0);
+          setSalePrice(() => 0);
         } else {
           setChosenSale(() => newChosenSale);
 
           if ((billPrice * newChosenSale.percent) / 100 < newChosenSale.limit) {
-            setSaleAmount(() => (billPrice * newChosenSale.percent) / 100);
+            setSalePrice(() => (billPrice * newChosenSale.percent) / 100);
           } else {
-            setSaleAmount(newChosenSale.limit);
+            setSalePrice(newChosenSale.limit);
           }
         }
       } else {
-        setSaleAmount(0);
+        setSalePrice(0);
       }
     },
     [billPrice, chosenSale?.id]
@@ -542,11 +564,20 @@ const Payment = () => {
                 <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
                   <DonHangCuaBan
                     tamTinh={billPrice - discountAmount}
-                    khuyenMai={saleAmount}
+                    khuyenMai={salePrice}
                     tongBill={finalBillPrice}
-                    Sales={sales}
-                    TimKiemMaSale={() => {}}
                     showDeliveryPrice={shippingFee}
+                    //
+                    Sales={sales}
+                    TimKiemMaSale={(saleCode: string) => {
+                      const newSale = sales.find((sale) => {
+                        return sale.code == saleCode;
+                      });
+
+                      if (newSale) {
+                        handleChooseSale(newSale);
+                      }
+                    }}
                     handleChooseSale={handleChooseSale}
                     chosenSale={chosenSale}
                   />

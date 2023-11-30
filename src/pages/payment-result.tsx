@@ -1,15 +1,29 @@
 import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { auth } from '@/firebase/config';
-import { updateBillField } from '@/lib/DAO/billDAO';
+import { getBillTableRowById, updateBillField } from '@/lib/DAO/billDAO';
 import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import User from '@/models/user';
-import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Grid,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import useLoadingService from '@/lib/hooks/useLoadingService';
+import { BillTableRow } from '@/models/bill';
+import { ExpandMore } from '@mui/icons-material';
+import { formatDateString } from '@/lib/utils';
+import { BillAccordionContent } from './profile';
 
 const resolveResponseCode = (responseCode: string) => {
   switch (responseCode) {
@@ -49,7 +63,8 @@ const PaymentResult = () => {
 
   const theme = useTheme();
   const handlerSnackbarAlert = useSnackbarService();
-  const [email] = useLocalStorage<string>('email', '');
+  const [load, stop] = useLoadingService();
+
   const router = useRouter();
 
   //#endregion
@@ -70,6 +85,7 @@ const PaymentResult = () => {
 
   //#endregion
   //#region Handlers
+  const [email] = useLocalStorage<string>('email', '');
 
   // TODO: This should be in a seperate module
   const sendBillToMail = useCallback(async () => {
@@ -199,8 +215,6 @@ const PaymentResult = () => {
       setResponseMessage(() => responseMessage);
 
       if (['00', '07'].includes(responseCode as string)) {
-        sendBillToMail();
-
         // Update payment time
         try {
           await updateBillField(
@@ -215,6 +229,26 @@ const PaymentResult = () => {
           setIsProcessed(true);
         } catch (error) {
           console.log(error);
+        }
+
+        if (
+          userData &&
+          responseBillId &&
+          typeof responseBillId === 'string' &&
+          responseBillId !== ''
+        ) {
+          const data = await getBillTableRowById(userData.uid, responseBillId);
+          if (data) {
+            setBillData(data);
+
+            sendBillToMail();
+          } else {
+            setBillData(null);
+            sendBillToMail();
+          }
+        } else {
+          setBillData(null);
+          sendBillToMail();
         }
       }
     };
@@ -232,6 +266,15 @@ const PaymentResult = () => {
 
   //#endregion
 
+  //#region billdata
+  const [billData, setBillData] = useState<BillTableRow | undefined | null>(
+    undefined
+  );
+
+  //#endregion
+
+  console.log(billData);
+
   return (
     <Box component={'div'} sx={{ pb: 16 }}>
       <ImageBackground>
@@ -242,6 +285,7 @@ const PaymentResult = () => {
           alignItems={'center'}
           height={'100%'}
           sx={{ px: 6 }}
+          spacing={2}
         >
           <Grid item xs={12}>
             <Grid
@@ -256,6 +300,11 @@ const PaymentResult = () => {
                   align="center"
                   variant="h2"
                   color={theme.palette.primary.main}
+                  sx={{
+                    '&:hover': {
+                      color: theme.palette.common.white,
+                    },
+                  }}
                 >
                   {responseMessage}
                 </Typography>
@@ -265,50 +314,88 @@ const PaymentResult = () => {
         </Grid>
       </ImageBackground>
 
-      <Box component={'div'} sx={{ pt: 8, px: { xs: 2, sm: 2, md: 4, lg: 8 } }}>
-        <Grid
-          container
-          direction={'column'}
-          justifyContent={'center'}
-          alignItems={'center'}
-          spacing={4}
+      <Box
+        component={'div'}
+        sx={{
+          pt: 6,
+          pb: 12,
+          px: { xs: 2, sm: 2, md: 4, lg: 8 },
+          overflow: 'visible',
+        }}
+      >
+        {billData && (
+          <>
+            <Accordion
+              defaultExpanded
+              sx={{
+                border: 1,
+                borderColor: 'black',
+                boxShadow: 0,
+                '&.MuiAccordion-rounded': {
+                  borderRadius: 3,
+                },
+                backgroundColor: 'transparent',
+              }}
+            >
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    pr: 2,
+                  }}
+                >
+                  <Typography variant="button" fontWeight={'regular'}>
+                    Mã hóa đơn: {billData.id}
+                  </Typography>
+                  <Typography variant="button" fontWeight={'regular'}>
+                    {formatDateString(billData.created_at)}
+                  </Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <BillAccordionContent bill={billData} />
+              </AccordionDetails>
+            </Accordion>
+          </>
+        )}
+
+        {billData == null && (
+          <Typography
+            align="center"
+            variant="body1"
+            fontWeight={'bold'}
+            sx={{
+              color: 'grey.600',
+            }}
+          >
+            Hệ thống đang xảy ra sự cố.
+            <br />
+            Vui lòng quay lại sau!
+          </Typography>
+        )}
+
+        <Box
+          component={'div'}
+          sx={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            mt: 4,
+          }}
         >
-          <Grid item xs={12}>
-            <CaiKhungCoTitle title={'Hóa đơn của bạn'}>
-              <Grid
-                container
-                direction={'row'}
-                justifyContent={'center'}
-                alignItems={'start'}
-                spacing={2}
-              >
-                <Grid item xs={'auto'}>
-                  <Typography
-                    align="left"
-                    variant="h3"
-                    color={theme.palette.common.black}
-                  >
-                    Mã hóa đơn:
-                  </Typography>
-                </Grid>
-                <Grid item xs={'auto'}>
-                  <Typography
-                    align="right"
-                    variant="body1"
-                    color={theme.palette.common.black}
-                  >
-                    {responseBillId}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </CaiKhungCoTitle>
-          </Grid>
-          <Grid item xs={12}>
-            <Button onClick={() => router.push('/cart')}>
-              Trở về giỏ hàng
-            </Button>
-          </Grid>
-        </Grid>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => router.push('/')}
+          >
+            Trở về trang chủ
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

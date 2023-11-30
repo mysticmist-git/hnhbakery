@@ -66,7 +66,7 @@ export function initPaymentContext() {
 
   const [imageArray, setImageArray] = useState<File[]>([]);
 
-  const [isBooking, setIsBooking] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
 
   const handleImageArrayChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

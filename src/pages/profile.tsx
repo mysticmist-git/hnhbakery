@@ -44,7 +44,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import BookingItem from '@/models/bookingItem';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
-
+import * as diacritics from 'diacritics';
 const Profile = () => {
   //#region Hooks
 
@@ -86,7 +86,7 @@ const Profile = () => {
       }
     };
 
-    fetchData();
+    // fetchData();
   }, [load, stop, user]);
 
   // #endregion
@@ -252,7 +252,7 @@ const Profile = () => {
                       '&:hover': {},
                     },
                   }}
-                  placeholder="Tìm kiếm theo mã hóa đơn, ngày giờ đặt"
+                  placeholder="Tìm kiếm theo mã hóa đơn, ngày giờ đặt, trạng thái"
                   sx={{
                     '& fieldset': {
                       border: 'none',
@@ -267,12 +267,23 @@ const Profile = () => {
                 if (searchValue === '') {
                   return true;
                 }
-                return (
-                  bill.id?.toLowerCase().includes(searchValue.toLowerCase()) ||
-                  formatDateString(bill.created_at).includes(
-                    searchValue.toLowerCase()
-                  )
+
+                const searchstr = diacritics.remove(searchValue.toLowerCase());
+
+                if (bill.id?.toLowerCase().includes(searchstr)) {
+                  return true;
+                }
+
+                if (formatDateString(bill.created_at).includes(searchstr)) {
+                  return true;
+                }
+                const billState = diacritics.remove(
+                  billStateContentParse(bill.state).toLocaleLowerCase()
                 );
+
+                if (billState.includes(searchstr)) {
+                  return true;
+                }
               })
               .map((bill, i) => {
                 return (
@@ -290,23 +301,57 @@ const Profile = () => {
                         }}
                       >
                         <AccordionSummary expandIcon={<ExpandMore />}>
-                          <Box
-                            component={'div'}
-                            sx={{
-                              width: '100%',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              pr: 2,
-                            }}
+                          <Grid
+                            container
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            spacing={2}
                           >
-                            <Typography variant="button" fontWeight={'regular'}>
-                              {i + 1 + '/ '} Mã hóa đơn: {bill.id}
-                            </Typography>
-                            <Typography variant="button" fontWeight={'regular'}>
-                              {formatDateString(bill.created_at)}
-                            </Typography>
-                          </Box>
+                            <Grid item xs={4}>
+                              <Typography
+                                variant="button"
+                                fontWeight={'regular'}
+                              >
+                                {i + 1 + '/ '} Mã hóa đơn: {bill.id}
+                              </Typography>
+                            </Grid>
+
+                            <Grid item xs={4}>
+                              <Box component={'div'}>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight={'regular'}
+                                  sx={{
+                                    flexGrow: 1,
+                                    textAlign: 'center',
+                                  }}
+                                >
+                                  Thời gian đặt:{' '}
+                                  {formatDateString(bill.created_at)}
+                                </Typography>
+                              </Box>
+                            </Grid>
+
+                            <Grid item xs={4}>
+                              <Box component={'div'}>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight={'bold'}
+                                  sx={{
+                                    color: billStateColorParse(
+                                      theme,
+                                      bill.state
+                                    ),
+                                    textAlign: 'center',
+                                    width: '100%',
+                                  }}
+                                >
+                                  {billStateContentParse(bill.state)}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
                         </AccordionSummary>
                         <AccordionDetails>
                           <BillAccordionContent bill={bill} />
@@ -665,7 +710,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
               alt={item.product?.name ?? ''}
               src={imageProduct}
               sx={{
-                objectFit: 'contain',
+                objectFit: 'cover',
                 width: '100%',
                 height: '100%',
                 borderRadius: 3,

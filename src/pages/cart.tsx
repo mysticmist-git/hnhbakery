@@ -12,6 +12,7 @@ import useCartNote from '@/lib/hooks/useCartNote';
 import { Box, Grid, Link, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 function Cart() {
   //#region Hooks
@@ -207,10 +208,6 @@ function Cart() {
                       </Typography>
                     </CustomButton>
                   </Box>
-                  <ProductTable
-                    items={assembled}
-                    onChange={handleAssembledCartItemChange}
-                  />
                 </Grid>
 
                 <Grid item xs={12}>
@@ -221,7 +218,12 @@ function Cart() {
                       borderRadius: '8px',
                       p: 0.2,
                     }}
-                  ></Box>
+                  >
+                    <ProductTable
+                      items={assembled}
+                      onChange={handleAssembledCartItemChange}
+                    />
+                  </Box>
                 </Grid>
 
                 <Grid item xs={12} md={6}>

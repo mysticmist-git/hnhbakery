@@ -13,7 +13,6 @@ export default function UI_TotalPrice({
   const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
   const totalPrice = useMemo(() => {
-
     if (!price) return 0;
 
     if (discountAmount) return price - discountAmount;
@@ -32,7 +31,7 @@ export default function UI_TotalPrice({
               fontWeight: 'bold',
             }}
           >
-            {formatPrice(totalPrice)}
+            {formatPrice(totalPrice, ' đồng')}
           </Typography>
         </Stack>
       ) : (

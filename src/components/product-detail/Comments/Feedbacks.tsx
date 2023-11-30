@@ -10,7 +10,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FeedbackDialog from '../FeedbackDialog';
 import FeedbackItem from '../FeedbackItem';
 import ProductRating from '../ProductRating';
@@ -18,6 +18,8 @@ import Feedback, { FeedbackTableRow } from '@/models/feedback';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { createFeedback } from '@/lib/DAO/feedbackDAO';
 import { ProductDetail } from '@/models/product';
+import User from '@/models/user';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 
 function Feedbacks({
   productDetail,
@@ -79,6 +81,28 @@ function Feedbacks({
       setDialogOpen(false);
     }
   };
+
+  const [userData, setUserData] = useState<User | undefined>(undefined);
+
+  useEffect(() => {
+    async function get() {
+      try {
+        if (userId != '') {
+          const data = await getUserByUid(userId);
+          if (data && data.group_id == DEFAULT_GROUP_ID) {
+            setUserData(data);
+          } else {
+            setUserData(undefined);
+          }
+        }
+      } catch (error: any) {
+        console.log(error);
+        setUserData(undefined);
+      }
+    }
+
+    get();
+  }, [userId]);
 
   return (
     <>
@@ -165,14 +189,16 @@ function Feedbacks({
                       numReviews={feedbacks ? feedbacks.length : 0}
                     />
                   </Box>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<Add />}
-                    onClick={handleNewComment}
-                  >
-                    Thêm đánh giá
-                  </Button>
+                  {userData && (
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      startIcon={<Add />}
+                      onClick={handleNewComment}
+                    >
+                      Thêm đánh giá
+                    </Button>
+                  )}
                 </Box>
               </Grid>
             </Grid>

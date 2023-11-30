@@ -35,6 +35,7 @@ import {
 } from './productTypeDAO';
 import { getUser } from './userDAO';
 import { getVariants } from './variantDAO';
+import { DEFAULT_GROUP_ID } from './groupDAO';
 
 export function getProductsRef(productTypeId: string) {
   return collection(
@@ -197,12 +198,12 @@ export async function getProductDetail(
   );
 
   // feedbacks
-  let feebackTableRows: FeedbackTableRow[] = [];
+  let feedbackTableRows: FeedbackTableRow[] = [];
   let feebacks = await getFeedbacks(productTypeId, productId);
   await Promise.all(
     feebacks.map(async (feedback) => {
-      let user = await getUser(feedback.product_id, feedback.user_id);
-      feebackTableRows.push({
+      let user = await getUser(DEFAULT_GROUP_ID, feedback.user_id);
+      feedbackTableRows.push({
         ...feedback,
         user: user,
       });
@@ -220,7 +221,7 @@ export async function getProductDetail(
     })
   );
 
-  // productTypeTableRow yêu ai?
+  // productTypeTableRow
   let productType = await getProductTypeById(productTypeId);
   if (!productType) {
     return;
@@ -237,7 +238,7 @@ export async function getProductDetail(
   const productDetail: ProductDetail = {
     ...product,
     variants: variantTableRows,
-    feedbacks: feebackTableRows,
+    feedbacks: feedbackTableRows,
     colorObjects: colorObjects,
     productType: productTypeTableRow,
   };

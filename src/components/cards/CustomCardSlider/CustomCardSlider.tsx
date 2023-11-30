@@ -47,14 +47,23 @@ export default function CustomCardSlider(props: any) {
     let listColumn: CardInfoType[] = [];
 
     const bestSellerCount = productList.length;
+    console.log(productList);
 
     for (let i = 0; i < bestSellerCount; i++) {
-      const product: Product = productList[i];
+      const image =
+        productList[i]?.images?.length > 0
+          ? productList[i]?.images[0]
+          : productList[i].image;
+
+      console.log(image);
+
       listColumn.push({
-        image: product.images[0],
-        name: product.name,
-        description: product.description,
-        href: `/product-detail?type_id=${product.product_type_id}&id=${product.id}`,
+        image: image,
+        name: productList[i].name,
+        description: productList[i].description,
+        href: productList[i].product_type_id
+          ? `/product-detail?type_id=${productList[i].product_type_id}&id=${productList[i].id}`
+          : `/products?productType=${productList[i].id}`,
       } as CardInfoType);
 
       if ((i + 1) % column == 0 || i + 1 == productList.length) {

@@ -29,6 +29,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 /**
  * Similiar products mock data
@@ -204,43 +205,8 @@ function ProductDetail() {
 
   //#endregion
 
-  // const [feedbacks, fLoading, fError] = useCollectionData<FeedbackObject>(
-  //   product
-  //     ? query(
-  //         collection(db, COLLECTION_NAME.FEEDBACKS),
-  //         where('product_id', '==', product.id)
-  //       ).withConverter(feedbackConverter)
-  //     : undefined,
-  //   {
-  //     initialValue: [],
-  //   }
-  // );
-
-  // const productDetailInfoProps: ProductDetailInfoProps = useMemo(() => {
-  //   return {
-  //     product: product,
-  //     variant: selectedVariant,
-  //     onVariantChange: handleVariantChange,
-  //     batch: selectedBatch,
-  //     onBatchChange: handleBatchChange,
-  //     batchOptions: batchOptions,
-  //     quantity: quantity,
-  //     onQuantityChange: handleQuantityChange,
-  //     comments: feedbacks ?? [],
-  //     onAddToCart: handleAddToCart,
-  //   };
-  // }, [
-  //   product,
-  //   selectedVariant,
-  //   selectedBatch,
-  //   batchOptions,
-  //   quantity,
-  //   feedbacks,
-  //   handleAddToCart,
-  // ]);
-
   //#region UseEffects
-
+  const [load, stop] = useLoadingService();
   useEffect(() => {
     const fetchData = async () => {
       const { type_id, id } = router.query;
@@ -249,6 +215,7 @@ function ProductDetail() {
       console.log('id', id);
 
       try {
+        load();
         const finalDetail = await getProductDetail(
           type_id as string,
           id as string
@@ -261,8 +228,12 @@ function ProductDetail() {
         );
 
         setProductDetail(finalDetail);
+
+        stop();
       } catch (error) {
         console.log(error);
+
+        stop();
       }
     };
 
@@ -385,7 +356,7 @@ function ProductDetail() {
             descriptionHeight="32px"
             CustomCard={CustomCard}
             title={'Sản phẩm tương tự'}
-            productList={similiarProducts ?? similiarProductsSample}
+            productList={similiarProducts}
           />
         </Box>
       </Box>
