@@ -24,7 +24,7 @@ import { FeedbackTableRow } from '@/models/feedback';
 import { COLLECTION_NAME } from '../constants';
 import { getAddress, getAddresses } from './addressDAO';
 import { getBatchById } from './batchDAO';
-import { getBills } from './billDAO';
+import { getBillTableRowsByUserId, getBills } from './billDAO';
 import { getBillItems } from './billItemDAO';
 import { getDeliveryById } from './deliveryDAO';
 import { getFeedbacks } from './feedbackDAO';
@@ -42,6 +42,13 @@ import { getProduct, getProducts } from './productDAO';
 import { getProductTypeById, getProductTypes } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getVariant } from './variantDAO';
+import Address from '@/models/address';
+import ProductType from '@/models/productType';
+import Product from '@/models/product';
+import Variant from '@/models/variant';
+import { getBookingItemById } from './bookingItemDAO';
+import { getBranchById } from './branchDAO';
+import { getCakeBaseById } from './cakeBaseDAO';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -339,78 +346,22 @@ export async function getUserTableRows() {
   const customers = await getUsers(DEFAULT_GROUP_ID);
 
   for (let c of customers) {
-    const billTableRows: BillTableRow[] = [];
-    const bills = await getBills(c.group_id, c.id);
-    for (let b of bills) {
-      const billitems = await getBillItems(c.group_id, c.id, b.id);
+    const pushData = await getUserTableRowByUID(c.uid);
 
-      const billItems: BillTableRow['billItems'] = [];
-      for (let bi of billitems) {
-        const batch = await getBatchById(bi.batch_id);
-        billItems.push({
-          ...bi,
-          batch: batch,
-          productType: await getProductTypeById(batch!.product_type_id),
-          product: await getProduct(batch!.product_type_id, batch!.product_id),
-          variant: await getVariant(
-            batch!.product_type_id,
-            batch!.product_id,
-            batch!.variant_id
-          ),
-        });
-      }
-
-      const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-      const delivery = await getDeliveryById(b.delivery_id);
-
-      billTableRows.push({
-        ...b,
-        paymentMethod: await getPaymentMethodById(b.payment_method_id),
-        customer: { ...c },
-        sale: sale,
-        deliveryTableRow: {
-          ...delivery!,
-          address: await getAddress(c.group_id, c.id, delivery!.address_id),
-        },
-        billItems: billItems,
-      });
+    if (!pushData) {
+      continue;
     }
-
-    const addresses = await getAddresses(c.group_id, c.id);
-
-    const feedbackTableRows: FeedbackTableRow[] = [];
-    const productTypes = await getProductTypes();
-
-    for (let p of productTypes) {
-      const products = await getProducts(p.id);
-      for (let product of products) {
-        const feedbacks = await getFeedbacks(p.id, product.id);
-        for (let feedback of feedbacks) {
-          if (feedback.user_id != c.id) {
-            continue;
-          }
-          feedbackTableRows.push({
-            ...feedback,
-            product: product,
-            user: { ...c },
-          });
-        }
-      }
-    }
-
-    finalUsers.push({
-      ...c,
-      bills: billTableRows,
-      addresses: addresses,
-      feedbacks: feedbackTableRows,
-    });
+    finalUsers.push(pushData);
   }
 
   return finalUsers;
 }
 
 export async function getUserTableRowByUID(uid: string) {
+  if (uid == '') {
+    return undefined;
+  }
+
   let finalUser: UserTableRow | undefined = undefined;
 
   const c = await getUserByUid(uid);
@@ -419,49 +370,7 @@ export async function getUserTableRowByUID(uid: string) {
     return finalUser;
   }
 
-  let billTableRows: BillTableRow[] = [];
-  const bills = await getBills(c.group_id, c.id);
-  for (let b of bills) {
-    const billitems = await getBillItems(c.group_id, c.id, b.id);
-
-    const billItems: BillTableRow['billItems'] = [];
-    for (let bi of billitems) {
-      const batch = await getBatchById(bi.batch_id);
-      billItems.push({
-        ...bi,
-        batch: batch,
-        productType: await getProductTypeById(batch!.product_type_id),
-        product: await getProduct(batch!.product_type_id, batch!.product_id),
-        variant: await getVariant(
-          batch!.product_type_id,
-          batch!.product_id,
-          batch!.variant_id
-        ),
-      });
-    }
-
-    const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-    let delivery: Delivery | undefined;
-
-    try {
-      delivery = await getDeliveryById(b.delivery_id);
-    } catch {}
-
-    billTableRows.push({
-      ...b,
-      paymentMethod: await getPaymentMethodById(b.payment_method_id),
-      customer: { ...c },
-      sale: sale,
-      deliveryTableRow: delivery
-        ? {
-            ...delivery!,
-            address: await getAddress(c.group_id, c.id, delivery!.address_id),
-          }
-        : null,
-      billItems: billItems,
-    });
-  }
+  let billTableRows: BillTableRow[] = await getBillTableRowsByUserId(uid);
 
   const addresses = await getAddresses(c.group_id, c.id);
 

@@ -124,7 +124,7 @@ const MyModal = ({
       return;
     }
     const delivery = { ...bill!.deliveryTableRow };
-    delete delivery?.address;
+    delete delivery?.addressObject;
     const data = {
       ...delivery,
       ...editContent,
@@ -406,7 +406,9 @@ const MyModal = ({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Địa chỉ giao hàng"
-                          value={modalBill?.deliveryTableRow?.address?.address}
+                          value={
+                            modalBill?.deliveryTableRow?.addressObject?.address
+                          }
                           // onChange={(event: any) => {
                           //   setEditContent({
                           //     ...editContent,

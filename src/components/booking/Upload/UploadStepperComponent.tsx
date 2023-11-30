@@ -24,17 +24,21 @@ import { getSizes } from '@/lib/DAO/sizeDAO';
 import { Buoc1, Buoc1Props } from './Buoc1';
 import { Buoc2 } from './Buoc2';
 import BookingItem from '@/models/bookingItem';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/lib/constants';
 
 type UploadStepperComponentProps = {
   bookingItem: BookingItem;
   buoc1Props: Buoc1Props;
   handleBookingItemChange: (key: keyof BookingItem, value: any) => void;
+  checkInfor: (buoc: number) => boolean;
 };
 
 function UploadStepperComponent({
   bookingItem,
   buoc1Props,
   handleBookingItemChange,
+  checkInfor,
 }: UploadStepperComponentProps) {
   const theme = useTheme();
 
@@ -65,9 +69,16 @@ function UploadStepperComponent({
   ];
 
   const [activeStep, setActiveStep] = React.useState(0);
+  const router = useRouter();
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    if (activeStep < uploadImageStepper.length - 1) {
+      if (checkInfor(activeStep + 1)) {
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      }
+    } else {
+      router.push(ROUTES.PAYMENT);
+    }
   };
 
   const handleBack = () => {
@@ -146,14 +157,6 @@ function UploadStepperComponent({
             </Step>
           ))}
         </Stepper>
-        {activeStep === uploadImageStepper.length && (
-          <Paper square elevation={0} sx={{ p: 3 }}>
-            <Typography>All steps completed - you&apos;re finished</Typography>
-            <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-              Reset
-            </Button>
-          </Paper>
-        )}
       </Box>
     </>
   );

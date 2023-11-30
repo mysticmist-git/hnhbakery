@@ -18,6 +18,7 @@ function Cart() {
 
   const theme = useTheme();
   const router = useRouter();
+
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion

@@ -34,7 +34,7 @@ type Delivery = WithCreatedUpdated &
   };
 
 type DeliveryTableRow = Delivery & {
-  address?: Address;
+  addressObject?: Address;
 };
 
 const deliveryConverter: FirestoreDataConverter<Delivery> = {
@@ -75,7 +75,6 @@ export function deliveryStateContentParse(state: DeliveryState | undefined) {
     default:
       return 'Lỗi';
   }
-  return 'Lỗi';
 }
 
 export function deliveryStateColorParse(

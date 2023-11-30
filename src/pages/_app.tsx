@@ -8,7 +8,7 @@ import {
   ThemeProvider,
 } from '@mui/material';
 import NProgress from 'nprogress';
-import React from 'react';
+import React, { useState } from 'react';
 
 Router.events.on('routeChangeStart', () => NProgress.start());
 Router.events.on('routeChangeComplete', () => NProgress.done());
@@ -29,6 +29,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { Router } from 'next/router';
+import {
+  PaymentContext,
+  initPaymentContext,
+} from '@/lib/contexts/paymentContext';
 
 const MyApp = (props: AppProps) => {
   const { Component, pageProps } = props;
@@ -53,33 +57,35 @@ const MyApp = (props: AppProps) => {
         <ThemeProvider theme={theme}>
           <SnackbarService.Provider value={{ handleSnackbarAlert }}>
             <LoadingService.Provider value={[openBackdrop, closeBackdrop]}>
-              <CssBaseline />
-              <MainLayout>
-                <Component {...pageProps} />
-              </MainLayout>
-              <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                TransitionComponent={TransitionUp}
-              >
-                <Alert
+              <PaymentContext.Provider value={initPaymentContext()}>
+                <CssBaseline />
+                <MainLayout>
+                  <Component {...pageProps} />
+                </MainLayout>
+                <Snackbar
+                  open={snackbarOpen}
+                  autoHideDuration={3000}
                   onClose={handleSnackbarClose}
-                  severity={snackbarSeverity}
-                  sx={{ width: '100%' }}
+                  TransitionComponent={TransitionUp}
                 >
-                  {snackbarText}
-                </Alert>
-              </Snackbar>
-              <Backdrop
-                sx={{
-                  color: '#fff',
-                  zIndex: (theme) => theme.zIndex.drawer + 1,
-                }}
-                open={backdropOpen}
-              >
-                <CircularProgress color="inherit" />
-              </Backdrop>
+                  <Alert
+                    onClose={handleSnackbarClose}
+                    severity={snackbarSeverity}
+                    sx={{ width: '100%' }}
+                  >
+                    {snackbarText}
+                  </Alert>
+                </Snackbar>
+                <Backdrop
+                  sx={{
+                    color: '#fff',
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                  }}
+                  open={backdropOpen}
+                >
+                  <CircularProgress color="inherit" />
+                </Backdrop>
+              </PaymentContext.Provider>
             </LoadingService.Provider>
           </SnackbarService.Provider>
         </ThemeProvider>

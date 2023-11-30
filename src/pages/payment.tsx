@@ -3,7 +3,7 @@ import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
-import { auth } from '@/firebase/config';
+import { auth, storage } from '@/firebase/config';
 import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
 import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
@@ -29,15 +29,19 @@ import User from '@/models/user';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import FormGiaoHang from '../components/payment/FormGiaoHang';
-
+import { PaymentContext } from '@/lib/contexts/paymentContext';
+import BookingItemDisplay from '@/components/payment/BookingItem/BookingItem';
+import { ref, uploadBytes } from 'firebase/storage';
+import { DEFAULT_GROUP_ID, GUEST_ID } from '@/lib/DAO/groupDAO';
+import BookingItem from '@/models/bookingItem';
+import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
 // #endregion
 
 const Payment = () => {
   //#region States
-
   const { value: sales } = useSales();
   const [user] = useAuthState(auth);
   const [cart, setCart] = useCartItems();
@@ -107,12 +111,12 @@ const Payment = () => {
         note: cartNote ?? '',
         state: 'issued',
         payment_method_id: paymentId,
-        customer_id: customer_id,
-        booking_item_id: '',
-        branch_id: deliveryForm.branchId,
-        delivery_id: deliveryId,
         sale_id: chosenSale ? chosenSale.id : '',
+        customer_id: customer_id,
+        delivery_id: deliveryId,
         paid_time: new Date(),
+        branch_id: deliveryForm.branchId,
+        booking_item_id: '',
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -312,6 +316,152 @@ const Payment = () => {
 
   // #endregion
 
+  // #region Booking Item
+
+  const { isBooking, bookingItem, imageArray, resetState } =
+    useContext(PaymentContext);
+
+  const handleBookingClick = useCallback(async () => {
+    const result = validateForm(deliveryForm);
+
+    if (!result.isValid) {
+      handleSnackbarAlert('error', result.msg);
+      return;
+    }
+
+    // Deelte localStorage cart
+    setCart([]);
+    setCartNote('');
+
+    // Tạo delivery
+    let delivery_id = '';
+    try {
+      const dData = createDeliveryData(deliveryForm);
+      delivery_id = await createDelivery(dData as Omit<Delivery, 'id'>);
+      console.log('delivery_id: ', delivery_id);
+    } catch (error: any) {
+      delivery_id = '';
+      handleSnackbarAlert('error', 'Tạo Delivery không thành công');
+      resetState();
+    }
+
+    if (delivery_id == '') {
+      return;
+    }
+
+    // Tạo booking item
+    let bookingItem_Id = '';
+    const bookingItemData: Omit<BookingItem, 'id'> = {
+      images: [],
+      occasion: bookingItem.occasion,
+      message: bookingItem.message,
+      note: bookingItem.note,
+      size: bookingItem.size,
+      cake_base_id: bookingItem.cake_base_id,
+    };
+    try {
+      const refBookingItem = await createBookingItem(bookingItemData);
+      bookingItem_Id = refBookingItem.id;
+      console.log('bookingItem_Id: ', bookingItem_Id);
+    } catch (error: any) {
+      bookingItem_Id = '';
+      handleSnackbarAlert('error', 'Tạo BookingItem không thành công');
+      resetState();
+    }
+
+    if (bookingItem_Id == '') {
+      return;
+    }
+
+    // Get User để tạo Bill
+    let userData = {
+      group_id: '',
+      id: '',
+    };
+    try {
+      const uData = await getUserByUid(user?.uid!);
+      if (uData) {
+        userData = {
+          group_id: uData.group_id,
+          id: uData.id,
+        };
+      } else {
+        userData = {
+          group_id: DEFAULT_GROUP_ID,
+          id: GUEST_ID,
+        };
+      }
+
+      console.log('userData: ', userData);
+    } catch (error: any) {
+      userData = {
+        group_id: DEFAULT_GROUP_ID,
+        id: GUEST_ID,
+      };
+      handleSnackbarAlert('error', 'Lấy User không thành công');
+      resetState();
+    }
+
+    // Tạo Bill
+    let billId = '';
+    try {
+      const billData = createBillData('cash', null, userData.id, delivery_id);
+      billData['booking_item_id'] = bookingItem_Id;
+      const refBill = await createBill(
+        userData.group_id,
+        userData.id,
+        billData as Omit<Bill, 'id'>
+      );
+
+      billId = refBill.id;
+      console.log('billId: ', billId);
+    } catch (error: any) {
+      billId = '';
+      handleSnackbarAlert('error', 'Tạo Bill không thành công');
+      resetState();
+    }
+
+    if (billId == '') {
+      return;
+    }
+
+    // Upload ảnh vào Fire storage
+    const locationImage: string[] = [];
+
+    await Promise.all(
+      imageArray.map(async (file, i) => {
+        const storageRef = ref(storage, `/bookingImages/${billId + '_' + i}`);
+        return await uploadBytes(storageRef, file).then((snapshot) => {
+          locationImage.push(snapshot.metadata.fullPath);
+        });
+      })
+    );
+
+    if (locationImage.length == 0) {
+      handleSnackbarAlert('error', 'Upload ảnh không thành công');
+      resetState();
+      return;
+    }
+
+    console.log('locationImage: ', locationImage);
+
+    // Cập nhật Image trong BookingItem
+    bookingItemData.images = locationImage;
+    try {
+      await updateBookingItem(bookingItem_Id, bookingItemData);
+      resetState();
+      router.push(`/tienmat-result?billId=${billId}`);
+    } catch (error: any) {
+      handleSnackbarAlert(
+        'error',
+        'Cập nhật Image vào bookingItem không thành công'
+      );
+      resetState();
+      return;
+    }
+  }, [deliveryForm]);
+
+  // #endregion
   return (
     <Box component={'div'} sx={{ pb: 16 }}>
       <ImageBackground>
@@ -378,34 +528,65 @@ const Payment = () => {
             </CaiKhungCoTitle>
           </Grid>
 
-          <Grid item xs={12} md={6}>
-            <CaiKhungCoTitle title={'Danh sách sản phẩm'} fluidContent={true}>
-              <DanhSachSanPham Products={assembledCartItems} />
-            </CaiKhungCoTitle>
-          </Grid>
+          {isBooking == false && (
+            <>
+              <Grid item xs={12} md={6}>
+                <CaiKhungCoTitle
+                  title={'Danh sách sản phẩm'}
+                  fluidContent={true}
+                >
+                  <DanhSachSanPham Products={assembledCartItems} />
+                </CaiKhungCoTitle>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
+                  <DonHangCuaBan
+                    tamTinh={billPrice - discountAmount}
+                    khuyenMai={saleAmount}
+                    tongBill={finalBillPrice}
+                    Sales={sales}
+                    TimKiemMaSale={() => {}}
+                    showDeliveryPrice={shippingFee}
+                    handleChooseSale={handleChooseSale}
+                    chosenSale={chosenSale}
+                  />
+                </CaiKhungCoTitle>
+              </Grid>
+              <Grid item xs={'auto'}>
+                <CustomButton onClick={handleClickOpen}>
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    Phương thức thanh toán
+                  </Typography>
+                </CustomButton>
+              </Grid>
+            </>
+          )}
 
-          <Grid item xs={12} md={6}>
-            <CaiKhungCoTitle title={'Đơn hàng của bạn'}>
-              <DonHangCuaBan
-                tamTinh={billPrice - discountAmount}
-                khuyenMai={saleAmount}
-                tongBill={finalBillPrice}
-                Sales={sales}
-                TimKiemMaSale={() => {}}
-                showDeliveryPrice={shippingFee}
-                handleChooseSale={handleChooseSale}
-                chosenSale={chosenSale}
-              />
-            </CaiKhungCoTitle>
-          </Grid>
-
-          <Grid item xs={'auto'}>
-            <CustomButton onClick={handleClickOpen}>
-              <Typography variant="button" color={theme.palette.common.white}>
-                Phương thức thanh toán
-              </Typography>
-            </CustomButton>
-          </Grid>
+          {isBooking == true && (
+            <>
+              <Grid item xs={12}>
+                <CaiKhungCoTitle title={'Sản phẩm'} fluidContent={false}>
+                  <BookingItemDisplay
+                    bookingItem={bookingItem}
+                    imageArray={imageArray}
+                  />
+                </CaiKhungCoTitle>
+              </Grid>
+              <Grid item xs={'auto'}>
+                <CustomButton onClick={handleBookingClick}>
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    Tiến hành đặt bánh
+                  </Typography>
+                </CustomButton>
+              </Grid>
+            </>
+          )}
         </Grid>
       </Box>
 

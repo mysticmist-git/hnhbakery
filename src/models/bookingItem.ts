@@ -8,6 +8,7 @@ import {
 import WithCreatedUpdated from './created_updated';
 import WithId from './withId';
 import Size from './size';
+import CakeBase from './cakeBase';
 
 type Message = {
   content: string;
@@ -18,9 +19,10 @@ type BookingItem = WithId & {
   images?: string[];
   occasion?: string;
   size: string;
-  cake_base_id: string;
   message: Message;
   note: string;
+  cake_base_id: string;
+  cakeBase?: CakeBase;
 };
 
 const bookingItemConverter: FirestoreDataConverter<BookingItem> = {

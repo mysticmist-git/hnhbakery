@@ -30,6 +30,13 @@ import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
+import Delivery from '@/models/delivery';
+import Address from '@/models/address';
+import { getBookingItemById } from './bookingItemDAO';
+import { getCakeBaseById } from './cakeBaseDAO';
+import ProductType from '@/models/productType';
+import Product from '@/models/product';
+import Variant from '@/models/variant';
 
 export function getBillsRef(
   groupId: string,
@@ -426,49 +433,107 @@ export async function getBillTableRows(
       : await getBills(c.group_id, c.id);
 
     for (let b of bills) {
-      const billitems = await getBillItems(c.group_id, c.id, b.id);
-
-      const billItems: BillTableRow['billItems'] = [];
-      for (let bi of billitems) {
-        const batch = await getBatchById(bi.batch_id);
-        billItems.push({
-          ...bi,
-          batch: batch,
-          productType: await getProductTypeById(batch!.product_type_id),
-          product: await getProduct(batch!.product_type_id, batch!.product_id),
-          variant: await getVariant(
-            batch!.product_type_id,
-            batch!.product_id,
-            batch!.variant_id
-          ),
-        });
+      const pushData = await getBillTableRow(c, b);
+      if (pushData) {
+        finalBills.push(pushData);
       }
-
-      const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-      const delivery = await getDeliveryById(b.delivery_id);
-
-      finalBills.push({
-        ...b,
-        paymentMethod: await getPaymentMethodById(b.payment_method_id),
-        customer: { ...c },
-        sale: sale,
-        deliveryTableRow: {
-          ...delivery!,
-          address: await getAddress(c.group_id, c.id, delivery!.address_id),
-        },
-        billItems: billItems,
-        branch: branch,
-      });
     }
   }
 
   return finalBills;
 }
 
+async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
+  let finalBill: BillTableRow | undefined = undefined;
+
+  const billitems = await getBillItems(c.group_id, c.id, b.id);
+
+  const billItems: BillTableRow['billItems'] = [];
+  for (let bi of billitems) {
+    const batch =
+      bi.batch_id == '' ? undefined : await getBatchById(bi.batch_id);
+
+    let productType: ProductType | undefined = undefined;
+    let product: Product | undefined = undefined;
+    let variant: Variant | undefined = undefined;
+
+    if (
+      batch &&
+      batch.product_type_id != '' &&
+      batch.product_id != '' &&
+      batch.variant_id != ''
+    ) {
+      productType = await getProductTypeById(batch.product_type_id);
+      product = await getProduct(batch.product_type_id, batch.product_id);
+      variant = await getVariant(
+        batch.product_type_id,
+        batch.product_id,
+        batch.variant_id
+      );
+    }
+
+    billItems.push({
+      ...bi,
+      batch: batch,
+      productType: productType,
+      product: product,
+      variant: variant,
+    });
+  }
+
+  const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+
+  let delivery: Delivery | undefined = undefined;
+  if (b.delivery_id != '') {
+    delivery = await getDeliveryById(b.delivery_id);
+  }
+
+  let address: Address | undefined = undefined;
+  if (delivery?.address && delivery.address != '') {
+    address = await getAddress(c.group_id, c.id, delivery.address);
+  }
+
+  const bookingItem =
+    b.booking_item_id == ''
+      ? undefined
+      : await getBookingItemById(b.booking_item_id);
+
+  finalBill = {
+    ...b,
+    paymentMethod:
+      b.payment_method_id == ''
+        ? undefined
+        : await getPaymentMethodById(b.payment_method_id),
+    customer: { ...c },
+    sale: sale,
+    deliveryTableRow: delivery
+      ? {
+          ...delivery,
+          addressObject: address,
+        }
+      : undefined,
+    billItems: billItems,
+    branch: b.branch_id == '' ? undefined : await getBranchById(b.branch_id),
+    bookingItem: bookingItem
+      ? {
+          ...bookingItem,
+          cakeBase:
+            bookingItem.cake_base_id == ''
+              ? undefined
+              : await getCakeBaseById(bookingItem.cake_base_id),
+        }
+      : undefined,
+  };
+
+  return finalBill;
+}
+
 export async function getBillTableRowsByUserId(
   userId: string
 ): Promise<BillTableRow[]> {
+  if (userId == '') {
+    return [];
+  }
   const finalBills: BillTableRow[] = [];
 
   const customer = await getUserByUid(userId);
@@ -479,45 +544,36 @@ export async function getBillTableRowsByUserId(
   const bills = await getBills(customer.group_id, customer.id);
 
   for (let b of bills) {
-    const billitems = await getBillItems(customer.group_id, customer.id, b.id);
-
-    const billItems: BillTableRow['billItems'] = [];
-    for (let bi of billitems) {
-      const batch = await getBatchById(bi.batch_id);
-      billItems.push({
-        ...bi,
-        batch: batch,
-        productType: await getProductTypeById(batch!.product_type_id),
-        product: await getProduct(batch!.product_type_id, batch!.product_id),
-        variant: await getVariant(
-          batch!.product_type_id,
-          batch!.product_id,
-          batch!.variant_id
-        ),
-      });
+    const pushData = await getBillTableRow(customer, b);
+    if (pushData) {
+      finalBills.push(pushData);
     }
-
-    const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
-
-    const delivery = await getDeliveryById(b.delivery_id);
-
-    finalBills.push({
-      ...b,
-      paymentMethod: await getPaymentMethodById(b.payment_method_id),
-      customer: { ...customer },
-      sale: sale,
-      deliveryTableRow: {
-        ...delivery!,
-        address: await getAddress(
-          customer.group_id,
-          customer.id,
-          delivery!.address_id
-        ),
-      },
-      billItems: billItems,
-      branch: await getBranchById(b.branch_id),
-    });
   }
 
   return finalBills;
+}
+
+export async function getBillTableRowById(
+  userId: string,
+  id: string
+): Promise<BillTableRow | undefined> {
+  if (userId == '') {
+    return undefined;
+  }
+
+  const customer = await getUserByUid(userId);
+
+  if (!customer) {
+    return undefined;
+  }
+
+  const b = await getBill(customer.group_id, customer.id, id);
+
+  if (!b) {
+    return undefined;
+  }
+
+  const finalBill = await getBillTableRow(customer, b);
+
+  return finalBill;
 }

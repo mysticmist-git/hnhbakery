@@ -14,6 +14,7 @@ import PaymentMethod from './paymentMethod';
 import Sale from './sale';
 import User from './user';
 import WithId from './withId';
+import BookingItem from './bookingItem';
 
 /**
  * State of a bill
@@ -55,6 +56,7 @@ type BillTableRow = Bill & {
   deliveryTableRow?: DeliveryTableRow | null;
   billItems?: BillItemTableRow[];
   branch?: Branch;
+  bookingItem?: BookingItem;
 };
 
 const billConverter: FirestoreDataConverter<Bill> = {
@@ -83,7 +85,7 @@ const billConverter: FirestoreDataConverter<Bill> = {
 export function billStateContentParse(params: BillState | undefined) {
   switch (params) {
     case 'issued':
-      return 'Lỗi';
+      return 'Chờ xử lý';
     case 'pending':
       return 'Chưa thanh toán';
     case 'paid':
@@ -105,7 +107,7 @@ export function billStateColorParse(
 ) {
   switch (value) {
     case 'issued':
-      return theme.palette.error.main;
+      return theme.palette.text.secondary;
     case 'pending':
       return theme.palette.text.secondary;
     case 'paid':

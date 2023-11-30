@@ -11,9 +11,14 @@ export function createDeliveryData(form: DeliveryForm): Partial<Delivery> {
     mail: form.email,
     address: form.address,
     delivery_note: form.note,
-    state: 'issued',
+    cancel_note: '',
+    image: '',
     ship_time: form.deliveryTime,
     ship_date: form.deliveryDate,
+    start_at: new Date(),
+    end_at: new Date(),
+    state: 'issued',
+    shipper_id: '',
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -32,14 +37,14 @@ export const createBillItemData = (
   const totalDiscount = price * (discountPercent / 100) * cartItem.quantity;
 
   const billItemData: Omit<BillItem, 'id'> = {
-    bill_id: billId,
-    batch_id: cartItem.batchId,
+    price: totalPrice,
     amount: cartItem.quantity,
     discount: discountPercent,
-    price: totalPrice,
     total_price: totalPrice,
     total_discount: totalDiscount,
     final_price: price - totalDiscount,
+    batch_id: cartItem.batchId,
+    bill_id: billId,
     created_at: new Date(),
     updated_at: new Date(),
   };

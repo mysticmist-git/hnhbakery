@@ -37,7 +37,10 @@ export async function getBookingItemById(id: string) {
   return (await getBookingItemSnapshotById(id)).data();
 }
 
-export async function updateBookingItem(id: string, data: BookingItem) {
+export async function updateBookingItem(
+  id: string,
+  data: Omit<BookingItem, 'id'>
+) {
   await updateDoc(getBookingItemRefById(id), data);
 }
 
