@@ -8,6 +8,7 @@ import { Box } from '@mui/system';
 import Outlined_TextField from '../Outlined_TextField';
 import { BillItemTableRow } from '@/models/billItem';
 import { BillTableRow } from '@/models/bill';
+import { BookingItemContent } from '@/pages/profile';
 
 export default function SanPham_Content({
   textStyle,
@@ -30,7 +31,8 @@ export default function SanPham_Content({
 
     var price: string = ' | ';
     price +=
-      formatPrice(item?.price - (item?.discount * item.price) / 100) + '/bánh';
+      formatPrice(item?.price - (item?.discount * item.price) / 100, ' đồng') +
+      '/bánh';
     if (item?.total_discount > 0) {
       price += ' (Giảm ' + item?.discount + '%/bánh)';
     }
@@ -47,7 +49,7 @@ export default function SanPham_Content({
       ' bánh' +
       price +
       '\nThành tiền: ' +
-      formatPrice(item?.final_price)
+      formatPrice(item?.final_price, ' đồng')
     );
   };
 
@@ -65,46 +67,51 @@ export default function SanPham_Content({
           gap: 3,
         }}
       >
-        {modalBill?.billItems?.map((item, index) => {
-          return (
-            <>
-              <Outlined_TextField
-                key={index}
-                textStyle={textStyle}
-                label={getLabel(item)}
-                multiline
-                value={getValue(item)}
-                InputProps={{
-                  readOnly: true,
-                  style: {
-                    pointerEvents: 'auto',
-                    borderRadius: '8px',
-                  },
-                  endAdornment: modalBill?.deliveryTableRow && (
-                    <InputAdornment position="end">
-                      <CustomIconButton
-                        edge="end"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            item?.batch?.id ?? 'Trống'
-                          );
-                          handleSnackbarAlert(
-                            'success',
-                            'Đã sao chép mã lô hàng vào clipboard!'
-                          );
-                        }}
-                      >
-                        <Tooltip title="Sao chép mã lô hàng vào clipboard">
-                          <ContentCopyRounded fontSize="small" />
-                        </Tooltip>
-                      </CustomIconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </>
-          );
-        })}
+        {(!modalBill?.booking_item_id || modalBill?.booking_item_id == '') &&
+          modalBill?.billItems?.map((item, index) => {
+            return (
+              <>
+                <Outlined_TextField
+                  key={index}
+                  textStyle={textStyle}
+                  label={getLabel(item)}
+                  multiline
+                  value={getValue(item)}
+                  InputProps={{
+                    readOnly: true,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                    endAdornment: modalBill?.deliveryTableRow && (
+                      <InputAdornment position="end">
+                        <CustomIconButton
+                          edge="end"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              item?.batch?.id ?? 'Trống'
+                            );
+                            handleSnackbarAlert(
+                              'success',
+                              'Đã sao chép mã lô hàng vào clipboard!'
+                            );
+                          }}
+                        >
+                          <Tooltip title="Sao chép mã lô hàng vào clipboard">
+                            <ContentCopyRounded fontSize="small" />
+                          </Tooltip>
+                        </CustomIconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </>
+            );
+          })}
+
+        {modalBill?.booking_item_id != '' && modalBill?.bookingItem && (
+          <BookingItemContent item={modalBill.bookingItem} />
+        )}
       </Box>
     </>
   );

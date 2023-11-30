@@ -73,24 +73,17 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      load();
-      const userData = await getUserTableRowByUID(
-        '3Kelzi2xkwRiknCpMHQCeQTZmFg2'
-      );
-      if (userData) setUserData(userData);
-      stop();
-      return;
-      // try {
-      //   load();
-      //   if (user && user.uid && user.uid != '') {
-      //     const userData = await getUserTableRowByUID(user.uid);
-      //     if (userData) setUserData(userData);
-      //   }
-      //   stop();
-      // } catch (error) {
-      //   console.log(error);
-      //   stop();
-      // }
+      try {
+        load();
+        if (user && user.uid && user.uid != '') {
+          const userData = await getUserTableRowByUID(user.uid);
+          if (userData) setUserData(userData);
+        }
+        stop();
+      } catch (error) {
+        console.log(error);
+        stop();
+      }
     };
 
     fetchData();
@@ -753,7 +746,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
   );
 }
 
-function BookingItemContent({ item }: { item: BookingItem }) {
+export function BookingItemContent({ item }: { item: BookingItem }) {
   const [imageSrc, setImageSrc] = useState<string[]>([]);
   const [cakeBaseSrc, setCakeBaseSrc] = useState<string>('');
 

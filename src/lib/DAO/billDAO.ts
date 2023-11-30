@@ -440,7 +440,9 @@ export async function getBillTableRows(
     }
   }
 
-  return finalBills;
+  return finalBills.sort((a, b) => {
+    return a.created_at > b.created_at ? -1 : 1;
+  });
 }
 
 async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
@@ -550,7 +552,9 @@ export async function getBillTableRowsByUserId(
     }
   }
 
-  return finalBills;
+  return finalBills.sort((a, b) => {
+    return a.created_at > b.created_at ? -1 : 1;
+  });
 }
 
 export async function getBillTableRowById(
@@ -576,4 +580,17 @@ export async function getBillTableRowById(
   const finalBill = await getBillTableRow(customer, b);
 
   return finalBill;
+}
+
+export function createBillDataFromBillTableRow(
+  billTableRow: BillTableRow
+): Bill {
+  delete billTableRow.paymentMethod;
+  delete billTableRow.customer;
+  delete billTableRow.sale;
+  delete billTableRow.deliveryTableRow;
+  delete billTableRow.branch;
+  delete billTableRow.bookingItem;
+  delete billTableRow.billItems;
+  return billTableRow as Bill;
 }

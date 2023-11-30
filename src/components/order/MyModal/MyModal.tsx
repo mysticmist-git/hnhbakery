@@ -1,6 +1,6 @@
 import { CustomButton, CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
-import { isVNPhoneNumber, validateEmail } from '@/lib/utils';
+import { formatPrice, isVNPhoneNumber, validateEmail } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
@@ -17,17 +17,18 @@ import {
 import { Box, alpha } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import Outlined_TextField from './Outlined_TextField';
 import SaleDelivery_Content from './SaleDelivery_Content';
 import SanPham_Content from './SanPham_Content';
 import ThongTin_Content from './ThongTin_Content';
-import { BillTableRow } from '@/models/bill';
+import Bill, { BillTableRow } from '@/models/bill';
 import Delivery, {
   deliveryStateColorParse,
   deliveryStateContentParse,
 } from '@/models/delivery';
 import { updateDelivery } from '@/lib/DAO/deliveryDAO';
+import { createBillDataFromBillTableRow, updateBill } from '@/lib/DAO/billDAO';
 
 type EditType = {
   name?: string;
@@ -36,6 +37,7 @@ type EditType = {
   // address?: string;
   ship_date?: Date;
   ship_time?: string;
+  finalPrice?: number;
 };
 
 function ResetEditContent(bill: BillTableRow | null) {
@@ -46,6 +48,7 @@ function ResetEditContent(bill: BillTableRow | null) {
     // address: bill?.deliveryTableRow?.address?.address ?? 'Trống',
     ship_date: bill?.deliveryTableRow?.ship_date ?? new Date(),
     ship_time: bill?.deliveryTableRow?.ship_time ?? 'Trống',
+    finalPrice: bill?.final_price ?? 0,
   };
 }
 
@@ -65,30 +68,35 @@ const MyModal = ({
   //#region Style
   const theme = useTheme();
 
-  const StyleCuaCaiBox = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    border: 1,
-    borderColor: theme.palette.text.secondary,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'start',
-    alignItems: 'center',
-    opacity: 0.8,
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      opacity: 1,
-      boxShadow: 10,
-    },
-  };
-  const textStyle = {
-    fontSize: theme.typography.body2.fontSize,
-    color: theme.palette.common.black,
-    fontWeight: theme.typography.body2.fontWeight,
-    fontFamily: theme.typography.body2.fontFamily,
-  };
+  const StyleCuaCaiBox = useMemo(() => {
+    return {
+      width: '100%',
+      height: '100%',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      border: 1,
+      borderColor: theme.palette.text.secondary,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'start',
+      alignItems: 'center',
+      opacity: 0.8,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        opacity: 1,
+        boxShadow: 10,
+      },
+    };
+  }, [theme]);
+
+  const textStyle = useMemo(() => {
+    return {
+      fontSize: theme.typography.body2.fontSize,
+      color: theme.palette.common.black,
+      fontWeight: theme.typography.body2.fontWeight,
+      fontFamily: theme.typography.body2.fontFamily,
+    };
+  }, [theme]);
   //#endregion
 
   const [modalBill, setModalBill] = useState<BillTableRow | null>(bill);
@@ -115,6 +123,9 @@ const MyModal = ({
   };
 
   const handleSaveEdit = async () => {
+    if (!editContent || !bill) {
+      return;
+    }
     if (editContent?.mail && !validateEmail(editContent?.mail)) {
       handleSnackbarAlert('warning', 'Email thay đổi không hợp lệ.');
       return;
@@ -123,25 +134,61 @@ const MyModal = ({
       handleSnackbarAlert('warning', 'Số điện thoại thay đổi không hợp lệ.');
       return;
     }
-    const delivery = { ...bill!.deliveryTableRow };
-    delete delivery?.addressObject;
-    const data = {
-      ...delivery,
-      ...editContent,
-    } as Delivery;
-    await updateDelivery(data.id, data);
+    if (editContent?.finalPrice && editContent.finalPrice < 0) {
+      handleSnackbarAlert('warning', 'Số tiền khách trả không hợp lệ.');
+      return;
+    }
 
-    handleSnackbarAlert('success', 'Thay đổi thành công!');
-    setEditMode(false);
+    try {
+      const delivery = { ...bill.deliveryTableRow };
+      delete delivery.addressObject;
+      const data = {
+        ...delivery,
+        name: editContent?.name,
+        tel: editContent?.tel,
+        mail: editContent?.mail,
+        ship_date: editContent?.ship_date,
+        ship_time: editContent?.ship_time,
+      } as Delivery;
+      await updateDelivery(data.id, data);
 
-    const updatedDelivery: BillTableRow = {
-      ...bill!,
-      deliveryTableRow: {
-        ...bill!.deliveryTableRow!,
-        ...editContent,
-      },
-    };
-    handleBillDataChange(updatedDelivery);
+      let billData: Bill | undefined = undefined;
+      if (
+        editContent?.finalPrice &&
+        bill.customer &&
+        bill.booking_item_id != ''
+      ) {
+        billData = createBillDataFromBillTableRow({ ...bill });
+        billData.final_price = editContent.finalPrice ?? billData.final_price;
+        billData.state = 'pending';
+        console.log(billData);
+        await updateBill(
+          bill.customer.group_id,
+          bill.customer.id,
+          billData.id,
+          billData
+        );
+      }
+
+      handleSnackbarAlert('success', 'Thay đổi thành công!');
+      setEditMode(false);
+
+      const updatedDelivery: BillTableRow = {
+        ...bill!,
+        deliveryTableRow: {
+          ...bill!.deliveryTableRow!,
+          ...data,
+        },
+      };
+      if (billData) {
+        updatedDelivery.final_price = billData.final_price;
+        updatedDelivery.state = billData.state;
+      }
+      handleBillDataChange(updatedDelivery);
+    } catch (error: any) {
+      handleSnackbarAlert('error', error.message);
+    }
+
     handleClose();
   };
   //#endregion
@@ -283,7 +330,7 @@ const MyModal = ({
                       Người nhận
                     </Typography>
 
-                    {modalBill?.deliveryTableRow?.state === 'issued' ? (
+                    {modalBill?.deliveryTableRow?.state === 'issued' && (
                       <Box
                         component={'div'}
                         sx={{
@@ -313,8 +360,6 @@ const MyModal = ({
                           </>
                         )}
                       </Box>
-                    ) : (
-                      <></>
                     )}
                   </Box>
 
@@ -407,7 +452,10 @@ const MyModal = ({
                           textStyle={textStyle}
                           label="Địa chỉ giao hàng"
                           value={
-                            modalBill?.deliveryTableRow?.addressObject?.address
+                            modalBill?.deliveryTableRow?.addressObject
+                              ?.address ??
+                            modalBill?.deliveryTableRow?.address ??
+                            'Trống'
                           }
                           // onChange={(event: any) => {
                           //   setEditContent({
@@ -424,6 +472,34 @@ const MyModal = ({
                           }}
                         />
                       </Grid>
+
+                      {modalBill?.bookingItem && (
+                        <Grid item xs={12} md={12} lg={12}>
+                          <Outlined_TextField
+                            type="number"
+                            textStyle={textStyle}
+                            label="Số tiền khách trả"
+                            value={editContent?.finalPrice}
+                            onChange={(event: any) => {
+                              console.log(event.target.value);
+
+                              if (editMode) {
+                                setEditContent({
+                                  ...editContent,
+                                  finalPrice: parseInt(event.target.value),
+                                });
+                              }
+                            }}
+                            InputProps={{
+                              readOnly: !editMode,
+                              style: {
+                                pointerEvents: editMode ? 'auto' : 'none',
+                                borderRadius: '8px',
+                              },
+                            }}
+                          />
+                        </Grid>
+                      )}
 
                       <Grid item xs={12} md={12} lg={12}>
                         <Divider sx={{ width: '100%' }} />

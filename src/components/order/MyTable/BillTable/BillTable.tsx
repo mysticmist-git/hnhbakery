@@ -59,7 +59,7 @@ export default function BillTable({
       disableColumnMenu: true,
       hideable: false,
       valueFormatter: (params: any) => {
-        return formatPrice(params.value);
+        return formatPrice(params.value, ' đ');
       },
       renderCell: (params) => {
         return (
@@ -80,7 +80,7 @@ export default function BillTable({
                   textDecoration: 'line-through',
                 }}
               >
-                {formatPrice(params.row.total_price)}
+                {formatPrice(params.row.total_price, ' đ')}
               </span>
             )}
 
@@ -89,7 +89,7 @@ export default function BillTable({
                 fontWeight: 'bold',
               }}
             >
-              {formatPrice(params.value)}
+              {formatPrice(params.value, ' đ')}
             </span>
           </Box>
         );

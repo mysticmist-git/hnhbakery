@@ -18,6 +18,7 @@ import { getUserByUid, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { getCollection } from '@/lib/firestore';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 import { BillTableRow } from '@/models/bill';
 import User from '@/models/user';
 import { LockPersonRounded } from '@mui/icons-material';
@@ -42,6 +43,8 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Order = () => {
+  const [load, stop] = useLoadingService();
+
   const [billsData, setBillsData] = useState<BillTableRow[]>([]);
 
   //#region Modal chi tiết
@@ -97,28 +100,34 @@ const Order = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         if (!user) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         const userData = await getUserByUid(user?.uid);
         if (!userData) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         const branch = await getBranchByManager(userData);
 
         if (!branch) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         setCanBeAccessed(true);
 
         const finalBills: BillTableRow[] = await getBillTableRows(branch);
         setBillsData(() => finalBills || []);
+        stop();
       } catch (error) {
         console.log(error);
         setCanBeAccessed(false);
+        stop();
       }
     };
     fetchData();
