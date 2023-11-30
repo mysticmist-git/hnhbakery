@@ -96,7 +96,10 @@ export default function DeliveryTable({
       hideable: false,
       flex: 1,
       valueGetter: (params) => {
-        return params.row.deliveryTableRow.address.address;
+        return (
+          params.row.deliveryTableRow?.addressObject?.address ??
+          params.row.deliveryTableRow?.address
+        );
       },
     },
     {

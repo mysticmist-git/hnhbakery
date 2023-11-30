@@ -14,7 +14,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
 import ChiTietDonHang_Content from '../ChiTietDonHang_Content';
 import DonHang_Content from '../DonHang_Content';
@@ -36,30 +36,36 @@ export default function MyModal({
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
-  const StyleCuaCaiBox = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    border: 1,
-    borderColor: theme.palette.text.secondary,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'start',
-    alignItems: 'center',
-    opacity: 0.8,
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      opacity: 1,
-      boxShadow: 10,
-    },
-  };
-  const textStyle = {
-    fontSize: theme.typography.body2.fontSize,
-    color: theme.palette.common.black,
-    fontWeight: theme.typography.body2.fontWeight,
-    fontFamily: theme.typography.body2.fontFamily,
-  };
+  const StyleCuaCaiBox = useMemo(() => {
+    return {
+      width: '100%',
+      height: '100%',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      border: 1,
+      borderColor: theme.palette.text.secondary,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'start',
+      alignItems: 'center',
+      opacity: 0.8,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        opacity: 1,
+        boxShadow: 10,
+      },
+    };
+  }, [theme]);
+
+  const textStyle = useMemo(() => {
+    return {
+      fontSize: theme.typography.body2.fontSize,
+      color: theme.palette.common.black,
+      fontWeight: theme.typography.body2.fontWeight,
+      fontFamily: theme.typography.body2.fontFamily,
+    };
+  }, [theme]);
+
   const [modalDelivery, setModalDelivery] = useState<BillTableRow | null>(
     delivery
   );

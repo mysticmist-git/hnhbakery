@@ -6,6 +6,7 @@ import { Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
 import { BillTableRow } from '@/models/bill';
 import { BillItemTableRow } from '@/models/billItem';
+import { BookingItemContent } from '@/pages/profile';
 
 export default function ChiTietDonHang_Content({
   textStyle,
@@ -25,45 +26,51 @@ export default function ChiTietDonHang_Content({
         alignItems="center"
         spacing={3}
       >
-        {modalDelivery?.billItems?.map((item, index) => {
-          return (
-            <Grid key={index} item xs={12} alignSelf={'stretch'}>
-              <Outlined_TextField
-                textStyle={textStyle}
-                label={getLabel(item)}
-                multiline
-                value={getValue(item)}
-                InputProps={{
-                  readOnly: true,
-                  style: {
-                    pointerEvents: 'auto',
-                    borderRadius: '8px',
-                  },
-                  endAdornment: item?.batch?.id && (
-                    <InputAdornment position="end">
-                      <CustomIconButton
-                        edge="end"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            item?.batch?.id ?? 'Trống'
-                          );
-                          handleSnackbarAlert(
-                            'success',
-                            'Đã sao chép mã lô hàng vào clipboard!'
-                          );
-                        }}
-                      >
-                        <Tooltip title="Sao chép mã lô hàng vào clipboard">
-                          <ContentCopyRounded fontSize="small" />
-                        </Tooltip>
-                      </CustomIconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-          );
-        })}
+        {(!modalDelivery?.booking_item_id ||
+          modalDelivery?.booking_item_id == '') &&
+          modalDelivery?.billItems?.map((item, index) => {
+            return (
+              <Grid key={index} item xs={12} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label={getLabel(item)}
+                  multiline
+                  value={getValue(item)}
+                  InputProps={{
+                    readOnly: true,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                    endAdornment: item?.batch?.id && (
+                      <InputAdornment position="end">
+                        <CustomIconButton
+                          edge="end"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              item?.batch?.id ?? 'Trống'
+                            );
+                            handleSnackbarAlert(
+                              'success',
+                              'Đã sao chép mã lô hàng vào clipboard!'
+                            );
+                          }}
+                        >
+                          <Tooltip title="Sao chép mã lô hàng vào clipboard">
+                            <ContentCopyRounded fontSize="small" />
+                          </Tooltip>
+                        </CustomIconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+            );
+          })}
+
+        {modalDelivery?.booking_item_id != '' && modalDelivery?.bookingItem && (
+          <BookingItemContent item={modalDelivery.bookingItem} />
+        )}
       </Grid>
     </>
   );
