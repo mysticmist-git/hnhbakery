@@ -192,14 +192,6 @@ function Navbar() {
       }
     });
 
-    const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
-    if (!currentLocalCart) {
-      setCartCount(0);
-    } else {
-      const currentCart = JSON.parse(currentLocalCart);
-      setCartCount(currentCart.length);
-    }
-
     return () => unsubscribe();
   }, [auth]);
 
@@ -249,6 +241,26 @@ function Navbar() {
 
   //#region CartCount Hên ở đây nè Hên!
   const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
+    if (!currentLocalCart) {
+      if (cartCount != 0) {
+        setCartCount(0);
+      }
+    } else {
+      const currentCart = JSON.parse(currentLocalCart);
+
+      const total = currentCart.reduce((acc: number, item: any) => {
+        return acc + item._quantity;
+      }, 0);
+
+      if (cartCount != total) {
+        setCartCount(total);
+      }
+    }
+  });
+
   //#endregion
 
   return (

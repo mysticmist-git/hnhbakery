@@ -216,10 +216,12 @@ const getHomeProductTypes = async () => {
   const productTypes: ProductType[] = await getProductTypes();
 
   return (
-    productTypes.map((type) => ({
-      ...type,
-      href: `products?product_type=${type.description}`,
-    })) ?? []
+    productTypes
+      .filter((type) => type.active)
+      .map((type) => ({
+        ...type,
+        href: `products?product_type=${type.description}`,
+      })) ?? []
   );
 };
 
@@ -271,7 +273,9 @@ async function getBestSellerProducts(): Promise<Product[]> {
     }
   }
 
-  return productResult;
+  return productResult.filter(
+    (product) => product.images.length > 0 && product.active
+  );
 }
 
 //#endregion

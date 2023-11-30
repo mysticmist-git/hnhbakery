@@ -234,7 +234,7 @@ const Login = () => {
                         align="center"
                         color={theme.palette.secondary.main}
                       >
-                        Hello
+                        Xin chào
                       </Typography>
                       <Typography
                         variant="body2"
@@ -243,13 +243,6 @@ const Login = () => {
                       >
                         Mời bạn một miếng bánh ngon, một tách trà nóng, một ngày
                         an yên.
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        align="center"
-                        color={theme.palette.text.secondary}
-                      >
-                        Tài khoản Admin Demo: admin123@gmail.com admin123
                       </Typography>
                     </Grid>
                   </Grid>

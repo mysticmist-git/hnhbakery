@@ -5,28 +5,19 @@ import { valueComparer } from '@/lib/pageSpecific/products';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { useCallback, useContext, useMemo } from 'react';
 import CakeCard from '../CakeCard';
-import { BatchTableRow } from '@/models/batch';
-
+import { ProductTableRow } from '@/models/product';
 function ProductList({
-  batches,
+  products,
   viewState,
   imageHeight,
   imageHeightList,
 }: {
-  batches: BatchTableRow[];
+  products: ProductTableRow[];
   viewState: 'grid' | 'list';
   imageHeight: string;
   imageHeightList: string;
 }) {
   const theme = useTheme();
-
-  function removeAccents(str: string) {
-    return str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D');
-  }
 
   return (
     <>
@@ -35,9 +26,9 @@ function ProductList({
         direction={'row'}
         justifyContent={'flex-start'}
         alignItems={'start'}
-        spacing={{ md: 2, xs: 3 }}
+        spacing={3}
       >
-        {batches.map((item, i) => (
+        {products.map((item, i) => (
           <Grid
             item
             key={i}
@@ -47,14 +38,14 @@ function ProductList({
             lg={viewState != 'grid' ? 12 : 4}
           >
             <CakeCard
-              batch={item}
+              product={item}
               viewState={viewState}
               imageHeight={imageHeight}
               imageHeightList={imageHeightList}
             />
           </Grid>
         ))}
-        {batches.length <= 0 && (
+        {products.length <= 0 && (
           <Box
             component={'div'}
             sx={{

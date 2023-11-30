@@ -1,7 +1,11 @@
 import Batch from '@/models/batch';
 import Color from '@/models/color';
 import { FeedbackTableRow } from '@/models/feedback';
-import Product, { ProductDetail, productConverter } from '@/models/product';
+import Product, {
+  ProductDetail,
+  ProductTableRow,
+  productConverter,
+} from '@/models/product';
 import { ProductTypeTableRow } from '@/models/productType';
 import { VariantTableRow } from '@/models/variant';
 import {
@@ -23,6 +27,7 @@ import { getBatchById } from './batchDAO';
 import { getColorById } from './colorDAO';
 import { getFeedbacks } from './feedbackDAO';
 import {
+  getAvailableProductTypeTableRows,
   getProductTypeById,
   getProductTypes,
   getProductTypesRef,
@@ -238,4 +243,24 @@ export async function getProductDetail(
   };
 
   return productDetail;
+}
+
+export async function getAvailableProductTableRows() {
+  const productTypeTableRow: ProductTypeTableRow[] =
+    await getAvailableProductTypeTableRows();
+
+  const productTableRows: ProductTableRow[] = [];
+
+  for (let p of productTypeTableRow) {
+    const item = p.products;
+    if (item) {
+      for (let i of item) {
+        productTableRows.push({
+          ...i,
+        });
+      }
+    }
+  }
+
+  return productTableRows;
 }

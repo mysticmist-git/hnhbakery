@@ -92,7 +92,9 @@ function FilterComponent({
       try {
         setColors(await getColors());
         setSizes(await getSizes());
-        setProductTypes(await getProductTypes());
+
+        const productTypesData = await getProductTypes();
+        setProductTypes(productTypesData.filter((item) => item.active));
       } catch (error) {
         console.log(error);
       }

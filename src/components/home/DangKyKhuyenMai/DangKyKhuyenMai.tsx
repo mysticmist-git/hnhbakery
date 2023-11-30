@@ -1,11 +1,20 @@
 import bg10 from '@/assets/Decorate/bg10.png';
 import { CustomButton } from '@/components/buttons';
 import { CustomTextField } from '@/components/inputs/textFields';
+import { createContact } from '@/lib/DAO/contactDAO';
+import { useSnackbarService } from '@/lib/contexts';
+import { validateEmail } from '@/lib/utils';
+import Contact from '@/models/contact';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { useState } from 'react';
 
 //#region Khuyến mãi
 export function DangKyKhuyenMai(props: any) {
   const theme = useTheme();
+
+  const [email, setEmail] = useState('');
+  const handleSnackbarAlert = useSnackbarService();
+
   return (
     <Box
       component="div"
@@ -64,6 +73,10 @@ export function DangKyKhuyenMai(props: any) {
                 placeholder="Email của bạn"
                 type="email"
                 borderColor={theme.palette.secondary.main}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
               />
             </Grid>
             <Grid item xs={'auto'}>
@@ -73,6 +86,38 @@ export function DangKyKhuyenMai(props: any) {
                   borderRadius: '8px',
                   py: '12px',
                   px: 3,
+                }}
+                onClick={async () => {
+                  if (email == '') {
+                    handleSnackbarAlert('warning', ' Vui lòng điền email!');
+                    return;
+                  }
+                  if (validateEmail(email) == false) {
+                    handleSnackbarAlert('error', ' Email không hợp lệ!');
+                    return;
+                  }
+
+                  try {
+                    const contact: Omit<Contact, 'id'> = {
+                      mail: email,
+                      name: 'Khách vãng lai',
+                      tel: '',
+                      title: 'Đăng ký nhận khuyến mãi',
+                      content: 'Trống',
+                      isRead: false,
+                      created_at: new Date(),
+                      updated_at: new Date(),
+                    };
+
+                    await createContact(contact);
+
+                    handleSnackbarAlert(
+                      'success',
+                      ' Đăng ký Email thành công!'
+                    );
+                  } catch (error: any) {
+                    console.log(error);
+                  }
                 }}
               >
                 <Typography variant="button" color={theme.palette.common.white}>

@@ -68,8 +68,6 @@ const similiarProductsSample = [
   },
 ];
 
-// #endregion
-
 function ProductDetail() {
   // #region Hooks
 
@@ -112,8 +110,6 @@ function ProductDetail() {
   }
 
   const [cart, setCart] = useCartItems();
-
-  // const [product, setProduct] = useState<AssembledProduct | null>(null);
 
   // #endregion
 

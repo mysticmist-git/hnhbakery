@@ -3,8 +3,8 @@ import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
 import ImageBackground from '@/components/Imagebackground';
 import { ProductList, TypeSort, TypeView } from '@/components/products';
 import FilterComponent from '@/components/products/Filter/Filter';
-import { getAvailableBatches } from '@/lib/DAO/batchDAO';
-import { BatchTableRow } from '@/models/batch';
+import { getAvailableProductTableRows } from '@/lib/DAO/productDAO';
+import { ProductTableRow } from '@/models/product';
 import {
   alpha,
   Box,
@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import * as diacritics from 'diacritics';
 
 export type Filter = {
   sort: number;
@@ -32,8 +33,10 @@ const Products = () => {
   const theme = useTheme();
   const router = useRouter();
 
-  const [batches, setBatches] = useState<BatchTableRow[]>([]);
-  const [batchesDisplay, setBatchesDisplay] = useState<BatchTableRow[]>([]);
+  const [productData, setProductData] = useState<ProductTableRow[]>([]);
+  const [productDataDisplay, setProductDataDisplay] = useState<
+    ProductTableRow[]
+  >([]);
   const [viewState, setViewState] = useState<'grid' | 'list'>('grid');
   const [searchText, setSearchText] = useState('');
 
@@ -99,11 +102,12 @@ const Products = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const finalBatches = await getAvailableBatches(true);
-      setBatches(finalBatches);
-      setBatchesDisplay(finalBatches);
+      const finalData = await getAvailableProductTableRows();
+      setProductData(finalData);
+      setProductDataDisplay(finalData);
 
       const queryProductTypes = router.query.productType;
+      console.log('queryProductTypes', queryProductTypes);
 
       if (queryProductTypes && queryProductTypes !== '') {
         setFilter({
@@ -124,14 +128,24 @@ const Products = () => {
   }
 
   function handleFilterBatches(type: 'search' | 'sort' | 'filter') {
-    var final = [...batches];
+    var final = [...productData];
 
     if (type === 'search') {
       if (searchText !== '') {
         final = final.filter((item) => {
-          return item.product?.name
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
+          const str = diacritics.remove(
+            JSON.stringify([
+              item.name.toLowerCase(),
+              item.description.toLowerCase(),
+              item.ingredients.join(' ').toLowerCase(),
+              item.colors.join(' ').toLowerCase(),
+              item.how_to_use.toLowerCase(),
+              item.preservation.toLowerCase(),
+            ])
+          );
+
+          const searchValue = diacritics.remove(searchText.toLowerCase());
+          return str.includes(searchValue);
         });
         if (final.length === 0) {
           return final;
@@ -147,55 +161,68 @@ const Products = () => {
       } else if (filter.sort == 1) {
         //Giá tăng dần
         final = final.sort((a, b) => {
-          const aPrice =
-            a.discount.start_at <= new Date()
-              ? a.variant!.price * (1 - a.discount.percent / 100)
-              : a.variant!.price;
-          const bPrice =
-            b.discount.start_at <= new Date()
-              ? b.variant!.price * (1 - b.discount.percent / 100)
-              : b.variant!.price;
-          return aPrice - bPrice;
+          const minA: number = a.variants
+            ? a.variants.length > 0
+              ? a.variants
+                  .map((item) => item.price)
+                  .reduce((a, b) => Math.min(a, b))
+              : 0
+            : 0;
+
+          const minB: number = b.variants
+            ? b.variants.length > 0
+              ? b.variants
+                  .map((item) => item.price)
+                  .reduce((a, b) => Math.min(a, b))
+              : 0
+            : 0;
+
+          return minA - minB;
         });
       } else if (filter.sort == 2) {
         //Giá giảm dần
         final = final.sort((a, b) => {
-          const aPrice =
-            a.discount.start_at <= new Date()
-              ? a.variant!.price * (1 - a.discount.percent / 100)
-              : a.variant!.price;
-          const bPrice =
-            b.discount.start_at <= new Date()
-              ? b.variant!.price * (1 - b.discount.percent / 100)
-              : b.variant!.price;
-          return bPrice - aPrice;
+          const minA: number = a.variants
+            ? a.variants.length > 0
+              ? a.variants
+                  .map((item) => item.price)
+                  .reduce((a, b) => Math.min(a, b))
+              : 0
+            : 0;
+
+          const minB: number = b.variants
+            ? b.variants.length > 0
+              ? b.variants
+                  .map((item) => item.price)
+                  .reduce((a, b) => Math.min(a, b))
+              : 0
+            : 0;
+          return minB - minA;
         });
       } else if (filter.sort == 3) {
         //A - Z
-        final = final.sort((a, b) =>
-          a.product!.name.localeCompare(b.product!.name)
-        );
+        final = final.sort((a, b) => a.name.localeCompare(b.name));
       } else if (filter.sort == 4) {
         //Z - A
-        final = final.sort((a, b) =>
-          b.product!.name.localeCompare(a.product!.name)
-        );
+        final = final.sort((a, b) => b.name.localeCompare(a.name));
       } else if (filter.sort == 5) {
         //Cũ nhất
         final = final.sort(
-          (a, b) => new Date(a.mfg).getTime() - new Date(b.mfg).getTime()
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       } else if (filter.sort == 6) {
         //Mới nhất
         final = final.sort(
-          (a, b) => new Date(b.mfg).getTime() - new Date(a.mfg).getTime()
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
       } else if (filter.sort == 7) {
         //Bán chạy nhất
         final = final.sort((a, b) => {
-          const aSold = a.quantity - a.sold;
-          const bSold = b.quantity - b.sold;
-          return bSold - aSold;
+          const amountFB_A = a.feedbacks?.length ?? 0;
+          const amountFB_B = b.feedbacks?.length ?? 0;
+          return amountFB_B - amountFB_A;
         });
       }
     }
@@ -211,20 +238,18 @@ const Products = () => {
       }
 
       if (filter.colors.length > 0) {
-        final = final.filter((item) => {
-          item.product?.colors.forEach((color) => {
-            if (filter.colors.includes(color)) {
-              return true;
-            }
-          });
-        });
+        final = final.filter((item) =>
+          item.colors.some((color) => filter.colors.includes(color))
+        );
         if (final.length === 0) {
           return final;
         }
       }
       if (filter.sizes.length > 0) {
         final = final.filter((item) => {
-          return filter.sizes.includes(item.variant!.size);
+          return item.variants
+            ?.map((variant) => variant.size)
+            .some((size) => filter.sizes.includes(size));
         });
         if (final.length === 0) {
           return final;
@@ -232,26 +257,29 @@ const Products = () => {
       }
 
       final = final.filter((item) => {
-        const price =
-          item.discount.start_at <= new Date()
-            ? item.variant!.price * (1 - item.discount.percent / 100)
-            : item.variant!.price;
-        return filter.price.min <= price && price <= filter.price.max;
+        const minPrice = item.variants
+          ? item.variants.length > 0
+            ? item.variants
+                .map((item) => item.price)
+                .reduce((a, b) => Math.min(a, b))
+            : 0
+          : 0;
+        return filter.price.min <= minPrice && minPrice <= filter.price.max;
       });
     }
     return final;
   }
 
   useEffect(() => {
-    setBatchesDisplay(() => handleFilterBatches('filter'));
+    setProductDataDisplay(() => handleFilterBatches('filter'));
   }, [filter]);
 
   useEffect(() => {
-    setBatchesDisplay(() => handleFilterBatches('sort'));
+    setProductDataDisplay(() => handleFilterBatches('sort'));
   }, [filter.sort]);
 
   useEffect(() => {
-    setBatchesDisplay(() => handleFilterBatches('search'));
+    setProductDataDisplay(() => handleFilterBatches('search'));
   }, [searchText]);
 
   const handleClick = () => {
@@ -408,7 +436,7 @@ const Products = () => {
 
                   <Grid item xs={12}>
                     <ProductList
-                      batches={batchesDisplay}
+                      products={productDataDisplay}
                       viewState={viewState}
                       imageHeight="20vh"
                       imageHeightList="30vh"

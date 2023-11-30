@@ -1,4 +1,4 @@
-import { ProductTableRow } from '@/models/product';
+import Product, { ProductTableRow } from '@/models/product';
 import ProductType from '@/models/productType';
 import { Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
@@ -49,7 +49,13 @@ export default function CustomCardSlider(props: any) {
     const bestSellerCount = productList.length;
 
     for (let i = 0; i < bestSellerCount; i++) {
-      listColumn.push(productList[i] as CardInfoType);
+      const product: Product = productList[i];
+      listColumn.push({
+        image: product.images[0],
+        name: product.name,
+        description: product.description,
+        href: `/product-detail?type_id=${product.product_type_id}&id=${product.id}`,
+      } as CardInfoType);
 
       if ((i + 1) % column == 0 || i + 1 == productList.length) {
         listRow.push(listColumn);
@@ -109,7 +115,7 @@ export default function CustomCardSlider(props: any) {
                   px={{ xs: 2, sm: 2, md: 4, lg: 8 }}
                 >
                   {listColumn.map(
-                    (_item: ProductType, i: React.Key | null | undefined) =>
+                    (_item: CardInfoType, i: React.Key | null | undefined) =>
                       Object.keys(_item).length > 0 ? (
                         <Grid key={i} item xs={12 / listColumn.length}>
                           <Grid
@@ -126,7 +132,7 @@ export default function CustomCardSlider(props: any) {
                                 image: _item.image,
                                 name: _item.name,
                                 description: _item.description,
-                                href: `/product-detail?id=${_item.id}`,
+                                href: _item.href,
                               }}
                               buttonOnclick={buttonOnclick}
                             />

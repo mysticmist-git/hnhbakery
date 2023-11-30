@@ -1,9 +1,7 @@
 import { CustomIconButton } from '@/components/buttons';
-import {
-  getDownloadUrlFromFirebaseStorage,
-} from '@/lib/firestore';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { formatPrice } from '@/lib/utils';
-import { BatchTableRow } from '@/models/batch';
+import { ProductTableRow } from '@/models/product';
 import { ShoppingCart } from '@mui/icons-material';
 import {
   Box,
@@ -32,13 +30,13 @@ import { useEffect, useState } from 'react';
 
 //#endregion
 function CakeCard({
-  batch,
+  product,
   imageHeight,
   imageHeightList,
   viewState,
 }: {
   viewState: 'grid' | 'list';
-  batch: BatchTableRow;
+  product: ProductTableRow;
   imageHeight: string;
   imageHeightList: string;
 }) {
@@ -66,12 +64,12 @@ function CakeCard({
   const [img, setImg] = useState('');
 
   useEffect(() => {
-    getDownloadUrlFromFirebaseStorage(batch.product?.images[0] ?? '')
+    getDownloadUrlFromFirebaseStorage(product.images[0] ?? '')
       .then((url) => {
         setImg(url);
       })
       .catch(() => setImg(''));
-  }, [batch.product?.images]);
+  }, [product.images]);
 
   return (
     <Card
@@ -89,7 +87,7 @@ function CakeCard({
       <CardActionArea
         LinkComponent={Link}
         href={
-          `/product-detail?type_id=${batch.productType?.id}&id=${batch.product?.id}` ??
+          `/product-detail?type_id=${product.product_type_id}&id=${product.id}` ??
           ''
         }
         sx={{
@@ -108,7 +106,8 @@ function CakeCard({
       </CardActionArea>
       <CardActions
         sx={{
-          p: 0,
+          px: 0,
+          py: 2,
           bgcolor: theme.palette.common.white,
           zIndex: 1,
           width: viewState == 'list' ? '50%' : '100%',
@@ -153,7 +152,7 @@ function CakeCard({
                     wordBreak: 'break-word',
                   }}
                 >
-                  {batch.product?.name}
+                  {product.name}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -168,7 +167,7 @@ function CakeCard({
                     fontWeight: 'medium',
                   }}
                 >
-                  {batch.product?.description ?? ''}
+                  {product.description ?? ''}
                 </Typography>
               </Grid>
               <Grid item>
@@ -191,55 +190,13 @@ function CakeCard({
                     <Typography
                       variant="body2"
                       color={theme.palette.secondary.main}
-                      sx={
-                        batch.discount.start_at <= new Date()
-                          ? {
-                              textDecoration: 'line-through',
-                              color: theme.palette.common.black,
-                            }
-                          : {}
-                      }
                     >
-                      {formatPrice(batch.variant?.price ?? 0)}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item>
-                <Grid
-                  container
-                  justifyContent={'flex-start'}
-                  alignItems={'center'}
-                  direction={'row'}
-                  spacing={1}
-                >
-                  <Grid item sx={{ visibility: 'hidden' }}>
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.text.secondary}
-                    >
-                      Giá:
-                    </Typography>
-                  </Grid>
-                  {/* TODO: HUY - Fix this */}
-                  <Grid
-                    item
-                    sx={
-                      batch.discount.start_at <= new Date()
-                        ? { display: 'block' }
-                        : { display: 'none' }
-                    }
-                  >
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.secondary.main}
-                      sx={{
-                        fontStyle: 'italic',
-                      }}
-                    >
+                      {/* Min Price */}
                       {formatPrice(
-                        (batch.variant?.price ?? 0) *
-                          (1 - batch.discount.percent / 100)
+                        product.variants
+                          ?.map((v) => v.price)
+                          .reduce((a, b) => (a < b ? a : b)) ?? 0,
+                        ' đồng'
                       )}
                     </Typography>
                   </Grid>
