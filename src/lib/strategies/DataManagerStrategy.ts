@@ -7,7 +7,7 @@ import {
   StorageProductType,
 } from '@/models/storageModels';
 import Variant from '@/models/variant';
-import { doc } from 'firebase/firestore';
+import { DocumentReference, arrayUnion, doc } from 'firebase/firestore';
 import { Dispatch } from 'react';
 import { createBatch, deleteBatch, updateBatch } from '../DAO/batchDAO';
 import {
@@ -24,7 +24,12 @@ import {
   getProductTypesRef,
   updateProductType,
 } from '../DAO/productTypeDAO';
-import { createVariant, getVariant } from '../DAO/variantDAO';
+import {
+  createVariant,
+  getVariant,
+  getVariantRef,
+  updateVariant,
+} from '../DAO/variantDAO';
 import {
   deleteImageFromFirebaseStorage,
   deleteImagesFromFirebaseStorage,
@@ -344,6 +349,13 @@ export class BatchDataManagerStrategy implements DataManagerStrategy {
 
     const newDocRef = await createBatch(data);
 
+    await updateDoc(
+      getVariantRef(data.product_type_id, data.product_id, data.variant_id),
+      {
+        batches: arrayUnion(newDocRef.id),
+      }
+    );
+
     const variant = await getVariant(
       data.product_type_id,
       data.product_id,
@@ -460,4 +472,10 @@ async function deleteOldImagesAndAddNewImagesToFirebaseStorage(
   return updatedPaths;
 }
 
+function updateDoc(
+  arg0: DocumentReference<Variant>,
+  arg1: { batches: import('@firebase/firestore').FieldValue }
+) {
+  throw new Error('Function not implemented.');
+}
 //#endregion

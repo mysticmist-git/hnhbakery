@@ -68,28 +68,32 @@ const Form = (
     [disabled, mode, onDataChange, readOnly]
   );
 
-  switch (collectionName) {
-    case COLLECTION_NAME.PRODUCT_TYPES:
-      return (
-        <ProductTypeForm
-          {...props}
-          data={data as ModalProductType}
-          ref={productTypeFormRef}
-        />
-      );
-    case COLLECTION_NAME.PRODUCTS:
-      return (
-        <ProductForm
-          {...props}
-          ref={productFormRef}
-          data={data as ModalProduct}
-        />
-      );
-    case COLLECTION_NAME.BATCHES:
-      return <BatchForm {...props} data={data as ModalBatch} />;
-    default:
-      return <div>Error</div>;
-  }
+  const view = useMemo(() => {
+    switch (collectionName) {
+      case COLLECTION_NAME.PRODUCT_TYPES:
+        return (
+          <ProductTypeForm
+            {...props}
+            data={data as ModalProductType}
+            ref={productTypeFormRef}
+          />
+        );
+      case COLLECTION_NAME.PRODUCTS:
+        return (
+          <ProductForm
+            {...props}
+            ref={productFormRef}
+            data={data as ModalProduct}
+          />
+        );
+      case COLLECTION_NAME.BATCHES:
+        return <BatchForm {...props} data={data as ModalBatch} />;
+      default:
+        return <div>Error</div>;
+    }
+  }, [collectionName, data, props]);
+
+  return view;
 };
 
 export default forwardRef(Form);

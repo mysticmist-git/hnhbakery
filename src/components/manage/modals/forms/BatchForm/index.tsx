@@ -94,6 +94,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
   const [firstTime, setFirstTime] = useState(true);
 
   const [userData, setUserData] = useState<User | null>(null);
+  const [userFetched, setUserFetched] = useState(false);
 
   //#endregion
 
@@ -122,11 +123,14 @@ export default memo(function BatchForm(props: BatchFormProps) {
     [props]
   );
 
-  function checkShouldDisableDiscountDate(day: dayjs.Dayjs) {
-    const shouldDisabled =
-      day.isBefore(props.data?.mfg) || day.isAfter(props.data?.exp);
-    return shouldDisabled;
-  }
+  const checkShouldDisableDiscountDate = useCallback(
+    (day: dayjs.Dayjs) => {
+      const shouldDisabled =
+        day.isBefore(props.data?.mfg) || day.isAfter(props.data?.exp);
+      return shouldDisabled;
+    },
+    [props.data?.exp, props.data?.mfg]
+  );
 
   //#endregion
 
@@ -134,6 +138,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
 
   useEffect(() => {
     async function fetchInitial() {
+      console.log('run');
       if (!firstTime) return;
 
       try {
@@ -195,94 +200,110 @@ export default memo(function BatchForm(props: BatchFormProps) {
   }, [firstTime, props.data?.product_id, props.data?.product_type_id, props.data?.variant_id, props.mode]);
 
   useEffect(() => {
-    async function fetchProductsOnChanges() {
-      if (!selectedProductType) return;
-
-      try {
-        const products = await cacheFetchProducts(selectedProductType.id);
-
-        setProducts(products);
-      } catch (error) {
-        console.log('[Batch form] Cannot re-fetch products');
-        setProducts([]);
-      }
-    }
-
-    fetchProductsOnChanges();
-    handleFieldChange('product_type_id', selectedProductType?.id ?? '');
-  }, [handleFieldChange, selectedProductType]);
-
-  useEffect(() => {
-    async function fetchVariantsOnChanges() {
-      if (!selectedProduct) return;
-
-      try {
-        const variants = await cacheFetchVariants(
-          selectedProduct.product_type_id,
-          selectedProduct.id
-        );
-        setVariants(variants);
-      } catch (error) {
-        console.log('[Batch form] Cannot re-fetch variants', error);
-        setVariants([]);
-      }
-    }
-
-    fetchVariantsOnChanges();
-    handleFieldChange('product_id', selectedProduct?.id ?? '');
-  }, [handleFieldChange, selectedProduct]);
-
-  useEffect(() => {
+    console.log('run');
     setDiscountAmount(() => calculateDiscountMoney());
   }, [calculateDiscountMoney, props.data?.discount.percent]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('run');
+
       if (!user) {
         setUserData(null);
         return;
       }
 
+      console.log('run');
+      if (userFetched) return;
+      console.log('run');
+
       getUserByUid(user.uid)
-        .then((user) => setUserData(user ?? null))
+        .then((user) => {
+          if (user) {
+            setUserFetched(true);
+
+            getBranchByManager(user)
+              .then((branch) =>
+                handleFieldChange('branch_id', branch?.id ?? '')
+              )
+              .catch(() => handleFieldChange('branch_id', ''));
+          }
+        })
         .catch(() => setUserData(null));
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (userData) {
-      getBranchByManager(userData)
-        .then((branch) => handleFieldChange('branch_id', branch?.id ?? ''))
-        .catch(() => handleFieldChange('branch_id', ''));
-    }
-  }, [handleFieldChange, userData]);
+  }, [handleFieldChange, userFetched]);
 
   //#endregion
 
   //#region Handlers
 
-  function handleProductTypeChange(value: ProductTypeWithCount | null) {
-    setSelectedProductType(value);
-    setSelectedProduct(null);
-    setSelectedVariant(null);
-  }
+  const handleProductTypeChange = useCallback(
+    (value: ProductTypeWithCount | null) => {
+      setSelectedProductType(value);
+      setSelectedProduct(null);
+      setSelectedVariant(null);
 
-  function handleSelectedProductChange(value: Product | null) {
-    setSelectedProduct(value);
-    setSelectedVariant(null);
-  }
+      async function fetchProductsOnChanges() {
+        if (!selectedProductType) return;
 
-  function handleSelectedProductVariantChange(value: Variant | null) {
-    if (value) {
-      setSelectedVariant(value);
-      handleFieldChange('variant_id', value.id);
-      console.log(value);
-    }
-  }
+        try {
+          const products = await cacheFetchProducts(selectedProductType.id);
+
+          setProducts(products);
+        } catch (error) {
+          console.log('[Batch form] Cannot re-fetch products');
+          setProducts([]);
+        }
+      }
+
+      fetchProductsOnChanges();
+      handleFieldChange('product_type_id', selectedProductType?.id ?? '');
+    },
+    [handleFieldChange, selectedProductType]
+  );
+
+  const handleSelectedProductChange = useCallback(
+    (value: Product | null) => {
+      setSelectedProduct(value);
+      setSelectedVariant(null);
+
+      async function fetchVariantsOnChanges() {
+        if (!selectedProduct) return;
+
+        try {
+          const variants = await cacheFetchVariants(
+            selectedProduct.product_type_id,
+            selectedProduct.id
+          );
+          setVariants(variants);
+        } catch (error) {
+          console.log('[Batch form] Cannot re-fetch variants', error);
+          setVariants([]);
+        }
+      }
+
+      fetchVariantsOnChanges();
+      handleFieldChange('product_id', selectedProduct?.id ?? '');
+    },
+    [handleFieldChange, selectedProduct]
+  );
+
+  const handleSelectedProductVariantChange = useCallback(
+    (value: Variant | null) => {
+      if (value) {
+        setSelectedVariant(value);
+        handleFieldChange('variant_id', value.id);
+        console.log(value);
+      }
+    },
+    [handleFieldChange]
+  );
 
   //#endregion
+
+  console.log('re-render');
 
   return (
     <>

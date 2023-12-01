@@ -486,6 +486,8 @@ const BranchStorage: FunctionComponent<BranchStorageProps> = () => {
 
   //#endregion
 
+  console.log('re-render');
+
   return (
     <>
       {canBeAccessed == true && (

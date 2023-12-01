@@ -11,7 +11,7 @@ import {
 } from '@/lib/types/manage';
 import { BaseModel } from '@/models/storageModels';
 import { Backdrop, CircularProgress } from '@mui/material';
-import React, { forwardRef, memo, useEffect, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useEffect, useState } from 'react';
 import { Form } from '../../forms/';
 import RowModalLayout from '../RowModalLayout';
 
@@ -77,14 +77,14 @@ export default memo(
 
     //#region Handlers
 
-    const handleModalDeleteRow = () => {
+    const handleModalDeleteRow = useCallback(() => {
       if (!data || !data.id) {
         console.log('Delete fail by NULL DATA OR NULL ID');
         return;
       }
 
       handleDeleteRow(data);
-    };
+    }, [data, handleDeleteRow]);
 
     //#endregion
 
