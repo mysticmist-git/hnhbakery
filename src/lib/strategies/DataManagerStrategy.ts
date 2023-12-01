@@ -7,7 +7,12 @@ import {
   StorageProductType,
 } from '@/models/storageModels';
 import Variant from '@/models/variant';
-import { DocumentReference, arrayUnion, doc } from 'firebase/firestore';
+import {
+  DocumentReference,
+  arrayUnion,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
 import { Dispatch } from 'react';
 import { createBatch, deleteBatch, updateBatch } from '../DAO/batchDAO';
 import {
@@ -472,10 +477,4 @@ async function deleteOldImagesAndAddNewImagesToFirebaseStorage(
   return updatedPaths;
 }
 
-function updateDoc(
-  arg0: DocumentReference<Variant>,
-  arg1: { batches: import('@firebase/firestore').FieldValue }
-) {
-  throw new Error('Function not implemented.');
-}
 //#endregion
