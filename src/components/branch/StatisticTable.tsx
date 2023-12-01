@@ -126,7 +126,6 @@ export default function StatisticTable({
       ]);
     };
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statisticDate]);
 
   return (

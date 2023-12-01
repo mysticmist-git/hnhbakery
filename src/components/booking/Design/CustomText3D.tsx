@@ -34,7 +34,6 @@ export default function CustomText3D({ index }: { index: number }) {
     });
   }, [path]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const configNumber = useMemo(() => {
     if (scale) {
       return (7 * scale - 2.5) / 10000;
@@ -47,7 +46,6 @@ export default function CustomText3D({ index }: { index: number }) {
     return <></>;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const material = useRef<any>(
     new MeshStandardMaterial({
       color: 'pink',
@@ -55,7 +53,6 @@ export default function CustomText3D({ index }: { index: number }) {
   );
 
   if (textures) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     let texturesLoaded = useTexture(
       textures.filter((item) => item.path != '').map((item) => item.path)
     );
@@ -66,14 +63,12 @@ export default function CustomText3D({ index }: { index: number }) {
     }
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (ref.current) {
       ref.current.material = material.current;
     }
-  }, []);
+  }, [material.current]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!ref.current) {
       return;
@@ -109,7 +104,6 @@ export default function CustomText3D({ index }: { index: number }) {
       };
       handleChangeContext('array', newValue, index);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

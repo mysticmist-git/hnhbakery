@@ -117,7 +117,6 @@ const Products = () => {
       }
     }
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleSetViewState(value: 'grid' | 'list') {
@@ -273,17 +272,14 @@ const Products = () => {
 
   useEffect(() => {
     setProductDataDisplay(() => handleFilterBatches('filter'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   useEffect(() => {
     setProductDataDisplay(() => handleFilterBatches('sort'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter.sort]);
 
   useEffect(() => {
     setProductDataDisplay(() => handleFilterBatches('search'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   const handleClick = () => {

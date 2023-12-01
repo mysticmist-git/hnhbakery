@@ -199,10 +199,8 @@ function CustomSliderGhim() {
   ) {
     return <></>;
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [data, setData] = useState(Math.round(ghim * 100));
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const height = useMemo(() => {
     if (!box3 || !box3Span) {
       return 0;
@@ -223,10 +221,8 @@ function CustomSliderGhim() {
     console.log(objHeight, spanHeight);
 
     return Math.min(objHeight, spanHeight);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box3, box3Span]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const pow_ten_zeroAmount = useMemo(() => {
     const numberString = height.toString();
     let count = 2;
@@ -240,7 +236,6 @@ function CustomSliderGhim() {
     return Math.pow(10, count);
   }, [height]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const sliderValue = useMemo(() => {
     return {
       max: Math.round((height * pow_ten_zeroAmount * 1) / 2),
@@ -249,10 +244,8 @@ function CustomSliderGhim() {
     };
   }, [height, pow_ten_zeroAmount]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setData(ghim * pow_ten_zeroAmount);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ghim]);
 
   return (
@@ -294,10 +287,8 @@ function CustomSliderScale() {
   if (!scale) {
     return <></>;
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [data, setData] = useState(scale);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setData(scale);
   }, [scale]);
@@ -341,10 +332,8 @@ function CustomSliderRotation({ i }: { i: number }) {
   if (!rotation) {
     return <></>;
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [data, setData] = useState(Math.round(rotation[i] * (180 / Math.PI)));
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setData(Math.round(rotation[i] * (180 / Math.PI)));
   }, [rotation, i]);
@@ -392,10 +381,8 @@ function CustomSelectLopPhu({ label, i }: { i: number; label: string }) {
     return null;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [value, setValue] = useState(textures[i].path);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setValue(textures[i].path);
   }, [i, textures]);
@@ -449,9 +436,7 @@ function CustomSelectFontChu({ label }: { label: string }) {
     return <></>;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [value, setValue] = useState(path);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setValue(path);
   }, [path]);
@@ -494,12 +479,9 @@ function CustomTextFieldNoiDung({ label }: { label: string }) {
     return <></>;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [value, setValue] = useState(children[0]);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     setValue(children[0]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [children[0]]);
 
   return (

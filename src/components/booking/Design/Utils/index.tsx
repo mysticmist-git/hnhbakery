@@ -106,22 +106,16 @@ export function useDrag({
   if (!planeId) {
     return () => {};
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const controls: any = useThree((state) => state.controls);
 
   const { active, setActive, cakeBoundingBox, dragIndex, setDragIndex } =
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useContext(DraggingContext);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [hovered, hover] = useState(false);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const out = useCallback(() => hover(false), []);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const over = useCallback((e: any) => (e.stopPropagation(), hover(true)), []);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const down = useCallback(
     (e: any) => {
       e.stopPropagation();
@@ -130,11 +124,9 @@ export function useDrag({
       if (controls) controls.enabled = false;
       e.target.setPointerCapture(e.pointerId);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [controls, setActive]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const up = useCallback(
     (e: any) => {
       setActive({ id: -1 });
@@ -142,11 +134,9 @@ export function useDrag({
       if (controls) controls.enabled = true;
       e.target.releasePointerCapture(e.pointerId);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [controls, setActive]
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const move = useCallback(
     (e: any) => {
       e.stopPropagation();
@@ -157,7 +147,6 @@ export function useDrag({
       )
         onDrag(v);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onDrag, active]
   );
 

@@ -213,7 +213,6 @@ export default function ReportTable({
       });
       handle(batches_HaoHut ? batches_HaoHut : []);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     // handle,
     // handleRealRevenueChange,

@@ -112,7 +112,6 @@ function ActionButton({
     setSelectedKhuonBanh(
       khuonBanhArray.find((item) => item.file == array[0].path) || null
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

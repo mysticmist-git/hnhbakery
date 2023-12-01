@@ -69,9 +69,12 @@ export async function updateBatch(id: string, batch: Omit<Batch, 'id'>) {
   await updateDoc(getBatchRefById(id), batch);
 }
 
-export async function increaseDecreaseBatchSold(id: string, sold: number) {
+export async function increaseDecreaseBatchQuantity(
+  id: string,
+  quantity: number
+) {
   await updateDoc(getBatchRefById(id), {
-    sold: increment(sold),
+    quantity: increment(quantity),
     updated_at: new Date(),
   });
 }

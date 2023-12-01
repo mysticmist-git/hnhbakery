@@ -68,11 +68,9 @@ export function Primitive({
   if (!path) {
     return <></>;
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   let loader = useLoader(OBJLoader, path);
 
   if (textures) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     let texturesLoaded = useTexture(
       textures.filter((item) => item.path != '').map((item) => item.path)
     );
@@ -91,7 +89,6 @@ export function Primitive({
     });
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!loader) return;
 
@@ -126,7 +123,6 @@ export function Primitive({
     if (handleCakeBoudingChange) {
       handleCakeBoudingChange(box3);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loader]);
 
   return (

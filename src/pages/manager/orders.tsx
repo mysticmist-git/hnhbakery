@@ -131,7 +131,6 @@ const Order = () => {
       }
     };
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const theme = useTheme();

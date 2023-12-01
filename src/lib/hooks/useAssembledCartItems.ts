@@ -16,7 +16,6 @@ function useAssembledCartItems(
 
     setItems(assembledCartItem);
     stop();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return [items, reload];
