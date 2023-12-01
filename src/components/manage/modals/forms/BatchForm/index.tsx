@@ -213,9 +213,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
         return;
       }
 
-      console.log('run');
       if (userFetched) return;
-      console.log('run');
 
       getUserByUid(user.uid)
         .then((user) => {
@@ -245,11 +243,11 @@ export default memo(function BatchForm(props: BatchFormProps) {
       setSelectedProduct(null);
       setSelectedVariant(null);
 
-      async function fetchProductsOnChanges() {
-        if (!selectedProductType) return;
+      async function fetchProductsOnChanges(value: ProductTypeWithCount) {
+        if (!value) return;
 
         try {
-          const products = await cacheFetchProducts(selectedProductType.id);
+          const products = await cacheFetchProducts(value.id);
 
           setProducts(products);
         } catch (error) {
@@ -258,7 +256,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
         }
       }
 
-      fetchProductsOnChanges();
+      value && fetchProductsOnChanges(value);
       handleFieldChange('product_type_id', selectedProductType?.id ?? '');
     },
     [handleFieldChange, selectedProductType]
@@ -269,13 +267,13 @@ export default memo(function BatchForm(props: BatchFormProps) {
       setSelectedProduct(value);
       setSelectedVariant(null);
 
-      async function fetchVariantsOnChanges() {
-        if (!selectedProduct) return;
+      async function fetchVariantsOnChanges(value: Product) {
+        if (!value) return;
 
         try {
           const variants = await cacheFetchVariants(
-            selectedProduct.product_type_id,
-            selectedProduct.id
+            value.product_type_id,
+            value.id
           );
           setVariants(variants);
         } catch (error) {
@@ -284,7 +282,7 @@ export default memo(function BatchForm(props: BatchFormProps) {
         }
       }
 
-      fetchVariantsOnChanges();
+      value && fetchVariantsOnChanges(value);
       handleFieldChange('product_id', selectedProduct?.id ?? '');
     },
     [handleFieldChange, selectedProduct]
