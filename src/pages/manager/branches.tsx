@@ -2,24 +2,30 @@ import BranchTable from '@/components/branches/BranchTable/BranchTable';
 import EditModal from '@/components/branches/MyModal/EditModal';
 import ModalState from '@/components/branches/MyModal/ModalState';
 import MyModal from '@/components/branches/MyModal/MyModal';
+import MyModalAdd from '@/components/branches/MyModal/MyModalAdd';
+import { TableActionButton } from '@/components/buttons';
 import { getBranchTableRows, getBranches } from '@/lib/DAO/branchDAO';
 import { getUser } from '@/lib/DAO/userDAO';
-import { BranchTableRow } from '@/models/branch';
+import { useSnackbarService } from '@/lib/contexts';
+import Branch, { BranchTableRow } from '@/models/branch';
+import { Add, RestartAlt } from '@mui/icons-material';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const Branches = () => {
   const [branches, setBranches] = useState<BranchTableRow[]>([]);
   const theme = useTheme();
+  const handleSnackbarAlert = useSnackbarService();
+
+  const fetchData = useCallback(async () => {
+    try {
+      setBranches(await getBranchTableRows());
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setBranches(await getBranchTableRows());
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchData();
   }, []);
 
@@ -77,6 +83,19 @@ const Branches = () => {
   };
   //#endregion
 
+  //#region Modal Add
+  const [openModalAdd, setOpenModalAdd] = useState(false);
+  const [contentAdd, setContentAdd] = useState<Branch | null>(null);
+  const handleOpenModalAdd = () => setOpenModalAdd(true);
+  const handleCloseModalAdd = () => {
+    setOpenModalAdd(false);
+    fetchData();
+  };
+
+  const handleViewModalAdd = (value: Branch | null) => {
+    handleOpenModalAdd();
+  };
+  //#endregion
   return (
     <>
       <Box
@@ -98,6 +117,47 @@ const Branches = () => {
 
           <Grid item xs={12}>
             <Divider />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                justifyContent: 'end',
+                alignItems: 'center',
+                flexDirection: 'row',
+                gap: 1,
+              }}
+            >
+              <TableActionButton
+                startIcon={<RestartAlt />}
+                onClick={async () => {
+                  await fetchData();
+                  handleSnackbarAlert('success', 'Tải lại thành công!');
+                }}
+                sx={{
+                  px: 2,
+                }}
+              >
+                Tải lại
+              </TableActionButton>
+
+              <TableActionButton
+                startIcon={<Add />}
+                variant="contained"
+                onClick={() => handleViewModalAdd(contentAdd)}
+              >
+                Thêm
+              </TableActionButton>
+
+              {/* Modal thêm*/}
+              <MyModalAdd
+                open={openModalAdd}
+                handleClose={handleCloseModalAdd}
+                branch={contentAdd}
+              />
+            </Box>
           </Grid>
 
           <Grid item xs={12}>

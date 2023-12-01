@@ -28,28 +28,6 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 
 const Sales = () => {
   const [sales, setSales] = useState<SaleTableRow[]>([]);
-
-  // const sales = useMemo(() => {
-  //   if (!rawSales || !bills || sLoading || bLoading) {
-  //     return [];
-  //   }
-
-  //   return rawSales.map((sale) => {
-  //     const filter_bills = bills.filter((bill) => {
-  //       return bill.sale_id === sale.id;
-  //     });
-  //     const totalSaleAmount = filter_bills.reduce(
-  //       (total, bill) => total + bill.saleAmount,
-  //       0
-  //     );
-  //     return {
-  //       ...sale,
-  //       numberOfUse: filter_bills.length,
-  //       totalSaleAmount: totalSaleAmount,
-  //     };
-  //   });
-  // }, [rawSales, bills, sLoading, bLoading]);
-
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
   const fetchData = async () => {
