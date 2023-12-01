@@ -161,7 +161,7 @@ function BookingItemDisplay({
           phương thức thanh toán bắt buộc là
           <span style={{ textDecoration: 'underline' }}>
             {' '}
-            "Thanh toán trực tiếp khi nhận hàng"{' '}
+            `&quot;`Thanh toán trực tiếp khi nhận hàng`&quot;`{' '}
           </span>
           .
         </Typography>

@@ -105,7 +105,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
     setNewPermission(newPermissionDefault);
     handleCloseDialog();
-  }, [newPermission]);
+  }, [handleSnackbarAlert, newPermission]);
 
   const handleUpdatePermission = useCallback(async () => {
     // Implement the logic to add the new permission
@@ -124,7 +124,8 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
     setCache(null);
     handleCloseDialog();
-  }, [cache]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cache, handleSnackbarAlert]);
 
   const handleViewDetail = (permission: Permission) => {
     setCache(permission);

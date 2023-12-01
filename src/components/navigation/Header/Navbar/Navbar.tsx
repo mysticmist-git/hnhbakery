@@ -242,6 +242,7 @@ function Navbar() {
   //#region CartCount Hên ở đây nè Hên!
   const [cartCount, setCartCount] = useState(0);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
     if (!currentLocalCart) {

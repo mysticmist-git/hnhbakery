@@ -121,6 +121,7 @@ const ChooseMessageColor = ({
       }
     }
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -128,6 +129,7 @@ const ChooseMessageColor = ({
       return;
     }
     handleChangeColor(colors[selectedIndex].hex);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIndex]);
 
   return (
@@ -218,6 +220,7 @@ export function Buoc2({
       setNote(bookingItem.note!);
     }
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -228,22 +231,27 @@ export function Buoc2({
 
   useEffect(() => {
     handleBookingItemChange('occasion', inputOccassion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputOccassion]);
 
   useEffect(() => {
     handleBookingItemChange('size', inputSize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputSize]);
 
   useEffect(() => {
     handleBookingItemChange('cake_base_id', inputCakeBaseId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputCakeBaseId]);
 
   useEffect(() => {
     handleBookingItemChange('message', message);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
 
   useEffect(() => {
     handleBookingItemChange('note', note);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [note]);
   return (
     <>

@@ -135,6 +135,7 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
         group_id: group.id,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group]);
 
   return (

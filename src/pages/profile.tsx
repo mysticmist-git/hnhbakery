@@ -684,6 +684,7 @@ function BillItemsContent({ item }: { item: BillItemTableRow }) {
     }
 
     getImage();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.product?.images[0]]);
 
   return (

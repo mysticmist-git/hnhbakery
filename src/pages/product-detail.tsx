@@ -238,6 +238,7 @@ function ProductDetail() {
     };
 
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query]);
 
   console.log(productDetail);

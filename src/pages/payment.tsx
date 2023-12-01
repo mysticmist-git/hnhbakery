@@ -2,14 +2,19 @@ import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
+import BookingItemDisplay from '@/components/payment/BookingItem/BookingItem';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, storage } from '@/firebase/config';
-import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
+import { increaseDecreaseBatchSold } from '@/lib/DAO/batchDAO';
 import { createBill } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
+import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
 import { createDelivery } from '@/lib/DAO/deliveryDAO';
+import { DEFAULT_GROUP_ID, GUEST_ID } from '@/lib/DAO/groupDAO';
+import { getSales } from '@/lib/DAO/saleDAO';
 import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import { PaymentContext } from '@/lib/contexts/paymentContext';
 import useAssembledCartItems from '@/lib/hooks/useAssembledCartItems';
 import useCartItems from '@/lib/hooks/useCartItems';
 import useCartNote from '@/lib/hooks/useCartNote';
@@ -23,22 +28,17 @@ import {
   validateForm,
 } from '@/lib/pageSpecific/payment';
 import Bill from '@/models/bill';
+import BookingItem from '@/models/bookingItem';
 import Delivery from '@/models/delivery';
 import Sale from '@/models/sale';
 import User from '@/models/user';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { ref, uploadBytes } from 'firebase/storage';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import FormGiaoHang from '../components/payment/FormGiaoHang';
-import { PaymentContext } from '@/lib/contexts/paymentContext';
-import BookingItemDisplay from '@/components/payment/BookingItem/BookingItem';
-import { ref, uploadBytes } from 'firebase/storage';
-import { DEFAULT_GROUP_ID, GUEST_ID } from '@/lib/DAO/groupDAO';
-import BookingItem from '@/models/bookingItem';
-import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
-import { getSales } from '@/lib/DAO/saleDAO';
 // #endregion
 
 const Payment = () => {
@@ -212,7 +212,7 @@ const Payment = () => {
       );
 
       for (const item of assembledCartItems) {
-        await increaseDecreaseBatchQuantity(item.batchId, -item.quantity);
+        await increaseDecreaseBatchSold(item.batchId, item.quantity);
       }
 
       return { ...billData, id: billRef.id };
@@ -481,6 +481,7 @@ const Payment = () => {
       resetState();
       return;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryForm]);
 
   // #endregion

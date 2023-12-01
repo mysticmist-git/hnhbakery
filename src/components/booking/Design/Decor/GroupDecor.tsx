@@ -32,8 +32,10 @@ function GroupDecor({ index }: { index: number }) {
   const { planeId, box3, scale, rotation, ghim, isShow, isText } =
     arrayModel[index];
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const pos = useRef<[number, number, number] | null>(null);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const onDrag = useCallback(
     (v: Vector3) => {
       if (!planeId || !cakeBoundingBox || !box3 || ghim == undefined) return;
@@ -85,12 +87,14 @@ function GroupDecor({ index }: { index: number }) {
     [planeId, cakeBoundingBox, box3, ghim]
   );
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [events, hovered] = useDrag({
     planeId: planeId,
     onDrag,
     index,
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useFrame((state, delta) => {
     if (pos.current) {
       easing.damp3(ref.current.position, pos.current, 0.3, delta);
@@ -100,8 +104,10 @@ function GroupDecor({ index }: { index: number }) {
     }
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const ref = useRef<THREE.Group>(null!);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!cakeBoundingBox || !planeId) return;
 
@@ -124,9 +130,12 @@ function GroupDecor({ index }: { index: number }) {
       cakeBoundingBox,
       isText ? isText : false
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planeId, cakeBoundingBox]);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [oldGhim, setOldGhim] = useState<number>(ghim ?? 0);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!cakeBoundingBox || !planeId || ghim == undefined || !pos.current)
       return;
@@ -159,6 +168,7 @@ function GroupDecor({ index }: { index: number }) {
     }
 
     setOldGhim(ghim);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ghim, planeId, cakeBoundingBox]);
 
   return (

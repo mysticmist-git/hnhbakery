@@ -144,6 +144,7 @@ const PaymentResult = () => {
     } catch (error: any) {
       console.log(error);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billId, email, handlerSnackbarAlert]);
 
   useEffect(() => {

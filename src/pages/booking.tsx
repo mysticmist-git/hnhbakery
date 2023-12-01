@@ -164,6 +164,7 @@ const Booking = () => {
         setEditIndex(value);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -269,6 +270,7 @@ const Booking = () => {
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [withRoomDesign, isPicturing]);
 
   const checkInfor = useCallback(

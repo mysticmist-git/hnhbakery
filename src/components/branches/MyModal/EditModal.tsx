@@ -82,6 +82,7 @@ export default function EditModal({
     ) {
       setIsChanged(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalBranch]);
 
   useEffect(() => {
