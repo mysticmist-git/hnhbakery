@@ -27,7 +27,7 @@ const CustomTextField: React.FC<
           fontFamily: theme.typography.body2.fontFamily,
           backgroundColor: theme.palette.common.white,
           border: 3,
-          borderColor: theme.palette.secondary.main,
+          bordercolor: theme.palette.secondary.main,
           py: 1.5,
           borderRadius: '8px',
           '&:hover': {

@@ -259,9 +259,9 @@ export default function Manage() {
         case COLLECTION_NAME.PRODUCTS:
           fetcher = new ProductStorageDocsFetcher();
           break;
-        case COLLECTION_NAME.BATCHES:
-          fetcher = new BatchStorageDocsFetcher();
-          break;
+        // case COLLECTION_NAME.BATCHES:
+        //   fetcher = new BatchStorageDocsFetcher();
+        //   break;
         default:
           break;
       }
@@ -608,9 +608,9 @@ export default function Manage() {
       case COLLECTION_NAME.PRODUCTS:
         factory = new ProductStorageDocsFetcher();
         break;
-      case COLLECTION_NAME.BATCHES:
-        factory = new BatchStorageDocsFetcher();
-        break;
+      // case COLLECTION_NAME.BATCHES:
+      //   factory = new BatchStorageDocsFetcher();
+      //   break;
       default:
         break;
     }

@@ -73,7 +73,7 @@ const Payment = () => {
         result.billPrice += (item.variant?.price ?? 0) * item.quantity;
         result.discountAmount +=
           (item.batch?.discount?.start_at?.valueOf() &&
-          item.batch?.discount?.start_at < new Date()
+          item.batch?.discount?.start_at.getTime() < new Date().getTime()
             ? ((item.batch?.discount.percent ?? 0) / 100) *
               (item.variant?.price ?? 0)
             : 0) * item.quantity;
@@ -483,6 +483,8 @@ const Payment = () => {
     }
   }, [deliveryForm]);
 
+  console.log(isBooking);
+
   // #endregion
   return (
     <Box component={'div'} sx={{ pb: 16 }}>
@@ -576,6 +578,13 @@ const Payment = () => {
 
                       if (newSale) {
                         handleChooseSale(newSale);
+                      } else {
+                        setChosenSale(() => null);
+                        setSalePrice(() => 0);
+                        handleSnackbarAlert(
+                          'error',
+                          'Không tìm thấy code sale!'
+                        );
                       }
                     }}
                     handleChooseSale={handleChooseSale}

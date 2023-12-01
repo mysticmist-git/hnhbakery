@@ -466,7 +466,7 @@ function ProductDetailInfo({
                               : {}
                           }
                         >
-                          {formatPrice(itemPrice)}
+                          {formatPrice(itemPrice, ' đồng')}
                         </Typography>
                         {itemDiscountPrice > 0 && (
                           <Typography
@@ -475,7 +475,7 @@ function ProductDetailInfo({
                               color: theme.palette.secondary.main,
                             }}
                           >
-                            {formatPrice(itemDiscountPrice)}
+                            {formatPrice(itemDiscountPrice, ' đồng')}
                           </Typography>
                         )}
                       </Stack>
@@ -498,7 +498,8 @@ function ProductDetailInfo({
                         {formatPrice(
                           discountTotalPrice > 0
                             ? discountTotalPrice
-                            : totalPrice
+                            : totalPrice,
+                          ' đồng'
                         )}
                       </Typography>
                     </Grid>
