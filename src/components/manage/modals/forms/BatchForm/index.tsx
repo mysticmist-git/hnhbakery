@@ -257,9 +257,9 @@ export default memo(function BatchForm(props: BatchFormProps) {
       }
 
       value && fetchProductsOnChanges(value);
-      handleFieldChange('product_type_id', selectedProductType?.id ?? '');
+      handleFieldChange('product_type_id', value?.id ?? '');
     },
-    [handleFieldChange, selectedProductType]
+    [handleFieldChange]
   );
 
   const handleSelectedProductChange = useCallback(
@@ -283,9 +283,9 @@ export default memo(function BatchForm(props: BatchFormProps) {
       }
 
       value && fetchVariantsOnChanges(value);
-      handleFieldChange('product_id', selectedProduct?.id ?? '');
+      handleFieldChange('product_id', value?.id ?? '');
     },
-    [handleFieldChange, selectedProduct]
+    [handleFieldChange]
   );
 
   const handleSelectedProductVariantChange = useCallback(
