@@ -34,15 +34,23 @@ export const createBillItemData = (
   const discountPercent = cartItem.batch?.discount.percent ?? 0;
 
   const totalPrice = price * cartItem.quantity;
-  const totalDiscount = price * (discountPercent / 100) * cartItem.quantity;
+  let totalDiscount = 0;
+  let discount = 0;
+  if (
+    cartItem.batch?.discount.start_at.valueOf() &&
+    cartItem.batch?.discount.start_at.getTime() < new Date().getTime()
+  ) {
+    discount = price * (discountPercent / 100);
+    totalDiscount = discount * cartItem.quantity;
+  }
 
   const billItemData: Omit<BillItem, 'id'> = {
-    price: totalPrice,
+    price: price,
     amount: cartItem.quantity,
-    discount: discountPercent,
+    discount: discount,
     total_price: totalPrice,
     total_discount: totalDiscount,
-    final_price: price - totalDiscount,
+    final_price: totalPrice - totalDiscount,
     batch_id: cartItem.batchId,
     bill_id: billId,
     created_at: new Date(),

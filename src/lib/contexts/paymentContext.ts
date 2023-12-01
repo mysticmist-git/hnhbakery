@@ -110,22 +110,22 @@ export function initPaymentContext() {
     setImageArray([]);
   }, []);
 
-  // useEffect(() => {
-  //   if (imageArray.length > 0) {
-  //     if (
-  //       bookingItem.occasion !== '' &&
-  //       bookingItem.size !== '' &&
-  //       bookingItem.cake_base_id !== '' &&
-  //       bookingItem.message.content !== ''
-  //     ) {
-  //       setIsBooking(true);
-  //     } else {
-  //       setIsBooking(false);
-  //     }
-  //   } else {
-  //     setIsBooking(false);
-  //   }
-  // }, [bookingItem, imageArray]);
+  useEffect(() => {
+    if (imageArray.length > 0) {
+      if (
+        bookingItem.occasion !== '' &&
+        bookingItem.size !== '' &&
+        bookingItem.cake_base_id !== '' &&
+        bookingItem.message.content !== ''
+      ) {
+        setIsBooking(true);
+      } else {
+        setIsBooking(false);
+      }
+    } else {
+      setIsBooking(false);
+    }
+  }, [bookingItem, imageArray]);
 
   return {
     bookingItem,

@@ -91,7 +91,7 @@ export default function AddressItem({
 
     if (addressRef.current && userData) {
       if (
-        addressRef.current.value !== value.address || 
+        addressRef.current.value !== value.address ||
         selectedProvince.id !== value.province_id
       ) {
         try {
@@ -164,6 +164,7 @@ export default function AddressItem({
           <TextField
             {...params}
             label="Tỉnh thành"
+            color="secondary"
             InputProps={{
               ...params.InputProps,
               sx: {
@@ -179,6 +180,7 @@ export default function AddressItem({
         disabled={disabled}
         variant="outlined"
         inputRef={addressRef}
+        color="secondary"
         fullWidth
         InputProps={{
           style: {
@@ -226,7 +228,7 @@ export default function AddressItem({
             ...textStyle,
           },
         }}
-        type="text"
+        type="address"
       />
     </>
   );

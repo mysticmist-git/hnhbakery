@@ -234,7 +234,6 @@ const RightProfileColumn = ({
           sx={{
             backgroundColor: theme.palette.common.white,
             borderRadius: '16px',
-            overflow: 'hidden',
             boxShadow: 3,
             p: 2,
           }}

@@ -86,7 +86,7 @@ const Profile = () => {
       }
     };
 
-    // fetchData();
+    fetchData();
   }, [load, stop, user]);
 
   // #endregion
@@ -447,30 +447,34 @@ export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                   <Typography {...TypoStyle}>{bill.note ?? 'Trống'}</Typography>
                 </Box>
 
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Tổng tiền:</Typography>
+                {bill.state != 'issued' && (
+                  <>
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Tổng tiền:</Typography>
 
-                  <Typography {...TypoStyle}>
-                    {formatPrice(bill.total_price, ' đồng') ?? 'Trống'}
-                  </Typography>
-                </Box>
+                      <Typography {...TypoStyle}>
+                        {formatPrice(bill.total_price, ' đồng') ?? 'Trống'}
+                      </Typography>
+                    </Box>
 
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Khuyến mãi:</Typography>
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Khuyến mãi:</Typography>
 
-                  <Typography {...TypoStyle}>
-                    {(bill.total_discount == 0 ? '' : '-') +
-                      formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
-                  </Typography>
-                </Box>
+                      <Typography {...TypoStyle}>
+                        {(bill.total_discount == 0 ? '' : '-') +
+                          formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
+                      </Typography>
+                    </Box>
 
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Thành tiền:</Typography>
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Thành tiền:</Typography>
 
-                  <Typography {...TypoStyle}>
-                    {formatPrice(bill.final_price, ' đồng') ?? 'Trống'}
-                  </Typography>
-                </Box>
+                      <Typography {...TypoStyle}>
+                        {formatPrice(bill.final_price, ' đồng') ?? 'Trống'}
+                      </Typography>
+                    </Box>
+                  </>
+                )}
               </Stack>
             </Box>
 

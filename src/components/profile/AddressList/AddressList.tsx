@@ -108,6 +108,9 @@ export default function AddressList({
             justifyContent="space-between"
             alignItems="center"
             flexDirection={'row'}
+            sx={{
+              overflow: 'visible',
+            }}
           >
             <Typography
               align="center"
