@@ -401,6 +401,13 @@ const Payment = () => {
       id: '',
     };
     try {
+      if (!user) {
+        userData = {
+          group_id: DEFAULT_GROUP_ID,
+          id: GUEST_ID,
+        };
+        return;
+      }
       const uData = await getUserByUid(user?.uid!);
       if (uData) {
         userData = {

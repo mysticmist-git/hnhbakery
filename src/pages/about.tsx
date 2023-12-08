@@ -10,6 +10,7 @@ import ImageBackground from '@/components/Imagebackground';
 import CustomButton from '@/components/buttons/CustomButton';
 import { CustomCard } from '@/components/cards';
 import CustomCardWithoutStorageRef from '@/components/cards/CustomCardWithoutStorageRef';
+import TestMail from '@/components/email/TestMail';
 import { Box, Grid, Link, Typography, alpha, useTheme } from '@mui/material';
 import Image from 'next/image';
 import React, { memo } from 'react';
@@ -123,6 +124,7 @@ const About = () => {
                     </CustomButton>
                   </Link>
                 </Grid>
+                <TestMail />
               </Grid>
             </Grid>
           </Grid>
