@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { NextApiRequest, NextApiResponse } from 'next';
-import AirbnbReviewEmail from '@/emails/welcome';
+import E_Bill from '@/emails/welcome';
 import { resend } from '@/lib/resend';
+import { BillTableRow } from '@/models/bill';
 
-export default async function GET(req: NextApiRequest, res: NextApiResponse) {
+export default async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const { bill } = await JSON.parse(req.body);
+
     const data = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: '20520206@gm.uit.edu.vn',
       subject: 'hello world',
-      react: AirbnbReviewEmail({}),
+      react: E_Bill({ bill: bill as BillTableRow }),
     });
 
     return res.status(200).send(data);

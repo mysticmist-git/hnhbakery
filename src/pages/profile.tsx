@@ -60,6 +60,7 @@ const Profile = () => {
   const [user, userLoading, userError] = useAuthState(auth);
   // const [myBills, setMyBills] = useState<BillObject[]>([]);
   const [userData, setUserData] = useState<UserTableRow>();
+  console.log(userData);
 
   //#endregion
 
@@ -557,78 +558,79 @@ export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
               </Stack>
             </Box>
 
-            <Box
-              component={'div'}
-              sx={{
-                display: bill.sale ? 'block' : 'none',
-              }}
-            >
-              <Stack direction="column" spacing={1}>
-                <Typography variant="button" fontWeight={'bold'}>
-                  Thông tin khuyến mãi
-                </Typography>
-                <Box
-                  component={'img'}
-                  loading="lazy"
-                  alt=""
-                  src={promotionImage.src}
-                  sx={{
-                    objectFit: 'contain',
-                    height: '90px',
-                    aspectRatio: '1/1',
-                  }}
-                />
+            {bill.sale && (
+              <>
+                <Box component={'div'}>
+                  <Stack direction="column" spacing={1}>
+                    <Typography variant="button" fontWeight={'bold'}>
+                      Thông tin khuyến mãi
+                    </Typography>
+                    <Box
+                      component={'img'}
+                      loading="lazy"
+                      alt=""
+                      src={promotionImage.src}
+                      sx={{
+                        objectFit: 'contain',
+                        height: '90px',
+                        aspectRatio: '1/1',
+                      }}
+                    />
 
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Tên khuyến mãi:</Typography>
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Tên khuyến mãi:</Typography>
 
-                  <Typography {...TypoStyle}>
-                    {bill.sale?.name ?? 'Trống'}
-                  </Typography>
+                      <Typography {...TypoStyle}>
+                        {bill.sale?.name ?? 'Trống'}
+                      </Typography>
+                    </Box>
+
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>
+                        Chương trình giảm giá:
+                      </Typography>
+
+                      <Typography {...TypoStyle}>
+                        {`Giảm ${
+                          bill.sale?.percent ?? 0
+                        }%, tối đa ${formatPrice(bill.sale?.limit, ' đồng')}` ??
+                          'Trống'}
+                      </Typography>
+                    </Box>
+
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Mã code:</Typography>
+
+                      <Typography
+                        {...TypoStyle}
+                        fontWeight={'bold'}
+                        color={'error'}
+                      >
+                        {bill.sale?.code ?? 'Trống'}
+                      </Typography>
+                    </Box>
+
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Thời gian áp dụng:</Typography>
+
+                      <Typography {...TypoStyle}>
+                        {formatDateString(bill.sale?.start_at) +
+                          ' - ' +
+                          formatDateString(bill.sale?.end_at) ?? 'Trống'}
+                      </Typography>
+                    </Box>
+
+                    <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Mô tả:</Typography>
+
+                      <Typography {...TypoStyle}>
+                        {bill.sale?.description ?? 'Trống'}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Box>
-
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Chương trình giảm giá:</Typography>
-
-                  <Typography {...TypoStyle}>
-                    {`Giảm ${bill.sale?.percent ?? 0}%, tối đa ${formatPrice(
-                      bill.sale?.limit,
-                      ' đồng'
-                    )}` ?? 'Trống'}
-                  </Typography>
-                </Box>
-
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Mã code:</Typography>
-
-                  <Typography
-                    {...TypoStyle}
-                    fontWeight={'bold'}
-                    color={'error'}
-                  >
-                    {bill.sale?.code ?? 'Trống'}
-                  </Typography>
-                </Box>
-
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Thời gian áp dụng:</Typography>
-
-                  <Typography {...TypoStyle}>
-                    {formatDateString(bill.sale?.start_at) +
-                      ' - ' +
-                      formatDateString(bill.sale?.end_at) ?? 'Trống'}
-                  </Typography>
-                </Box>
-
-                <Box component={'div'} sx={BoxStyle}>
-                  <Typography {...TypoStyle}>Mô tả:</Typography>
-
-                  <Typography {...TypoStyle}>
-                    {bill.sale?.description ?? 'Trống'}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
+              </>
+            )}
           </Stack>
         </Grid>
 

@@ -1,3 +1,4 @@
+import { BillTableRow, billStateContentParse } from '../models/bill';
 import {
   Body,
   Button,
@@ -13,26 +14,13 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
+import logo from '../assets/Logo.png';
 
-interface AirbnbReviewEmailProps {
-  authorName?: string;
-  authorImage?: string;
-  reviewText?: string;
-}
+import { formatDateString } from '../lib/utils';
+import BillAccordionContent_HTML from '../components/email/BillAccordionContent_HTML';
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : '';
-
-export const AirbnbReviewEmail: React.FC<AirbnbReviewEmailProps> = ({
-  authorName = 'Alex',
-  authorImage = `${baseUrl}/static/airbnb-review-user.jpg`,
-  reviewText = `“Zeno was a great guest! Easy communication, the apartment was left
-    in great condition, very polite, and respectful of all house rules.
-    He’s welcome back anytime and would easily recommend him to any
-    host!”`,
-}: AirbnbReviewEmailProps) => {
-  const previewText = `Read ${authorName}'s review`;
+export const E_Bill = ({ bill }: { bill?: BillTableRow }) => {
+  const previewText = `Mã hóa đơn ${bill?.id}`;
 
   return (
     <Html>
@@ -43,73 +31,57 @@ export const AirbnbReviewEmail: React.FC<AirbnbReviewEmailProps> = ({
         <Section style={main}>
           <Container style={container}>
             <Section>
-              <Img
-                src={`${baseUrl}/static/airbnb-logo.png`}
-                width="96"
-                height="30"
-                alt="Airbnb"
-              />
+              <Img src={`${logo.src}`} width="36" height="50" alt="logo" />
             </Section>
             <Section>
-              <Img
-                src={authorImage}
-                width="96"
-                height="96"
-                alt={authorName}
-                style={userImage}
-              />
+              <Text
+                style={{
+                  fontSize: '42px',
+                  color: primaryColor,
+                  fontFamily: 'Great Vibes',
+                  width: '100%',
+                  textAlign: 'center',
+                }}
+              >
+                Hóa đơn bán hàng
+              </Text>
             </Section>
-            <Section style={{ paddingBottom: '20px' }}>
-              <Row>
-                <Text style={heading}>Here's what {authorName} wrote</Text>
-                <Text style={review}>{reviewText}</Text>
-                <Text style={paragraph}>
-                  Now that the review period is over, we’ve posted {authorName}
-                  ’s review to your Airbnb profile.
-                </Text>
-                <Text style={{ ...paragraph, paddingBottom: '16px' }}>
-                  While it’s too late to write a review of your own, you can
-                  send your feedback to {authorName} using your Airbnb message
-                  thread.
-                </Text>
+            <Section
+              style={{
+                position: 'relative',
+                border: '1px solid',
+                borderColor: 'black',
+                boxShadow: 'none',
+                backgroundColor: 'transparent',
+                margin: '16px 0',
+                borderRadius: '12px',
+                padding: '16px 16px',
+              }}
+            >
+              {/* Nội dung bill */}
+              {bill && <BillAccordionContent_HTML bill={bill} />}
 
-                <Button
-                  style={{ ...button, padding: '19px 0px' }}
-                  href="https://airbnb.com/"
+              {!bill && (
+                <Text
+                  style={{
+                    fontSize: '24px',
+                    color: primaryColor,
+                    margin: '0 auto',
+                    fontFamily: 'Roboto',
+                  }}
                 >
-                  Send My Feedback
-                </Button>
-              </Row>
+                  Lỗi hóa đơn
+                </Text>
+              )}
             </Section>
 
             <Hr style={hr} />
 
             <Section>
               <Row>
-                <Text style={{ ...paragraph, fontWeight: '700' }}>
-                  Common questions
-                </Text>
-                <Text>
-                  <Link href="https://airbnb.com/help/article/13" style={link}>
-                    How do reviews work?
-                  </Link>
-                </Text>
-                <Text>
-                  <Link
-                    href="https://airbnb.com/help/article/1257"
-                    style={link}
-                  >
-                    How do star ratings work?
-                  </Link>
-                </Text>
-                <Text>
-                  <Link href="https://airbnb.com/help/article/995" style={link}>
-                    Can I leave a review after 14 days?
-                  </Link>
-                </Text>
-                <Hr style={hr} />
                 <Text style={footer}>
-                  Airbnb, Inc., 888 Brannan St, San Francisco, CA 94103
+                  H&H Bakery, Inc., Linh Trung, Thủ Đức, Thành phố Hồ Chí Minh,
+                  Việt Nam
                 </Text>
                 <Link href="https://airbnb.com" style={reportLink}>
                   Report unsafe behavior
@@ -123,7 +95,9 @@ export const AirbnbReviewEmail: React.FC<AirbnbReviewEmailProps> = ({
   );
 };
 
-export default AirbnbReviewEmail;
+export default E_Bill;
+
+const primaryColor = '#810000';
 
 const main = {
   backgroundColor: '#ffffff',
@@ -133,8 +107,8 @@ const main = {
 
 const container = {
   margin: '0 auto',
-  padding: '20px 0 48px',
-  width: '580px',
+  padding: '20px 0 48px 0',
+  width: '800px',
 };
 
 const userImage = {
