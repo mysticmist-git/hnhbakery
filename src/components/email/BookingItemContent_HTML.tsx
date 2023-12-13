@@ -1,8 +1,8 @@
 import BookingItem from '../payment/BookingItem/BookingItem';
 import { getDownloadUrlFromFirebaseStorage } from '../../lib/firestore';
 import { SizeNameParse } from '../../models/size';
-import { text_body, text_body_value } from './BillAccordionContent_HTML';
 import { Column, Img, Row, Section, Text } from '@react-email/components';
+import { body1, alignRight } from './Style';
 
 function BookingItemContent_HTML({ item }: { item: BookingItem }) {
   return (
@@ -18,7 +18,7 @@ function BookingItemContent_HTML({ item }: { item: BookingItem }) {
       }}
     >
       <Row>
-        <Text style={{ ...text_body }}>Hình ảnh sản phẩm:</Text>
+        <Text style={{ ...body1 }}>Hình ảnh sản phẩm:</Text>
       </Row>
 
       <Row>
@@ -39,32 +39,32 @@ function BookingItemContent_HTML({ item }: { item: BookingItem }) {
         ))}
       </Row>
       <Row>
-        <Column style={{ ...text_body }}>Nhân dịp:</Column>
-        <Column style={{ ...text_body, ...text_body_value }}>
+        <Column style={{ ...body1 }}>Nhân dịp:</Column>
+        <Column style={{ ...body1, ...alignRight }}>
           {item.occasion == '' ? 'Trống' : item.occasion}
         </Column>
       </Row>
       <Row>
-        <Column style={{ ...text_body }}>Size:</Column>
-        <Column style={{ ...text_body, ...text_body_value }}>
+        <Column style={{ ...body1 }}>Size:</Column>
+        <Column style={{ ...body1, ...alignRight }}>
           {SizeNameParse(item.size)}
         </Column>
       </Row>
       <Row>
-        <Column style={{ ...text_body }}>Thông điệp:</Column>
-        <Column style={{ ...text_body, ...text_body_value }}>
+        <Column style={{ ...body1 }}>Thông điệp:</Column>
+        <Column style={{ ...body1, ...alignRight }}>
           {item.message.content == '' ? 'Trống' : item.message.content}
         </Column>
       </Row>
       <Row>
-        <Column style={{ ...text_body }}>Ghi chú:</Column>
-        <Column style={{ ...text_body, ...text_body_value }}>
+        <Column style={{ ...body1 }}>Ghi chú:</Column>
+        <Column style={{ ...body1, ...alignRight }}>
           {item.note == '' ? 'Trống' : item.note}
         </Column>
       </Row>
 
       <Row>
-        <Column style={{ ...text_body, width: '100%' }}>Cốt bánh:</Column>
+        <Column style={{ ...body1, width: '100%' }}>Cốt bánh:</Column>
       </Row>
 
       <Row>
@@ -103,7 +103,7 @@ function BookingItemContent_HTML({ item }: { item: BookingItem }) {
           >
             {item.cakeBase?.name ?? 'Cốt bánh'}
           </Row>
-          <Row style={{ ...text_body }}>{item.cakeBase?.description}</Row>
+          <Row style={{ ...body1 }}>{item.cakeBase?.description}</Row>
         </Column>
       </Row>
     </Section>

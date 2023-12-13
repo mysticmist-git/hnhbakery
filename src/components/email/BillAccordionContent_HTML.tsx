@@ -2,38 +2,27 @@ import { formatDateString, formatPrice } from '../../lib/utils';
 import { BillTableRow, billStateContentParse } from '../../models/bill';
 import { deliveryStateContentParse } from '../../models/delivery';
 import React, { CSSProperties } from 'react';
-import promotionImage from '../../assets/promotion.png';
 import BookingItemContent_HTML from './BookingItemContent_HTML';
-import { Column, Img, Row, Section } from '@react-email/components';
+import { Column, Hr, Img, Row, Section } from '@react-email/components';
+import { hr, body1, alignRight, head1 } from './Style';
+import { promotionSrc } from './Constant';
+import BillItemsContent_HTML from './BillItemsContent_HTML';
 
 function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
   return (
     <Section>
       <Section>
-        <Row
-          style={{
-            color: '#000000',
-            fontSize: '16px',
-            textTransform: 'none',
-            fontFamily: 'Roboto',
-            lineHeight: '1.75',
-            fontWeight: '700',
-          }}
-        >
-          Thông tin đơn hàng
+        <Row style={head1}>Thông tin đơn hàng</Row>
+
+        <Row>
+          <Column style={{ ...body1 }}>Mã hóa đơn:</Column>
+          <Column style={{ ...body1, ...alignRight }}>{bill.id}</Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Mã hóa đơn:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
-            {bill.id}
-          </Column>
-        </Row>
-
-        <Row>
-          <Column style={{ ...text_body }}>Trạng thái:</Column>
+          <Column style={{ ...body1 }}>Trạng thái:</Column>
           <Column
-            style={{ ...text_body, ...text_body_value }}
+            style={{ ...body1, ...alignRight }}
             // Lỗi màu
           >
             {billStateContentParse(bill.state)}
@@ -41,97 +30,84 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Hình thức thanh toán:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Hình thức thanh toán:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {bill.paymentMethod?.name}
           </Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Thời gian thanh toán:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Thời gian thanh toán:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {formatDateString(bill.paid_time) ?? 'Trống'}
           </Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Ghi chú:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Ghi chú:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {bill.note ?? 'Trống'}
           </Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Tổng tiền:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Tổng tiền:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {formatPrice(bill.total_price, ' đồng') ?? 'Trống'}
           </Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Khuyến mãi:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Khuyến mãi:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {(bill.total_discount == 0 ? '' : '-') +
               formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
           </Column>
         </Row>
 
         <Row>
-          <Column style={{ ...text_body }}>Thành tiền:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Thành tiền:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {formatPrice(bill.final_price, ' đồng') ?? 'Trống'}
           </Column>
         </Row>
       </Section>
 
-      <hr
-        style={{
-          color: '#000000',
-          flexShrink: '0',
-          borderWidth: '0',
-          borderStyle: 'solid',
-          borderColor: 'rgba(0, 0, 0, 0.12)',
-          borderBottomWidth: 'thin',
-          alignSelf: 'stretch',
-          height: 'auto',
-          margin: '0',
-          marginTop: '8px',
-        }}
-      />
+      <Hr style={hr} />
 
       <Section>
-        <Row style={{ ...text_head }}>Thông tin vận chuyển</Row>
+        <Row style={{ ...head1 }}>Thông tin vận chuyển</Row>
         <Row>
-          <Column style={{ ...text_body }}>Người nhận:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Người nhận:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {bill.deliveryTableRow?.name ?? 'Trống'}
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Số điện thoại:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Số điện thoại:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {bill.deliveryTableRow?.tel ?? 'Trống'}
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Ngày đặt giao:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Ngày đặt giao:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {formatDateString(bill.deliveryTableRow?.ship_date, 'DD/MM/YYYY') ??
               'Trống'}
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Thời gian đặt giao:</Column>
-          <Column style={{ ...text_body, ...text_body_value }}>
+          <Column style={{ ...body1 }}>Thời gian đặt giao:</Column>
+          <Column style={{ ...body1, ...alignRight }}>
             {bill.deliveryTableRow?.ship_time ?? 'Trống'}
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Địa chỉ giao hàng:</Column>
+          <Column style={{ ...body1 }}>Địa chỉ giao hàng:</Column>
           <Column
             style={{
-              ...text_body,
-              ...text_body_value,
+              ...body1,
+              ...alignRight,
             }}
           >
             {bill.deliveryTableRow?.addressObject?.address ??
@@ -140,22 +116,22 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Ghi chú:</Column>
+          <Column style={{ ...body1 }}>Ghi chú:</Column>
           <Column
             style={{
-              ...text_body,
-              ...text_body_value,
+              ...body1,
+              ...alignRight,
             }}
           >
             {bill.deliveryTableRow?.delivery_note ?? 'Trống'}
           </Column>
         </Row>
         <Row>
-          <Column style={{ ...text_body }}>Trạng thái:</Column>
+          <Column style={{ ...body1 }}>Trạng thái:</Column>
           <Column
             style={{
-              ...text_body,
-              ...text_body_value,
+              ...body1,
+              ...alignRight,
               fontWeight: '700',
               color: '#00A803',
             }}
@@ -166,20 +142,7 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
         </Row>
       </Section>
 
-      <hr
-        style={{
-          color: '#000000',
-          flexShrink: '0',
-          borderWidth: '0',
-          borderStyle: 'solid',
-          borderColor: 'rgba(0, 0, 0, 0.12)',
-          borderBottomWidth: 'thin',
-          alignSelf: 'stretch',
-          height: 'auto',
-          margin: '0',
-          marginTop: '8px',
-        }}
-      />
+      <Hr style={hr} />
 
       {bill.sale && (
         <Section
@@ -187,36 +150,30 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
             marginTop: '8px',
           }}
         >
-          <Row
-            style={{
-              ...text_head,
-            }}
-          >
-            Thông tin khuyến mãi
-          </Row>
+          <Row style={{ ...head1 }}>Thông tin khuyến mãi</Row>
 
           <Row>
             <Img
               style={{
                 objectFit: 'contain',
-                height: '90px',
-                width: '90px',
+                height: '120px',
+                width: '100%',
                 margin: '0',
                 marginTop: '8px',
               }}
               alt="promotion"
-              src={promotionImage.src}
+              src={promotionSrc}
             />
           </Row>
           <Row>
-            <Column style={{ ...text_body }}>Tên khuyến mãi:</Column>
-            <Column style={{ ...text_body, ...text_body_value }}>
+            <Column style={{ ...body1 }}>Tên khuyến mãi:</Column>
+            <Column style={{ ...body1, ...alignRight }}>
               {bill.sale?.name ?? 'Trống'}
             </Column>
           </Row>
           <Row>
-            <Column style={{ ...text_body }}>Chương trình giảm giá:</Column>
-            <Column style={{ ...text_body, ...text_body_value }}>
+            <Column style={{ ...body1 }}>Chương trình giảm giá:</Column>
+            <Column style={{ ...body1, ...alignRight }}>
               {`Giảm ${bill.sale?.percent ?? 0}%, tối đa ${formatPrice(
                 bill.sale?.limit,
                 ' đồng'
@@ -224,11 +181,11 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
             </Column>
           </Row>
           <Row>
-            <Column style={{ ...text_body }}>Mã code:</Column>
+            <Column style={{ ...body1 }}>Mã code:</Column>
             <Column
               style={{
-                ...text_body,
-                ...text_body_value,
+                ...body1,
+                ...alignRight,
                 color: '#ff1744',
               }}
             >
@@ -236,16 +193,16 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
             </Column>
           </Row>
           <Row>
-            <Column style={{ ...text_body }}>Thời gian áp dụng:</Column>
-            <Column style={{ ...text_body, ...text_body_value }}>
+            <Column style={{ ...body1 }}>Thời gian áp dụng:</Column>
+            <Column style={{ ...body1, ...alignRight }}>
               {formatDateString(bill.sale?.start_at) +
                 ' - ' +
                 formatDateString(bill.sale?.end_at) ?? 'Trống'}
             </Column>
           </Row>
           <Row>
-            <Column style={{ ...text_body }}>Mô tả:</Column>
-            <Column style={{ ...text_body, ...text_body_value }}>
+            <Column style={{ ...body1 }}>Mô tả:</Column>
+            <Column style={{ ...body1, ...alignRight }}>
               {bill.sale?.description ?? 'Trống'}
             </Column>
           </Row>
@@ -254,8 +211,13 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
 
       <Section>
         <Row>
-          <Column style={{ ...text_head }}>Danh sách sản phẩm</Column>
+          <Column style={{ ...head1 }}>Danh sách sản phẩm</Column>
         </Row>
+
+        {(!bill.booking_item_id || bill.booking_item_id == '') &&
+          bill.billItems?.map((item, index) => (
+            <BillItemsContent_HTML key={index} item={item} />
+          ))}
 
         {bill.booking_item_id != '' && bill.bookingItem && (
           <BookingItemContent_HTML item={bill.bookingItem} />
@@ -266,26 +228,3 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
 }
 
 export default BillAccordionContent_HTML;
-
-export const text_body: CSSProperties = {
-  textTransform: 'none',
-  color: '#000000',
-  fontFamily: 'Roboto',
-  fontSize: '0.75rem',
-  lineHeight: '1.66',
-  fontWeight: '400',
-};
-
-export const text_body_value: CSSProperties = {
-  textAlign: 'right',
-};
-
-export const text_head: CSSProperties = {
-  color: '#000000',
-  margin: '0',
-  fontSize: '16px',
-  textTransform: 'none',
-  fontFamily: 'Roboto',
-  lineHeight: '1.75',
-  fontWeight: '700',
-};

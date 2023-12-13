@@ -1,7 +1,5 @@
-import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { NextApiRequest, NextApiResponse } from 'next';
-import E_Bill from '@/emails/welcome';
+import E_Bill from '@/emails/eBill';
 import { resend } from '@/lib/resend';
 import { BillTableRow } from '@/models/bill';
 
@@ -12,7 +10,7 @@ export default async function POST(req: NextApiRequest, res: NextApiResponse) {
     const data = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: '20520206@gm.uit.edu.vn',
-      subject: 'hello world',
+      subject: 'Hóa đơn H&H Bakery',
       react: E_Bill({ bill: bill as BillTableRow }),
     });
 

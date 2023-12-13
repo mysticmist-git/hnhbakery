@@ -1,12 +1,14 @@
 import { BillTableRow } from '@/models/bill';
 import React, { useEffect } from 'react';
 import { getDownloadUrlFromFirebaseStorage } from '../firestore';
+import { BillItemTableRow } from '@/models/billItem';
 
 export async function useBillTableRow(
   bill: BillTableRow
 ): Promise<BillTableRow | undefined> {
   let bookingImages: string[] = [];
   let cakeBaseImage: string = '';
+  let productBillItems: BillItemTableRow[] = [];
   if (bill.bookingItem) {
     if (bill.bookingItem.images && bill.bookingItem.images.length > 0) {
       try {
@@ -33,9 +35,34 @@ export async function useBillTableRow(
       }
     }
   }
+  if (bill.billItems && bill.billItems.length > 0) {
+    try {
+      await Promise.all(
+        bill.billItems.map(async (item) => {
+          if (
+            item.product &&
+            item.product.images.length > 0 &&
+            item.product.images[0] != ''
+          ) {
+            const image = await getDownloadUrlFromFirebaseStorage(
+              item.product.images[0]
+            );
+
+            item.product.images[0] = image;
+          }
+          return item;
+        })
+      ).then((billItems) => {
+        productBillItems = billItems;
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   return {
     ...bill,
+    billItems: productBillItems,
     bookingItem: bill.bookingItem
       ? {
           ...bill.bookingItem,
