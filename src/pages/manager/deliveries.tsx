@@ -14,6 +14,9 @@ import { getProductTypeById } from '@/lib/DAO/productTypeDAO';
 import { getSaleById } from '@/lib/DAO/saleDAO';
 import { getUserByUid, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
+import { useSnackbarService } from '@/lib/contexts';
+import useLoadingService from '@/lib/hooks/useLoadingService';
+import { sendBillToEmail } from '@/lib/services/MailService';
 import { BillTableRow } from '@/models/bill';
 import {
   Box,
@@ -24,7 +27,7 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
@@ -36,6 +39,7 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 const Deliveries = () => {
   const [deliveries, setDeliveries] = useState<BillTableRow[]>([]);
   const theme = useTheme();
+  const [load, stop] = useLoadingService();
 
   //#region UserData - Trường hợp là quản lý chi nhánh - Check xem họ là quản lý của chi nhánh nào?
   const [user, userLoading, userError] = useAuthState(auth);
@@ -49,27 +53,33 @@ const Deliveries = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         if (!user) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         const userData = await getUserByUid(user?.uid);
         if (!userData) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         const branch = await getBranchByManager(userData);
         if (!branch) {
           setCanBeAccessed(false);
+          stop();
           return;
         }
         setCanBeAccessed(true);
 
         const finalBills: BillTableRow[] = await getBillTableRows(branch);
         setDeliveries(() => finalBills || []);
+        stop();
       } catch (error) {
         console.log(error);
         setCanBeAccessed(false);
+        stop();
       }
     };
     fetchData();
@@ -109,13 +119,38 @@ const Deliveries = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [deliveryState, setDeliveryState] = useState<BillTableRow | null>(null);
+  const [deliveryState, setDeliveryState] = useState<BillTableRow | undefined>(
+    undefined
+  );
 
   const handleViewDeliveryModalState = (delivery: BillTableRow) => {
     handleOpenModalState();
     setDeliveryState(() => delivery);
   };
   //#endregion
+
+  const handleSnackbarAlert = useSnackbarService();
+  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
+    try {
+      const email = bill?.deliveryTableRow?.mail ?? '';
+      const sendMailResponse = await sendBillToEmail(email, bill);
+
+      if (sendMailResponse.status == 200) {
+        handleSnackbarAlert(
+          'success',
+          'Email cập nhật đã được gửi đến khách hàng.'
+        );
+      } else {
+        console.log(sendMailResponse);
+        handleSnackbarAlert(
+          'error',
+          'Có lỗi xảy ra khi cố gửi mail cho khách hàng'
+        );
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  }, []);
 
   return (
     <>
@@ -168,6 +203,7 @@ const Deliveries = () => {
                 handleClose={handleCloseModalChiTiet}
                 delivery={currentViewDelivery}
                 handleDeliveryDataChange={handleDeliveryDataChange}
+                sendBillToMail={sendBillToMail}
               />
 
               {/* Modal state */}
@@ -177,6 +213,7 @@ const Deliveries = () => {
                 deliveryState={deliveryState}
                 setDeliveryState={setDeliveryState}
                 handleDeliveryDataChange={handleDeliveryDataChange}
+                sendBillToMail={sendBillToMail}
               />
             </Grid>
           </Grid>

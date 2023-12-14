@@ -57,11 +57,13 @@ const MyModal = ({
   handleClose,
   bill,
   handleBillDataChange,
+  sendBillToMail,
 }: {
   open: boolean;
   handleClose: () => void;
   bill: BillTableRow | null;
   handleBillDataChange: (newBill: BillTableRow) => void;
+  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
 }) => {
   const handleSnackbarAlert = useSnackbarService();
 
@@ -185,6 +187,7 @@ const MyModal = ({
         updatedDelivery.state = billData.state;
       }
       handleBillDataChange(updatedDelivery);
+      await sendBillToMail(updatedDelivery);
     } catch (error: any) {
       handleSnackbarAlert('error', error.message);
     }
@@ -348,7 +351,11 @@ const MyModal = ({
                         )}
                         {editMode && (
                           <>
-                            <CustomIconButton onClick={handleSaveEdit}>
+                            <CustomIconButton
+                              onClick={(e: any) => {
+                                handleSaveEdit();
+                              }}
+                            >
                               <SaveAsRoundedIcon
                                 fontSize="small"
                                 color="primary"

@@ -3,21 +3,23 @@ import E_Bill from '@/emails/eBill';
 import { resend } from '@/lib/resend';
 import { BillTableRow } from '@/models/bill';
 
-export default async function POST(req: NextApiRequest, res: NextApiResponse) {
+export default async function POST(req: any, res: NextApiResponse) {
   try {
-    const { bill } = await JSON.parse(req.body);
-
+    const { bill, email, withSale, withSanPham } = req.body;
     const data = await resend.emails.send({
       from: 'onboarding@resend.dev',
+      // to: email,
       to: '20520206@gm.uit.edu.vn',
       subject: 'Hóa đơn H&H Bakery',
-      react: E_Bill({ bill: bill as BillTableRow }),
+      react: E_Bill({ bill: bill as BillTableRow, withSale, withSanPham }),
     });
 
-    return res.status(200).send(data);
+    return res.status(200).json({ message: 'success', status: 200 });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ message: 'Internal Server Error', status: 500 });
   }
 }
 

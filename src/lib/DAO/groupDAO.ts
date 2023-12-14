@@ -23,6 +23,7 @@ export const DEFAULT_GROUP_ID = 'default';
 export const MANAGER_GROUP_ID = 'vn01AtyWFcteKd4OJsCa';
 export const DEV_GROUP_ID = 'hMlMMgbIA4RRX0NBTcfO';
 export const GUEST_ID = '5Vrj7Nx6O0LrqDbbzRkF';
+export const GUEST_UID = '42FTreMDIoRAoeaoaRyuT2W1TCz2';
 
 export function getGroupsRef(): CollectionReference<Group> {
   return collection(db, COLLECTION_NAME.GROUPS).withConverter(groupConverter);

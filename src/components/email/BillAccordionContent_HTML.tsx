@@ -8,7 +8,15 @@ import { hr, body1, alignRight, head1 } from './Style';
 import { promotionSrc } from './Constant';
 import BillItemsContent_HTML from './BillItemsContent_HTML';
 
-function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
+function BillAccordionContent_HTML({
+  bill,
+  withSale = true,
+  withSanPham = true,
+}: {
+  bill: BillTableRow;
+  withSale?: boolean;
+  withSanPham?: boolean;
+}) {
   return (
     <Section>
       <Section>
@@ -144,7 +152,7 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
 
       <Hr style={hr} />
 
-      {bill.sale && (
+      {bill.sale && withSale && (
         <Section
           style={{
             marginTop: '8px',
@@ -209,20 +217,22 @@ function BillAccordionContent_HTML({ bill }: { bill: BillTableRow }) {
         </Section>
       )}
 
-      <Section>
-        <Row>
-          <Column style={{ ...head1 }}>Danh sách sản phẩm</Column>
-        </Row>
+      {withSanPham && (
+        <Section>
+          <Row>
+            <Column style={{ ...head1 }}>Danh sách sản phẩm</Column>
+          </Row>
 
-        {(!bill.booking_item_id || bill.booking_item_id == '') &&
-          bill.billItems?.map((item, index) => (
-            <BillItemsContent_HTML key={index} item={item} />
-          ))}
+          {(!bill.booking_item_id || bill.booking_item_id == '') &&
+            bill.billItems?.map((item, index) => (
+              <BillItemsContent_HTML key={index} item={item} />
+            ))}
 
-        {bill.booking_item_id != '' && bill.bookingItem && (
-          <BookingItemContent_HTML item={bill.bookingItem} />
-        )}
-      </Section>
+          {bill.booking_item_id != '' && bill.bookingItem && (
+            <BookingItemContent_HTML item={bill.bookingItem} />
+          )}
+        </Section>
+      )}
     </Section>
   );
 }

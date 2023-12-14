@@ -24,6 +24,7 @@ import { BillTableRow } from '@/models/bill';
 import { ExpandMore } from '@mui/icons-material';
 import { formatDateString } from '@/lib/utils';
 import { BillAccordionContent } from './profile';
+import { sendBillToEmail } from '@/lib/services/MailService';
 
 const resolveResponseCode = (responseCode: string) => {
   switch (responseCode) {
@@ -85,41 +86,25 @@ const PaymentResult = () => {
 
   //#endregion
   //#region Handlers
-  const [email] = useLocalStorage<string>('email', '');
 
-  // TODO: This should be in a seperate module
-  const sendBillToMail = useCallback(async () => {
+  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
     try {
-      console.log(email);
+      const email = bill?.deliveryTableRow?.mail ?? '';
+      const sendMailResponse = await sendBillToEmail(email, bill);
 
-      const sendMailResponse = await fetch('/api/send-mail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: email,
-          subject: '[HNH-BAKERY - Thanh toán hóa đơn thanh công]',
-          text:
-            'Cảm ơn vi đã tin tưởng sử dụng sản phẩm của HnH Bakery. Đây là mã hóa đơn của bạn: ' +
-            responseBillId,
-        }),
-      });
-
-      if (sendMailResponse.ok) {
+      if (sendMailResponse.status == 200) {
         handlerSnackbarAlert(
           'success',
           'Mã hóa đơn đã được gửi tới mail của bạn.'
         );
       } else {
-        const errorMessage = await sendMailResponse.json();
-        console.log(errorMessage);
+        console.log(sendMailResponse);
         handlerSnackbarAlert('error', 'Có lỗi xảy ra khi cố gửi mail cho bạn');
       }
     } catch (error: any) {
       console.log(error);
     }
-  }, [email, handlerSnackbarAlert, responseBillId]);
+  }, []);
 
   //#endregion
   //#region UseEffects
@@ -240,29 +225,18 @@ const PaymentResult = () => {
           const data = await getBillTableRowById(userData.uid, responseBillId);
           if (data) {
             setBillData(data);
-
-            sendBillToMail();
           } else {
             setBillData(null);
-            sendBillToMail();
           }
         } else {
           setBillData(null);
-          sendBillToMail();
         }
       }
     };
 
     if (isProcessed) return;
     getPaymentResultAndUpdateBillState();
-  }, [
-    responseCode,
-    responseBillId,
-    handlerSnackbarAlert,
-    sendBillToMail,
-    userData,
-    isProcessed,
-  ]);
+  }, [responseCode, responseBillId, userData, isProcessed]);
 
   //#endregion
 
@@ -272,6 +246,22 @@ const PaymentResult = () => {
   );
 
   //#endregion
+
+  useEffect(() => {
+    const sendMail = async () => {
+      const sentEmail = localStorage.getItem('sentEmail');
+      if (!billData || sentEmail == 'true') {
+        localStorage.removeItem('sentEmail');
+        return;
+      }
+      localStorage.setItem('sentEmail', 'true');
+      await sendBillToMail(billData);
+    };
+    if (billData) {
+      sendMail();
+      console.log('billData', billData);
+    }
+  }, [billData]);
 
   console.log(billData);
 

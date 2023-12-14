@@ -24,15 +24,19 @@ export default function ModalState({
   deliveryState,
   setDeliveryState,
   handleDeliveryDataChange,
+  sendBillToMail,
 }: {
   open: boolean;
   handleClose: any;
-  deliveryState: BillTableRow | null;
-  setDeliveryState: React.Dispatch<React.SetStateAction<BillTableRow | null>>;
+  deliveryState: BillTableRow | undefined;
+  setDeliveryState: React.Dispatch<
+    React.SetStateAction<BillTableRow | undefined>
+  >;
   handleDeliveryDataChange: any;
+  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
 }) {
   const clearData = () => {
-    setDeliveryState(() => null);
+    setDeliveryState(() => undefined);
   };
 
   const localHandleClose = () => {
@@ -136,6 +140,7 @@ export default function ModalState({
                   }
 
                   handleSnackbarAlert('success', 'Hủy giao hàng thành công!');
+                  sendBillToMail(deliveryState);
                   handleDeliveryDataChange({
                     ...deliveryState,
                   });

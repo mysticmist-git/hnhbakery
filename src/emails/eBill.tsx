@@ -26,7 +26,15 @@ import {
 } from '@/components/email/Style';
 import { logoSrc } from '@/components/email/Constant';
 
-export const E_Bill = ({ bill }: { bill?: BillTableRow }) => {
+export const E_Bill = ({
+  bill,
+  withSale = true,
+  withSanPham = true,
+}: {
+  bill?: BillTableRow;
+  withSale?: boolean;
+  withSanPham?: boolean;
+}) => {
   const previewText = `Mã hóa đơn ${bill?.id}`;
 
   return (
@@ -66,7 +74,9 @@ export const E_Bill = ({ bill }: { bill?: BillTableRow }) => {
               }}
             >
               {/* Nội dung bill */}
-              {bill && <BillAccordionContent_HTML bill={bill} />}
+              {bill && (
+                <BillAccordionContent_HTML bill={bill} withSale withSanPham />
+              )}
 
               {!bill && (
                 <Text
@@ -90,7 +100,7 @@ export const E_Bill = ({ bill }: { bill?: BillTableRow }) => {
                   H&H Bakery, Inc., Linh Trung, Thủ Đức, Thành phố Hồ Chí Minh,
                   Việt Nam
                 </Text>
-                <Link href="https://airbnb.com" style={reportLink}>
+                <Link href="/contact" style={reportLink}>
                   Report unsafe behavior
                 </Link>
               </Row>

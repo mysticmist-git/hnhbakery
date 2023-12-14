@@ -1,12 +1,15 @@
 import { CustomIconButton } from '@/components/buttons';
+import { createBillDataFromBillTableRow, updateBill } from '@/lib/DAO/billDAO';
+import {
+  createDeliveryDataFromBillTableRow,
+  updateDelivery,
+} from '@/lib/DAO/deliveryDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { updateDocToFirestore } from '@/lib/firestore';
-import {
-  BillObject,
-  DeliveryObject,
-  SuperDetail_BillObject,
-} from '@/lib/models';
+import Bill, { BillTableRow } from '@/models/bill';
+import Delivery from '@/models/delivery';
+
 import { Close } from '@mui/icons-material';
 import {
   Box,
@@ -27,15 +30,17 @@ export default function ModalState({
   billState,
   setBillState,
   handleBillDataChange,
+  sendBillToMail,
 }: {
   open: boolean;
   handleClose: () => void;
-  billState: SuperDetail_BillObject | null;
+  billState: BillTableRow | undefined;
   setBillState: (prev: any) => void;
-  handleBillDataChange: (newBill: SuperDetail_BillObject) => void;
+  handleBillDataChange: (newBill: BillTableRow) => void;
+  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
 }) {
   const clearData = () => {
-    setBillState(() => null);
+    setBillState(() => undefined);
   };
 
   const localHandleClose = () => {
@@ -48,17 +53,17 @@ export default function ModalState({
   const theme = useTheme();
 
   const getIsCancel = useCallback(() => {
-    const deliveryState = billState?.deliveryObject?.state;
-    if (deliveryState === 'inTransit') {
+    const deliveryState = billState?.deliveryTableRow?.state;
+    if (deliveryState === 'delivering') {
       return false;
-    } else if (deliveryState === 'inProcress') {
+    } else if (deliveryState === 'issued') {
       return true;
-    } else if (deliveryState === 'fail') {
-      return true;
-    } else if (deliveryState === 'success') {
+    } else if (deliveryState === 'cancelled') {
+      return false;
+    } else if (deliveryState === 'delivered') {
       return false;
     }
-  }, [billState?.deliveryObject?.state]);
+  }, [billState?.deliveryTableRow?.state]);
 
   const [isCancel, setIsCancel] = useState(false);
 
@@ -134,32 +139,37 @@ export default function ModalState({
                 variant="contained"
                 color="error"
                 onClick={async () => {
-                  const data = {
-                    id: billState?.id,
-                    paymentTime: billState?.paymentTime,
-                    originalPrice: billState?.originalPrice,
-                    totalPrice: billState?.totalPrice,
-                    note: billState?.note,
-                    payment_id: billState?.payment_id,
-                    saleAmount: billState?.saleAmount,
-                    sale_id: billState?.sale_id,
-                    user_id: billState?.user_id,
-                    created_at: billState?.created_at,
-                    state: -1,
-                  } as BillObject;
-                  await updateDocToFirestore(data, COLLECTION_NAME.BILLS);
+                  if (!billState || !billState.customer) {
+                    return;
+                  }
+                  let billData: Bill | undefined =
+                    createBillDataFromBillTableRow({ ...billState });
+                  billData.state = 'cancelled';
+                  billState.state = 'cancelled';
+                  await updateBill(
+                    billState.customer.group_id,
+                    billState.customer.id,
+                    billData.id,
+                    billData
+                  );
 
-                  const data2 = {
-                    ...billState?.deliveryObject,
-                    state: 'cancel',
-                  } as DeliveryObject;
-                  await updateDocToFirestore(data2, COLLECTION_NAME.DELIVERIES);
+                  if (!billState.deliveryTableRow) {
+                    return;
+                  }
+                  let deliveryData: Delivery | undefined =
+                    createDeliveryDataFromBillTableRow({
+                      ...billState.deliveryTableRow,
+                    });
+                  deliveryData.state = 'cancelled';
+                  billState.deliveryTableRow.state = 'cancelled';
+
+                  await updateDelivery(deliveryData.id, deliveryData);
 
                   handleSnackbarAlert('success', 'Hủy đơn thành công!');
+                  sendBillToMail(billState);
+
                   handleBillDataChange({
                     ...billState!,
-                    ...data,
-                    deliveryObject: data2,
                   });
                   handleClose();
                 }}

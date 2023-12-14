@@ -14,7 +14,7 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
 import ChiTietDonHang_Content from '../ChiTietDonHang_Content';
 import DonHang_Content from '../DonHang_Content';
@@ -22,17 +22,20 @@ import ThongTin_Content from '../ThongTin_Content';
 import { BillTableRow } from '@/models/bill';
 import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
 import { updateBill } from '@/lib/DAO/billDAO';
+import { sendBillToEmail } from '@/lib/services/MailService';
 
 export default function MyModal({
   open,
   handleClose,
   delivery,
   handleDeliveryDataChange,
+  sendBillToMail,
 }: {
   open: boolean;
   handleClose: any;
   delivery: BillTableRow | null;
   handleDeliveryDataChange: any;
+  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -84,6 +87,7 @@ export default function MyModal({
     handleClose();
   };
   //#endregion
+
   return (
     <>
       <Dialog
@@ -280,6 +284,7 @@ export default function MyModal({
                     }
 
                     handleSnackbarAlert('success', 'Giao hàng thành công!');
+                    sendBillToMail(modalDelivery);
                     handleDeliveryDataChange({
                       ...modalDelivery,
                     });
@@ -314,6 +319,7 @@ export default function MyModal({
                         'success',
                         'Bắt đầu giao hàng thành công!'
                       );
+                      sendBillToMail(modalDelivery);
                       handleDeliveryDataChange({
                         ...modalDelivery,
                       });

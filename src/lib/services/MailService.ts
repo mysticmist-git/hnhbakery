@@ -1,6 +1,7 @@
 import { BillTableRow } from '@/models/bill';
 // import nodemailer from 'nodemailer';
 import { useBillTableRow } from '../hooks/useBillTableRow';
+import axios from 'axios';
 
 export interface MailServiceConstructorProps {
   user: string;
@@ -50,16 +51,25 @@ export interface MailServiceConstructorProps {
 //   }
 // }
 
-export async function sendBillToEmail(bill: BillTableRow): Promise<void> {
-  const data = await useBillTableRow(bill);
+export async function sendBillToEmail(
+  email: string,
+  bill?: BillTableRow,
+  withSale: boolean = true,
+  withSanPham: boolean = true
+) {
+  const data = bill ? await useBillTableRow(bill) : undefined;
   console.log(data);
 
-  return await fetch('/api/sendBillToEmail', {
-    method: 'POST',
-    body: JSON.stringify({
-      bill: data,
-    }),
-  })
-    .then((response) => response.json())
-    .then((json) => console.log(json));
+  const host = window.location.protocol + '//' + window.location.host;
+  console.log(host);
+
+  const response = await axios.post(host + '/api/sendBillToEmail', {
+    bill: data,
+    email,
+    withSale,
+    withSanPham,
+  });
+  console.log(response);
+
+  return response;
 }

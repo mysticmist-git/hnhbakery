@@ -24,6 +24,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useLocalStorage } from 'usehooks-ts';
 import { BillAccordionContent } from './profile';
 import { deliveryStateContentParse } from '@/models/delivery';
+import { sendBillToEmail } from '@/lib/services/MailService';
 
 const PaymentResult = () => {
   const theme = useTheme();
@@ -33,127 +34,90 @@ const PaymentResult = () => {
   const router = useRouter();
 
   // #region Bill data
-  const { billId } = useMemo(() => {
-    return router.query;
-  }, [router.query]);
-
-  const [user, userLoading, userError] = useAuthState(auth);
 
   const [billData, setBillData] = useState<BillTableRow | undefined | null>(
     undefined
   );
 
-  useEffect(() => {
-    if (!user && !userLoading) {
-      router.push('/');
+  //#endregion
+
+  //#region Gửi mail
+
+  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
+    try {
+      const email = bill?.deliveryTableRow?.mail ?? '';
+
+      const sendMailResponse = await sendBillToEmail(email, bill);
+
+      if (sendMailResponse.status == 200) {
+        handlerSnackbarAlert(
+          'success',
+          'Mã hóa đơn đã được gửi tới mail của bạn.'
+        );
+      } else {
+        console.log(sendMailResponse);
+        handlerSnackbarAlert('error', 'Có lỗi xảy ra khi cố gửi mail cho bạn');
+      }
+    } catch (error: any) {
+      console.log(error);
     }
-  }, [router, user, userLoading]);
+  }, []);
+
+  // #endregion
+
+  const [uid, setUid] = useLocalStorage<string>('uid', '');
+  const [billId, setBillId] = useLocalStorage<string>('billId', '');
+
+  useEffect(() => {
+    const { uid, billId } = router.query;
+    console.log('uid', uid);
+    console.log('billId', billId);
+    setUid(uid as string);
+    setBillId(billId as string);
+  }, [router.query]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         load();
-        if (
-          user &&
-          user.uid &&
-          user.uid != '' &&
-          billId &&
-          typeof billId == 'string' &&
-          billId != ''
-        ) {
-          const data = await getBillTableRowById(user.uid, billId);
-          if (data) setBillData(data);
-          else setBillData(null);
+        const data = await getBillTableRowById(uid, billId);
+        if (data) {
+          setBillData(data);
         } else {
           setBillData(null);
         }
         stop();
       } catch (error) {
         console.log(error);
-        setBillData(null);
+        setBillData(undefined);
         stop();
       }
     };
 
-    fetchData();
-  }, [load, stop, user, billId]);
-
-  //#endregion
-
-  //#region Gửi mail
-  const [isProcessed, setIsProcessed] = useState(false);
-
-  const [email] = useLocalStorage<string>('email', '');
-
-  const sendBillToMail = useCallback(async () => {
-    try {
-      console.log(email);
-
-      const sendMailResponse = await fetch('/api/send-mail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: email,
-          subject: '[HNH-BAKERY - Thanh toán thành công]',
-          text: `
-        Cảm ơn bạn đã sử dụng dịch vụ của H&H Bakery.
-        *Dưới đây là thông tin hóa đơn của bạn
-        Thông tin đơn hàng
-         - Mã hóa đơn: ${billData?.id ?? 'Trống'}
-         - Trạng thái: ${billStateContentParse(billData?.state)}
-         - Hình thức thanh toán: ${billData?.paymentMethod?.name ?? 'Trống'}
-         - Ghi chú: ${billData?.note ?? 'Trống'}
-        Thông tin vận chuyển
-         - Người nhận: ${billData?.deliveryTableRow?.name}
-         - Số điện thoại: ${billData?.deliveryTableRow?.tel}
-         - Ngày đặt giao: ${
-           formatDateString(
-             billData?.deliveryTableRow?.ship_date,
-             'DD/MM/YYYY'
-           ) ?? 'Trống'
-         }
-         - Thời gian đặt giao: ${
-           billData?.deliveryTableRow?.ship_time ?? 'Trống'
-         }
-         - Địa chi giao hàng: ${
-           billData?.deliveryTableRow?.addressObject?.address ??
-           billData?.deliveryTableRow?.address ??
-           'Trống'
-         }
-         - Ghi chú: ${billData?.deliveryTableRow?.delivery_note ?? 'Trống'}
-         - Trạng thái: ${
-           deliveryStateContentParse(billData?.deliveryTableRow?.state) ??
-           'Trống'
-         }
-          *Đầy đủ thông tin hóa đơn vui lòng truy cập: https://hnhbakery.vercel.app/`,
-        }),
-      });
-
-      if (sendMailResponse.ok) {
-        handlerSnackbarAlert(
-          'success',
-          'Mã hóa đơn đã được gửi tới mail của bạn.'
-        );
-      } else {
-        const errorMessage = await sendMailResponse.json();
-        console.log(errorMessage);
-        handlerSnackbarAlert('error', 'Có lỗi xảy ra khi cố gửi mail cho bạn');
-      }
-    } catch (error: any) {
-      console.log(error);
+    if (uid && uid != '' && billId && billId != '' && billData == undefined) {
+      fetchData();
     }
-  }, [billId, email, handlerSnackbarAlert]);
+  }, [uid, billId]);
 
   useEffect(() => {
-    if (isProcessed == false && billId && billData) {
-      sendBillToMail();
-      setIsProcessed(true);
+    const sendMail = async () => {
+      try {
+        const sentEmail = localStorage.getItem('sentEmail');
+        if (!billData || sentEmail == 'true') {
+          localStorage.removeItem('sentEmail');
+          return;
+        }
+        localStorage.setItem('sentEmail', 'true');
+        await sendBillToMail(billData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (billData) {
+      sendMail();
+      console.log('billData', billData);
     }
-  }, [isProcessed, sendBillToMail, billId, billData]);
-
-  // #endregion
+  }, [billData]);
 
   return (
     <Box component={'div'} sx={{ pb: 16 }}>

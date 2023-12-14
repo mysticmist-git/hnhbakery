@@ -17,8 +17,10 @@ import { getSaleById } from '@/lib/DAO/saleDAO';
 import { getUserByUid, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
+import { useSnackbarService } from '@/lib/contexts';
 import { getCollection } from '@/lib/firestore';
 import useLoadingService from '@/lib/hooks/useLoadingService';
+import { sendBillToEmail } from '@/lib/services/MailService';
 import { BillTableRow } from '@/models/bill';
 import User from '@/models/user';
 import { LockPersonRounded } from '@mui/icons-material';
@@ -33,7 +35,7 @@ import {
   useTheme,
 } from '@mui/material';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
@@ -80,7 +82,9 @@ const Order = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [billState, setBillState] = useState<BillTableRow | null>(null);
+  const [billState, setBillState] = useState<BillTableRow | undefined>(
+    undefined
+  );
 
   const handleViewBillModalState = (bill: BillTableRow) => {
     handleOpenModalState();
@@ -134,6 +138,29 @@ const Order = () => {
   }, [user]);
 
   const theme = useTheme();
+
+  const handleSnackbarAlert = useSnackbarService();
+  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
+    try {
+      const email = bill?.deliveryTableRow?.mail ?? '';
+      const sendMailResponse = await sendBillToEmail(email, bill);
+
+      if (sendMailResponse.status == 200) {
+        handleSnackbarAlert(
+          'success',
+          'Email cập nhật đã được gửi đến khách hàng.'
+        );
+      } else {
+        console.log(sendMailResponse);
+        handleSnackbarAlert(
+          'error',
+          'Có lỗi xảy ra khi cố gửi mail cho khách hàng'
+        );
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  }, []);
 
   return (
     <>
@@ -189,6 +216,7 @@ const Order = () => {
                 handleClose={handleCloseModalChiTiet}
                 bill={currentViewBill}
                 handleBillDataChange={handleBillDataChange}
+                sendBillToMail={sendBillToMail}
               />
 
               {/* State modal */}
@@ -198,6 +226,7 @@ const Order = () => {
                 billState={billState}
                 setBillState={setBillState}
                 handleBillDataChange={handleBillDataChange}
+                sendBillToMail={sendBillToMail}
               />
             </Grid>
           </Grid>

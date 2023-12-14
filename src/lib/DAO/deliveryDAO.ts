@@ -1,5 +1,8 @@
 import { db } from '@/firebase/config';
-import Delivery, { deliveryConverter } from '@/models/delivery';
+import Delivery, {
+  DeliveryTableRow,
+  deliveryConverter,
+} from '@/models/delivery';
 import {
   DocumentReference,
   addDoc,
@@ -73,4 +76,11 @@ export async function deleteDelivery(
   } else {
     await deleteDoc(arg);
   }
+}
+
+export function createDeliveryDataFromBillTableRow(
+  deliveryTableRow: DeliveryTableRow
+) {
+  delete deliveryTableRow.addressObject;
+  return deliveryTableRow as Delivery;
 }

@@ -35,7 +35,7 @@ import FormGiaoHang from '../components/payment/FormGiaoHang';
 import { PaymentContext } from '@/lib/contexts/paymentContext';
 import BookingItemDisplay from '@/components/payment/BookingItem/BookingItem';
 import { ref, uploadBytes } from 'firebase/storage';
-import { DEFAULT_GROUP_ID, GUEST_ID } from '@/lib/DAO/groupDAO';
+import { DEFAULT_GROUP_ID, GUEST_ID, GUEST_UID } from '@/lib/DAO/groupDAO';
 import BookingItem from '@/models/bookingItem';
 import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
 import { getSales } from '@/lib/DAO/saleDAO';
@@ -399,26 +399,30 @@ const Payment = () => {
     let userData = {
       group_id: '',
       id: '',
+      uid: '',
     };
     try {
       if (!user) {
         userData = {
           group_id: DEFAULT_GROUP_ID,
           id: GUEST_ID,
-        };
-        return;
-      }
-      const uData = await getUserByUid(user?.uid!);
-      if (uData) {
-        userData = {
-          group_id: uData.group_id,
-          id: uData.id,
+          uid: GUEST_UID,
         };
       } else {
-        userData = {
-          group_id: DEFAULT_GROUP_ID,
-          id: GUEST_ID,
-        };
+        const uData = await getUserByUid(user.uid);
+        if (uData) {
+          userData = {
+            group_id: uData.group_id,
+            id: uData.id,
+            uid: uData.uid,
+          };
+        } else {
+          userData = {
+            group_id: DEFAULT_GROUP_ID,
+            id: GUEST_ID,
+            uid: GUEST_UID,
+          };
+        }
       }
 
       console.log('userData: ', userData);
@@ -426,6 +430,7 @@ const Payment = () => {
       userData = {
         group_id: DEFAULT_GROUP_ID,
         id: GUEST_ID,
+        uid: GUEST_UID,
       };
       handleSnackbarAlert('error', 'Lấy User không thành công');
       resetState();
@@ -479,7 +484,7 @@ const Payment = () => {
     try {
       await updateBookingItem(bookingItem_Id, bookingItemData);
       resetState();
-      router.push(`/tienmat-result?billId=${billId}`);
+      router.push(`/tienmat-result?uid=${userData.uid}&billId=${billId}`);
     } catch (error: any) {
       handleSnackbarAlert(
         'error',
