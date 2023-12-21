@@ -77,15 +77,19 @@ const Report = () => {
       try {
         const finalData: ReportTableRow = {};
 
-        const billTableRows: BillTableRow[] = await getBillTableRows();
-
-        const productTypeTableRows: ProductTypeTableRow[] =
-          await getProductTypeTableRows();
-
-        const batches: Batch[] = await getBatches();
-
-        const sales: Sale[] = await getSales();
-        const paymentMethods: PaymentMethod[] = await getPaymentMethods();
+        const [
+          billTableRows,
+          productTypeTableRows,
+          batches,
+          sales,
+          paymentMethods,
+        ] = await Promise.all([
+          await getBillTableRows(),
+          await getProductTypeTableRows(),
+          await getBatches(),
+          await getSales(),
+          await getPaymentMethods(),
+        ]);
 
         finalData.productTypes = productTypeTableRows;
         finalData.bills = billTableRows;
@@ -156,6 +160,7 @@ const Report = () => {
       boxShadow: 10,
     },
   };
+
   const textStyle = {
     fontSize: theme.typography.body2.fontSize,
     color: theme.palette.common.black,

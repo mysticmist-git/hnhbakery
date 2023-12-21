@@ -1,6 +1,11 @@
+import Address from '@/models/address';
 import Bill, { BillTableRow, billConverter } from '@/models/bill';
 import Branch from '@/models/branch';
+import Delivery from '@/models/delivery';
+import Product from '@/models/product';
+import ProductType from '@/models/productType';
 import User from '@/models/user';
+import Variant from '@/models/variant';
 import {
   CollectionReference,
   DocumentReference,
@@ -21,7 +26,9 @@ import { COLLECTION_NAME } from '../constants';
 import { getAddress } from './addressDAO';
 import { getBatchById } from './batchDAO';
 import { getBillItems } from './billItemDAO';
+import { getBookingItemById } from './bookingItemDAO';
 import { getBranchById } from './branchDAO';
+import { getCakeBaseById } from './cakeBaseDAO';
 import { getDeliveryById } from './deliveryDAO';
 import { DEFAULT_GROUP_ID, getGroups } from './groupDAO';
 import { getPaymentMethodById } from './paymentMethodDAO';
@@ -30,13 +37,6 @@ import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
-import Delivery from '@/models/delivery';
-import Address from '@/models/address';
-import { getBookingItemById } from './bookingItemDAO';
-import { getCakeBaseById } from './cakeBaseDAO';
-import ProductType from '@/models/productType';
-import Product from '@/models/product';
-import Variant from '@/models/variant';
 
 export function getBillsRef(
   groupId: string,
@@ -422,23 +422,40 @@ export async function deleteBill(
 export async function getBillTableRows(
   branch?: Branch
 ): Promise<BillTableRow[]> {
-  const finalBills: BillTableRow[] = [];
   const customers = await getUsers(DEFAULT_GROUP_ID);
 
-  for (let c of customers) {
-    const bills = branch
-      ? (await getBills(c.group_id, c.id)).filter(
-          (b) => b.branch_id == branch.id
-        )
-      : await getBills(c.group_id, c.id);
+  const finalBills = (
+    await Promise.all(
+      customers.map(async (customer) => {
+        const bills = branch
+          ? (await getBills(customer.group_id, customer.id)).filter(
+              (b) => b.branch_id == branch.id
+            )
+          : await getBills(customer.group_id, customer.id);
 
-    for (let b of bills) {
-      const pushData = await getBillTableRow(c, b);
-      if (pushData) {
-        finalBills.push(pushData);
-      }
-    }
-  }
+        return await Promise.all(
+          bills.map(async (bill) => await getBillTableRow(customer, bill))
+        );
+      })
+    )
+  )
+    .flat()
+    .filter(Boolean);
+
+  // for (let c of customers) {
+  //   const bills = branch
+  //     ? (await getBills(c.group_id, c.id)).filter(
+  //         (b) => b.branch_id == branch.id
+  //       )
+  //     : await getBills(c.group_id, c.id);
+
+  //   for (let b of bills) {
+  //     const pushData = await getBillTableRow(c, b);
+  //     if (pushData) {
+  //       finalBills.push(pushData);
+  //     }
+  //   }
+  // }
 
   return finalBills.sort((a, b) => {
     return a.created_at > b.created_at ? -1 : 1;
