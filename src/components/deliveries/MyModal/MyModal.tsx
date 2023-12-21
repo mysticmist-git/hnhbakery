@@ -36,7 +36,7 @@ export default function MyModal({
   handleClose: any;
   delivery: BillTableRow | null;
   handleDeliveryDataChange: any;
-  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
+  sendBillToMail: (subject: string, bill?: BillTableRow) => Promise<void>;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -95,12 +95,14 @@ export default function MyModal({
     const typeSubmit: {
       state: Delivery['state'];
       message: string;
+      subject: string;
     } = {
       state: type == 'batdaugiao' ? 'delivering' : 'delivered',
       message:
         type == 'batdaugiao'
           ? 'Bắt đầu giao hàng thành công!'
           : 'Giao hàng thành công!',
+      subject: type == 'batdaugiao' ? 'Đơn hàng đang giao' : 'Đơn hàng đã giao',
     };
 
     const data = await getDeliveryById(modalDelivery!.deliveryTableRow!.id);
@@ -128,7 +130,7 @@ export default function MyModal({
       }
 
       handleSnackbarAlert('success', typeSubmit.message);
-      sendBillToMail(modalDelivery);
+      sendBillToMail(typeSubmit.subject, modalDelivery);
       handleDeliveryDataChange({
         ...modalDelivery,
       });

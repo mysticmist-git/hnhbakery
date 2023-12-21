@@ -37,7 +37,7 @@ export default function ModalState({
   billState: BillTableRow | undefined;
   setBillState: (prev: any) => void;
   handleBillDataChange: (newBill: BillTableRow) => void;
-  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
+  sendBillToMail: (subject: string, bill?: BillTableRow) => Promise<void>;
 }) {
   const clearData = () => {
     setBillState(() => undefined);
@@ -135,47 +135,50 @@ export default function ModalState({
               {isCancel ? 'Hủy' : 'Đóng'}
             </Button>
             {isCancel && (
-              <Button
-                variant="contained"
-                color="error"
-                onClick={async () => {
-                  if (!billState || !billState.customer) {
-                    return;
-                  }
-                  let billData: Bill | undefined =
-                    createBillDataFromBillTableRow({ ...billState });
-                  billData.state = 'cancelled';
-                  billState.state = 'cancelled';
-                  await updateBill(
-                    billState.customer.group_id,
-                    billState.customer.id,
-                    billData.id,
-                    billData
-                  );
+              <form onSubmit={(e) => e.preventDefault()} method="post">
+                <Button
+                  variant="contained"
+                  color="error"
+                  type="submit"
+                  onClick={async () => {
+                    if (!billState || !billState.customer) {
+                      return;
+                    }
+                    let billData: Bill | undefined =
+                      createBillDataFromBillTableRow({ ...billState });
+                    billData.state = 'cancelled';
+                    billState.state = 'cancelled';
+                    await updateBill(
+                      billState.customer.group_id,
+                      billState.customer.id,
+                      billData.id,
+                      billData
+                    );
 
-                  if (!billState.deliveryTableRow) {
-                    return;
-                  }
-                  let deliveryData: Delivery | undefined =
-                    createDeliveryDataFromBillTableRow({
-                      ...billState.deliveryTableRow,
+                    if (!billState.deliveryTableRow) {
+                      return;
+                    }
+                    let deliveryData: Delivery | undefined =
+                      createDeliveryDataFromBillTableRow({
+                        ...billState.deliveryTableRow,
+                      });
+                    deliveryData.state = 'cancelled';
+                    billState.deliveryTableRow.state = 'cancelled';
+
+                    await updateDelivery(deliveryData.id, deliveryData);
+
+                    handleSnackbarAlert('success', 'Hủy đơn thành công!');
+                    sendBillToMail('Hủy đơn hàng', billState);
+
+                    handleBillDataChange({
+                      ...billState!,
                     });
-                  deliveryData.state = 'cancelled';
-                  billState.deliveryTableRow.state = 'cancelled';
-
-                  await updateDelivery(deliveryData.id, deliveryData);
-
-                  handleSnackbarAlert('success', 'Hủy đơn thành công!');
-                  sendBillToMail(billState);
-
-                  handleBillDataChange({
-                    ...billState!,
-                  });
-                  handleClose();
-                }}
-              >
-                Xác nhận
-              </Button>
+                    handleClose();
+                  }}
+                >
+                  Xác nhận
+                </Button>
+              </form>
             )}
           </Box>
         </DialogActions>

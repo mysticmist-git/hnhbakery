@@ -64,7 +64,7 @@ const MyModal = ({
   handleClose: any;
   bill: BillTableRow | null;
   handleBillDataChange: any;
-  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
+  sendBillToMail: (subject: string, bill?: BillTableRow) => Promise<void>;
 }) => {
   const handleSnackbarAlert = useSnackbarService();
 
@@ -187,7 +187,7 @@ const MyModal = ({
         updatedDelivery.final_price = billData.final_price;
         updatedDelivery.state = billData.state;
       }
-      sendBillToMail(updatedDelivery);
+      sendBillToMail('Thay đổi thông tin giao hàng', updatedDelivery);
       handleBillDataChange(updatedDelivery);
       handleClose();
     } catch (error: any) {

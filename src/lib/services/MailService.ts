@@ -54,17 +54,16 @@ export interface MailServiceConstructorProps {
 export async function sendBillToEmail(
   email: string,
   bill?: BillTableRow,
+  subject: string = 'Hóa đơn H&H Bakery',
   withSale: boolean = true,
   withSanPham: boolean = true
 ) {
   const data = bill ? await useBillTableRow(bill) : undefined;
-  console.log(data);
 
   const host = window.location.protocol + '//' + window.location.host;
-  console.log(host);
-
   const response = await axios.post(host + '/api/sendBillToEmail', {
     bill: data,
+    subject,
     email,
     withSale,
     withSanPham,
