@@ -71,7 +71,7 @@ const sample: BillTableRow = {
   branch_id: '1',
   booking_item_id: 'UmiJ5XWO3XIz2EKOtITb',
   payment_method_id: 'cash',
-  note: '',
+  note: 'Thử thử',
   sale_price: 0,
   sale_id: '',
   state: 'paid',

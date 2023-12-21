@@ -2,7 +2,7 @@ import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
 import { formatDateString } from '@/lib/utils';
 import { ContentCopyRounded } from '@mui/icons-material';
-import { Grid, InputAdornment, Tooltip } from '@mui/material';
+import { Box, Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
 import { BillTableRow } from '@/models/bill';
 import { BillItemTableRow } from '@/models/billItem';
@@ -67,9 +67,10 @@ export default function ChiTietDonHang_Content({
               </Grid>
             );
           })}
-
         {modalDelivery?.booking_item_id != '' && modalDelivery?.bookingItem && (
-          <BookingItemContent item={modalDelivery.bookingItem} />
+          <Grid item xs={12} alignSelf={'stretch'}>
+            <BookingItemContent item={modalDelivery.bookingItem} />
+          </Grid>
         )}
       </Grid>
     </>

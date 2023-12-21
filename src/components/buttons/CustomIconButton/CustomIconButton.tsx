@@ -1,7 +1,7 @@
-import { IconButton, useTheme } from '@mui/material';
+import { IconButton, IconButtonProps, useTheme } from '@mui/material';
 import React, { memo } from 'react';
 
-const CustomIconButton = (props: any) => {
+const CustomIconButton = (props: IconButtonProps) => {
   const theme = useTheme();
   return (
     <IconButton

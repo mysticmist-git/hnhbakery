@@ -37,6 +37,7 @@ import { getCakeBaseById } from './cakeBaseDAO';
 import ProductType from '@/models/productType';
 import Product from '@/models/product';
 import Variant from '@/models/variant';
+import Batch from '@/models/batch';
 
 export function getBillsRef(
   groupId: string,
@@ -422,23 +423,26 @@ export async function deleteBill(
 export async function getBillTableRows(
   branch?: Branch
 ): Promise<BillTableRow[]> {
-  const finalBills: BillTableRow[] = [];
+  let finalBills: BillTableRow[] = [];
   const customers = await getUsers(DEFAULT_GROUP_ID);
+  let filterBills: Bill[] = [];
+  await Promise.all(
+    customers.map(async (c) => await getBills(c.group_id, c.id))
+  ).then((bills) => {
+    const allBills = bills.flat();
+    filterBills = branch
+      ? allBills.filter((b) => b.branch_id == branch.id)
+      : allBills;
+  });
 
-  for (let c of customers) {
-    const bills = branch
-      ? (await getBills(c.group_id, c.id)).filter(
-          (b) => b.branch_id == branch.id
-        )
-      : await getBills(c.group_id, c.id);
-
-    for (let b of bills) {
-      const pushData = await getBillTableRow(c, b);
-      if (pushData) {
-        finalBills.push(pushData);
-      }
-    }
-  }
+  await Promise.all(
+    filterBills.map(
+      async (b) =>
+        await getBillTableRow(customers.find((c) => c.id == b.customer_id)!, b)
+    )
+  ).then((billTableRows) => {
+    finalBills = billTableRows;
+  });
 
   return finalBills.sort((a, b) => {
     return a.created_at > b.created_at ? -1 : 1;
@@ -450,10 +454,16 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
 
   const billitems = await getBillItems(c.group_id, c.id, b.id);
 
-  const billItems: BillTableRow['billItems'] = [];
+  let billTableRows: BillTableRow['billItems'] = [];
+  let batches: Batch[] = [];
+  await Promise.all(
+    billitems.map(async (bi) => await getBatchById(bi.batch_id))
+  ).then((batches) => {
+    batches = batches.filter((b) => b != undefined);
+  });
+
   for (let bi of billitems) {
-    const batch =
-      bi.batch_id == '' ? undefined : await getBatchById(bi.batch_id);
+    const batch = batches.find((b) => b.id == bi.batch_id);
 
     let productType: ProductType | undefined = undefined;
     let product: Product | undefined = undefined;
@@ -474,7 +484,7 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
       );
     }
 
-    billItems.push({
+    billTableRows.push({
       ...bi,
       batch: batch,
       productType: productType,
@@ -514,7 +524,7 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
           addressObject: address,
         }
       : undefined,
-    billItems: billItems,
+    billItems: billTableRows,
     branch: b.branch_id == '' ? undefined : await getBranchById(b.branch_id),
     bookingItem: bookingItem
       ? {
@@ -536,7 +546,7 @@ export async function getBillTableRowsByUserId(
   if (userId == '') {
     return [];
   }
-  const finalBills: BillTableRow[] = [];
+  let finalBills: BillTableRow[] = [];
 
   const customer = await getUserByUid(userId);
 
@@ -545,12 +555,11 @@ export async function getBillTableRowsByUserId(
   }
   const bills = await getBills(customer.group_id, customer.id);
 
-  for (let b of bills) {
-    const pushData = await getBillTableRow(customer, b);
-    if (pushData) {
-      finalBills.push(pushData);
-    }
-  }
+  await Promise.all(
+    bills.map(async (b) => await getBillTableRow(customer, b))
+  ).then((billTableRows) => {
+    finalBills = billTableRows;
+  });
 
   return finalBills.sort((a, b) => {
     return a.created_at > b.created_at ? -1 : 1;

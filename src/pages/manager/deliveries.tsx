@@ -130,7 +130,7 @@ const Deliveries = () => {
   //#endregion
 
   const handleSnackbarAlert = useSnackbarService();
-  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
+  const sendBillToMailWithAlert = useCallback(async (bill?: BillTableRow) => {
     try {
       const email = bill?.deliveryTableRow?.mail ?? '';
       const sendMailResponse = await sendBillToEmail(email, bill);
@@ -203,7 +203,7 @@ const Deliveries = () => {
                 handleClose={handleCloseModalChiTiet}
                 delivery={currentViewDelivery}
                 handleDeliveryDataChange={handleDeliveryDataChange}
-                sendBillToMail={sendBillToMail}
+                sendBillToMail={sendBillToMailWithAlert}
               />
 
               {/* Modal state */}
@@ -213,7 +213,7 @@ const Deliveries = () => {
                 deliveryState={deliveryState}
                 setDeliveryState={setDeliveryState}
                 handleDeliveryDataChange={handleDeliveryDataChange}
-                sendBillToMail={sendBillToMail}
+                sendBillToMail={sendBillToMailWithAlert}
               />
             </Grid>
           </Grid>
