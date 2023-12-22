@@ -1,8 +1,11 @@
-import { ArrowLeft, ArrowRight } from '@mui/icons-material';
+import { formatPrice } from '@/lib/utils';
+import { ArrowLeft, ArrowRight, ChevronRight } from '@mui/icons-material';
 import {
   Box,
   Button,
   ButtonGroup,
+  Card,
+  Divider,
   Grid,
   IconButton,
   MenuItem,
@@ -220,7 +223,7 @@ const Report = () => {
 
   return (
     <>
-      <Grid container my={2} gap={2}>
+      <Grid container p={2} rowSpacing={2} columnSpacing={2}>
         <Grid item xs={12} display="flex" justifyContent={'center'}>
           <ButtonGroup
             variant="contained"
@@ -298,6 +301,77 @@ const Report = () => {
           >
             {fromDateToDateText}
           </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Divider />
+        </Grid>
+        <Grid item xs={6}>
+          <Card
+            elevation={4}
+            sx={{
+              borderRadius: 4,
+              display: 'flex',
+            }}
+          >
+            <Grid container>
+              <Grid item xs={6} textAlign={'center'} pl={4} pt={4}>
+                <Typography typography="h5">Tổng doanh thu</Typography>
+                <Typography color="success.main">
+                  {formatPrice(12000000)}
+                </Typography>
+              </Grid>
+              <Grid item xs={6} textAlign="center" pr={4} pt={4}>
+                <Typography typography="h5">Tiền đã khuyến mãi</Typography>
+                <Typography color="error.main">
+                  {formatPrice(-2000000)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} py={1}>
+                <Divider />
+              </Grid>
+              <Grid item xs={12} textAlign={'center'} px={4} pb={4}>
+                <Typography typography="h5">Doanh thu thực sự</Typography>
+                <Typography color="success.main">
+                  {formatPrice(10000000)}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Divider orientation="vertical" flexItem />
+            <IconButton sx={{ borderRadius: 0 }}>
+              <ChevronRight />
+            </IconButton>
+          </Card>
+        </Grid>
+        <Grid item xs={6}>
+          <Card
+            elevation={4}
+            sx={{
+              borderRadius: 4,
+              display: 'flex',
+            }}
+          >
+            <Grid container>
+              <Grid item xs={12} textAlign="center" px={4} pt={4}>
+                <Typography typography="h5">Lô bánh làm ra</Typography>
+                <Typography>100</Typography>
+              </Grid>
+              <Grid item xs={12} py={1}>
+                <Divider />
+              </Grid>
+              <Grid item xs={6} textAlign={'center'} pl={4} pb={4}>
+                <Typography typography="h5">Lô bánh đã bán</Typography>
+                <Typography color="success.main">80 (80%)</Typography>
+              </Grid>
+              <Grid item xs={6} textAlign={'center'} pr={4} pb={4}>
+                <Typography typography="h5">Lô bánh hết hạn</Typography>
+                <Typography color="error.main">20 (20%)</Typography>
+              </Grid>
+            </Grid>
+            <Divider orientation="vertical" flexItem />
+            <IconButton sx={{ borderRadius: 0 }}>
+              <ChevronRight />
+            </IconButton>
+          </Card>
         </Grid>
       </Grid>
     </>
