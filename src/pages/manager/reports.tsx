@@ -1,5 +1,10 @@
 import { formatPrice } from '@/lib/utils';
-import { ArrowLeft, ArrowRight, ChevronRight } from '@mui/icons-material';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -186,7 +191,11 @@ function getUpdatedRightMonthIntervals(intervals: Interval[]) {
   return cloneToUpdateIntervals;
 }
 
+type ReportTab = 'revenue' | 'batch' | 'none';
+
 const Report = () => {
+  //#region Time range zone
+
   const [timeRangeType, setTimeRangeType] = useState<TimeRange>('interval');
   const [currentIntervalType, setCurrentIntervalType] =
     useState<IntervalType>('month');
@@ -220,6 +229,13 @@ const Report = () => {
 
     if (change) setIntervals(updatedIntervals);
   }, [currentIntervalIndex, currentIntervalType, intervals]);
+
+  //#endregion
+  //#region Revenue + Batch zone
+
+  const [currentTab, setCurrentTab] = useState<ReportTab>('revenue');
+
+  //#endregion
 
   return (
     <>
@@ -305,74 +321,156 @@ const Report = () => {
         <Grid item xs={12}>
           <Divider />
         </Grid>
-        <Grid item xs={6}>
-          <Card
-            elevation={4}
-            sx={{
-              borderRadius: 4,
-              display: 'flex',
-            }}
-          >
-            <Grid container>
-              <Grid item xs={6} textAlign={'center'} pl={4} pt={4}>
-                <Typography typography="h5">Tổng doanh thu</Typography>
-                <Typography color="success.main">
-                  {formatPrice(12000000)}
-                </Typography>
-              </Grid>
-              <Grid item xs={6} textAlign="center" pr={4} pt={4}>
-                <Typography typography="h5">Tiền đã khuyến mãi</Typography>
-                <Typography color="error.main">
-                  {formatPrice(-2000000)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} py={1}>
-                <Divider />
-              </Grid>
-              <Grid item xs={12} textAlign={'center'} px={4} pb={4}>
-                <Typography typography="h5">Doanh thu thực sự</Typography>
-                <Typography color="success.main">
-                  {formatPrice(10000000)}
-                </Typography>
-              </Grid>
+        {currentTab === 'none' && (
+          <>
+            <Grid item xs={6}>
+              <Card
+                elevation={4}
+                sx={{
+                  borderRadius: 4,
+                  display: 'flex',
+                }}
+              >
+                <Grid container>
+                  <Grid item xs={6} textAlign={'center'} pl={4} pt={4}>
+                    <Typography typography="h5">Tổng doanh thu</Typography>
+                    <Typography color="success.main">
+                      {formatPrice(12000000)}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6} textAlign="center" pr={4} pt={4}>
+                    <Typography typography="h5">Tiền đã khuyến mãi</Typography>
+                    <Typography color="error.main">
+                      {formatPrice(-2000000)}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} py={1}>
+                    <Divider />
+                  </Grid>
+                  <Grid item xs={12} textAlign={'center'} px={4} pb={4}>
+                    <Typography typography="h5">Doanh thu thực sự</Typography>
+                    <Typography color="success.main">
+                      {formatPrice(10000000)}
+                    </Typography>
+                  </Grid>
+                </Grid>
+                <Divider orientation="vertical" flexItem />
+                <IconButton
+                  sx={{ borderRadius: 0 }}
+                  onClick={() => setCurrentTab('revenue')}
+                >
+                  <ChevronRight />
+                </IconButton>
+              </Card>
             </Grid>
-            <Divider orientation="vertical" flexItem />
-            <IconButton sx={{ borderRadius: 0 }}>
-              <ChevronRight />
-            </IconButton>
-          </Card>
-        </Grid>
-        <Grid item xs={6}>
-          <Card
-            elevation={4}
-            sx={{
-              borderRadius: 4,
-              display: 'flex',
-            }}
-          >
-            <Grid container>
-              <Grid item xs={12} textAlign="center" px={4} pt={4}>
-                <Typography typography="h5">Lô bánh làm ra</Typography>
-                <Typography>100</Typography>
-              </Grid>
-              <Grid item xs={12} py={1}>
-                <Divider />
-              </Grid>
-              <Grid item xs={6} textAlign={'center'} pl={4} pb={4}>
-                <Typography typography="h5">Lô bánh đã bán</Typography>
-                <Typography color="success.main">80 (80%)</Typography>
-              </Grid>
-              <Grid item xs={6} textAlign={'center'} pr={4} pb={4}>
-                <Typography typography="h5">Lô bánh hết hạn</Typography>
-                <Typography color="error.main">20 (20%)</Typography>
-              </Grid>
+            <Grid item xs={6}>
+              <Card
+                elevation={4}
+                sx={{
+                  borderRadius: 4,
+                  display: 'flex',
+                }}
+              >
+                <Grid container>
+                  <Grid item xs={12} textAlign="center" px={4} pt={4}>
+                    <Typography typography="h5">Lô bánh làm ra</Typography>
+                    <Typography>100</Typography>
+                  </Grid>
+                  <Grid item xs={12} py={1}>
+                    <Divider />
+                  </Grid>
+                  <Grid item xs={6} textAlign={'center'} pl={4} pb={4}>
+                    <Typography typography="h5">Lô bánh đã bán</Typography>
+                    <Typography color="success.main">80 (80%)</Typography>
+                  </Grid>
+                  <Grid item xs={6} textAlign={'center'} pr={4} pb={4}>
+                    <Typography typography="h5">Lô bánh hết hạn</Typography>
+                    <Typography color="error.main">20 (20%)</Typography>
+                  </Grid>
+                </Grid>
+                <Divider orientation="vertical" flexItem />
+                <IconButton
+                  sx={{ borderRadius: 0 }}
+                  onClick={() => setCurrentTab('batch')}
+                >
+                  <ChevronRight />
+                </IconButton>
+              </Card>
             </Grid>
-            <Divider orientation="vertical" flexItem />
-            <IconButton sx={{ borderRadius: 0 }}>
-              <ChevronRight />
-            </IconButton>
-          </Card>
-        </Grid>
+          </>
+        )}
+        {currentTab === 'revenue' && (
+          <>
+            <Grid item xs={12} display={'flex'} alignItems={'center'} gap={1}>
+              <IconButton
+                sx={{
+                  borderRadius: 2,
+                  color: 'white',
+                  backgroundColor: 'secondary.main',
+                  ':hover': {
+                    backgroundColor: 'secondary.dark',
+                  },
+                }}
+                onClick={() => setCurrentTab('none')}
+              >
+                <ChevronLeft />
+              </IconButton>
+              <Divider orientation="vertical" flexItem />
+              <Typography
+                typography="h6"
+                sx={{
+                  cursor: 'default',
+                  transition: '0.2s ease-in-out',
+                  ':hover': {
+                    transform: 'scale(1.1)',
+                    color: 'secondary.main',
+                    translate: '10%',
+                  },
+                }}
+              >
+                Doanh thu
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Card></Card>
+            </Grid>
+            <Grid item xs={6}></Grid>
+          </>
+        )}
+        {currentTab === 'batch' && (
+          <>
+            <Grid item xs={12} display={'flex'} alignItems={'center'} gap={1}>
+              <IconButton
+                sx={{
+                  borderRadius: 2,
+                  color: 'white',
+                  backgroundColor: 'secondary.main',
+                  ':hover': {
+                    backgroundColor: 'secondary.dark',
+                  },
+                }}
+                onClick={() => setCurrentTab('none')}
+              >
+                <ChevronLeft />
+              </IconButton>
+              <Divider orientation="vertical" flexItem />
+              <Typography
+                typography="h6"
+                sx={{
+                  cursor: 'default',
+                  transition: '0.2s ease-in-out',
+                  ':hover': {
+                    transform: 'scale(1.1)',
+                    color: 'secondary.main',
+                    translate: '10%',
+                  },
+                }}
+              >
+                Lô hàng
+              </Typography>
+            </Grid>
+          </>
+        )}
       </Grid>
     </>
   );
