@@ -1,9 +1,9 @@
 // import { BillDetailObject, BillObject } from '@/lib/models';
-import { dataRow } from '../ReportTable/ReportTable';
-import { SanPhamDoanhThuType } from '@/pages/manager/reports';
-import ReportTableRow from '@/models/report';
 import { BillTableRow } from '@/models/bill';
 import { BillItemTableRow } from '@/models/billItem';
+import ReportTableRow from '@/models/report';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
+import { dataRow } from '../ReportTable/ReportTable';
 
 function getRevenue(bills: BillTableRow[] | undefined) {
   if (!bills) {
@@ -114,7 +114,7 @@ export function All_All_All({
   var maxYear = new Date().getFullYear();
   reportData.bills?.forEach((bill) => {
     if (bill.state == 'paid') {
-      var year = new Date(bill.paid_time).getFullYear();
+      var year = new Date(bill.paid_time!).getFullYear();
       minYear = year < minYear ? year : minYear;
     }
   });
@@ -124,7 +124,7 @@ export function All_All_All({
   for (var i = minYear; i <= maxYear; i++) {
     const bills = reportData.bills?.filter(
       (bill) =>
-        bill.state == 'paid' && new Date(bill.paid_time).getFullYear() == i
+        bill.state == 'paid' && new Date(bill.paid_time!).getFullYear() == i
     );
     const sales = reportData.sales?.filter(
       (sale) => new Date(sale.start_at).getFullYear() == i
@@ -178,7 +178,7 @@ export function All_So_All({
   var maxYear = new Date().getFullYear();
   reportData.bills?.forEach((bill) => {
     if (bill.state == 'paid') {
-      var year = new Date(bill.paid_time).getFullYear();
+      var year = new Date(bill.paid_time!).getFullYear();
       minYear = year < minYear ? year : minYear;
     }
   });
@@ -189,8 +189,8 @@ export function All_So_All({
     const bills = reportData.bills?.filter(
       (bill) =>
         bill.state == 'paid' &&
-        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paid_time).getFullYear() == i
+        new Date(bill.paid_time!).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time!).getFullYear() == i
     );
 
     const sales = reportData.sales?.filter(
@@ -259,8 +259,8 @@ export function All_All_So({
     const bills = reportData.bills?.filter(
       (bill) =>
         bill.state == 'paid' &&
-        new Date(bill.paid_time).getMonth() + 1 == i &&
-        new Date(bill.paid_time).getFullYear() == reportDate.year
+        new Date(bill.paid_time!).getMonth() + 1 == i &&
+        new Date(bill.paid_time!).getFullYear() == reportDate.year
     );
 
     const sales = reportData.sales?.filter(
@@ -322,9 +322,9 @@ export function All_So_So({
     const bills = reportData.bills?.filter(
       (bill) =>
         bill.state == 'paid' &&
-        new Date(bill.paid_time).getDate() == i &&
-        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paid_time).getFullYear() == reportDate.year
+        new Date(bill.paid_time!).getDate() == i &&
+        new Date(bill.paid_time!).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time!).getFullYear() == reportDate.year
     );
 
     const sales = reportData.sales?.filter(
@@ -400,9 +400,9 @@ export function So_So_So({
     const bills = reportData.bills?.filter(
       (bill) =>
         bill.state == 'paid' &&
-        new Date(bill.paid_time).getDate() == i &&
-        new Date(bill.paid_time).getMonth() + 1 == reportDate.month &&
-        new Date(bill.paid_time).getFullYear() == reportDate.year
+        new Date(bill.paid_time!).getDate() == i &&
+        new Date(bill.paid_time!).getMonth() + 1 == reportDate.month &&
+        new Date(bill.paid_time!).getFullYear() == reportDate.year
     );
 
     const sales = reportData.sales?.filter(

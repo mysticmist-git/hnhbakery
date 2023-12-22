@@ -173,15 +173,13 @@ function Navbar() {
   const [isSignInState, setIsSignInState] = useState(false);
 
   //#endregion
-
   //#region Hooks
 
   const auth = getAuth();
   const theme = useTheme();
 
   //#endregion
-
-  // #region useEffects
+  //#region useEffects
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -196,7 +194,6 @@ function Navbar() {
   }, [auth]);
 
   // #endregion
-
   //#region Handlers
 
   function handleSetTabState(value: number) {
@@ -208,7 +205,6 @@ function Navbar() {
   };
 
   //#endregion
-
   //#region Functions
 
   function initialTab() {
@@ -220,7 +216,6 @@ function Navbar() {
   }
 
   //#endregion
-
   //#region Scroll
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -238,8 +233,8 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   //#endregion
-
   //#region CartCount Hên ở đây nè Hên!
+
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
@@ -259,7 +254,7 @@ function Navbar() {
         setCartCount(total);
       }
     }
-  });
+  }, [cartCount]);
 
   //#endregion
 
@@ -304,7 +299,6 @@ function Navbar() {
               right: 0,
               background: alpha(theme.palette.common.white, 0.95),
               borderBottom: 1,
-              borderColor: theme.palette.text.secondary,
               backdropFilter: 'blur(2px)',
               boxShadow: 'none',
             }}

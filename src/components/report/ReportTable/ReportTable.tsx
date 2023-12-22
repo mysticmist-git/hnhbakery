@@ -1,5 +1,8 @@
 import { formatPrice } from '@/lib/utils';
+import Batch from '@/models/batch';
+import ReportTableRow from '@/models/report';
 import { CustomLinearProgres } from '@/pages/manager/orders';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 import { Checkbox, useTheme } from '@mui/material';
 import {
   DataGrid,
@@ -17,9 +20,6 @@ import {
   All_So_So,
   So_So_So,
 } from '../HamXuLy/HamXuLy';
-import ReportTableRow from '@/models/report';
-import Batch from '@/models/batch';
-import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 
 export type dataRow = {
   id: string;
@@ -32,195 +32,12 @@ export type dataRow = {
   percentage: number;
 };
 
-export default function ReportTable({
-  reportData,
-  reportDate,
-  handleRevenueChange,
-  handleRealRevenueChange,
-  handleSpDoanhThuChange,
-  handleSpHaoHutChange,
-}: {
-  reportData: ReportTableRow;
-  reportDate: { day: number; month: number; year: number };
-  handleRevenueChange: (value: number) => void;
-  handleRealRevenueChange: (value: number) => void;
-  handleSpDoanhThuChange: (value: SanPhamDoanhThuType[]) => void;
-  handleSpHaoHutChange: (value: SanPhamDoanhThuType[]) => void;
-}) {
+type ReportTableProps = {
+  rows: dataRow[];
+};
+
+export default function ReportTable({ rows }: ReportTableProps) {
   const theme = useTheme();
-
-  const [rows, setRows] = useState<dataRow[]>([]);
-
-  const handle = useCallback(
-    (batches_HaoHut: Batch[]) => {
-      var spHaoHut: SanPhamDoanhThuType[] = [];
-      batches_HaoHut.forEach((batch) => {
-        const productType = reportData.productTypes?.find(
-          (item) => item.id == batch.product_type_id
-        );
-        const product = productType?.products?.find(
-          (item) => item.id == batch.product_id
-        );
-        if (productType) {
-          spHaoHut.push({
-            ...batch,
-            revenue: 0,
-            percentage: 0,
-            product: product!,
-          });
-        }
-      });
-      handleSpHaoHutChange(spHaoHut);
-    },
-    [handleSpHaoHutChange, reportData.productTypes]
-  );
-
-  useEffect(() => {
-    const isDayAll = reportDate.day == 0;
-    const isMonthAll = reportDate.month == 0;
-    const isYearAll = reportDate.year == 0;
-
-    if (isDayAll && isMonthAll && isYearAll) {
-      // all - all - all
-      setRows(() =>
-        All_All_All({
-          reportData,
-          reportDate,
-          handleRevenueChange,
-          handleRealRevenueChange,
-          handleSpDoanhThuChange,
-        })
-      );
-
-      const batches_HaoHut = reportData.batches?.filter((batch) => {
-        return new Date(batch.exp) <= new Date();
-      });
-      handle(batches_HaoHut ? batches_HaoHut : []);
-    }
-
-    if (isDayAll && !isMonthAll && isYearAll) {
-      // all - số - all
-      setRows(() =>
-        All_So_All({
-          reportData,
-          reportDate,
-          handleRevenueChange,
-          handleRealRevenueChange,
-          handleSpDoanhThuChange,
-        })
-      );
-
-      const batches_HaoHut = reportData.batches?.filter((batch) => {
-        return (
-          new Date(batch.exp) <= new Date() &&
-          new Date(batch.exp).getMonth() + 1 == reportDate.month
-        );
-      });
-      handle(batches_HaoHut ? batches_HaoHut : []);
-    }
-
-    if (isDayAll && isMonthAll && !isYearAll) {
-      // all - all - số
-      setRows(() =>
-        All_All_So({
-          reportData,
-          reportDate,
-          handleRevenueChange,
-          handleRealRevenueChange,
-          handleSpDoanhThuChange,
-        })
-      );
-
-      const batches_HaoHut = reportData.batches?.filter((batch) => {
-        if (new Date() <= new Date(reportDate.year, 12, 0)) {
-          return (
-            new Date(batch.exp) <= new Date() &&
-            new Date(batch.exp).getFullYear() == reportDate.year
-          );
-        } else {
-          return new Date(batch.exp).getFullYear() == reportDate.year;
-        }
-      });
-      handle(batches_HaoHut ? batches_HaoHut : []);
-    }
-
-    if (isDayAll && !isMonthAll && !isYearAll) {
-      // all - số - số
-      setRows(() =>
-        All_So_So({
-          reportData,
-          reportDate,
-          handleRevenueChange,
-          handleRealRevenueChange,
-          handleSpDoanhThuChange,
-        })
-      );
-
-      const batches_HaoHut = reportData.batches?.filter((batch) => {
-        if (new Date() <= new Date(reportDate.year, reportDate.month, 0)) {
-          return (
-            new Date(batch.exp) <= new Date() &&
-            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
-            new Date(batch.exp).getFullYear() == reportDate.year
-          );
-        } else {
-          return (
-            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
-            new Date(batch.exp).getFullYear() == reportDate.year
-          );
-        }
-      });
-      handle(batches_HaoHut ? batches_HaoHut : []);
-    }
-
-    if (!isDayAll && !isMonthAll && !isYearAll) {
-      // số - số - số
-      setRows(() =>
-        So_So_So({
-          reportData,
-          reportDate,
-          handleRevenueChange,
-          handleRealRevenueChange,
-          handleSpDoanhThuChange,
-        })
-      );
-
-      const batches_HaoHut = reportData.batches?.filter((batch) => {
-        if (
-          new Date() <=
-          new Date(
-            reportDate.year,
-            reportDate.month,
-            reportDate.day,
-            23,
-            59,
-            59
-          )
-        ) {
-          return (
-            new Date(batch.exp) <= new Date() &&
-            new Date(batch.exp).getDate() == reportDate.day &&
-            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
-            new Date(batch.exp).getFullYear() == reportDate.year
-          );
-        } else {
-          return (
-            new Date(batch.exp).getDate() == reportDate.day &&
-            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
-            new Date(batch.exp).getFullYear() == reportDate.year
-          );
-        }
-      });
-      handle(batches_HaoHut ? batches_HaoHut : []);
-    }
-  }, [
-    // handle,
-    // handleRealRevenueChange,
-    // handleRevenueChange,
-    // handleSpDoanhThuChange,
-    reportData,
-    reportDate,
-  ]);
 
   const columns: GridColDef[] = [
     {
@@ -284,6 +101,7 @@ export default function ReportTable({
       },
     },
   ];
+
   return (
     <>
       <DataGrid

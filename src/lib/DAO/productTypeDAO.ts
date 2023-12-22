@@ -104,25 +104,36 @@ export async function deleteProductType(id: string) {
 
 // Hàm cho quản lý
 export async function getProductTypeTableRows() {
-  const productTypeTableRows: ProductTypeTableRow[] = [];
   const productTypes = await getProductTypes();
-  for (let pro of productTypes) {
-    const productTableRows: ProductTableRow[] = [];
-    const products = await getProducts(pro.id);
-    for (let p of products) {
-      const variants = await getVariants(pro.id, p.id);
-      const feedbacks = await getFeedbacks(pro.id, p.id);
-      productTableRows.push({
-        ...p,
-        variants: variants,
-        feedbacks: feedbacks,
-      });
-    }
-    productTypeTableRows.push({
-      ...pro,
-      products: productTableRows,
-    });
-  }
+
+  const productTypeTableRows = (
+    await Promise.all(
+      productTypes.map(async (productType) => {
+        const products = await getProducts(productType.id);
+
+        const productTypeTableRows = await Promise.all(
+          products.map(async (product) => {
+            const variants = await getVariants(productType.id, product.id);
+            const feedbacks = await getFeedbacks(productType.id, product.id);
+
+            return {
+              ...product,
+              variants: variants,
+              feedbacks: feedbacks,
+            };
+          })
+        );
+
+        return {
+          ...productType,
+          products: productTypeTableRows,
+        };
+      })
+    )
+  )
+    .flat()
+    .filter(Boolean);
+
   return productTypeTableRows;
 }
 
