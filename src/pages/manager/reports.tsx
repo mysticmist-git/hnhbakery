@@ -6,46 +6,52 @@ import {
   SanPhamDoanhThu as SanPhamDoanhThu_Component,
   SanPhamHaoHut,
 } from '@/components/report';
-import { getAddress } from '@/lib/DAO/addressDAO';
-import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
-import { getBillTableRows, getBills } from '@/lib/DAO/billDAO';
-import { getBillItems } from '@/lib/DAO/billItemDAO';
-import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
-import { getFeedbacks } from '@/lib/DAO/feedbackDAO';
-import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
-import {
-  getPaymentMethodById,
-  getPaymentMethods,
-} from '@/lib/DAO/paymentMethodDAO';
-import { getProduct, getProducts } from '@/lib/DAO/productDAO';
-import {
-  getProductTypeById,
-  getProductTypeTableRows,
-  getProductTypes,
-} from '@/lib/DAO/productTypeDAO';
-import { getSaleById, getSales } from '@/lib/DAO/saleDAO';
-import { getUsers } from '@/lib/DAO/userDAO';
-import { getVariant, getVariants } from '@/lib/DAO/variantDAO';
+import { getBatches } from '@/lib/DAO/batchDAO';
+import { getBillTableRows } from '@/lib/DAO/billDAO';
+import { getPaymentMethods } from '@/lib/DAO/paymentMethodDAO';
+import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
+import { getSales } from '@/lib/DAO/saleDAO';
 import { formatPrice } from '@/lib/utils';
 import Batch from '@/models/batch';
-import { BillTableRow } from '@/models/bill';
-import PaymentMethod from '@/models/paymentMethod';
 import { ProductTableRow } from '@/models/product';
-import { ProductTypeTableRow } from '@/models/productType';
 import ReportTableRow from '@/models/report';
-import Sale from '@/models/sale';
-import { SearchRounded } from '@mui/icons-material';
+import { Preview, SearchRounded } from '@mui/icons-material';
 import {
+  Autocomplete,
   Box,
+  Button,
   Divider,
   Grid,
   InputAdornment,
   LinearProgress,
+  TextField,
   Typography,
   styled,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import {
+  All_All_All,
+  All_All_So,
+  All_So_All,
+  All_So_So,
+  So_So_So,
+} from '@/components/report/HamXuLy/HamXuLy';
+import { dataRow } from '@/components/report/ReportTable/ReportTable';
+import useBranches from '@/lib/hooks/useBranches';
+import { BillTableRow } from '@/models/bill';
+import Branch from '@/models/branch';
+import {
+  CategoryScale,
+  Chart,
+  ChartData,
+  LineElement,
+  LinearScale,
+  PointElement,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement);
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -60,8 +66,21 @@ export type SanPhamDoanhThuType = Batch & {
 };
 
 const Report = () => {
-  const [reportData, setReportData] = useState<ReportTableRow>();
+  //#region mode: DoanhThu or HangHoa
 
+  const [mode, setMode] = useState<'Revenue' | 'Product'>('Revenue');
+
+  //#endregion
+  //#region Branches
+
+  const branches = useBranches();
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+
+  //#endregion
+  //#region Data
+
+  const [bills, setBills] = useState<BillTableRow[]>([]);
+  const [reportData, setReportData] = useState<ReportTableRow>();
   const [reportDate, setReportDate] = useState<{
     day: number;
     month: number;
@@ -75,6 +94,16 @@ const Report = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (reportData) {
+          setReportData((prev) => ({
+            ...prev,
+            bills: bills.filter(
+              (bill) => !selectedBranch || bill.branch_id === selectedBranch.id
+            ),
+          }));
+          return;
+        }
+
         const finalData: ReportTableRow = {};
 
         const [
@@ -91,19 +120,24 @@ const Report = () => {
           await getPaymentMethods(),
         ]);
 
+        console.log('run');
+
         finalData.productTypes = productTypeTableRows;
-        finalData.bills = billTableRows;
+        finalData.bills = billTableRows.filter(
+          (bill) => !selectedBranch || bill.branch_id === selectedBranch.id
+        );
         finalData.batches = batches;
         finalData.sales = sales;
         finalData.paymentMethods = paymentMethods;
 
         setReportData(finalData);
+        setBills(finalData.bills);
       } catch (error) {
         console.log(error);
       }
     };
     fetchData();
-  }, []);
+  }, [bills, reportData, selectedBranch]);
 
   const handleReportDateChange = (
     day = 0,
@@ -141,6 +175,9 @@ const Report = () => {
   };
   const [spHaoHutSearch, setSpHaoHutSearch] = useState('');
 
+  //#endregion
+  //#region Styling
+
   const theme = useTheme();
   const StyleCuaCaiBox = {
     width: '100%',
@@ -168,6 +205,201 @@ const Report = () => {
     fontFamily: theme.typography.body2.fontFamily,
   };
 
+  //#endregion
+  //#region Chart
+
+  const [rows, setRows] = useState<dataRow[]>([]);
+
+  const handle = useCallback(
+    (batches_HaoHut: Batch[]) => {
+      if (!reportData) {
+        setRows([]);
+        return;
+      }
+      var spHaoHut: SanPhamDoanhThuType[] = [];
+      batches_HaoHut.forEach((batch) => {
+        const productType = reportData.productTypes?.find(
+          (item) => item.id == batch.product_type_id
+        );
+        const product = productType?.products?.find(
+          (item) => item.id == batch.product_id
+        );
+        if (productType) {
+          spHaoHut.push({
+            ...batch,
+            revenue: 0,
+            percentage: 0,
+            product: product!,
+          });
+        }
+      });
+      handleSpHaoHutChange(spHaoHut);
+    },
+    [reportData]
+  );
+
+  useEffect(() => {
+    if (!reportData) {
+      setRows([]);
+      return;
+    }
+
+    const isDayAll = reportDate.day == 0;
+    const isMonthAll = reportDate.month == 0;
+    const isYearAll = reportDate.year == 0;
+
+    if (isDayAll && isMonthAll && isYearAll) {
+      // all - all - all
+      setRows(() =>
+        All_All_All({
+          reportData,
+          reportDate,
+          handleRevenueChange,
+          handleRealRevenueChange,
+          handleSpDoanhThuChange,
+        })
+      );
+
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        return new Date(batch.exp) <= new Date();
+      });
+      handle(batches_HaoHut ? batches_HaoHut : []);
+    }
+
+    if (isDayAll && !isMonthAll && isYearAll) {
+      // all - số - all
+      setRows(() =>
+        All_So_All({
+          reportData,
+          reportDate,
+          handleRevenueChange,
+          handleRealRevenueChange,
+          handleSpDoanhThuChange,
+        })
+      );
+
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        return (
+          new Date(batch.exp) <= new Date() &&
+          new Date(batch.exp).getMonth() + 1 == reportDate.month
+        );
+      });
+      handle(batches_HaoHut ? batches_HaoHut : []);
+    }
+
+    if (isDayAll && isMonthAll && !isYearAll) {
+      // all - all - số
+      setRows(() =>
+        All_All_So({
+          reportData,
+          reportDate,
+          handleRevenueChange,
+          handleRealRevenueChange,
+          handleSpDoanhThuChange,
+        })
+      );
+
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        if (new Date() <= new Date(reportDate.year, 12, 0)) {
+          return (
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getFullYear() == reportDate.year
+          );
+        } else {
+          return new Date(batch.exp).getFullYear() == reportDate.year;
+        }
+      });
+      handle(batches_HaoHut ? batches_HaoHut : []);
+    }
+
+    if (isDayAll && !isMonthAll && !isYearAll) {
+      // all - số - số
+      setRows(() =>
+        All_So_So({
+          reportData,
+          reportDate,
+          handleRevenueChange,
+          handleRealRevenueChange,
+          handleSpDoanhThuChange,
+        })
+      );
+
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        if (new Date() <= new Date(reportDate.year, reportDate.month, 0)) {
+          return (
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
+          );
+        } else {
+          return (
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
+          );
+        }
+      });
+      handle(batches_HaoHut ? batches_HaoHut : []);
+    }
+
+    if (!isDayAll && !isMonthAll && !isYearAll) {
+      // số - số - số
+      setRows(() =>
+        So_So_So({
+          reportData,
+          reportDate,
+          handleRevenueChange,
+          handleRealRevenueChange,
+          handleSpDoanhThuChange,
+        })
+      );
+
+      const batches_HaoHut = reportData.batches?.filter((batch) => {
+        if (
+          new Date() <=
+          new Date(
+            reportDate.year,
+            reportDate.month,
+            reportDate.day,
+            23,
+            59,
+            59
+          )
+        ) {
+          return (
+            new Date(batch.exp) <= new Date() &&
+            new Date(batch.exp).getDate() == reportDate.day &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
+          );
+        } else {
+          return (
+            new Date(batch.exp).getDate() == reportDate.day &&
+            new Date(batch.exp).getMonth() + 1 == reportDate.month &&
+            new Date(batch.exp).getFullYear() == reportDate.year
+          );
+        }
+      });
+      handle(batches_HaoHut ? batches_HaoHut : []);
+    }
+  }, [handle, reportData, reportDate]);
+
+  const chartData: ChartData<'line', number[], string> = useMemo(
+    () => ({
+      labels: rows.map((_, index) => (index + 1).toString()),
+      datasets: [
+        {
+          label: 'Doanh thu',
+          data: rows.map((row) => row.realRevenue),
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        },
+      ],
+    }),
+    [rows]
+  );
+
+  //#endregion
+
   return (
     <>
       <Box
@@ -192,232 +424,288 @@ const Report = () => {
           </Grid>
 
           <Grid item xs={12}>
-            {reportData && (
-              <ChonNgayThangNam
-                reportData={reportData}
-                reportDate={reportDate}
-                handleReportDateChange={handleReportDateChange}
-              />
-            )}
-          </Grid>
-
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-
-          <Grid item xs={12} lg={6}>
-            <Box
-              component={'div'}
-              sx={{
-                mx: 2,
-                p: 2,
-                boxShadow: 3,
-                borderRadius: '16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                bgcolor: theme.palette.secondary.main,
-              }}
+            <Button
+              color="secondary"
+              variant={mode === 'Revenue' ? 'contained' : 'outlined'}
+              onClick={() => setMode('Revenue')}
+              sx={{ mr: 1 }}
             >
-              <Typography variant="body2" color={theme.palette.common.white}>
-                Tổng doanh thu:
-              </Typography>
-              <Typography variant="button" color={theme.palette.common.white}>
-                {formatPrice(revenue)}
-              </Typography>
-            </Box>
+              Doanh thu
+            </Button>
+            <Button
+              color="secondary"
+              variant={mode === 'Product' ? 'contained' : 'outlined'}
+              onClick={() => setMode('Product')}
+            >
+              Hàng hóa
+            </Button>
           </Grid>
 
-          <Grid item xs={12} lg={6}>
-            <Box
-              component={'div'}
-              sx={{
-                mx: 2,
-                p: 2,
-                boxShadow: 3,
-                borderRadius: '16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                bgcolor: theme.palette.success.main,
-              }}
-            >
-              <Typography variant="body2" color={theme.palette.common.white}>
-                Doanh thu thật sự:
-              </Typography>
-              <Typography variant="button" color={theme.palette.common.white}>
-                {formatPrice(realRevenue)}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography
-              align="right"
-              variant="body2"
-              color={theme.palette.text.secondary}
-              sx={{ fontStyle: 'italic' }}
-            >
-              *Doanh thu thực sự = Tổng doanh thu - Tổng tiền khuyến mãi
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            {reportData && (
-              <ReportTable
-                reportData={reportData}
-                reportDate={reportDate}
-                handleRevenueChange={handleRevenueChange}
-                handleRealRevenueChange={handleRealRevenueChange}
-                handleSpDoanhThuChange={handleSpDoanhThuChange}
-                handleSpHaoHutChange={handleSpHaoHutChange}
-              />
-            )}
-          </Grid>
+          {mode === 'Revenue' && (
+            <>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
 
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-
-          <Grid item xs={12} lg={12}>
-            <Box
-              component={'div'}
-              sx={{
-                ...StyleCuaCaiBox,
-              }}
-            >
-              <Box
-                component={'div'}
-                sx={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 2,
-                  boxShadow: 3,
-                }}
-              >
-                <Typography variant="button" color={theme.palette.common.black}>
-                  Sản phẩm bán được
-                </Typography>
-                <Box component={'div'}>
-                  <Outlined_TextField
-                    size="small"
-                    textStyle={textStyle}
-                    label={''}
-                    onChange={(e: any) => {
-                      setSpDoanhThuSearch(() => e.target.value);
-                    }}
-                    placeholder="Tìm kiếm"
-                    InputProps={{
-                      readOnly: false,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                      endAdornment: true && (
-                        <InputAdornment position="end">
-                          <CustomIconButton edge="end" disabled>
-                            <SearchRounded fontSize="small" />
-                          </CustomIconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+              <Grid item xs={12}>
+                {reportData && (
+                  <ChonNgayThangNam
+                    reportData={reportData}
+                    reportDate={reportDate}
+                    handleReportDateChange={handleReportDateChange}
                   />
-                </Box>
-              </Box>
+                )}
+              </Grid>
 
-              <Box
-                component={'div'}
-                sx={{
-                  width: '100%',
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 3,
-                  justifyContent: 'flex-start',
-                  overflow: 'auto',
-                  height: '250px',
-                }}
-              >
-                <SanPhamDoanhThu_Component
-                  spDoanhThu={spDoanhThu}
-                  spDoanhThuSearch={spDoanhThuSearch}
+              <Grid item xs={12}>
+                <Autocomplete
+                  value={selectedBranch}
+                  onChange={(_, value) => setSelectedBranch(value)}
+                  disablePortal
+                  id="branches"
+                  options={[null, ...branches]}
+                  getOptionLabel={(o) => o?.name ?? 'Tất cả'}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Chi nhánh" />
+                  )}
                 />
-              </Box>
-            </Box>
-          </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
 
-          <Grid item xs={12} lg={12}>
-            <Box
-              component={'div'}
-              sx={{
-                ...StyleCuaCaiBox,
-              }}
-            >
-              <Box
-                component={'div'}
-                sx={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 2,
-                  boxShadow: 3,
-                }}
-              >
-                <Typography variant="button" color={theme.palette.common.black}>
-                  Sản phẩm hao hụt
+              <Grid item xs={12} lg={6}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    mx: 2,
+                    p: 2,
+                    boxShadow: 3,
+                    borderRadius: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    bgcolor: theme.palette.secondary.main,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color={theme.palette.common.white}
+                  >
+                    Tổng doanh thu:
+                  </Typography>
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    {formatPrice(revenue)}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} lg={6}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    mx: 2,
+                    p: 2,
+                    boxShadow: 3,
+                    borderRadius: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    bgcolor: theme.palette.success.main,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color={theme.palette.common.white}
+                  >
+                    Doanh thu thật sự:
+                  </Typography>
+                  <Typography
+                    variant="button"
+                    color={theme.palette.common.white}
+                  >
+                    {formatPrice(realRevenue)}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography
+                  align="right"
+                  variant="body2"
+                  color={theme.palette.text.secondary}
+                  sx={{ fontStyle: 'italic' }}
+                >
+                  *Doanh thu thực sự = Tổng doanh thu - Tổng tiền khuyến mãi
                 </Typography>
-                <Box component={'div'}>
-                  <Outlined_TextField
-                    size="small"
-                    textStyle={textStyle}
-                    label={''}
-                    placeholder="Tìm kiếm"
-                    onChange={(e: any) => {
-                      setSpHaoHutSearch(e.target.value);
-                    }}
-                    InputProps={{
-                      readOnly: false,
-                      style: {
-                        pointerEvents: 'auto',
-                        borderRadius: '8px',
-                      },
-                      endAdornment: true && (
-                        <InputAdornment position="end">
-                          <CustomIconButton edge="end" disabled>
-                            <SearchRounded fontSize="small" />
-                          </CustomIconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-              </Box>
+              </Grid>
+              {/* <Grid item xs={12}>
+                <Button variant="contained">Số đơn hàng</Button>
+                <Button variant="contained">Doanh thu</Button>
+              </Grid>
+              <Grid item xs={12}>
+                <Line data={chartData} />
+              </Grid> */}
+              <Grid item xs={12}>
+                {reportData && <ReportTable rows={rows} />}
+              </Grid>
 
-              <Box
-                component={'div'}
-                sx={{
-                  width: '100%',
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 3,
-                  justifyContent: 'flex-start',
-                  overflow: 'auto',
-                  height: '250px',
-                }}
-              >
-                <SanPhamHaoHut
-                  spHaoHut={spHaoHut}
-                  spHaoHutSearch={spHaoHutSearch}
-                />
-              </Box>
-            </Box>
-          </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+
+              <Grid item xs={12} lg={12}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    ...StyleCuaCaiBox,
+                  }}
+                >
+                  <Box
+                    component={'div'}
+                    sx={{
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      boxShadow: 3,
+                    }}
+                  >
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.black}
+                    >
+                      Sản phẩm bán được
+                    </Typography>
+                    <Box component={'div'}>
+                      <Outlined_TextField
+                        size="small"
+                        textStyle={textStyle}
+                        label={''}
+                        onChange={(e: any) => {
+                          setSpDoanhThuSearch(() => e.target.value);
+                        }}
+                        placeholder="Tìm kiếm"
+                        InputProps={{
+                          readOnly: false,
+                          style: {
+                            pointerEvents: 'auto',
+                            borderRadius: '8px',
+                          },
+                          endAdornment: true && (
+                            <InputAdornment position="end">
+                              <CustomIconButton edge="end" disabled>
+                                <SearchRounded fontSize="small" />
+                              </CustomIconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box
+                    component={'div'}
+                    sx={{
+                      width: '100%',
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 3,
+                      justifyContent: 'flex-start',
+                      overflow: 'auto',
+                      height: '250px',
+                    }}
+                  >
+                    <SanPhamDoanhThu_Component
+                      spDoanhThu={spDoanhThu}
+                      spDoanhThuSearch={spDoanhThuSearch}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid item xs={12} lg={12}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    ...StyleCuaCaiBox,
+                  }}
+                >
+                  <Box
+                    component={'div'}
+                    sx={{
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      boxShadow: 3,
+                    }}
+                  >
+                    <Typography
+                      variant="button"
+                      color={theme.palette.common.black}
+                    >
+                      Sản phẩm hao hụt
+                    </Typography>
+                    <Box component={'div'}>
+                      <Outlined_TextField
+                        size="small"
+                        textStyle={textStyle}
+                        label={''}
+                        placeholder="Tìm kiếm"
+                        onChange={(e: any) => {
+                          setSpHaoHutSearch(e.target.value);
+                        }}
+                        InputProps={{
+                          readOnly: false,
+                          style: {
+                            pointerEvents: 'auto',
+                            borderRadius: '8px',
+                          },
+                          endAdornment: true && (
+                            <InputAdornment position="end">
+                              <CustomIconButton edge="end" disabled>
+                                <SearchRounded fontSize="small" />
+                              </CustomIconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box
+                    component={'div'}
+                    sx={{
+                      width: '100%',
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 3,
+                      justifyContent: 'flex-start',
+                      overflow: 'auto',
+                      height: '250px',
+                    }}
+                  >
+                    <SanPhamHaoHut
+                      spHaoHut={spHaoHut}
+                      spHaoHutSearch={spHaoHutSearch}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+            </>
+          )}
+
+          {mode === 'Product' && <></>}
         </Grid>
       </Box>
     </>
