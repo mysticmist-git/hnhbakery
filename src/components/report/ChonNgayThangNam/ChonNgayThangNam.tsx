@@ -1,7 +1,7 @@
+import ReportTableRow from '@/models/report';
 import { Box, MenuItem, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Outlined_TextField from '../../order/MyModal/Outlined_TextField';
-import ReportTableRow from '@/models/report';
 
 export default function ChonNgayThangNam({
   reportData,
@@ -34,7 +34,7 @@ export default function ChonNgayThangNam({
 
     reportData.bills!.forEach((bill) => {
       if (bill.state == 'paid') {
-        var year = new Date(bill.paid_time).getUTCFullYear();
+        var year = new Date(bill.paid_time!).getUTCFullYear();
         minYear = year < minYear ? year : minYear;
       }
     });
