@@ -40,8 +40,10 @@ import {
 } from '@/components/report/HamXuLy/HamXuLy';
 import { dataRow } from '@/components/report/ReportTable/ReportTable';
 import useBranches from '@/lib/hooks/useBranches';
+import useProvinces from '@/lib/hooks/useProvinces';
 import { BillTableRow } from '@/models/bill';
 import Branch from '@/models/branch';
+import Province from '@/models/province';
 import {
   CategoryScale,
   Chart,
@@ -74,10 +76,21 @@ const Report = () => {
   const [chartMode, setChartMode] = useState<'Revenue' | 'Bill'>('Revenue');
 
   //#endregion
-  //#region Branches
+  //#region Branches and Provinces
 
   const branches = useBranches();
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+
+  const provinces = useProvinces();
+  const availableProvinces = useMemo(() => {
+    const availableProvinceIds = branches.map((b) => b.province_id);
+    if (availableProvinceIds.length <= 0) return [];
+
+    return provinces.filter((p) => availableProvinceIds.includes(p.id));
+  }, [branches, provinces]);
+  const [selectedProvince, setSelectedProvince] = useState<Province | null>(
+    null
+  );
 
   //#endregion
   //#region Data
@@ -98,12 +111,30 @@ const Report = () => {
     const fetchData = async () => {
       try {
         if (reportData) {
-          setReportData((prev) => ({
-            ...prev,
-            bills: bills.filter(
-              (bill) => !selectedBranch || bill.branch_id === selectedBranch.id
-            ),
-          }));
+          if (!selectedBranch && !selectedProvince) {
+            setReportData((prev) => ({
+              ...prev,
+              bills: bills,
+            }));
+          } else if (!selectedBranch && selectedProvince) {
+            setReportData((prev) => ({
+              ...prev,
+              bills: bills.filter((bill) =>
+                branches
+                  .filter((b) => b.province_id === selectedProvince.id)
+                  ?.map((b) => b.id)
+                  .includes(bill.branch_id)
+              ),
+            }));
+          } else if (selectedBranch) {
+            setReportData((prev) => ({
+              ...prev,
+              bills: bills.filter(
+                (bill) => bill.branch_id === selectedBranch.id
+              ),
+            }));
+          }
+
           return;
         }
 
@@ -125,7 +156,14 @@ const Report = () => {
 
         finalData.productTypes = productTypeTableRows;
         finalData.bills = billTableRows.filter(
-          (bill) => !selectedBranch || bill.branch_id === selectedBranch.id
+          (bill) =>
+            !selectedBranch ||
+            bill.branch_id === selectedBranch.id ||
+            !selectedProvince ||
+            branches
+              .filter((b) => b.province_id === selectedProvince.id)
+              ?.map((b) => b.id)
+              .includes(bill.branch_id)
         );
         finalData.batches = batches;
         finalData.sales = sales;
@@ -138,7 +176,7 @@ const Report = () => {
       }
     };
     fetchData();
-  }, [bills, reportData, selectedBranch]);
+  }, [bills, branches, selectedBranch, selectedProvince]);
 
   const handleReportDateChange = (
     day = 0,
@@ -466,11 +504,33 @@ const Report = () => {
                   onChange={(_, value) => setSelectedBranch(value)}
                   disablePortal
                   id="branches"
-                  options={[null, ...branches]}
+                  options={[
+                    null,
+                    ...(selectedProvince
+                      ? branches.filter(
+                          (b) => b.province_id === selectedProvince.id
+                        )
+                      : branches),
+                  ]}
                   getOptionLabel={(o) => o?.name ?? 'Tất cả'}
                   sx={{ width: 300 }}
                   renderInput={(params) => (
                     <TextField {...params} label="Chi nhánh" />
+                  )}
+                />
+                <Autocomplete
+                  value={selectedProvince}
+                  onChange={(_, value) => {
+                    setSelectedProvince(value);
+                    setSelectedBranch(null);
+                  }}
+                  disablePortal
+                  id="branches"
+                  options={[null, ...availableProvinces]}
+                  getOptionLabel={(o) => o?.name ?? 'Tất cả'}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Tỉnh thành" />
                   )}
                 />
               </Grid>
