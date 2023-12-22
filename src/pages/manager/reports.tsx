@@ -8,10 +8,11 @@ import {
   MenuItem,
   Select,
   Stack,
+  Typography,
   styled,
 } from '@mui/material';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const IntervalNavigateIconButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
@@ -188,6 +189,18 @@ const Report = () => {
     useState<IntervalType>('month');
   const [currentIntervalIndex, setCurrentIntervalIndex] = useState<number>(0); // 0 mean today | this week | this month | this year
   const [intervals, setIntervals] = useState<Interval[]>([]);
+  const fromDateToDateText = useMemo(() => {
+    const currentInterval = intervals.find(
+      (interval) => interval.index === currentIntervalIndex
+    );
+
+    if (!currentInterval) {
+      return 'Đang tải khoảng thời gian...';
+    }
+
+    return ` Từ ${dayjs(currentInterval.from).format('DD/MM/YYYY')} - Tới
+            ${dayjs(currentInterval.to).format('DD/MM/YYYY')}`;
+  }, [currentIntervalIndex, intervals]);
 
   useEffect(() => {
     // Init it if it's empty
@@ -205,11 +218,9 @@ const Report = () => {
     if (change) setIntervals(updatedIntervals);
   }, [currentIntervalIndex, currentIntervalType, intervals]);
 
-  console.log(intervals);
-
   return (
     <>
-      <Grid container my={2}>
+      <Grid container my={2} gap={2}>
         <Grid item xs={12} display="flex" justifyContent={'center'}>
           <ButtonGroup
             variant="contained"
@@ -229,14 +240,7 @@ const Report = () => {
             </Button>
           </ButtonGroup>
         </Grid>
-        <Grid
-          item
-          xs={12}
-          display="flex"
-          justifyContent="center"
-          mt={2}
-          gap={1}
-        >
+        <Grid item xs={12} display="flex" justifyContent="center" gap={1}>
           {timeRangeType === 'interval' && (
             <>
               <IntervalNavigateIconButton
@@ -285,6 +289,15 @@ const Report = () => {
             </>
           )}
           {timeRangeType === 'custom' && <></>}
+        </Grid>
+        <Grid item xs={12}>
+          <Typography
+            textAlign={'center'}
+            typography="body2"
+            fontStyle={'italic'}
+          >
+            {fromDateToDateText}
+          </Typography>
         </Grid>
       </Grid>
     </>
