@@ -23,6 +23,7 @@ import { BillTableRow } from '@/models/bill';
 import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
 import { updateBill } from '@/lib/DAO/billDAO';
 import { sendBillToEmail } from '@/lib/services/MailService';
+import Delivery from '@/models/delivery';
 
 export default function MyModal({
   open,
@@ -87,6 +88,57 @@ export default function MyModal({
     handleClose();
   };
   //#endregion
+
+  const onSubmit = async (type: 'giaothanhcong' | 'batdaugiao') => {
+    if (!modalDelivery) return;
+
+    const typeSubmit: {
+      state: Delivery['state'];
+      message: string;
+    } = {
+      state: type == 'batdaugiao' ? 'delivering' : 'delivered',
+      message:
+        type == 'batdaugiao'
+          ? 'Bắt đầu giao hàng thành công!'
+          : 'Giao hàng thành công!',
+    };
+
+    const data = await getDeliveryById(modalDelivery!.deliveryTableRow!.id);
+    if (data) {
+      data.state = typeSubmit.state;
+      modalDelivery!.deliveryTableRow!.state = typeSubmit.state;
+      await updateDelivery(data.id, data);
+
+      if (type == 'giaothanhcong' && modalDelivery?.state == 'pending') {
+        var bill = { ...modalDelivery };
+        bill.state = 'paid';
+        delete bill?.paymentMethod;
+        delete bill?.customer;
+        delete bill?.sale;
+        delete bill?.deliveryTableRow;
+        delete bill?.billItems;
+
+        await updateBill(
+          modalDelivery.customer!.group_id,
+          modalDelivery.customer!.id,
+          bill.id,
+          bill
+        );
+        modalDelivery.state = 'paid';
+      }
+
+      handleSnackbarAlert('success', typeSubmit.message);
+      sendBillToMail(modalDelivery);
+      handleDeliveryDataChange({
+        ...modalDelivery,
+      });
+
+      handleClose();
+    } else {
+      handleSnackbarAlert('error', 'Lỗi.');
+      handleClose();
+    }
+  };
 
   return (
     <>
@@ -222,7 +274,6 @@ export default function MyModal({
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      height: '40px',
                       p: 2,
                       bgcolor: theme.palette.text.secondary,
                     }}
@@ -237,7 +288,6 @@ export default function MyModal({
                   <Box
                     component={'div'}
                     sx={{
-                      width: '100%',
                       p: 2,
                     }}
                   >
@@ -255,86 +305,45 @@ export default function MyModal({
         <DialogActions>
           <Box component={'div'} sx={{ width: '100%' }} textAlign={'center'}>
             {modalDelivery?.deliveryTableRow?.state === 'delivering' && (
-              <Button
-                onClick={async () => {
-                  const data = await getDeliveryById(
-                    modalDelivery!.deliveryTableRow!.id
-                  );
-                  if (data) {
-                    data.state = 'delivered';
-                    modalDelivery!.deliveryTableRow!.state = 'delivered';
-                    await updateDelivery(data.id, data);
-
-                    if (modalDelivery?.state == 'pending') {
-                      var bill = { ...modalDelivery };
-                      bill.state = 'paid';
-                      delete bill?.paymentMethod;
-                      delete bill?.customer;
-                      delete bill?.sale;
-                      delete bill?.deliveryTableRow;
-                      delete bill?.billItems;
-
-                      await updateBill(
-                        modalDelivery.customer!.group_id,
-                        modalDelivery.customer!.id,
-                        bill.id,
-                        bill
-                      );
-                      modalDelivery.state = 'paid';
-                    }
-
-                    handleSnackbarAlert('success', 'Giao hàng thành công!');
-                    sendBillToMail(modalDelivery);
-                    handleDeliveryDataChange({
-                      ...modalDelivery,
-                    });
-
-                    handleClose();
-                  } else {
-                    handleSnackbarAlert('error', 'Lỗi.');
-                    handleClose();
-                  }
+              <form
+                method="post"
+                onSubmit={(e) => {
+                  e.preventDefault();
                 }}
-                color="success"
-                variant="contained"
               >
-                Giao hàng thành công
-              </Button>
+                <Button
+                  type="submit"
+                  color="success"
+                  onClick={async () => {
+                    await onSubmit('giaothanhcong');
+                  }}
+                  variant="contained"
+                >
+                  Giao hàng thành công
+                </Button>
+              </form>
             )}
 
             {modalDelivery?.deliveryTableRow?.state === 'issued' &&
               (modalDelivery?.state === 'pending' ||
                 modalDelivery?.state === 'paid') && (
-                <Button
-                  onClick={async () => {
-                    const data = await getDeliveryById(
-                      modalDelivery!.deliveryTableRow!.id
-                    );
-                    if (data) {
-                      data.state = 'delivering';
-                      modalDelivery!.deliveryTableRow!.state = 'delivering';
-                      await updateDelivery(data.id, data);
-
-                      handleSnackbarAlert(
-                        'success',
-                        'Bắt đầu giao hàng thành công!'
-                      );
-                      sendBillToMail(modalDelivery);
-                      handleDeliveryDataChange({
-                        ...modalDelivery,
-                      });
-
-                      handleClose();
-                    } else {
-                      handleSnackbarAlert('error', 'Lỗi.');
-                      handleClose();
-                    }
+                <form
+                  method="post"
+                  onSubmit={(e) => {
+                    e.preventDefault();
                   }}
-                  color="secondary"
-                  variant="contained"
                 >
-                  Bắt đầu giao hàng
-                </Button>
+                  <Button
+                    type="submit"
+                    onClick={async () => {
+                      await onSubmit('batdaugiao');
+                    }}
+                    color="secondary"
+                    variant="contained"
+                  >
+                    Bắt đầu giao hàng
+                  </Button>
+                </form>
               )}
           </Box>
         </DialogActions>

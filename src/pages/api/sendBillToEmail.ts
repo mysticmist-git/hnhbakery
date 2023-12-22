@@ -6,7 +6,7 @@ import { BillTableRow } from '@/models/bill';
 export default async function POST(req: any, res: NextApiResponse) {
   try {
     const { bill, email, withSale, withSanPham } = req.body;
-    const data = await resend.emails.send({
+    await resend.emails.send({
       from: 'onboarding@resend.dev',
       // to: email,
       to: '20520206@gm.uit.edu.vn',

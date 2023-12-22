@@ -835,7 +835,6 @@ export function BookingItemContent({ item }: { item: BookingItem }) {
     <Box
       component={'div'}
       sx={{
-        width: '100%',
         backgroundColor: 'grey.200',
         border: 1,
         borderRadius: 3,

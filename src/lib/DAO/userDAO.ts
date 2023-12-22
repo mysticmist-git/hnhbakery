@@ -20,7 +20,7 @@ import {
 
 import { BillTableRow } from '@/models/bill';
 import Delivery from '@/models/delivery';
-import { FeedbackTableRow } from '@/models/feedback';
+import Feedback, { FeedbackTableRow } from '@/models/feedback';
 import { COLLECTION_NAME } from '../constants';
 import { getAddress, getAddresses } from './addressDAO';
 import { getBatchById } from './batchDAO';
@@ -37,18 +37,9 @@ import {
   getGroupsSnapshot,
   getGroupsSnapshotWithQuery,
 } from './groupDAO';
-import { getPaymentMethodById } from './paymentMethodDAO';
-import { getProduct, getProducts } from './productDAO';
-import { getProductTypeById, getProductTypes } from './productTypeDAO';
-import { getSaleById } from './saleDAO';
-import { getVariant } from './variantDAO';
-import Address from '@/models/address';
-import ProductType from '@/models/productType';
+import { getProducts } from './productDAO';
+import { getProductTypes } from './productTypeDAO';
 import Product from '@/models/product';
-import Variant from '@/models/variant';
-import { getBookingItemById } from './bookingItemDAO';
-import { getBranchById } from './branchDAO';
-import { getCakeBaseById } from './cakeBaseDAO';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -342,33 +333,26 @@ export async function deleteUser(
 }
 
 export async function getUserTableRows() {
-  const finalUsers: UserTableRow[] = [];
   const customers = await getUsers(DEFAULT_GROUP_ID);
 
-  for (let c of customers) {
-    const pushData = await getUserTableRowByUID(c.uid);
-
-    if (!pushData) {
-      continue;
-    }
-    finalUsers.push(pushData);
-  }
+  let finalUsers: UserTableRow[] = [];
+  await Promise.all(
+    customers.map(async (c) => await getUserTableRowByUID(c.uid))
+  ).then((userTableRows) => {
+    finalUsers = userTableRows.filter((u) => u != undefined) as UserTableRow[];
+  });
 
   return finalUsers;
 }
 
 export async function getUserTableRowByUID(uid: string) {
-  if (uid == '') {
-    return undefined;
-  }
+  if (uid == '') return undefined;
 
   let finalUser: UserTableRow | undefined = undefined;
 
   const c = await getUserByUid(uid);
 
-  if (!c) {
-    return finalUser;
-  }
+  if (!c) return finalUser;
 
   let billTableRows: BillTableRow[] = await getBillTableRowsByUserId(uid);
 
@@ -377,21 +361,31 @@ export async function getUserTableRowByUID(uid: string) {
   const feedbackTableRows: FeedbackTableRow[] = [];
   const productTypes = await getProductTypes();
 
-  for (let p of productTypes) {
-    const products = await getProducts(p.id);
-    for (let product of products) {
-      const feedbacks = await getFeedbacks(p.id, product.id);
-      for (let feedback of feedbacks) {
-        if (feedback.user_id != c.id) {
-          continue;
-        }
-        feedbackTableRows.push({
-          ...feedback,
-          product: product,
-          user: { ...c },
-        });
-      }
+  let products: Product[] = [];
+  await Promise.all(
+    productTypes.map(async (p) => await getProducts(p.id))
+  ).then((p) => {
+    products = p.flat();
+  });
+
+  let feedbacks: Feedback[] = [];
+  await Promise.all(
+    products.map(
+      async (product) => await getFeedbacks(product.product_type_id, product.id)
+    )
+  ).then((f) => {
+    feedbacks = f.flat();
+  });
+
+  for (let feedback of feedbacks) {
+    if (feedback.user_id != c.id) {
+      continue;
     }
+    feedbackTableRows.push({
+      ...feedback,
+      product: products.find((p) => p.id == feedback.product_id),
+      user: { ...c },
+    });
   }
 
   billTableRows = billTableRows.sort((a, b) =>
@@ -408,16 +402,7 @@ export async function getUserTableRowByUID(uid: string) {
   return finalUser;
 }
 
-// TODO: this GET service method is not align with system interface
-//       fix it later.
 export async function getGuestUser() {
-  const ref = doc(
-    getGroupRefById(DEFAULT_GROUP_ID),
-    COLLECTION_NAME.USERS,
-    GUEST_ID
-  ).withConverter(userConverter);
-
-  const user = await getDoc(ref);
-
-  return user.data();
+  const data = await getUser(DEFAULT_GROUP_ID, GUEST_ID);
+  return data;
 }

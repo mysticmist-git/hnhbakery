@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -60,9 +61,9 @@ const MyModal = ({
   sendBillToMail,
 }: {
   open: boolean;
-  handleClose: () => void;
+  handleClose: any;
   bill: BillTableRow | null;
-  handleBillDataChange: (newBill: BillTableRow) => void;
+  handleBillDataChange: any;
   sendBillToMail: (bill?: BillTableRow) => Promise<void>;
 }) => {
   const handleSnackbarAlert = useSnackbarService();
@@ -186,13 +187,13 @@ const MyModal = ({
         updatedDelivery.final_price = billData.final_price;
         updatedDelivery.state = billData.state;
       }
+      sendBillToMail(updatedDelivery);
       handleBillDataChange(updatedDelivery);
-      await sendBillToMail(updatedDelivery);
+      handleClose();
     } catch (error: any) {
       handleSnackbarAlert('error', error.message);
+      handleClose();
     }
-
-    handleClose();
   };
   //#endregion
 
@@ -344,28 +345,41 @@ const MyModal = ({
                           gap: 0.5,
                         }}
                       >
-                        {!editMode && (
-                          <CustomIconButton onClick={() => setEditMode(true)}>
-                            <EditRoundedIcon fontSize="small" color="primary" />
-                          </CustomIconButton>
-                        )}
-                        {editMode && (
-                          <>
-                            <CustomIconButton
-                              onClick={(e: any) => {
-                                handleSaveEdit();
-                              }}
-                            >
-                              <SaveAsRoundedIcon
-                                fontSize="small"
-                                color="primary"
-                              />
-                            </CustomIconButton>
-                            <CustomIconButton onClick={handleCancelEdit}>
-                              <CloseIcon fontSize="small" color="primary" />
-                            </CustomIconButton>
-                          </>
-                        )}
+                        <CustomIconButton
+                          sx={{
+                            display: !editMode ? '' : 'none',
+                          }}
+                          onClick={() => setEditMode(true)}
+                        >
+                          <EditRoundedIcon fontSize="small" color="primary" />
+                        </CustomIconButton>
+                        <form
+                          method="post"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                          }}
+                        >
+                          <Button
+                            type="submit"
+                            sx={{
+                              display: editMode ? '' : 'none',
+                            }}
+                            onClick={async () => {
+                              await handleSaveEdit();
+                            }}
+                          >
+                            Lưu
+                          </Button>
+                        </form>
+
+                        <CustomIconButton
+                          sx={{
+                            display: editMode ? '' : 'none',
+                          }}
+                          onClick={handleCancelEdit}
+                        >
+                          <CloseIcon fontSize="small" color="primary" />
+                        </CustomIconButton>
                       </Box>
                     )}
                   </Box>

@@ -3,33 +3,18 @@ import MyModal from '@/components/order/MyModal';
 import ModalState from '@/components/order/MyModal/ModalState';
 import BillTable from '@/components/order/MyTable/BillTable';
 import { auth } from '@/firebase/config';
-import { getAddress } from '@/lib/DAO/addressDAO';
-import { getBatchById, getBatches } from '@/lib/DAO/batchDAO';
-import { getBillTableRows, getBills } from '@/lib/DAO/billDAO';
-import { getBillItems } from '@/lib/DAO/billItemDAO';
+import { getBillTableRows } from '@/lib/DAO/billDAO';
 import { getBranchByManager } from '@/lib/DAO/branchDAO';
-import { getDeliveryById } from '@/lib/DAO/deliveryDAO';
-import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
-import { getPaymentMethodById } from '@/lib/DAO/paymentMethodDAO';
-import { getProduct } from '@/lib/DAO/productDAO';
-import { getProductTypeById } from '@/lib/DAO/productTypeDAO';
-import { getSaleById } from '@/lib/DAO/saleDAO';
 import { getUserByUid, getUsers } from '@/lib/DAO/userDAO';
-import { getVariant } from '@/lib/DAO/variantDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import { getCollection } from '@/lib/firestore';
 import useLoadingService from '@/lib/hooks/useLoadingService';
 import { sendBillToEmail } from '@/lib/services/MailService';
 import { BillTableRow } from '@/models/bill';
-import User from '@/models/user';
-import { LockPersonRounded } from '@mui/icons-material';
 import {
   Box,
   Divider,
   Grid,
   LinearProgress,
-  Stack,
   Typography,
   styled,
   useTheme,
@@ -140,7 +125,7 @@ const Order = () => {
   const theme = useTheme();
 
   const handleSnackbarAlert = useSnackbarService();
-  const sendBillToMail = useCallback(async (bill?: BillTableRow) => {
+  const sendBillToMailWithAlert = useCallback(async (bill?: BillTableRow) => {
     try {
       const email = bill?.deliveryTableRow?.mail ?? '';
       const sendMailResponse = await sendBillToEmail(email, bill);
@@ -216,7 +201,7 @@ const Order = () => {
                 handleClose={handleCloseModalChiTiet}
                 bill={currentViewBill}
                 handleBillDataChange={handleBillDataChange}
-                sendBillToMail={sendBillToMail}
+                sendBillToMail={sendBillToMailWithAlert}
               />
 
               {/* State modal */}
@@ -226,7 +211,7 @@ const Order = () => {
                 billState={billState}
                 setBillState={setBillState}
                 handleBillDataChange={handleBillDataChange}
-                sendBillToMail={sendBillToMail}
+                sendBillToMail={sendBillToMailWithAlert}
               />
             </Grid>
           </Grid>
