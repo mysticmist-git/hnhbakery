@@ -70,6 +70,9 @@ const Report = () => {
 
   const [mode, setMode] = useState<'Revenue' | 'Product'>('Revenue');
 
+  // Revenue Tab
+  const [chartMode, setChartMode] = useState<'Revenue' | 'Bill'>('Revenue');
+
   //#endregion
   //#region Branches
 
@@ -119,8 +122,6 @@ const Report = () => {
           await getSales(),
           await getPaymentMethods(),
         ]);
-
-        console.log('run');
 
         finalData.productTypes = productTypeTableRows;
         finalData.bills = billTableRows.filter(
@@ -389,13 +390,15 @@ const Report = () => {
       datasets: [
         {
           label: 'Doanh thu',
-          data: rows.map((row) => row.realRevenue),
+          data: rows.map((row) =>
+            chartMode === 'Revenue' ? row.realRevenue : row.numberBills
+          ),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
         },
       ],
     }),
-    [rows]
+    [chartMode, rows]
   );
 
   //#endregion
@@ -541,13 +544,25 @@ const Report = () => {
                   *Doanh thu thực sự = Tổng doanh thu - Tổng tiền khuyến mãi
                 </Typography>
               </Grid>
-              {/* <Grid item xs={12}>
-                <Button variant="contained">Số đơn hàng</Button>
-                <Button variant="contained">Doanh thu</Button>
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  color={chartMode === 'Revenue' ? 'secondary' : 'primary'}
+                  onClick={() => setChartMode('Revenue')}
+                >
+                  Doanh thu
+                </Button>
+                <Button
+                  variant="contained"
+                  color={chartMode === 'Bill' ? 'secondary' : 'primary'}
+                  onClick={() => setChartMode('Bill')}
+                >
+                  Số đơn hàng
+                </Button>
               </Grid>
               <Grid item xs={12}>
                 <Line data={chartData} />
-              </Grid> */}
+              </Grid>
               <Grid item xs={12}>
                 {reportData && <ReportTable rows={rows} />}
               </Grid>
