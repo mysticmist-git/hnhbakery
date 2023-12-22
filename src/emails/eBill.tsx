@@ -118,10 +118,12 @@ const sample: BillTableRow = {
   billItems: [],
 };
 export const E_Bill = ({
+  subject = 'Hóa đơn H&H Bakery',
   bill = sample,
   withSale = true,
   withSanPham = true,
 }: {
+  subject: string;
   bill?: BillTableRow;
   withSale?: boolean;
   withSanPham?: boolean;
@@ -149,7 +151,7 @@ export const E_Bill = ({
                   textAlign: 'center',
                 }}
               >
-                Hóa đơn bán hàng
+                {subject}
               </Text>
             </Section>
             <Section

@@ -5,13 +5,18 @@ import { BillTableRow } from '@/models/bill';
 
 export default async function POST(req: any, res: NextApiResponse) {
   try {
-    const { bill, email, withSale, withSanPham } = req.body;
+    const { bill, email, subject, withSale, withSanPham } = req.body;
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       // to: email,
-      to: '20520206@gm.uit.edu.vn',
-      subject: 'Hóa đơn H&H Bakery',
-      react: E_Bill({ bill: bill as BillTableRow, withSale, withSanPham }),
+      to: 'phantruonghuy0701@gmail.com',
+      subject: subject,
+      react: E_Bill({
+        bill: bill as BillTableRow,
+        withSale,
+        withSanPham,
+        subject,
+      }),
     });
 
     return res.status(200).json({ message: 'success', status: 200 });

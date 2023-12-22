@@ -29,10 +29,7 @@ function BillAccordionContent_HTML({
 
         <Row>
           <Column style={{ ...body1 }}>Trạng thái:</Column>
-          <Column
-            style={{ ...body1, ...alignRight }}
-            // Lỗi màu
-          >
+          <Column style={{ ...body1, ...alignRight, fontWeight: 700 }}>
             {billStateContentParse(bill.state)}
           </Column>
         </Row>
@@ -141,9 +138,7 @@ function BillAccordionContent_HTML({
               ...body1,
               ...alignRight,
               fontWeight: '700',
-              color: '#00A803',
             }}
-            // Lỗi màu
           >
             {deliveryStateContentParse(bill.deliveryTableRow?.state) ?? 'Trống'}
           </Column>

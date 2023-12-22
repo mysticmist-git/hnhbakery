@@ -1,4 +1,5 @@
 import Address from '@/models/address';
+import Batch from '@/models/batch';
 import Bill, { BillTableRow, billConverter } from '@/models/bill';
 import Branch from '@/models/branch';
 import Delivery from '@/models/delivery';
@@ -37,14 +38,6 @@ import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
 import { getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
-import Delivery from '@/models/delivery';
-import Address from '@/models/address';
-import { getBookingItemById } from './bookingItemDAO';
-import { getCakeBaseById } from './cakeBaseDAO';
-import ProductType from '@/models/productType';
-import Product from '@/models/product';
-import Variant from '@/models/variant';
-import Batch from '@/models/batch';
 
 export function getBillsRef(
   groupId: string,
