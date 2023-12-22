@@ -33,7 +33,7 @@ export default function ModalState({
     React.SetStateAction<BillTableRow | undefined>
   >;
   handleDeliveryDataChange: any;
-  sendBillToMail: (bill?: BillTableRow) => Promise<void>;
+  sendBillToMail: (subject: string, bill?: BillTableRow) => Promise<void>;
 }) {
   const clearData = () => {
     setDeliveryState(() => undefined);
@@ -88,73 +88,77 @@ export default function ModalState({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Box
-            component={'div'}
-            sx={{
-              display: 'flex',
-              gap: 1,
-              width: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: theme.palette.text.secondary,
-            }}
-          >
-            <Button
-              variant="contained"
-              color="inherit"
-              onClick={() => {
-                handleClose();
+          <form onSubmit={(e) => e.preventDefault()} method="post">
+            <Box
+              component={'div'}
+              sx={{
+                display: 'flex',
+                gap: 1,
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: theme.palette.text.secondary,
               }}
             >
-              Hủy
-            </Button>
-            <Button
-              variant="contained"
-              color={'error'}
-              onClick={async () => {
-                const data = await getDeliveryById(
-                  deliveryState!.deliveryTableRow!.id
-                );
-                if (data) {
-                  data.state = 'cancelled';
-                  deliveryState!.deliveryTableRow!.state = 'cancelled';
-                  await updateDelivery(data.id, data);
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => {
+                  handleClose();
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color={'error'}
+                onClick={async () => {
+                  const data = await getDeliveryById(
+                    deliveryState!.deliveryTableRow!.id
+                  );
+                  if (data) {
+                    data.state = 'cancelled';
+                    deliveryState!.deliveryTableRow!.state = 'cancelled';
+                    await updateDelivery(data.id, data);
 
-                  var billState = deliveryState!.state;
-                  if (billState == 'pending' || billState == 'paid') {
-                    var bill = { ...deliveryState };
-                    bill.state = billState == 'paid' ? 'refunded' : 'cancelled';
-                    delete bill.paymentMethod;
-                    delete bill.customer;
-                    delete bill.sale;
-                    delete bill.deliveryTableRow;
-                    delete bill.billItems;
-                    await updateBill(
-                      deliveryState!.customer!.group_id,
-                      deliveryState!.customer!.id,
-                      deliveryState!.id,
-                      { ...bill } as Bill
-                    );
-                    deliveryState!.state =
-                      billState == 'paid' ? 'refunded' : 'cancelled';
+                    var billState = deliveryState!.state;
+                    if (billState == 'pending' || billState == 'paid') {
+                      var bill = { ...deliveryState };
+                      bill.state =
+                        billState == 'paid' ? 'refunded' : 'cancelled';
+                      delete bill.paymentMethod;
+                      delete bill.customer;
+                      delete bill.sale;
+                      delete bill.deliveryTableRow;
+                      delete bill.billItems;
+                      await updateBill(
+                        deliveryState!.customer!.group_id,
+                        deliveryState!.customer!.id,
+                        deliveryState!.id,
+                        { ...bill } as Bill
+                      );
+                      deliveryState!.state =
+                        billState == 'paid' ? 'refunded' : 'cancelled';
+                    }
+
+                    handleSnackbarAlert('success', 'Hủy giao hàng thành công!');
+                    sendBillToMail('Hủy giao hàng', deliveryState);
+                    handleDeliveryDataChange({
+                      ...deliveryState,
+                    });
+
+                    handleClose();
+                  } else {
+                    handleSnackbarAlert('error', 'Lỗi.');
+                    handleClose();
                   }
-
-                  handleSnackbarAlert('success', 'Hủy giao hàng thành công!');
-                  sendBillToMail(deliveryState);
-                  handleDeliveryDataChange({
-                    ...deliveryState,
-                  });
-
-                  handleClose();
-                } else {
-                  handleSnackbarAlert('error', 'Lỗi.');
-                  handleClose();
-                }
-              }}
-            >
-              Xác nhận
-            </Button>
-          </Box>
+                }}
+              >
+                Xác nhận
+              </Button>
+            </Box>
+          </form>
         </DialogActions>
       </Dialog>
     </>

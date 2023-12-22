@@ -125,27 +125,30 @@ const Order = () => {
   const theme = useTheme();
 
   const handleSnackbarAlert = useSnackbarService();
-  const sendBillToMailWithAlert = useCallback(async (bill?: BillTableRow) => {
-    try {
-      const email = bill?.deliveryTableRow?.mail ?? '';
-      const sendMailResponse = await sendBillToEmail(email, bill);
+  const sendBillToMailWithAlert = useCallback(
+    async (subject: string, bill?: BillTableRow) => {
+      try {
+        const email = bill?.deliveryTableRow?.mail ?? '';
+        const sendMailResponse = await sendBillToEmail(email, bill, subject);
 
-      if (sendMailResponse.status == 200) {
-        handleSnackbarAlert(
-          'success',
-          'Email cập nhật đã được gửi đến khách hàng.'
-        );
-      } else {
-        console.log(sendMailResponse);
-        handleSnackbarAlert(
-          'error',
-          'Có lỗi xảy ra khi cố gửi mail cho khách hàng'
-        );
+        if (sendMailResponse.status == 200) {
+          handleSnackbarAlert(
+            'success',
+            'Email cập nhật đã được gửi đến khách hàng.'
+          );
+        } else {
+          console.log(sendMailResponse);
+          handleSnackbarAlert(
+            'error',
+            'Có lỗi xảy ra khi cố gửi mail cho khách hàng'
+          );
+        }
+      } catch (error: any) {
+        console.log(error);
       }
-    } catch (error: any) {
-      console.log(error);
-    }
-  }, []);
+    },
+    []
+  );
 
   return (
     <>
