@@ -75,7 +75,7 @@ export function formatPrice(
     return '0' + ' ' + unitFormat;
   }
   const formatter = new Intl.NumberFormat('vi-VN');
-  return formatter.format(price) + unitFormat;
+  return `${formatter.format(price)} ${unitFormat}`;
 }
 export function filterDuplicates<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);
