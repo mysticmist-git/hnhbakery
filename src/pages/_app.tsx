@@ -33,6 +33,7 @@ import {
   PaymentContext,
   initPaymentContext,
 } from '@/lib/contexts/paymentContext';
+import { ChatContext, initChatContext } from '@/lib/contexts/chatContext';
 
 const MyApp = (props: AppProps) => {
   const { Component, pageProps } = props;
@@ -58,33 +59,35 @@ const MyApp = (props: AppProps) => {
           <SnackbarService.Provider value={{ handleSnackbarAlert }}>
             <LoadingService.Provider value={[openBackdrop, closeBackdrop]}>
               <PaymentContext.Provider value={initPaymentContext()}>
-                <CssBaseline />
-                <MainLayout>
-                  <Component {...pageProps} />
-                </MainLayout>
-                <Snackbar
-                  open={snackbarOpen}
-                  autoHideDuration={3000}
-                  onClose={handleSnackbarClose}
-                  TransitionComponent={TransitionUp}
-                >
-                  <Alert
+                <ChatContext.Provider value={initChatContext()}>
+                  <CssBaseline />
+                  <MainLayout>
+                    <Component {...pageProps} />
+                  </MainLayout>
+                  <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={3000}
                     onClose={handleSnackbarClose}
-                    severity={snackbarSeverity}
-                    sx={{ width: '100%' }}
+                    TransitionComponent={TransitionUp}
                   >
-                    {snackbarText}
-                  </Alert>
-                </Snackbar>
-                <Backdrop
-                  sx={{
-                    color: '#fff',
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                  }}
-                  open={backdropOpen}
-                >
-                  <CircularProgress color="inherit" />
-                </Backdrop>
+                    <Alert
+                      onClose={handleSnackbarClose}
+                      severity={snackbarSeverity}
+                      sx={{ width: '100%' }}
+                    >
+                      {snackbarText}
+                    </Alert>
+                  </Snackbar>
+                  <Backdrop
+                    sx={{
+                      color: '#fff',
+                      zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={backdropOpen}
+                  >
+                    <CircularProgress color="inherit" />
+                  </Backdrop>
+                </ChatContext.Provider>
               </PaymentContext.Provider>
             </LoadingService.Provider>
           </SnackbarService.Provider>

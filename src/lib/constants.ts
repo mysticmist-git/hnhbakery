@@ -40,6 +40,8 @@ export const COLLECTION_NAME = {
   MODEL_3Ds: 'model_3ds',
   MODEL_3D_TYPES: 'model_3d_types',
   PROVINCES: 'provinces',
+  USER_CHATS: 'user_chats',
+  CHATS: 'chats',
   NONE: 'none',
 };
 

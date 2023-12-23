@@ -49,54 +49,54 @@ function Home() {
 
   //#region UseEffects
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productTypesPromise, bestSellersPromise] =
-          await Promise.allSettled([
-            await getHomeProductTypes(),
-            await getHomeBestSellers(),
-          ]);
-        const productTypes =
-          productTypesPromise.status === 'fulfilled'
-            ? productTypesPromise.value
-            : [];
-        const bestSellers =
-          bestSellersPromise.status === 'fulfilled'
-            ? bestSellersPromise.value
-            : [];
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [productTypesPromise, bestSellersPromise] =
+  //         await Promise.allSettled([
+  //           await getHomeProductTypes(),
+  //           await getHomeBestSellers(),
+  //         ]);
+  //       const productTypes =
+  //         productTypesPromise.status === 'fulfilled'
+  //           ? productTypesPromise.value
+  //           : [];
+  //       const bestSellers =
+  //         bestSellersPromise.status === 'fulfilled'
+  //           ? bestSellersPromise.value
+  //           : [];
 
-        setProductTypes(productTypes);
-        setBestSellers(bestSellers);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
+  //       setProductTypes(productTypes);
+  //       setBestSellers(bestSellers);
+  //     } catch (error: any) {
+  //       console.log(error);
+  //     }
+  //   };
 
-    fetchData();
+  //   fetchData();
 
-    //--------------
+  //   //--------------
 
-    const importImages = async () => {
-      const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
+  //   const importImages = async () => {
+  //     const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
-      const images = await Promise.all(
-        imagePaths.map((path) => import(`@/assets/Carousel/${path}`))
-      );
+  //     const images = await Promise.all(
+  //       imagePaths.map((path) => import(`@/assets/Carousel/${path}`))
+  //     );
 
-      setCarouselImagesState(() =>
-        images.map(function (image) {
-          return {
-            src: image.default.src,
-            alt: '',
-            href: '#',
-          };
-        })
-      );
-    };
+  //     setCarouselImagesState(() =>
+  //       images.map(function (image) {
+  //         return {
+  //           src: image.default.src,
+  //           alt: '',
+  //           href: '#',
+  //         };
+  //       })
+  //     );
+  //   };
 
-    importImages();
-  }, []);
+  //   importImages();
+  // }, []);
 
   //#endregion
 
@@ -208,9 +208,6 @@ function Home() {
     </>
   );
 }
-
-// TODO: These should be bring to a seperate file
-//#region Functions
 
 const getHomeProductTypes = async () => {
   const productTypes: ProductType[] = await getProductTypes();

@@ -7,28 +7,24 @@ import {
   TimeRange,
 } from '@/lib/types/report';
 import { formatPrice } from '@/lib/utils';
-import {
-  ArrowLeft,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-} from '@mui/icons-material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   Box,
-  Button,
-  ButtonGroup,
   Card,
   Divider,
   Grid,
   IconButton,
-  MenuItem,
-  Select,
-  Stack,
+  List,
+  ListItem,
+  ListItemText,
   Typography,
   styled,
 } from '@mui/material';
+import Chart, { ChartData, ChartOptions } from 'chart.js/auto';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
+import { Line, Pie } from 'react-chartjs-2';
+Chart.register();
 
 const IntervalNavigateIconButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
@@ -80,7 +76,7 @@ const Report = () => {
   //#endregion
   //#region Revenue + Batch zone
 
-  const [currentTab, setCurrentTab] = useState<ReportTab>('revenue');
+  const [currentTab, setCurrentTab] = useState<ReportTab>('main');
 
   //#endregion
 
@@ -108,17 +104,17 @@ const Report = () => {
         <Grid item xs={12}>
           <Divider />
         </Grid>
-        {currentTab === 'none' && (
+        {currentTab === 'main' && (
           <MainTab
             onClickRevenueTab={() => setCurrentTab('revenue')}
             onClickBatchTab={() => setCurrentTab('batch')}
           />
         )}
         {currentTab === 'revenue' && (
-          <RevenueTab onClickBack={() => setCurrentTab('none')} />
+          <RevenueTab onClickBack={() => setCurrentTab('main')} />
         )}
         {currentTab === 'batch' && (
-          <BatchTab onClickBack={() => setCurrentTab('none')} />
+          <BatchTab onClickBack={() => setCurrentTab('main')} />
         )}
       </Grid>
     </>
@@ -215,6 +211,88 @@ type RevenueTabProps = {
 };
 
 function RevenueTab({ onClickBack }: RevenueTabProps) {
+  const chartData: ChartData<'pie', number[], string> = {
+    labels: ['Red', 'Blue', 'Yellow'],
+    datasets: [
+      {
+        label: '% Doanh thu',
+        data: [300, 50, 100],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.5)',
+          'rgba(54, 162, 235, 0.5)',
+          'rgba(255, 206, 86, 0.5)',
+        ],
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions<'pie'> = {
+    plugins: {
+      title: {
+        display: true,
+        text: 'Tỉ lệ Doanh thu chi nhánh',
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `${context.parsed}%`;
+          },
+        },
+      },
+    },
+  };
+
+  const revenueChartData: ChartData<'line', number[], string> = {
+    labels: Array.from({ length: 30 }).map((_, index) =>
+      (index + 1).toString()
+    ),
+    datasets: [
+      {
+        data: Array.from({ length: 30 }).map(() =>
+          Math.floor(Math.random() * 1000000)
+        ),
+      },
+    ],
+  };
+
+  const revenueChartOptions: ChartOptions<'line'> = {
+    scales: {
+      x: {
+        ticks: {
+          callback: (value) => {
+            return `Tháng ${value}`;
+          },
+        },
+      },
+      y: {
+        ticks: {
+          callback: (value) => {
+            return `${value} VNĐ`;
+          },
+        },
+      },
+    },
+    plugins: {
+      title: {
+        display: true,
+        text: 'Biểu đồ đường Doanh thu tháng',
+        font: {
+          size: 20,
+        },
+      },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `${context.parsed.y} VNĐ`;
+          },
+        },
+      },
+    },
+  };
+
   return (
     <>
       <Grid item xs={12} display={'flex'} alignItems={'center'} gap={1}>
@@ -247,10 +325,46 @@ function RevenueTab({ onClickBack }: RevenueTabProps) {
           Doanh thu
         </Typography>
       </Grid>
-      <Grid item xs={6}>
-        <Card></Card>
+      <Grid item xs={12}>
+        <Card sx={{ borderRadius: 4, p: 2 }}>
+          <Line data={revenueChartData} options={revenueChartOptions} />
+        </Card>
       </Grid>
-      <Grid item xs={6}></Grid>
+
+      <Grid item xs={7}>
+        <Card sx={{ borderRadius: 4 }}>
+          <Box p={2}>
+            <Typography typography="h6">Doanh thu theo chi nhánh</Typography>
+          </Box>
+          <Divider />
+          <Box>
+            <List>
+              <ListItem>
+                <ListItemText primary="Tổng doanh thu" />
+                <ListItemText primary={formatPrice(12000000)} />
+              </ListItem>
+              <Divider />
+            </List>
+            <List sx={{ overflow: 'auto', maxHeight: 400 }}>
+              {Array.from({ length: 10 }).map((_, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={`Chi nhánh ${index + 1}`}
+                    secondary={`Địa chỉ chi nhánh ${index + 1}`}
+                  />
+                  <Divider orientation="vertical" />
+                  <ListItemText primary={`${formatPrice(8000000)} (80%)`} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Card>
+      </Grid>
+      <Grid item xs={5} sx={{ borderRadius: 4 }}>
+        <Card sx={{ borderRadius: 4, height: '100%', p: 4 }}>
+          <Pie data={chartData} options={chartOptions} />
+        </Card>
+      </Grid>
     </>
   );
 }
