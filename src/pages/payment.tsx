@@ -201,14 +201,15 @@ const Payment = () => {
       );
 
       await Promise.all(
-        billItemsData.map(async (item) => {
-          await createBillItem(
-            userData!.group_id,
-            userData!.id,
-            billRef.id,
-            item
-          );
-        })
+        billItemsData.map(
+          async (item) =>
+            await createBillItem(
+              userData!.group_id,
+              userData!.id,
+              billRef.id,
+              item
+            )
+        )
       );
 
       for (const item of assembledCartItems) {

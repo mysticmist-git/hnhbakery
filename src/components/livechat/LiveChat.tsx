@@ -46,6 +46,7 @@ export function LiveChat() {
           bottom: theme.spacing(3),
           right: theme.spacing(3),
           zIndex: theme.zIndex.drawer,
+          display: state.canChat ? 'block' : 'none',
         }}
       >
         <Zoom in={!state.open}>
@@ -55,8 +56,6 @@ export function LiveChat() {
                 try {
                   if (state.uidClient == '') return;
                   const userChat = await getUserChat(state.uidClient);
-
-                  console.log(userChat);
 
                   if (!userChat) {
                     const data: UserChat = {
@@ -102,6 +101,7 @@ export function LiveChat() {
           bottom: 0,
           right: theme.spacing(3 + 8 + 3),
           zIndex: theme.zIndex.drawer,
+          display: state.canChat ? 'block' : 'none',
         }}
       >
         <Slide direction="up" in={state.open} mountOnEnter unmountOnExit>
