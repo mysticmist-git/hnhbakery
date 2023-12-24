@@ -24,29 +24,39 @@ export function ChatHeader() {
       }}
     >
       <Box component={'div'}>
-        <Typography variant="caption" fontWeight={'bold'}>
-          H&H Bakery
+        <Typography
+          variant="caption"
+          fontWeight={'bold'}
+          sx={{
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+          }}
+        >
+          {state.receiverName}
         </Typography>
       </Box>
 
-      <Stack direction="row">
-        <IconButton
-          {...iconButtonProp}
-          onClick={() => {
-            window.open('tel: 0343214971', '_blank');
-          }}
-        >
-          <LocalPhoneRounded {...iconProp} />
-        </IconButton>
-        <IconButton
-          {...iconButtonProp}
-          onClick={() =>
-            dispatch({ type: 'setOpen', payload: { ...state, open: false } })
-          }
-        >
-          <RemoveRounded {...iconProp} />
-        </IconButton>
-      </Stack>
+      {state.senderType == 'client' && (
+        <Stack direction="row">
+          <IconButton
+            {...iconButtonProp}
+            onClick={() => {
+              window.open('tel: 0343214971', '_blank');
+            }}
+          >
+            <LocalPhoneRounded {...iconProp} />
+          </IconButton>
+          <IconButton
+            {...iconButtonProp}
+            onClick={() =>
+              dispatch({ type: 'setOpen', payload: { ...state, open: false } })
+            }
+          >
+            <RemoveRounded {...iconProp} />
+          </IconButton>
+        </Stack>
+      )}
     </Box>
   );
 }

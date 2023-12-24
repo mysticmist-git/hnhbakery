@@ -29,7 +29,7 @@ export function ChatFrame() {
         {/* Tiêu đề */}
         <ChatHeader />
 
-        {state.uidClient === '' ? (
+        {state.uidSender === '' ? (
           <Box
             component={'div'}
             sx={{

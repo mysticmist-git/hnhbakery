@@ -1,6 +1,7 @@
+import { ChatContext } from '@/lib/contexts/chatContext';
 import { ZoomOutMapRounded } from '@mui/icons-material';
 import { Box } from '@mui/material';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 export function ChatImage({
   src,
@@ -10,6 +11,7 @@ export function ChatImage({
   handleDialogImage: (str: string) => void;
 }) {
   const [hover, setHover] = useState(false);
+  const { state } = useContext(ChatContext);
 
   return (
     <>
@@ -23,7 +25,7 @@ export function ChatImage({
         sx={{
           position: 'relative',
           cursor: 'pointer',
-          width: '100%',
+          width: state.senderType == 'client' ? '100%' : '50%',
           aspectRatio: '1/0.7',
           borderRadius: '16px',
           overflow: 'hidden',

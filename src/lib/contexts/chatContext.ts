@@ -8,15 +8,16 @@ export type ChatContextType = {
   canChat: boolean;
   open: boolean;
   //
-  uidClient: string;
-  clientName: string;
-  uidStaff: string;
-  staffName: string;
+  uidSender: string;
+  senderName: string;
+  uidReceiver: string;
+  receiverName: string;
   combileId: string;
+  senderType: 'client' | 'staff' | '';
 };
 
 export interface ChatAction {
-  type: 'setCanChat' | 'setOpen' | 'setUidClient';
+  type: 'setCanChat' | 'setOpen' | 'setUidSender' | 'setUidReceiver';
   payload: ChatContextType;
 }
 
@@ -24,11 +25,12 @@ const INITIAL_STATE: ChatContextType = {
   canChat: false,
   open: false,
   //
-  uidClient: '',
-  clientName: '',
-  uidStaff: HNH_BAKERY_UID,
-  staffName: 'H&H Bakery',
+  uidSender: '',
+  senderName: '',
+  uidReceiver: HNH_BAKERY_UID,
+  receiverName: 'H&H Bakery',
   combileId: '',
+  senderType: '',
 };
 
 export const ChatContext = createContext<{
@@ -57,19 +59,42 @@ export function initChatContext() {
           ...action.payload,
           open: action.payload.open,
         };
-      case 'setUidClient':
+      case 'setUidSender': {
         let combileId = '';
-        if (action.payload.uidClient != '' && action.payload.uidStaff != '') {
+        if (
+          action.payload.uidSender != '' &&
+          action.payload.uidReceiver != ''
+        ) {
           combileId =
-            action.payload.uidClient < action.payload.uidStaff
-              ? action.payload.uidClient + '_' + action.payload.uidStaff
-              : action.payload.uidStaff + '_' + action.payload.uidClient;
+            action.payload.uidSender < action.payload.uidReceiver
+              ? action.payload.uidSender + '_' + action.payload.uidReceiver
+              : action.payload.uidReceiver + '_' + action.payload.uidSender;
         }
         return {
           ...action.payload,
-          uidClient: action.payload.uidClient,
+          uidSender: action.payload.uidSender,
           combileId: combileId,
         };
+      }
+      case 'setUidReceiver': {
+        let combileId = '';
+        if (
+          action.payload.uidSender != '' &&
+          action.payload.uidReceiver != ''
+        ) {
+          combileId =
+            action.payload.uidSender < action.payload.uidReceiver
+              ? action.payload.uidSender + '_' + action.payload.uidReceiver
+              : action.payload.uidReceiver + '_' + action.payload.uidSender;
+        }
+
+        return {
+          ...action.payload,
+          uidReceiver: action.payload.uidReceiver,
+          receiverName: action.payload.receiverName,
+          combileId: combileId,
+        };
+      }
       default:
         return state;
     }
@@ -81,25 +106,39 @@ export function initChatContext() {
 
   useEffect(() => {
     if (!user) return;
-    async function setUidClient() {
+    async function setUidSender() {
       if (!user) return;
       const userData = await getUserByUid(user.uid);
       if (!userData) return;
       if (userData.group_id !== DEFAULT_GROUP_ID) {
-        dispatch({ type: 'setCanChat', payload: { ...state, canChat: false } });
+        dispatch({
+          type: 'setCanChat',
+          payload: {
+            ...state,
+            uidSender: HNH_BAKERY_UID,
+            senderName: 'H&H Bakery',
+            uidReceiver: '',
+            receiverName: 'Vui bạn chọn khách hàng',
+            canChat: true,
+            senderType: 'staff',
+          },
+        });
         return;
       }
       dispatch({
-        type: 'setUidClient',
+        type: 'setUidSender',
         payload: {
           ...state,
-          uidClient: userData.uid,
-          clientName: userData.name,
+          uidSender: userData.uid,
+          senderName: userData.name,
+          uidReceiver: HNH_BAKERY_UID,
+          receiverName: 'H&H Bakery',
           canChat: true,
+          senderType: 'client',
         },
       });
     }
-    setUidClient();
+    setUidSender();
   }, [user]);
 
   console.log(state);

@@ -4,6 +4,7 @@ import {
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from 'firebase/firestore';
+import User from './user';
 
 type ChatWithType = {
   id: string;

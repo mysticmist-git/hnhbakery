@@ -61,7 +61,6 @@ async function handleSendMessage(
   }
 
   // Cập nhật Chat
-
   const textContent: string[] =
     text == '' ? [...imagesUrl] : [text, ...imagesUrl];
   let message: Message = {
@@ -248,12 +247,41 @@ export function ChatTextField() {
       <TextField
         multiline
         fullWidth
+        onFocus={async () => {
+          if (state.uidSender == '') {
+            return;
+          }
+
+          const userChat = await getUserChat(state.uidSender);
+          if (!userChat) {
+            return;
+          }
+          const isRead = userChat.chatWith.find(
+            (item) => item.id == state.combileId
+          )?.isRead;
+
+          if (isRead == false) {
+            await updateUserChat(userChat.uid, {
+              ...userChat,
+              chatWith: userChat.chatWith.map((item) => {
+                if (item.id == state.combileId) {
+                  return {
+                    ...item,
+                    isRead: true,
+                  };
+                } else {
+                  return item;
+                }
+              }),
+            });
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage(
-              { uid: state.uidClient, name: state.clientName },
-              { uid: state.uidStaff, name: state.staffName },
+              { uid: state.uidSender, name: state.senderName },
+              { uid: state.uidReceiver, name: state.receiverName },
               state.combileId,
               textRef.current.value,
               imageArray
@@ -320,8 +348,8 @@ export function ChatTextField() {
                 }}
                 onClick={() => {
                   handleSendMessage(
-                    { uid: state.uidClient, name: state.clientName },
-                    { uid: state.uidStaff, name: state.staffName },
+                    { uid: state.uidSender, name: state.senderName },
+                    { uid: state.uidReceiver, name: state.receiverName },
                     state.combileId,
                     textRef.current.value,
                     imageArray

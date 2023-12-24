@@ -1,22 +1,32 @@
 import { ContactTable, MyModal } from '@/components/contacts';
 import { getContacts } from '@/lib/DAO/contactDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
 
 import { Mail } from '@/lib/types/manage-contact';
 import Contact from '@/models/contact';
-import { Mail as MailIcon } from '@mui/icons-material';
+import User from '@/models/user';
+import { ChatWithType } from '@/models/userChat';
+import { Mail as MailIcon, NotificationsRounded } from '@mui/icons-material';
 import {
+  Badge,
   Box,
   Button,
   Divider,
   Grid,
   LinearProgress,
+  Tab,
+  Tabs,
   Typography,
   styled,
   useTheme,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { ChatManagement } from '../../components/contacts/ChatManagement';
+import { ChatContext } from '@/lib/contexts/chatContext';
+import { onSnapshot } from 'firebase/firestore';
+import { getUserChatRefByUid } from '@/lib/DAO/userChatDAO';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -25,6 +35,17 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Contacts: React.FC = () => {
+  //#region Tab
+  const [tabValue, setTabValue] = useState('1');
+
+  const handleTabValueChange = (
+    event: React.SyntheticEvent,
+    newValue: string
+  ) => {
+    setTabValue(newValue);
+  };
+  //#endregion
+
   //#region Gửi mail
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -69,14 +90,14 @@ const Contacts: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const theme = useTheme();
 
-  useEffect(() => {
-    async function fetchData() {
-      const contacts = await getContacts();
-      setContacts(contacts);
-    }
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     const contacts = await getContacts();
+  //     setContacts(contacts);
+  //   }
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {
@@ -105,6 +126,34 @@ const Contacts: React.FC = () => {
   };
   //#endregion
 
+  //#region Live Chat badge content
+  const { state } = useContext(ChatContext);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (state.uidSender == '') {
+      return;
+    }
+
+    const unsub = onSnapshot(getUserChatRefByUid(state.uidSender), (doc) => {
+      let data = doc.data();
+      if (!data) {
+        setUnreadCount(0);
+      } else {
+        const countUnRead = data.chatWith.filter(
+          (item) => item.isRead == false
+        ).length;
+        setUnreadCount(countUnRead);
+      }
+    });
+
+    return () => {
+      unsub();
+    };
+  }, [state.uidSender]);
+
+  //#endregion
+
   return (
     <>
       <Box
@@ -128,47 +177,65 @@ const Contacts: React.FC = () => {
             <Divider />
           </Grid>
 
-          {/* <Grid item xs={12}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontStyle: 'italic' }}
+          <Grid item xs={12}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabValueChange}
+              textColor="secondary"
+              indicatorColor="secondary"
+              centered
             >
-              *Tìm kiếm theo mã, họ tên, email, số điện thoại, ngày sinh, trạng
-              thái...
-            </Typography>
-          </Grid> */}
-
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'end' }}>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<MailIcon />}
-              onClick={handleNewMail}
-            >
-              Gửi mail
-            </Button>
+              <Tab
+                value="1"
+                label={
+                  <Badge color="secondary" badgeContent={unreadCount}>
+                    Live Chat
+                  </Badge>
+                }
+              />
+              <Tab value="2" label="Mail" />
+            </Tabs>
           </Grid>
 
           <Grid item xs={12}>
             <Divider />
           </Grid>
 
-          <Grid item xs={12}>
-            <ContactTable
-              contactData={contacts}
-              handleViewContact={handleViewContactModalChiTiet}
-              // handleViewDeliveryModalState={handleViewDeliveryModalState}
-            />
+          {tabValue === '2' && (
+            <>
+              <Grid
+                item
+                xs={12}
+                sx={{ display: 'flex', justifyContent: 'end' }}
+              >
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<MailIcon />}
+                  onClick={handleNewMail}
+                >
+                  Gửi mail
+                </Button>
+              </Grid>
 
-            {/* Modal chi tiết */}
-            <MyModal
-              open={openModalChiTiet}
-              handleClose={handleCloseModalChiTiet}
-              contact={currentViewContact}
-              handleContactDataChange={handleContactDataChange}
-            />
-          </Grid>
+              <Grid item xs={12}>
+                <ContactTable
+                  contactData={contacts}
+                  handleViewContact={handleViewContactModalChiTiet}
+                />
+
+                {/* Modal chi tiết */}
+                <MyModal
+                  open={openModalChiTiet}
+                  handleClose={handleCloseModalChiTiet}
+                  contact={currentViewContact}
+                  handleContactDataChange={handleContactDataChange}
+                />
+              </Grid>
+            </>
+          )}
+
+          {tabValue === '1' && <ChatManagement />}
         </Grid>
       </Box>
 
