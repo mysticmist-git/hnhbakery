@@ -6,7 +6,8 @@ import {
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
-import { BillItemTableRow } from './billItem';
+import BillItem, { BillItemTableRow } from './billItem';
+import BookingItem from './bookingItem';
 import Branch from './branch';
 import WithCreatedUpdated from './created_updated';
 import Delivery, { DeliveryTableRow } from './delivery';
@@ -14,7 +15,6 @@ import PaymentMethod from './paymentMethod';
 import Sale from './sale';
 import User from './user';
 import WithId from './withId';
-import BookingItem from './bookingItem';
 
 /**
  * State of a bill
@@ -47,6 +47,7 @@ type Bill = WithCreatedUpdated &
     paid_time?: Date;
     branch_id: string;
     booking_item_id: string;
+    bill_items?: BillItem[];
   };
 
 type BillTableRow = Bill & {

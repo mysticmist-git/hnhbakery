@@ -21,6 +21,7 @@ import {
 import { BillTableRow } from '@/models/bill';
 import Delivery from '@/models/delivery';
 import Feedback, { FeedbackTableRow } from '@/models/feedback';
+import Product from '@/models/product';
 import { COLLECTION_NAME } from '../constants';
 import { getAddress, getAddresses } from './addressDAO';
 import { getBatchById } from './batchDAO';
@@ -33,13 +34,13 @@ import {
   GUEST_ID,
   getDefaultGroup,
   getGroupRefById,
+  getGroups,
   getGroupsRef,
   getGroupsSnapshot,
   getGroupsSnapshotWithQuery,
 } from './groupDAO';
 import { getProducts } from './productDAO';
 import { getProductTypes } from './productTypeDAO';
-import Product from '@/models/product';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -124,6 +125,18 @@ export async function getUsers(
   } else {
     return (await getUsersSnapshot(arg)).docs.map((doc) => doc.data());
   }
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const groups = await getGroups();
+  const users = (
+    await Promise.all(
+      groups.map(async (group) => {
+        return await getUsers(group.id);
+      })
+    )
+  ).flat();
+  return users;
 }
 
 export async function getDefaultUsersSnapshot(): Promise<QuerySnapshot<User>> {

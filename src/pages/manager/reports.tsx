@@ -1,5 +1,14 @@
 import TimeRangeInput from '@/components/report/TimeRangeInput/TimeRangeInput';
-import { getUpdatedIntervals, initIntervals } from '@/lib/pageSpecific/report';
+import { getBatches } from '@/lib/DAO/batchDAO';
+import { getBillsForReportPage } from '@/lib/DAO/billDAO';
+import useBranches from '@/lib/hooks/useBranches';
+import {
+  getBranchRevenueData,
+  getMainTabData,
+  getRevenueTabChartData,
+  getUpdatedIntervals,
+  initIntervals,
+} from '@/lib/pageSpecific/report';
 import {
   Interval,
   IntervalType,
@@ -7,9 +16,14 @@ import {
   TimeRange,
 } from '@/lib/types/report';
 import { formatPrice } from '@/lib/utils';
+import Batch from '@/models/batch';
+import Bill from '@/models/bill';
+import Branch from '@/models/branch';
+import { withHashCacheAsync } from '@/utils/withHashCache';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   Box,
+  Button,
   Card,
   Divider,
   Grid,
@@ -18,32 +32,65 @@ import {
   ListItem,
   ListItemText,
   Typography,
-  styled,
 } from '@mui/material';
 import Chart, { ChartData, ChartOptions } from 'chart.js/auto';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
 Chart.register();
 
-const IntervalNavigateIconButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.secondary.main,
-  borderRadius: 4,
-  color: 'white',
-  width: 80,
-  ':hover': {
-    backgroundColor: theme.palette.secondary.dark,
+//#region Top part
+
+export type MainTabData = {
+  revenue: MainTabRevenue;
+  batch: MainTabBatch;
+};
+
+export type MainTabRevenue = {
+  totalRevenue: number;
+  saleAmount: number;
+  finalRevenue: number;
+};
+
+export type MainTabBatch = {
+  totalBatch: number;
+  soldBatch: number;
+  expiredBatch: number;
+};
+
+const cachedGetAllBills = withHashCacheAsync(getBillsForReportPage);
+const cachedGetBatches = withHashCacheAsync(getBatches);
+
+async function getBillsInRange(from: Date, to: Date) {
+  const bills = await cachedGetAllBills();
+  return bills.filter(
+    (bill) => bill.created_at >= from && bill.created_at <= to
+  );
+}
+
+const DEFAULT_MAIN_TAB_DATA = {
+  revenue: {
+    totalRevenue: 0,
+    saleAmount: 0,
+    finalRevenue: 0,
   },
-}));
+  batch: {
+    totalBatch: 0,
+    soldBatch: 0,
+    expiredBatch: 0,
+  },
+};
 
-const Report = () => {
+//#endregion
+
+function Report() {
   //#region Time range zone
-
   const [timeRangeType, setTimeRangeType] = useState<TimeRange>('interval');
   const [currentIntervalType, setCurrentIntervalType] =
     useState<IntervalType>('month');
   const [currentIntervalIndex, setCurrentIntervalIndex] = useState<number>(0); // 0 mean today | this week | this month | this year
   const [intervals, setIntervals] = useState<Interval[]>([]);
+
   const fromDateToDateText = useMemo(() => {
     const currentInterval = intervals.find(
       (interval) => interval.index === currentIntervalIndex
@@ -74,15 +121,93 @@ const Report = () => {
   }, [currentIntervalIndex, currentIntervalType, intervals]);
 
   //#endregion
-  //#region Revenue + Batch zone
+  //#region Tabs zone
 
   const [currentTab, setCurrentTab] = useState<ReportTab>('main');
 
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+
+  const fetchData = useCallback(async () => {
+    const currentInterval = intervals.find(
+      (interval) => interval.index === currentIntervalIndex
+    );
+    if (!currentInterval) {
+      setBills([]);
+      return;
+    }
+
+    try {
+      const bills = await getBillsInRange(
+        dayjs(currentInterval.from).startOf('month').toDate(),
+        dayjs(currentInterval.to).endOf('month').toDate()
+      );
+
+      let batches = await cachedGetBatches();
+      const batchIds = bills.flatMap((bill) =>
+        bill.bill_items?.map((item) => item.batch_id)
+      );
+      batches = batches.filter((batch) => batchIds.includes(batch.id));
+
+      setBills(bills);
+      setBatches(batches);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [currentIntervalIndex, intervals]);
+
+  useEffect(() => {
+    if (bills.length <= 0 || batches.length <= 0) return;
+
+    const mainTabData = getMainTabData(bills, batches);
+    setMainTabData(mainTabData);
+  }, [batches, bills]);
+
+  //#region Main Tab
+
+  const [mainTabData, setMainTabData] = useState<MainTabData>(
+    DEFAULT_MAIN_TAB_DATA
+  );
+
   //#endregion
+  //#region Revenue Tab
+
+  const [revenueTabChartData, setRevenueTabChartData] = useState<number[]>([]);
+  const [branchRevenueData, setBranchRevenueData] = useState<{
+    [key: string]: number;
+  }>({});
+
+  useEffect(() => {
+    const currentInterval = intervals.find(
+      (interval) => interval.index === currentIntervalIndex
+    );
+    if (!currentInterval || bills.length <= 0) {
+      console.log('run');
+      setRevenueTabChartData([]);
+      return;
+    }
+    const chartData = getRevenueTabChartData(bills, currentInterval);
+    const branchRevenueData = getBranchRevenueData(bills);
+
+    setRevenueTabChartData(chartData);
+    setBranchRevenueData(branchRevenueData);
+  }, [bills, currentIntervalIndex, intervals]);
+
+  //#endregion
+
+  //#endregion
+
+  console.log(bills);
+  console.log(batches);
 
   return (
     <>
       <Grid container p={2} rowSpacing={2} columnSpacing={2}>
+        <Grid>
+          <Button variant="contained" onClick={fetchData}>
+            DEBUG
+          </Button>
+        </Grid>
         <Grid item xs={12}>
           <TimeRangeInput
             timeRangeType={timeRangeType}
@@ -106,12 +231,18 @@ const Report = () => {
         </Grid>
         {currentTab === 'main' && (
           <MainTab
+            data={mainTabData}
             onClickRevenueTab={() => setCurrentTab('revenue')}
             onClickBatchTab={() => setCurrentTab('batch')}
           />
         )}
         {currentTab === 'revenue' && (
-          <RevenueTab onClickBack={() => setCurrentTab('main')} />
+          <RevenueTab
+            revenueChartData={revenueTabChartData}
+            branchRevenueData={branchRevenueData}
+            intervalType={currentIntervalType}
+            onClickBack={() => setCurrentTab('main')}
+          />
         )}
         {currentTab === 'batch' && (
           <BatchTab onClickBack={() => setCurrentTab('main')} />
@@ -119,16 +250,17 @@ const Report = () => {
       </Grid>
     </>
   );
-};
+}
 
 //#region Main Tab
 
 type MainTabProps = {
+  data: MainTabData;
   onClickRevenueTab: () => void;
   onClickBatchTab: () => void;
 };
 
-function MainTab({ onClickRevenueTab, onClickBatchTab }: MainTabProps) {
+function MainTab({ data, onClickRevenueTab, onClickBatchTab }: MainTabProps) {
   return (
     <>
       <Grid item xs={6}>
@@ -143,13 +275,13 @@ function MainTab({ onClickRevenueTab, onClickBatchTab }: MainTabProps) {
             <Grid item xs={6} textAlign={'center'} pl={4} pt={4}>
               <Typography typography="h5">Tổng doanh thu</Typography>
               <Typography color="success.main">
-                {formatPrice(12000000)}
+                {formatPrice(data.revenue.totalRevenue)}
               </Typography>
             </Grid>
             <Grid item xs={6} textAlign="center" pr={4} pt={4}>
               <Typography typography="h5">Tiền đã khuyến mãi</Typography>
               <Typography color="error.main">
-                {formatPrice(-2000000)}
+                {formatPrice(-data.revenue.saleAmount)}
               </Typography>
             </Grid>
             <Grid item xs={12} py={1}>
@@ -158,7 +290,7 @@ function MainTab({ onClickRevenueTab, onClickBatchTab }: MainTabProps) {
             <Grid item xs={12} textAlign={'center'} px={4} pb={4}>
               <Typography typography="h5">Doanh thu thực sự</Typography>
               <Typography color="success.main">
-                {formatPrice(10000000)}
+                {formatPrice(data.revenue.finalRevenue)}
               </Typography>
             </Grid>
           </Grid>
@@ -179,18 +311,22 @@ function MainTab({ onClickRevenueTab, onClickBatchTab }: MainTabProps) {
           <Grid container>
             <Grid item xs={12} textAlign="center" px={4} pt={4}>
               <Typography typography="h5">Lô bánh làm ra</Typography>
-              <Typography>100</Typography>
+              <Typography>{data.batch.totalBatch}</Typography>
             </Grid>
             <Grid item xs={12} py={1}>
               <Divider />
             </Grid>
             <Grid item xs={6} textAlign={'center'} pl={4} pb={4}>
               <Typography typography="h5">Lô bánh đã bán</Typography>
-              <Typography color="success.main">80 (80%)</Typography>
+              <Typography color="success.main">
+                {data.batch.soldBatch}
+              </Typography>
             </Grid>
             <Grid item xs={6} textAlign={'center'} pr={4} pb={4}>
               <Typography typography="h5">Lô bánh hết hạn</Typography>
-              <Typography color="error.main">20 (20%)</Typography>
+              <Typography color="error.main">
+                {data.batch.expiredBatch}
+              </Typography>
             </Grid>
           </Grid>
           <Divider orientation="vertical" flexItem />
@@ -207,91 +343,139 @@ function MainTab({ onClickRevenueTab, onClickBatchTab }: MainTabProps) {
 //#region Revenue Tab
 
 type RevenueTabProps = {
+  intervalType: IntervalType;
+  revenueChartData: number[];
+  branchRevenueData: { [key: string]: number };
   onClickBack(): void;
 };
 
-function RevenueTab({ onClickBack }: RevenueTabProps) {
-  const chartData: ChartData<'pie', number[], string> = {
-    labels: ['Red', 'Blue', 'Yellow'],
-    datasets: [
-      {
-        label: '% Doanh thu',
-        data: [300, 50, 100],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.5)',
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-        ],
-      },
-    ],
-  };
+function resolveRevenueChartLabels(
+  intervalType: IntervalType,
+  data: number[]
+): string[] {
+  switch (intervalType) {
+    case 'month':
+      return data.map((_, index) => `Ngày ${index + 1}`);
+    case 'year':
+      return data.map((_, index) => `Tháng ${index + 1}`);
+    default:
+      return [];
+  }
+}
 
-  const chartOptions: ChartOptions<'pie'> = {
-    plugins: {
-      title: {
-        display: true,
-        text: 'Tỉ lệ Doanh thu chi nhánh',
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            return `${context.parsed}%`;
-          },
-        },
-      },
-    },
-  };
+function RevenueTab({
+  intervalType,
+  revenueChartData: data,
+  branchRevenueData,
+  onClickBack,
+}: RevenueTabProps) {
+  //#region Branch data
 
-  const revenueChartData: ChartData<'line', number[], string> = {
-    labels: Array.from({ length: 30 }).map((_, index) =>
-      (index + 1).toString()
-    ),
-    datasets: [
-      {
-        data: Array.from({ length: 30 }).map(() =>
-          Math.floor(Math.random() * 1000000)
-        ),
-      },
-    ],
-  };
+  const branches = useBranches();
 
-  const revenueChartOptions: ChartOptions<'line'> = {
-    scales: {
-      x: {
-        ticks: {
-          callback: (value) => {
-            return `Tháng ${value}`;
+  //#endregion
+
+  const revenueChartData: ChartData<'line', number[], string> = useMemo(
+    () => ({
+      labels: resolveRevenueChartLabels(intervalType, data),
+      datasets: [
+        {
+          data: data,
+        },
+      ],
+    }),
+    [data, intervalType]
+  );
+  const revenueChartOptions: ChartOptions<'line'> = useMemo(
+    () => ({
+      scales: {
+        x: {
+          ticks: {
+            callback: (value) => {
+              return `Ngày ${value}`;
+            },
+          },
+        },
+        y: {
+          ticks: {
+            callback: (value) => {
+              return `${value} VNĐ`;
+            },
           },
         },
       },
-      y: {
-        ticks: {
-          callback: (value) => {
-            return `${value} VNĐ`;
+      plugins: {
+        title: {
+          display: true,
+          text: 'Biểu đồ đường Doanh thu tháng',
+          font: {
+            size: 20,
+          },
+        },
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.parsed.y} VNĐ`;
+            },
           },
         },
       },
-    },
-    plugins: {
-      title: {
-        display: true,
-        text: 'Biểu đồ đường Doanh thu tháng',
-        font: {
-          size: 20,
+    }),
+    []
+  );
+  const chartData: ChartData<'pie', number[], string> = useMemo(() => {
+    const keys = Object.keys(branchRevenueData);
+    const totalRevenue = keys.reduce((acc, key) => {
+      return acc + branchRevenueData[key];
+    }, 0);
+
+    const data: number[] = [];
+    let accumulate = 0;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const percent = Math.floor(
+        (branchRevenueData[keys[i]] * 100) / totalRevenue
+      );
+      accumulate += percent;
+      data.push(percent);
+    }
+    data.push(100 - accumulate);
+
+    return {
+      labels: keys.map(
+        (key) => branches.find((b) => b.id === key)?.name ?? 'Không tìm được'
+      ),
+      datasets: [
+        {
+          label: '% Doanh thu',
+          data: data,
+          backgroundColor: keys.map(
+            () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
+          ),
         },
-      },
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            return `${context.parsed.y} VNĐ`;
+      ],
+    };
+  }, [branchRevenueData, branches]);
+  const chartOptions: ChartOptions<'pie'> = useMemo(
+    () => ({
+      plugins: {
+        title: {
+          display: true,
+          text: 'Tỉ lệ Doanh thu chi nhánh',
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.parsed}%`;
+            },
           },
         },
       },
-    },
-  };
+    }),
+    []
+  );
 
   return (
     <>
@@ -330,7 +514,6 @@ function RevenueTab({ onClickBack }: RevenueTabProps) {
           <Line data={revenueChartData} options={revenueChartOptions} />
         </Card>
       </Grid>
-
       <Grid item xs={7}>
         <Card sx={{ borderRadius: 4 }}>
           <Box p={2}>
@@ -341,20 +524,24 @@ function RevenueTab({ onClickBack }: RevenueTabProps) {
             <List>
               <ListItem>
                 <ListItemText primary="Tổng doanh thu" />
-                <ListItemText primary={formatPrice(12000000)} />
+                <ListItemText
+                  primary={formatPrice(
+                    Object.keys(branchRevenueData).reduce(
+                      (acc, key) => acc + branchRevenueData[key],
+                      0
+                    )
+                  )}
+                />
               </ListItem>
               <Divider />
             </List>
             <List sx={{ overflow: 'auto', maxHeight: 400 }}>
-              {Array.from({ length: 10 }).map((_, index) => (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={`Chi nhánh ${index + 1}`}
-                    secondary={`Địa chỉ chi nhánh ${index + 1}`}
-                  />
-                  <Divider orientation="vertical" />
-                  <ListItemText primary={`${formatPrice(8000000)} (80%)`} />
-                </ListItem>
+              {Object.keys(branchRevenueData).map((key, index) => (
+                <BranchRevenueItem
+                  key={index}
+                  branch={branches.find((b) => b.id === key)}
+                  data={branchRevenueData[key]}
+                />
               ))}
             </List>
           </Box>
@@ -369,8 +556,29 @@ function RevenueTab({ onClickBack }: RevenueTabProps) {
   );
 }
 
+function BranchRevenueItem({
+  branch,
+  data,
+}: {
+  branch?: Branch;
+  data: number;
+}) {
+  return branch ? (
+    <ListItem>
+      <ListItemText
+        primary={`Chi nhánh ${branch.name}`}
+        secondary={`Địa chỉ chi nhánh ${branch.address}`}
+      />
+      <Divider orientation="vertical" />
+      <ListItemText primary={`${formatPrice(data)} (${data}%)`} />
+    </ListItem>
+  ) : (
+    <p>null branch</p>
+  );
+}
+
 //#endregion
-//#region
+//#region Batch tab
 
 type BatchTabProps = {
   onClickBack(): void;
