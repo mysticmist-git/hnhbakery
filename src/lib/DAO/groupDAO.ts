@@ -24,6 +24,8 @@ export const MANAGER_GROUP_ID = 'vn01AtyWFcteKd4OJsCa';
 export const DEV_GROUP_ID = 'hMlMMgbIA4RRX0NBTcfO';
 export const GUEST_ID = '5Vrj7Nx6O0LrqDbbzRkF';
 export const GUEST_UID = '42FTreMDIoRAoeaoaRyuT2W1TCz2';
+export const HNH_BAKERY_ID = 'bd6g1LjfhBsTm50oK6Zg';
+export const HNH_BAKERY_UID = 'EL0bHXJuLpfFlgy3CvKFnaBn7M32';
 
 export function getGroupsRef(): CollectionReference<Group> {
   return collection(db, COLLECTION_NAME.GROUPS).withConverter(groupConverter);

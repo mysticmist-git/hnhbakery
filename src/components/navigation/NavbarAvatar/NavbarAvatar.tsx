@@ -6,6 +6,7 @@ import {
   permissionToCodeMap,
 } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import { ChatContext } from '@/lib/contexts/chatContext';
 import useGrantedPermissions from '@/lib/hooks/useGrantedPermissions';
 import theme from '@/styles/themes/lightTheme';
 import { AccountCircle, Logout, ViewInAr } from '@mui/icons-material';
@@ -96,11 +97,23 @@ const NavbarAvatar = ({ photoURL }: { photoURL: string | null }) => {
     setAnchorEl(() => null);
   };
 
+  const { state, dispatch } = React.useContext(ChatContext);
   const handleLogout = async () => {
     await signOut(auth);
     handleClose();
     handleSnackbarAlert('success', 'Đã đăng xuất tài khoản');
-    router.push(Path.LOGIN);
+    dispatch({
+      type: 'setCanChat',
+      payload: {
+        ...state,
+        uidSender: '',
+        senderName: '',
+        combileId: '',
+        open: false,
+        canChat: false,
+      },
+    });
+    router.push(Path.HOME);
   };
 
   //#endregion
