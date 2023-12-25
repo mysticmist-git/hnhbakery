@@ -8,7 +8,7 @@ import { Box } from '@mui/system';
 import Outlined_TextField from '../Outlined_TextField';
 import { BillItemTableRow } from '@/models/billItem';
 import { BillTableRow } from '@/models/bill';
-import { BookingItemContent } from '@/pages/profile';
+import { BookingItemContent } from '@/components/profile/BookingItemContent';
 
 export default function SanPham_Content({
   textStyle,

@@ -12,6 +12,7 @@ import {
   DialogTitle,
   Grid,
   InputAdornment,
+  MenuItem,
   Typography,
   alpha,
   useTheme,
@@ -20,8 +21,10 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { CustomIconButton } from '../../buttons';
-import Sale from '@/models/sale';
+import Sale, { InitSale } from '@/models/sale';
 import { createSale, getSales } from '@/lib/DAO/saleDAO';
+import CustomerRank from '@/models/customerRank';
+import { getCustomerRanks } from '@/lib/DAO/customerRankDAO';
 
 export default function MyModalAdd({
   open,
@@ -59,25 +62,21 @@ export default function MyModalAdd({
     fontFamily: theme.typography.body2.fontFamily,
   };
 
-  const defaultSale: Sale = useMemo(
-    () => ({
-      id: '',
-      name: '',
-      code: '',
-      percent: 0,
-      description: '',
-      start_at: new Date(),
-      end_at: new Date(new Date().getTime() + 24 * 36000),
-      image: '',
-      limit: 0,
-      active: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    []
-  );
-
+  const defaultSale: Sale = useMemo(() => InitSale(), []);
   const [modalSale, setModalSale] = useState<Sale>(defaultSale);
+  const [customerRankData, setCustomerRankData] = useState<CustomerRank[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getCustomerRanks();
+        setCustomerRankData(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setModalSale(() => defaultSale);
@@ -99,7 +98,8 @@ export default function MyModalAdd({
         !modalSale.start_at ||
         !modalSale.end_at ||
         !modalSale.percent ||
-        !modalSale.limit
+        !modalSale.limit ||
+        !modalSale.limitTurn
       ) {
         throw new Error('Vui lòng điền đầy đủ thông tin');
       }
@@ -215,7 +215,10 @@ export default function MyModalAdd({
                   type="number"
                   value={modalSale?.percent}
                   onChange={(e: any) => {
-                    setModalSale({ ...modalSale, percent: e.target.value });
+                    setModalSale({
+                      ...modalSale,
+                      percent: parseFloat(e.target.value),
+                    });
                   }}
                   InputProps={{
                     readOnly: false,
@@ -239,7 +242,7 @@ export default function MyModalAdd({
                   onChange={(e: any) => {
                     setModalSale({
                       ...modalSale,
-                      limit: e.target.value,
+                      limit: parseFloat(e.target.value),
                     });
                   }}
                   InputProps={{
@@ -254,6 +257,131 @@ export default function MyModalAdd({
                   }}
                 />
               </Grid>
+
+              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Sử dụng tối đa"
+                  type="number"
+                  value={modalSale?.limitTurn}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      limitTurn: parseInt(e.target.value),
+                    });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">lượt</InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Hóa đơn tối thiểu"
+                  type="number"
+                  value={modalSale?.minBillTotalPrice}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      minBillTotalPrice: parseFloat(e.target.value),
+                    });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">đồng</InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Bậc tối thiểu"
+                  select
+                  value={
+                    customerRankData.find(
+                      (rank) => rank.id == modalSale?.minRankId
+                    )?.name ?? 'Đồng'
+                  }
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      minRankId:
+                        customerRankData.find(
+                          (rank) => rank.name == e.target.value
+                        )?.id ?? '1',
+                    });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                  }}
+                >
+                  {customerRankData.map((rank) => (
+                    <MenuItem
+                      key={rank.id}
+                      value={rank.name}
+                      sx={{ fontSize: 'body2.fontSize' }}
+                    >
+                      {rank.name}
+                    </MenuItem>
+                  ))}
+                </Outlined_TextField>
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Công khai"
+                  select
+                  value={modalSale?.public ? 'Công khai' : 'Không công khai'}
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      public: e.target.value == 'Công khai' ? true : false,
+                    });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                  }}
+                >
+                  <MenuItem
+                    value={'Công khai'}
+                    sx={{ fontSize: 'body2.fontSize' }}
+                  >
+                    Công khai
+                  </MenuItem>
+                  <MenuItem
+                    value={'Không công khai'}
+                    sx={{ fontSize: 'body2.fontSize' }}
+                  >
+                    Không công khai
+                  </MenuItem>
+                </Outlined_TextField>
+              </Grid>
+
               <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
                 <DatePicker
                   label="Bắt đầu"

@@ -7,6 +7,7 @@ import { auth } from '@/firebase/config';
 import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 import { BranchTableRow } from '@/models/branch';
 import { ContentCopyRounded } from '@mui/icons-material';
 import {
@@ -63,12 +64,15 @@ const Branch = () => {
   const [canBeAccessed, setCanBeAccessed] = useState<boolean | undefined>(
     undefined
   );
+  const [load, stop] = useLoadingService();
+
   // const [userData, setUserData] = React.useState<User | undefined>(undefined);
   //#endregion
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         if (!user) {
           setCanBeAccessed(false);
           return;
@@ -88,9 +92,11 @@ const Branch = () => {
 
         setBranchData({ ...branch, manager: { ...userData } });
         setStatisticDate(dayjs(new Date()));
+        stop();
       } catch (error) {
         console.log(error);
         setCanBeAccessed(false);
+        stop();
       }
     };
     fetchData();

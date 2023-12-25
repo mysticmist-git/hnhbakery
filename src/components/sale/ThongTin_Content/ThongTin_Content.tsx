@@ -1,12 +1,14 @@
 import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
+import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
 import { updateSale } from '@/lib/DAO/saleDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { updateDocToFirestore } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
 import { formatDateString, formatPrice } from '@/lib/utils';
-import Sale, { SaleTableRow } from '@/models/sale';
+import CustomerRank from '@/models/customerRank';
+import Sale, { InitSale } from '@/models/sale';
 import {
   Close,
   ContentCopyRounded,
@@ -31,7 +33,7 @@ type EditType = {
   description?: string;
 };
 
-function ResetEditContent(sale: SaleTableRow | null) {
+function ResetEditContent(sale: Sale | null) {
   return {
     name: sale?.name ?? 'Trống',
     end_at: sale?.end_at ?? new Date(),
@@ -44,7 +46,7 @@ export default function ThongTin_Content({
   modalSale,
 }: {
   textStyle: any;
-  modalSale: SaleTableRow | null;
+  modalSale: Sale | null;
 }) {
   const theme = useTheme();
   const StyleCuaCaiBox = {
@@ -86,20 +88,9 @@ export default function ThongTin_Content({
       return;
     }
 
-    const data = {
-      id: modalSale?.id,
-      name: editContent?.name,
-      code: modalSale?.code,
-      percent: modalSale?.percent,
-      limit: modalSale?.limit,
-      description: editContent?.description,
-      start_at: modalSale?.start_at,
-      end_at: editContent?.end_at,
-      image: modalSale?.image,
-      active: modalSale?.active,
-    } as Sale;
+    if (!modalSale) return;
     try {
-      await updateSale(data.id, data);
+      await updateSale(modalSale.id, modalSale);
       handleSnackbarAlert('success', 'Thay đổi thành công!');
       setEditMode(false);
     } catch (error) {
@@ -108,7 +99,7 @@ export default function ThongTin_Content({
     }
   };
 
-  function getGiaKhuyenMai(value: SaleTableRow | null) {
+  function getGiaKhuyenMai(value: Sale | null) {
     const result =
       'Giảm ' +
       value?.percent +
@@ -118,8 +109,18 @@ export default function ThongTin_Content({
     return result ?? 'Trống';
   }
 
+  const [customerRank, setCustomerRank] = useState<CustomerRank | undefined>(
+    undefined
+  );
+
   useEffect(() => {
     setEditContent(() => ResetEditContent(modalSale));
+
+    if (modalSale) {
+      getCustomerRank(modalSale.minRankId).then((rank) => {
+        setCustomerRank(rank);
+      });
+    }
   }, [modalSale]);
 
   return (
@@ -254,6 +255,32 @@ export default function ThongTin_Content({
               />
             </Grid>
 
+            <Grid item xs={12} md={6} lg={8} alignSelf={'stretch'}>
+              <Outlined_TextField
+                textStyle={{
+                  ...textStyle,
+                  color: editMode
+                    ? theme.palette.secondary.main
+                    : theme.palette.common.black,
+                }}
+                label="Mô tả"
+                value={editContent?.description ?? 'Trống'}
+                onChange={(event: any) => {
+                  setEditContent({
+                    ...editContent,
+                    description: event.target.value,
+                  });
+                }}
+                InputProps={{
+                  readOnly: !editMode,
+                  style: {
+                    pointerEvents: editMode ? 'auto' : 'none',
+                    borderRadius: '8px',
+                  },
+                }}
+              />
+            </Grid>
+
             <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
               <Outlined_TextField
                 textStyle={textStyle}
@@ -265,13 +292,43 @@ export default function ThongTin_Content({
             <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
               <Outlined_TextField
                 textStyle={textStyle}
+                label="Hóa đơn tối thiểu"
+                value={formatPrice(modalSale?.minBillTotalPrice) ?? 'Trống'}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
+              <Outlined_TextField
+                textStyle={textStyle}
+                label="Bậc khách hàng tối thiểu"
+                value={customerRank ? customerRank.name : 'Trống'}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
+              <Outlined_TextField
+                textStyle={textStyle}
+                label="Trạng thái"
+                value={
+                  modalSale
+                    ? statusTextResolver(modalSale?.active ?? false) +
+                      ' - ' +
+                      (modalSale.public ? 'Công khai' : 'Không công khai')
+                    : 'Trống'
+                }
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+              <Outlined_TextField
+                textStyle={textStyle}
                 label="Bắt đầu"
                 value={
                   formatDateString(modalSale?.start_at, 'DD/MM/YYYY') ?? 'Trống'
                 }
               />
             </Grid>
-            <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
+            <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
               <DatePicker
                 label="Kết thúc"
                 views={['day', 'month', 'year']}
@@ -307,40 +364,6 @@ export default function ThongTin_Content({
                     },
                   },
                 }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} lg={8} alignSelf={'stretch'}>
-              <Outlined_TextField
-                textStyle={{
-                  ...textStyle,
-                  color: editMode
-                    ? theme.palette.secondary.main
-                    : theme.palette.common.black,
-                }}
-                label="Mô tả"
-                value={editContent?.description ?? 'Trống'}
-                onChange={(event: any) => {
-                  setEditContent({
-                    ...editContent,
-                    description: event.target.value,
-                  });
-                }}
-                InputProps={{
-                  readOnly: !editMode,
-                  style: {
-                    pointerEvents: editMode ? 'auto' : 'none',
-                    borderRadius: '8px',
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} lg={4} alignSelf={'stretch'}>
-              <Outlined_TextField
-                textStyle={textStyle}
-                label="Trạng thái"
-                value={
-                  statusTextResolver(modalSale?.active ?? false) ?? 'Trống'
-                }
               />
             </Grid>
           </Grid>

@@ -3,14 +3,26 @@ import { getAddresses } from '@/lib/DAO/addressDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import Address from '@/models/address';
 import User, { UserTableRow } from '@/models/user';
-import { Google } from '@mui/icons-material';
-import { Box, Grid, TextField, Typography, useTheme } from '@mui/material';
+import { CampaignRounded, Google } from '@mui/icons-material';
+import {
+  Box,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { User as FirebaseUser } from 'firebase/auth';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import AddressList from '../AddressList';
 import TelTextField from '../TelTextField';
+import { formatPrice } from '@/lib/utils';
+import { Stack } from '@mui/system';
+
+import Cake2 from '@/assets/Decorate/Cake2.png';
+import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 
 interface RightProfileColumnProps {
   user: FirebaseUser;
@@ -133,6 +145,160 @@ const RightProfileColumn = ({
         </Box>
       </Grid>
 
+      {userData?.rankId && userData.paidMoney && (
+        <Grid item xs={12}>
+          <Box
+            component={'div'}
+            sx={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: 3,
+              px: 2,
+              py: 2,
+            }}
+          >
+            <Grid
+              container
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              spacing={2}
+            >
+              <Grid item xs={12}>
+                <Typography
+                  align="center"
+                  variant="button"
+                  color={theme.palette.common.black}
+                >
+                  Thông tin tài khoản
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Bậc tài khoản"
+                  disabled
+                  variant="outlined"
+                  defaultValue={'Đồng'}
+                  value={userData.customerRank?.name ?? 'Đồng'}
+                  fullWidth
+                  InputProps={{
+                    style: {
+                      borderRadius: '8px',
+                    },
+                  }}
+                  inputProps={{
+                    sx: {
+                      ...textStyle,
+                    },
+                  }}
+                  type="text"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Số tiền đã thanh toán"
+                  disabled
+                  variant="outlined"
+                  defaultValue={'0 đồng'}
+                  value={formatPrice(userData?.paidMoney) ?? ''}
+                  fullWidth
+                  InputProps={{
+                    style: {
+                      borderRadius: '8px',
+                    },
+                  }}
+                  inputProps={{
+                    sx: {
+                      ...textStyle,
+                    },
+                  }}
+                  type="text"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={12}>
+                <Box
+                  component={'div'}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 2,
+                    backgroundImage: `url(${Cake2.src})`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    overflow: 'hidden',
+                    p: 2,
+                    border: 1,
+                    borderColor: 'grey.400',
+                    width: '100%',
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="stretch"
+                    sx={{
+                      width: 'fit-content',
+                      borderRadius: '100px',
+                      boxShadow: 6,
+                      overflow: 'hidden',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{
+                        backgroundColor: 'rgba(127, 20, 22, 0.95)',
+                        color: 'white',
+                        px: 2,
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        sx={{ color: 'inherit', pointerEvents: 'none' }}
+                      >
+                        <CampaignRounded fontSize="inherit" />
+                      </IconButton>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'inherit',
+                          ml: 1,
+                        }}
+                      >
+                        {userData?.customerRank
+                          ? formatPrice(
+                              userData.customerRank.maxPaidMoney -
+                                userData.paidMoney
+                            )
+                          : '0 đồng'}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'secondary.main',
+                        p: 1,
+                        px: 2,
+                      }}
+                    >
+                      tiếp theo để thăng cấp và nhận nhiều khuyến mãi hơn!
+                    </Typography>
+                  </Stack>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Grid>
+      )}
+
       <Grid item xs={12}>
         <Box
           component={'div'}
@@ -228,23 +394,25 @@ const RightProfileColumn = ({
         </Box>
       </Grid>
 
-      <Grid item xs={12}>
-        <Box
-          component={'div'}
-          sx={{
-            backgroundColor: theme.palette.common.white,
-            borderRadius: '16px',
-            boxShadow: 3,
-            p: 2,
-          }}
-        >
-          <AddressList
-            textStyle={textStyle}
-            userData={userData}
-            reload={reload}
-          />
-        </Box>
-      </Grid>
+      {userData?.group_id == DEFAULT_GROUP_ID && (
+        <Grid item xs={12}>
+          <Box
+            component={'div'}
+            sx={{
+              backgroundColor: theme.palette.common.white,
+              borderRadius: '16px',
+              boxShadow: 3,
+              p: 2,
+            }}
+          >
+            <AddressList
+              textStyle={textStyle}
+              userData={userData}
+              reload={reload}
+            />
+          </Box>
+        </Grid>
+      )}
     </Grid>
   );
 };

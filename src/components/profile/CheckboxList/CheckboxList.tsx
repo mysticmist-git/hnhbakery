@@ -151,7 +151,7 @@ export default function CheckboxList({
         <ListItem>
           <Typography
             align="center"
-            variant="h3"
+            variant="body1"
             color={theme.palette.text.secondary}
             sx={{ width: '100%' }}
           >

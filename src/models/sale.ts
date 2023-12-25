@@ -23,12 +23,13 @@ type Sale = WithCreatedUpdated &
     image: string;
     start_at: Date;
     end_at: Date;
+    usedTurn: number;
+    totalSalePrice: number;
+    limitTurn: number;
+    minBillTotalPrice: number;
+    minRankId: string;
+    public: boolean;
   };
-
-type SaleTableRow = Sale & {
-  numberOfUse?: number;
-  totalSalePrice?: number;
-};
 
 const saleConverter: FirestoreDataConverter<Sale> = {
   toFirestore: function (modelObject: WithFieldValue<Sale>): DocumentData {
@@ -56,4 +57,30 @@ const saleConverter: FirestoreDataConverter<Sale> = {
 
 export default Sale;
 export { saleConverter };
-export type { Sale, SaleTableRow };
+export type { Sale };
+
+export function InitSale() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const data: Sale = {
+    id: '',
+    name: '',
+    code: '',
+    description: '',
+    percent: 0,
+    limit: 0,
+    image: '',
+    start_at: new Date(),
+    end_at: tomorrow,
+    usedTurn: 0,
+    limitTurn: 0,
+    minBillTotalPrice: 0,
+    totalSalePrice: 0,
+    minRankId: '1',
+    public: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+    active: true,
+  };
+  return data;
+}

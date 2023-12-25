@@ -23,7 +23,7 @@ import useLoadingService from '@/lib/hooks/useLoadingService';
 import { BillTableRow } from '@/models/bill';
 import { ExpandMore } from '@mui/icons-material';
 import { formatDateString } from '@/lib/utils';
-import { BillAccordionContent } from './profile';
+import { BillAccordionContent } from '../components/profile/BillAccordionContent';
 import { sendBillToEmail } from '@/lib/services/MailService';
 
 const resolveResponseCode = (responseCode: string) => {

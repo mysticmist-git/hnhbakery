@@ -6,7 +6,7 @@ import { Box, Grid, InputAdornment, Tooltip } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
 import { BillTableRow } from '@/models/bill';
 import { BillItemTableRow } from '@/models/billItem';
-import { BookingItemContent } from '@/pages/profile';
+import { BookingItemContent } from '@/components/profile/BookingItemContent';
 
 export default function ChiTietDonHang_Content({
   textStyle,

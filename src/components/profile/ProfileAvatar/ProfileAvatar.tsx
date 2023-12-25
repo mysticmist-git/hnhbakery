@@ -11,15 +11,18 @@ import { url } from 'inspector';
 import Image from 'next/image';
 import { ChangeEventHandler, useRef, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
+import bronzeRank from '@/assets/bronzeRank.png';
 
 function ProfileAvatar({
   image,
   onUploadImage,
   onUpdateUserData,
+  customerRandImage,
 }: {
   image: string;
   onUploadImage: ChangeEventHandler<HTMLInputElement>;
   onUpdateUserData?: (field: keyof User, value: User[keyof User]) => void;
+  customerRandImage?: string;
 }) {
   const theme = useTheme();
 
@@ -34,53 +37,69 @@ function ProfileAvatar({
     <Box
       component={'div'}
       sx={{
+        backgroundImage: `url(${customerRandImage})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        overflow: 'visible',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         width: '100%',
-        aspectRatio: 1,
-        overflow: 'hidden',
-        borderRadius: '50%',
-        position: 'relative',
-        border: 3,
-        borderColor: theme.palette.secondary.main,
+        aspectRatio: '1/1',
       }}
-      onMouseEnter={() => setAvtHover(true)}
-      onMouseLeave={() => setAvtHover(false)}
     >
       <Box
-        component={Image}
-        src={url ?? defaultAva.src}
-        fill
+        component={'div'}
         sx={{
-          objectFit: 'cover',
+          width: !customerRandImage ? '80%' : '50%',
+          aspectRatio: '1/1',
+          overflow: 'hidden',
+          borderRadius: '50%',
+          position: 'relative',
+          border: !customerRandImage ? 3 : 0,
+          borderColor: theme.palette.secondary.main,
         }}
-        alt="user-photoURL"
-      />
-      {avtHover && (
-        <CustomIconButton
+        onMouseEnter={() => setAvtHover(true)}
+        onMouseLeave={() => setAvtHover(false)}
+      >
+        <Box
+          component={Image}
+          src={url ?? defaultAva.src}
+          fill
           sx={{
-            position: 'absolute',
-            top: '50%',
-            width: '100%',
-            aspectRatio: 1,
-            left: '50%',
-            transform: 'translate(-50%,-50%)',
-            backgroundColor: alpha(theme.palette.common.black, 0.5),
-            color: theme.palette.common.white,
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.common.black, 0.5),
-            },
+            objectFit: 'cover',
           }}
-          onClick={() => inputfileRef.current && inputfileRef.current.click()}
-        >
-          <CameraAlt />
-          <input
-            ref={inputfileRef}
-            accept="image/*"
-            type="file"
-            hidden
-            onChange={onUploadImage}
-          />
-        </CustomIconButton>
-      )}
+          alt="user-photoURL"
+        />
+        {avtHover && (
+          <CustomIconButton
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              width: '100%',
+              aspectRatio: 1,
+              left: '50%',
+              transform: 'translate(-50%,-50%)',
+              backgroundColor: alpha(theme.palette.common.black, 0.5),
+              color: theme.palette.common.white,
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.common.black, 0.5),
+              },
+            }}
+            onClick={() => inputfileRef.current && inputfileRef.current.click()}
+          >
+            <CameraAlt />
+            <input
+              ref={inputfileRef}
+              accept="image/*"
+              type="file"
+              hidden
+              onChange={onUploadImage}
+            />
+          </CustomIconButton>
+        )}
+      </Box>
     </Box>
   );
 }

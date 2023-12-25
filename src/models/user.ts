@@ -11,6 +11,7 @@ import WithId from './withId';
 import { BillTableRow } from './bill';
 import { FeedbackTableRow } from './feedback';
 import Address from './address';
+import CustomerRank from './customerRank';
 
 /**
  * Stores data about a User
@@ -28,12 +29,15 @@ type User = WithCreatedUpdated &
     avatar: string;
     group_id: string;
     type: 'google' | 'mail';
+    paidMoney?: number;
+    rankId?: string;
   };
 
 type UserTableRow = User & {
   bills?: BillTableRow[];
   addresses?: Address[];
   feedbacks?: FeedbackTableRow[];
+  customerRank?: CustomerRank;
 };
 
 const userConverter: FirestoreDataConverter<User> = {

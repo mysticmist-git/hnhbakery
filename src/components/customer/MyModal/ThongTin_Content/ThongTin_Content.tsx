@@ -3,7 +3,7 @@ import { CustomIconButton } from '@/components/buttons';
 import Outlined_TextField from '@/components/order/MyModal/Outlined_TextField';
 import { useSnackbarService } from '@/lib/contexts';
 // import { SuperDetail_UserObject } from '@/lib/models';
-import { formatDateString } from '@/lib/utils';
+import { formatDateString, formatPrice } from '@/lib/utils';
 import { UserTableRow } from '@/models/user';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { Box, Grid, InputAdornment, Tooltip, useTheme } from '@mui/material';
@@ -119,6 +119,11 @@ export default function ThongTin_Content({
                 formatDateString(modalUser?.birth, 'DD/MM/YYYY') ?? 'Trống'
               }
             />
+            <Outlined_TextField
+              textStyle={textStyle}
+              label="Email"
+              value={modalUser?.mail ?? 'Trống'}
+            />
           </Box>
         </Grid>
         <Grid item xs={12} md={4} lg={6} alignSelf={'stretch'}>
@@ -135,14 +140,22 @@ export default function ThongTin_Content({
           >
             <Outlined_TextField
               textStyle={textStyle}
-              label="Email"
-              value={modalUser?.mail ?? 'Trống'}
-            />
-            <Outlined_TextField
-              textStyle={textStyle}
               label="Số điện thoại"
               value={modalUser?.tel ?? 'Trống'}
             />
+
+            <Outlined_TextField
+              textStyle={textStyle}
+              label="Bậc khách hàng"
+              value={modalUser?.customerRank?.name ?? 'Trống'}
+            />
+
+            <Outlined_TextField
+              textStyle={textStyle}
+              label="Số tiền đã thanh toán"
+              value={formatPrice(modalUser?.paidMoney) ?? 'Trống'}
+            />
+
             <Outlined_TextField
               textStyle={textStyle}
               label="Trạng thái tài khoản"

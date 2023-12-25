@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import ThongTin_Content from '../ThongTin_Content';
-import { SaleTableRow } from '@/models/sale';
+import Sale from '@/models/sale';
 
 export default function MyModal({
   open,
@@ -24,7 +24,7 @@ export default function MyModal({
 }: {
   open: boolean;
   handleClose: () => void;
-  sale: SaleTableRow | null;
+  sale: Sale | null;
 }) {
   const handleSnackbarAlert = useSnackbarService();
   const theme = useTheme();
@@ -53,7 +53,7 @@ export default function MyModal({
     fontFamily: theme.typography.body2.fontFamily,
   };
 
-  const [modalSale, setModalSale] = useState<SaleTableRow | null>(sale);
+  const [modalSale, setModalSale] = useState<Sale | null>(sale);
 
   useEffect(() => {
     setModalSale(() => sale);
@@ -162,7 +162,11 @@ export default function MyModal({
                         <Outlined_TextField
                           textStyle={textStyle}
                           label="Lượt sử dụng"
-                          value={modalSale?.numberOfUse ?? 'Trống'}
+                          value={
+                            modalSale
+                              ? modalSale.usedTurn + ' /' + modalSale.limitTurn
+                              : 'Trống'
+                          }
                         />
                       </Grid>
 

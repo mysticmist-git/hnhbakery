@@ -6,8 +6,6 @@ import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
 
 import { Mail } from '@/lib/types/manage-contact';
 import Contact from '@/models/contact';
-import User from '@/models/user';
-import { ChatWithType } from '@/models/userChat';
 import { Mail as MailIcon, NotificationsRounded } from '@mui/icons-material';
 import {
   Badge,
@@ -27,6 +25,7 @@ import { ChatManagement } from '../../components/contacts/ChatManagement';
 import { ChatContext } from '@/lib/contexts/chatContext';
 import { onSnapshot } from 'firebase/firestore';
 import { getUserChatRefByUid } from '@/lib/DAO/userChatDAO';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -35,6 +34,8 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Contacts: React.FC = () => {
+  const [load, stop] = useLoadingService();
+
   //#region Tab
   const [tabValue, setTabValue] = useState('1');
 
@@ -90,14 +91,21 @@ const Contacts: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const theme = useTheme();
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const contacts = await getContacts();
-  //     setContacts(contacts);
-  //   }
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        load();
+        const contacts = await getContacts();
+        setContacts(contacts);
+        stop();
+      } catch (error) {
+        console.log(error);
+        stop();
+      }
+    }
 
-  //   fetchData();
-  // }, []);
+    fetchData();
+  }, []);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {

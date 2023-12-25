@@ -22,7 +22,7 @@ import { useRouter } from 'next/router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useLocalStorage } from 'usehooks-ts';
-import { BillAccordionContent } from './profile';
+import { BillAccordionContent } from '../components/profile/BillAccordionContent';
 import { deliveryStateContentParse } from '@/models/delivery';
 import { sendBillToEmail } from '@/lib/services/MailService';
 
