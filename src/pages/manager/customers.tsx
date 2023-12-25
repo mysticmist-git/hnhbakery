@@ -13,6 +13,7 @@ import { getProductTypeById, getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getSaleById } from '@/lib/DAO/saleDAO';
 import { getUserTableRows, getUsers } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 import { BillTableRow } from '@/models/bill';
 import { FeedbackTableRow } from '@/models/feedback';
@@ -36,13 +37,17 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 
 const Customer = () => {
   const [usersData, setUsersData] = useState<UserTableRow[]>([]);
+  const [load, stop] = useLoadingService();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         setUsersData(await getUserTableRows());
+        stop();
       } catch (error) {
         console.log(error);
+        stop();
       }
     };
 

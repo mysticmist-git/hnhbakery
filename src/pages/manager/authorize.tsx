@@ -8,14 +8,6 @@ import { getPermissions } from '@/lib/DAO/permissionDAO';
 import { getUsers } from '@/lib/DAO/userDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-// import {
-//   PermissionObject,
-//   UserGroup,
-//   UserObject,
-//   permissionConverter,
-//   userConverter,
-//   userGroupConverter,
-// } from '@/lib/models';
 import { AuthorizeContext } from '@/lib/pageSpecific/authorize';
 import Group, { GroupTableRow } from '@/models/group';
 import Permission from '@/models/permission';

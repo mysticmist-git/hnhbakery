@@ -5,7 +5,8 @@ import { DEFAULT_GROUP_ID, getGroupById } from '@/lib/DAO/groupDAO';
 import { getSales } from '@/lib/DAO/saleDAO';
 import { getUsers } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
-import Sale, { SaleTableRow } from '@/models/sale';
+import useLoadingService from '@/lib/hooks/useLoadingService';
+import Sale from '@/models/sale';
 import { Add, RestartAlt } from '@mui/icons-material';
 import {
   Box,
@@ -27,36 +28,20 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Sales = () => {
-  const [sales, setSales] = useState<SaleTableRow[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
+  const [load, stop] = useLoadingService();
+
   const fetchData = async () => {
     try {
-      const finalSales: SaleTableRow[] = (await getSales()).map((sale) => {
-        return {
-          ...sale,
-          numberOfUse: 0,
-          totalSalePrice: 0,
-        };
-      });
-
-      const group = await getGroupById(DEFAULT_GROUP_ID);
-      const users = await getUsers(group!.id);
-      for (let u of users) {
-        const bills = await getBills(group!.id, u.id);
-        for (let b of bills) {
-          const sale_id = b.sale_id;
-          const sale = finalSales.find((sale) => sale.id === sale_id);
-          if (sale) {
-            sale.numberOfUse! += 1;
-            sale.totalSalePrice! += b.sale_price;
-          }
-        }
-      }
-
-      setSales(() => finalSales || []);
+      load();
+      const finalSales = await getSales();
+      setSales(finalSales);
+      stop();
     } catch (error) {
       console.log(error);
+      stop();
     }
   };
   useEffect(() => {
@@ -65,9 +50,7 @@ const Sales = () => {
 
   //#region Modal chi tiết
   const [openModalChiTiet, setOpenModalChiTiet] = useState(false);
-  const [currentViewSale, setCurrentViewSale] = useState<SaleTableRow | null>(
-    null
-  );
+  const [currentViewSale, setCurrentViewSale] = useState<Sale | null>(null);
 
   const handleOpenModalChiTiet = () => setOpenModalChiTiet(true);
   const handleCloseModalChiTiet = () => {
@@ -75,7 +58,7 @@ const Sales = () => {
     fetchData();
   };
 
-  const handleViewSaleModalChiTiet = (value: SaleTableRow) => {
+  const handleViewSaleModalChiTiet = (value: Sale) => {
     handleOpenModalChiTiet();
     setCurrentViewSale(() => value);
   };
@@ -86,9 +69,9 @@ const Sales = () => {
   const handleOpenModalState = () => setOpenModalState(true);
   const handleCloseModalState = () => setOpenModalState(false);
 
-  const [saleState, setSaleState] = useState<SaleTableRow | null>(null);
+  const [saleState, setSaleState] = useState<Sale | null>(null);
 
-  const handleViewSaleModalState = (sale: SaleTableRow) => {
+  const handleViewSaleModalState = (sale: Sale) => {
     handleOpenModalState();
     setSaleState(() => sale);
   };

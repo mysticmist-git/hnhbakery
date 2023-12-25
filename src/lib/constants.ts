@@ -42,6 +42,7 @@ export const COLLECTION_NAME = {
   PROVINCES: 'provinces',
   USER_CHATS: 'user_chats',
   CHATS: 'chats',
+  CUSTOMER_RANKS: 'customer_ranks',
   NONE: 'none',
 };
 

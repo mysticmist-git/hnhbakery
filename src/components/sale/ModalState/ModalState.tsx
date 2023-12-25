@@ -14,7 +14,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { CustomIconButton } from '../../buttons';
-import Sale, { SaleTableRow } from '@/models/sale';
+import Sale from '@/models/sale';
 import { getSaleById, getSales, updateSale } from '@/lib/DAO/saleDAO';
 
 export default function ModalState({
@@ -25,8 +25,8 @@ export default function ModalState({
 }: {
   open: boolean;
   handleClose: () => void;
-  saleState: SaleTableRow | null;
-  setSaleState: React.Dispatch<React.SetStateAction<SaleTableRow | null>>;
+  saleState: Sale | null;
+  setSaleState: React.Dispatch<React.SetStateAction<Sale | null>>;
 }) {
   const clearData = () => {
     setSaleState(() => null);

@@ -28,6 +28,8 @@ type User = WithCreatedUpdated &
     avatar: string;
     group_id: string;
     type: 'google' | 'mail';
+    paidMoney?: number;
+    rankId?: string;
   };
 
 type UserTableRow = User & {

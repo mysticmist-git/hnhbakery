@@ -1,6 +1,6 @@
 import { statusTextResolver } from '@/lib/manage/manage';
 import { formatDateString, formatPrice } from '@/lib/utils';
-import { SaleTableRow } from '@/models/sale';
+import Sale from '@/models/sale';
 import { CustomLinearProgres } from '@/pages/manager/orders';
 import { Box, Button, Checkbox, useTheme } from '@mui/material';
 import {
@@ -18,13 +18,13 @@ export default function SaleTable({
   handleViewSale,
   handleViewSaleModalState,
 }: {
-  saleData: SaleTableRow[];
+  saleData: Sale[];
   handleViewSale: any;
   handleViewSaleModalState: any;
 }) {
   const theme = useTheme();
 
-  const [rows, setRows] = useState<SaleTableRow[]>(saleData);
+  const [rows, setRows] = useState<Sale[]>(saleData);
 
   useEffect(() => {
     setRows(() => saleData);
@@ -89,6 +89,9 @@ export default function SaleTable({
       disableColumnMenu: true,
       hideable: false,
       flex: 1,
+      valueGetter(params) {
+        return formatPrice(params.value);
+      },
     },
     {
       field: 'description',
@@ -120,7 +123,7 @@ export default function SaleTable({
       },
     },
     {
-      field: 'numberOfUse',
+      field: 'usedTurn',
       headerName: 'Lượt sử dụng',
       align: 'center',
       headerAlign: 'center',
