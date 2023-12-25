@@ -1,5 +1,5 @@
 import Batch from '@/models/batch';
-import Bill from '@/models/bill';
+import Bill, { BillTableRow } from '@/models/bill';
 import { MainTabBatch } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
 import { isTemplateExpression } from 'typescript';
@@ -155,10 +155,15 @@ export function getUpdatedRightMonthIntervals(intervals: Interval[]) {
 
   return cloneToUpdateIntervals;
 }
-export function getMainTabData(bills: Bill[], batches: Batch[]) {
+export function getMainTabData(bills: Bill[]) {
   return {
     revenue: getMainTabRevenue(bills),
-    batch: getMainTabBatch(bills, batches),
+    // TODO: todo
+    batch: {
+      soldBatch: 0,
+      expiredBatch: 0,
+      totalBatch: 0,
+    },
   };
 }
 
@@ -185,7 +190,7 @@ export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
 }
 
 export function getRevenueTabChartData(
-  bills: Bill[],
+  bills: BillTableRow[],
   interval: Interval
 ): number[] {
   switch (interval.type) {
@@ -210,14 +215,159 @@ export function getRevenueTabChartData(
   }
 }
 
-export function getBranchRevenueData(bills: Bill[]): { [key: string]: number } {
-  return bills.reduce((result: { [key: string]: number }, bill) => {
+type BranchRevenue = {
+  [key: string]: {
+    revenue: number;
+    percent: number;
+  };
+};
+
+export function getBranchRevenueData(bills: BillTableRow[]): BranchRevenue {
+  let result = bills.reduce((result: BranchRevenue, bill) => {
     if (!result[bill.branch_id]) {
-      result[bill.branch_id] = 0;
+      result[bill.branch_id] = {
+        revenue: 0,
+        percent: 0,
+      };
     }
 
-    result[bill.branch_id] += bill.final_price;
+    result[bill.branch_id].revenue += bill.final_price;
 
     return result;
   }, {});
+  const totalRevenue = Object.values(result).reduce(
+    (acc, cur) => acc + cur.revenue,
+    0
+  );
+  Object.entries(result).forEach(([key, value]) => {
+    result[key].percent = (value.revenue / totalRevenue) * 100;
+  });
+  return result;
+}
+
+type RevenueAndPercent = {
+  revenue: number;
+  percent: number;
+};
+
+export type ProductTypeRevenue = {
+  [key: string]: RevenueAndPercent & { name: string; image: string } & {
+    products: ProductRevenue;
+  };
+};
+export type ProductRevenue = {
+  [key: string]: RevenueAndPercent & { name: string; image: string } & {
+    variants: VariantRevenue;
+  };
+};
+export type VariantRevenue = {
+  [key: string]: RevenueAndPercent & { material: string; size: string };
+};
+
+export function getProductTypeRevenueData(
+  bills: BillTableRow[]
+): ProductTypeRevenue {
+  const productTypeRevenue: ProductTypeRevenue = {};
+  bills.forEach((bill) =>
+    bill.billItems?.map((item) => {
+      if (!productTypeRevenue[item.productType?.id!]) {
+        productTypeRevenue[item.productType?.id!] = {
+          name: item.productType?.name!,
+          image: item.productType?.image!,
+          revenue: 0,
+          percent: 0,
+          products: {},
+        };
+      }
+      productTypeRevenue[item.productType?.id!].revenue += item.total_price;
+
+      if (
+        !productTypeRevenue[item.productType?.id!].products[item.product?.id!]
+      ) {
+        productTypeRevenue[item.productType?.id!].products[item.product?.id!] =
+          {
+            name: item.product?.name!,
+            image: item.product?.images[0]!,
+            revenue: 0,
+            percent: 0,
+            variants: {},
+          };
+      }
+
+      productTypeRevenue[item.productType?.id!].products[
+        item.product?.id!
+      ].revenue += item.total_price;
+
+      if (
+        !productTypeRevenue[item.productType?.id!].products[item.product?.id!]
+          .variants[item.variant?.id!]
+      ) {
+        productTypeRevenue[item.productType?.id!].products[
+          item.product?.id!
+        ].variants[item.variant?.id!] = {
+          material: item.variant?.material!,
+          size: item.variant?.size!,
+          revenue: 0,
+          percent: 0,
+        };
+      }
+
+      productTypeRevenue[item.productType?.id!].products[
+        item.product?.id!
+      ].variants[item.variant?.id!].revenue += item.total_price;
+    })
+  );
+  if (Object.keys(productTypeRevenue).length === 0) {
+    return productTypeRevenue;
+  }
+
+  const totalRevenue = Object.values(productTypeRevenue).reduce(
+    (acc, cur) => acc + cur.revenue,
+    0
+  );
+
+  let totalPercentSum = 0;
+
+  for (const productTypeKey in productTypeRevenue) {
+    const productType = productTypeRevenue[productTypeKey];
+    productType.percent = Math.floor(
+      (productType.revenue * 100) / totalRevenue
+    );
+
+    let productTypePercentSum = 0;
+
+    for (const productKey in productType.products) {
+      const product = productType.products[productKey];
+      product.percent = Math.floor(
+        (product.revenue * 100) / productType.revenue
+      );
+
+      let productPercentSum = 0;
+
+      for (const variantKey in product.variants) {
+        const variant = product.variants[variantKey];
+        variant.percent = Math.floor((variant.revenue * 100) / product.revenue);
+
+        productPercentSum += variant.percent;
+      }
+
+      // Adjust the last variant's percentage to ensure it adds up to 100
+      const lastVariantKey = Object.keys(product.variants).pop()!;
+      product.variants[lastVariantKey].percent += 100 - productPercentSum;
+
+      productTypePercentSum += product.percent;
+    }
+
+    // Adjust the last product's percentage to ensure it adds up to 100
+    const lastProductKey = Object.keys(productType.products).pop()!;
+    productType.products[lastProductKey].percent += 100 - productTypePercentSum;
+
+    totalPercentSum += productType.percent;
+  }
+
+  // Adjust the last product type's percentage to ensure it adds up to 100
+  const lastProductTypeKey = Object.keys(productTypeRevenue).pop()!;
+  productTypeRevenue[lastProductTypeKey].percent += 100 - totalPercentSum;
+
+  return productTypeRevenue;
 }

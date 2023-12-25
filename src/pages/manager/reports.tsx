@@ -1,10 +1,17 @@
+import { ProductTypeRenderOptionProps } from '@/components/manage/modals/forms/BatchForm/ProductTypeRenderOption/ProductTypeRenderOption';
 import TimeRangeInput from '@/components/report/TimeRangeInput/TimeRangeInput';
 import { getBatches } from '@/lib/DAO/batchDAO';
-import { getBillsForReportPage } from '@/lib/DAO/billDAO';
+import { getBillTableRowById, getBillTableRows } from '@/lib/DAO/billDAO';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import useBranches from '@/lib/hooks/useBranches';
+import { valueComparer } from '@/lib/pageSpecific/products';
 import {
+  ProductRevenue,
+  ProductTypeRevenue,
+  VariantRevenue,
   getBranchRevenueData,
   getMainTabData,
+  getProductTypeRevenueData,
   getRevenueTabChartData,
   getUpdatedIntervals,
   initIntervals,
@@ -17,10 +24,14 @@ import {
 } from '@/lib/types/report';
 import { formatPrice } from '@/lib/utils';
 import Batch from '@/models/batch';
-import Bill from '@/models/bill';
+import Bill, { BillTableRow } from '@/models/bill';
 import Branch from '@/models/branch';
 import { withHashCacheAsync } from '@/utils/withHashCache';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import {
+  ChevronLeft,
+  ChevronRight,
+  KeyboardArrowDown,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -30,6 +41,8 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Typography,
 } from '@mui/material';
@@ -58,8 +71,7 @@ export type MainTabBatch = {
   expiredBatch: number;
 };
 
-const cachedGetAllBills = withHashCacheAsync(getBillsForReportPage);
-const cachedGetBatches = withHashCacheAsync(getBatches);
+const cachedGetAllBills = withHashCacheAsync(getBillTableRows);
 
 async function getBillsInRange(from: Date, to: Date) {
   const bills = await cachedGetAllBills();
@@ -124,16 +136,14 @@ function Report() {
   //#region Tabs zone
 
   const [currentTab, setCurrentTab] = useState<ReportTab>('main');
-
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [batches, setBatches] = useState<Batch[]>([]);
+  const [billTableRows, setBillTableRows] = useState<BillTableRow[]>([]);
 
   const fetchData = useCallback(async () => {
     const currentInterval = intervals.find(
       (interval) => interval.index === currentIntervalIndex
     );
     if (!currentInterval) {
-      setBills([]);
+      setBillTableRows([]);
       return;
     }
 
@@ -142,26 +152,18 @@ function Report() {
         dayjs(currentInterval.from).startOf('month').toDate(),
         dayjs(currentInterval.to).endOf('month').toDate()
       );
-
-      let batches = await cachedGetBatches();
-      const batchIds = bills.flatMap((bill) =>
-        bill.bill_items?.map((item) => item.batch_id)
-      );
-      batches = batches.filter((batch) => batchIds.includes(batch.id));
-
-      setBills(bills);
-      setBatches(batches);
+      setBillTableRows(bills);
     } catch (error) {
       console.log(error);
     }
   }, [currentIntervalIndex, intervals]);
 
   useEffect(() => {
-    if (bills.length <= 0 || batches.length <= 0) return;
+    if (billTableRows.length <= 0) return;
 
-    const mainTabData = getMainTabData(bills, batches);
+    const mainTabData = getMainTabData(billTableRows);
     setMainTabData(mainTabData);
-  }, [batches, bills]);
+  }, [billTableRows, billTableRows.length]);
 
   //#region Main Tab
 
@@ -170,35 +172,10 @@ function Report() {
   );
 
   //#endregion
-  //#region Revenue Tab
-
-  const [revenueTabChartData, setRevenueTabChartData] = useState<number[]>([]);
-  const [branchRevenueData, setBranchRevenueData] = useState<{
-    [key: string]: number;
-  }>({});
-
-  useEffect(() => {
-    const currentInterval = intervals.find(
-      (interval) => interval.index === currentIntervalIndex
-    );
-    if (!currentInterval || bills.length <= 0) {
-      console.log('run');
-      setRevenueTabChartData([]);
-      return;
-    }
-    const chartData = getRevenueTabChartData(bills, currentInterval);
-    const branchRevenueData = getBranchRevenueData(bills);
-
-    setRevenueTabChartData(chartData);
-    setBranchRevenueData(branchRevenueData);
-  }, [bills, currentIntervalIndex, intervals]);
 
   //#endregion
 
-  //#endregion
-
-  console.log(bills);
-  console.log(batches);
+  console.log(billTableRows);
 
   return (
     <>
@@ -238,9 +215,12 @@ function Report() {
         )}
         {currentTab === 'revenue' && (
           <RevenueTab
-            revenueChartData={revenueTabChartData}
-            branchRevenueData={branchRevenueData}
-            intervalType={currentIntervalType}
+            interval={
+              intervals.find(
+                (interval) => interval.index === currentIntervalIndex
+              )!
+            }
+            billTableRows={billTableRows}
             onClickBack={() => setCurrentTab('main')}
           />
         )}
@@ -342,13 +322,6 @@ function MainTab({ data, onClickRevenueTab, onClickBatchTab }: MainTabProps) {
 //#endregion
 //#region Revenue Tab
 
-type RevenueTabProps = {
-  intervalType: IntervalType;
-  revenueChartData: number[];
-  branchRevenueData: { [key: string]: number };
-  onClickBack(): void;
-};
-
 function resolveRevenueChartLabels(
   intervalType: IntervalType,
   data: number[]
@@ -363,28 +336,39 @@ function resolveRevenueChartLabels(
   }
 }
 
-function RevenueTab({
-  intervalType,
-  revenueChartData: data,
-  branchRevenueData,
-  onClickBack,
-}: RevenueTabProps) {
-  //#region Branch data
+type RevenueTabProps = {
+  interval: Interval;
+  billTableRows: BillTableRow[];
+  onClickBack(): void;
+};
 
+function RevenueTab({ interval, billTableRows, onClickBack }: RevenueTabProps) {
   const branches = useBranches();
 
-  //#endregion
+  const data: number[] = useMemo(() => {
+    return billTableRows.length > 0
+      ? getRevenueTabChartData(billTableRows, interval)
+      : [];
+  }, [billTableRows, interval]);
+  const branchData = useMemo(() => {
+    return billTableRows.length > 0 ? getBranchRevenueData(billTableRows) : {};
+  }, [billTableRows]);
+  const productTypeRevenueData = useMemo(() => {
+    return billTableRows.length > 0
+      ? getProductTypeRevenueData(billTableRows)
+      : {};
+  }, [billTableRows]);
 
   const revenueChartData: ChartData<'line', number[], string> = useMemo(
     () => ({
-      labels: resolveRevenueChartLabels(intervalType, data),
+      labels: resolveRevenueChartLabels(interval.type, data),
       datasets: [
         {
           data: data,
         },
       ],
     }),
-    [data, intervalType]
+    [data, interval]
   );
   const revenueChartOptions: ChartOptions<'line'> = useMemo(
     () => ({
@@ -426,44 +410,69 @@ function RevenueTab({
     }),
     []
   );
-  const chartData: ChartData<'pie', number[], string> = useMemo(() => {
-    const keys = Object.keys(branchRevenueData);
-    const totalRevenue = keys.reduce((acc, key) => {
-      return acc + branchRevenueData[key];
-    }, 0);
-
-    const data: number[] = [];
-    let accumulate = 0;
-    for (let i = 0; i < keys.length - 1; i++) {
-      const percent = Math.floor(
-        (branchRevenueData[keys[i]] * 100) / totalRevenue
-      );
-      accumulate += percent;
-      data.push(percent);
-    }
-    data.push(100 - accumulate);
-
+  const branchChartData: ChartData<'pie', number[], string> = useMemo(() => {
+    const entries = Object.entries(branchData);
     return {
-      labels: keys.map(
-        (key) => branches.find((b) => b.id === key)?.name ?? 'Không tìm được'
+      labels: entries.map(
+        (e) => branches.find((b) => b.id === e[0])?.name ?? 'Không xác định'
       ),
       datasets: [
         {
           label: '% Doanh thu',
-          data: data,
-          backgroundColor: keys.map(
+          data: entries.map((entry) => entry[1].percent),
+          backgroundColor: entries.map(
             () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
           ),
         },
       ],
     };
-  }, [branchRevenueData, branches]);
-  const chartOptions: ChartOptions<'pie'> = useMemo(
+  }, [branchData, branches]);
+  const productTypeChartData: ChartData<'pie', number[], string> =
+    useMemo(() => {
+      const entries = Object.entries(productTypeRevenueData);
+      return {
+        labels: entries.map((entry) => entry[1].name),
+        datasets: [
+          {
+            label: '% Doanh thu',
+            data: entries.map((entry) => entry[1].percent),
+            backgroundColor: entries.map(
+              () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
+            ),
+          },
+        ],
+      };
+    }, [productTypeRevenueData]);
+  const branchChartOptions: ChartOptions<'pie'> = useMemo(
     () => ({
       plugins: {
         title: {
           display: true,
           text: 'Tỉ lệ Doanh thu chi nhánh',
+          font: {
+            size: 20,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.parsed}%`;
+            },
+          },
+        },
+      },
+    }),
+    []
+  );
+  const productTypeChartOptions: ChartOptions<'pie'> = useMemo(
+    () => ({
+      plugins: {
+        title: {
+          display: true,
+          text: 'Tỉ lệ Doanh thu sản phẩm',
+          font: {
+            size: 20,
+          },
         },
         tooltip: {
           callbacks: {
@@ -514,6 +523,7 @@ function RevenueTab({
           <Line data={revenueChartData} options={revenueChartOptions} />
         </Card>
       </Grid>
+      {/* Theo chi nhánh */}
       <Grid item xs={7}>
         <Card sx={{ borderRadius: 4 }}>
           <Box p={2}>
@@ -526,8 +536,8 @@ function RevenueTab({
                 <ListItemText primary="Tổng doanh thu" />
                 <ListItemText
                   primary={formatPrice(
-                    Object.keys(branchRevenueData).reduce(
-                      (acc, key) => acc + branchRevenueData[key],
+                    Object.entries(branchData).reduce(
+                      (acc, key) => acc + key[1].revenue,
                       0
                     )
                   )}
@@ -536,11 +546,11 @@ function RevenueTab({
               <Divider />
             </List>
             <List sx={{ overflow: 'auto', maxHeight: 400 }}>
-              {Object.keys(branchRevenueData).map((key, index) => (
+              {Object.entries(branchData).map((entry, index) => (
                 <BranchRevenueItem
                   key={index}
-                  branch={branches.find((b) => b.id === key)}
-                  data={branchRevenueData[key]}
+                  branch={branches.find((b) => b.id === entry[0])}
+                  data={entry[1]}
                 />
               ))}
             </List>
@@ -549,7 +559,52 @@ function RevenueTab({
       </Grid>
       <Grid item xs={5} sx={{ borderRadius: 4 }}>
         <Card sx={{ borderRadius: 4, height: '100%', p: 4 }}>
-          <Pie data={chartData} options={chartOptions} />
+          <Pie data={branchChartData} options={branchChartOptions} />
+        </Card>
+      </Grid>
+      <Grid item xs={12}>
+        <Divider />
+      </Grid>
+      {/* Theo sản phẩm */}
+      <Grid item xs={7}>
+        <Card sx={{ borderRadius: 4 }}>
+          <Box p={2}>
+            <Typography typography="h6">Doanh thu theo sản phẩm</Typography>
+          </Box>
+          <Divider />
+          <Box>
+            <List>
+              <ListItem>
+                <ListItemText primary="Tổng doanh thu" />
+                <ListItemText
+                  primary={formatPrice(
+                    Object.values(branchData).reduce(
+                      (acc, value) => acc + value.revenue,
+                      0
+                    )
+                  )}
+                />
+              </ListItem>
+              <Divider />
+            </List>
+            <List sx={{ overflowY: 'auto', maxHeight: 800 }}>
+              {Object.entries(productTypeRevenueData).map((entry, index) => (
+                <ProductTypeRevenueItem
+                  key={index}
+                  name={entry[1].name}
+                  image={entry[1].image}
+                  revenue={entry[1].revenue}
+                  percent={entry[1].percent}
+                  products={entry[1].products}
+                />
+              ))}
+            </List>
+          </Box>
+        </Card>
+      </Grid>
+      <Grid item xs={5} sx={{ borderRadius: 4 }}>
+        <Card sx={{ borderRadius: 4, height: 560, p: 4 }}>
+          <Pie data={productTypeChartData} options={productTypeChartOptions} />
         </Card>
       </Grid>
     </>
@@ -561,7 +616,7 @@ function BranchRevenueItem({
   data,
 }: {
   branch?: Branch;
-  data: number;
+  data: { revenue: number; percent: number };
 }) {
   return branch ? (
     <ListItem>
@@ -570,13 +625,145 @@ function BranchRevenueItem({
         secondary={`Địa chỉ chi nhánh ${branch.address}`}
       />
       <Divider orientation="vertical" />
-      <ListItemText primary={`${formatPrice(data)} (${data}%)`} />
+      <ListItemText
+        primary={`${formatPrice(data.revenue)} (${data.percent}%)`}
+      />
     </ListItem>
   ) : (
     <p>null branch</p>
   );
 }
 
+function ProductTypeRevenueItem({
+  name,
+  image,
+  revenue,
+  percent,
+  products,
+}: {
+  name: string;
+  image: string;
+  revenue: number;
+  percent: number;
+  products: ProductRevenue;
+}) {
+  const [img, setImg] = useState('');
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+  }, [image]);
+
+  const [open, setOpen] = useState(false);
+  const toggleOpen = useCallback(
+    (value?: boolean) => {
+      value ? setOpen(value) : setOpen(!open);
+    },
+    [open]
+  );
+
+  return (
+    <>
+      <ListItemButton onClick={() => toggleOpen()}>
+        <Box
+          component="img"
+          src={img}
+          width={100}
+          height={100}
+          borderRadius={4}
+          sx={{
+            objectFit: 'cover',
+            mr: 4,
+          }}
+        />
+        <ListItemText primary={name} />
+        <ListItemText
+          primary={formatPrice(revenue)}
+          secondary={`${percent}%`}
+        />
+        {/* toggle icon */}
+        <KeyboardArrowDown
+          sx={{
+            mr: 2,
+            transform: open ? 'rotate(-180deg)' : 'rotate(0)',
+            transition: '0.2s',
+          }}
+        />
+      </ListItemButton>
+      {open &&
+        Object.entries(products).map((entry, index) => (
+          <ProductRevenueItem key={index} {...entry[1]} />
+        ))}
+    </>
+  );
+}
+
+function ProductRevenueItem({
+  name,
+  image,
+  revenue,
+  percent,
+  variants,
+}: {
+  name: string;
+  image: string;
+  revenue: number;
+  percent: number;
+  variants: VariantRevenue;
+}) {
+  const [img, setImg] = useState('');
+  useEffect(() => {
+    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+  }, [image]);
+
+  const [open, setOpen] = useState(false);
+  const toggleOpen = useCallback(
+    (value?: boolean) => {
+      value ? setOpen(value) : setOpen(!open);
+    },
+    [open]
+  );
+
+  return (
+    <>
+      <ListItemButton onClick={() => toggleOpen()}>
+        <Box
+          component="img"
+          src={img}
+          width={100}
+          height={100}
+          borderRadius={4}
+          sx={{
+            objectFit: 'cover',
+            mr: 4,
+            ml: 4,
+          }}
+        />
+        <ListItemText primary={name} />
+        <ListItemText
+          primary={formatPrice(revenue)}
+          secondary={`${percent}%`}
+        />
+        {/* toggle icon */}
+        <KeyboardArrowDown
+          sx={{
+            mr: 2,
+            transform: open ? 'rotate(-180deg)' : 'rotate(0)',
+            transition: '0.2s',
+          }}
+        />
+      </ListItemButton>
+      {open &&
+        Object.values(variants).map((value, index) => (
+          <ListItem key={index} sx={{ ml: 8 }}>
+            <ListItemText primary={value.material} secondary={value.size} />
+            <ListItemText
+              primary={formatPrice(value.revenue)}
+              secondary={`${value.percent}%`}
+            />
+          </ListItem>
+        ))}
+    </>
+  );
+}
 //#endregion
 //#region Batch tab
 
