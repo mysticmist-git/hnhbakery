@@ -8,6 +8,7 @@ import { getPermissions } from '@/lib/DAO/permissionDAO';
 import { getUsers } from '@/lib/DAO/userDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 import { AuthorizeContext } from '@/lib/pageSpecific/authorize';
 import Group, { GroupTableRow } from '@/models/group';
 import Permission from '@/models/permission';
@@ -28,15 +29,19 @@ const Authorize = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
 
   const handleSnackbarAlert = useSnackbarService();
+  const [load, stop] = useLoadingService();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         const pers = await getPermissions();
         setPermissions(pers);
         setGroups(await getGroupTableRows());
+        stop();
       } catch (error) {
         console.log(error);
+        stop();
       }
     };
     fetchData();

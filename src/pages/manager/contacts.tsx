@@ -25,6 +25,7 @@ import { ChatManagement } from '../../components/contacts/ChatManagement';
 import { ChatContext } from '@/lib/contexts/chatContext';
 import { onSnapshot } from 'firebase/firestore';
 import { getUserChatRefByUid } from '@/lib/DAO/userChatDAO';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
   [`& .MuiLinearProgress-bar`]: {
@@ -33,6 +34,8 @@ export const CustomLinearProgres = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const Contacts: React.FC = () => {
+  const [load, stop] = useLoadingService();
+
   //#region Tab
   const [tabValue, setTabValue] = useState('1');
 
@@ -90,8 +93,15 @@ const Contacts: React.FC = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const contacts = await getContacts();
-      setContacts(contacts);
+      try {
+        load();
+        const contacts = await getContacts();
+        setContacts(contacts);
+        stop();
+      } catch (error) {
+        console.log(error);
+        stop();
+      }
     }
 
     fetchData();

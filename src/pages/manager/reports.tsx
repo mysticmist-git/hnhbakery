@@ -516,11 +516,11 @@ function RevenueTab({
       </Grid>
       <Grid item xs={7}>
         <Card sx={{ borderRadius: 4 }}>
-          <Box p={2}>
+          <Box component={'div'} p={2}>
             <Typography typography="h6">Doanh thu theo chi nhánh</Typography>
           </Box>
           <Divider />
-          <Box>
+          <Box component={'div'}>
             <List>
               <ListItem>
                 <ListItemText primary="Tổng doanh thu" />

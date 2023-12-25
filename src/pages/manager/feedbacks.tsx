@@ -6,6 +6,7 @@ import { DEFAULT_GROUP_ID } from '@/lib/DAO/groupDAO';
 import { getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { getUser } from '@/lib/DAO/userDAO';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 
 import { FeedbackTableRow } from '@/models/feedback';
 
@@ -23,10 +24,12 @@ import { useEffect, useState } from 'react';
 const Feedbacks = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackTableRow[]>([]);
   const theme = useTheme();
+  const [load, stop] = useLoadingService();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        load();
         const finalFeedbacks: FeedbackTableRow[] = [];
         const productTypes = await getProductTypes();
 
@@ -50,8 +53,10 @@ const Feedbacks = () => {
               a.created_at > b.created_at ? -1 : 1
             ) || []
         );
+        stop();
       } catch (error) {
         console.log(error);
+        stop();
       }
     };
 

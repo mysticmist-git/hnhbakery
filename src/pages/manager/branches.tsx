@@ -7,6 +7,7 @@ import { TableActionButton } from '@/components/buttons';
 import { getBranchTableRows, getBranches } from '@/lib/DAO/branchDAO';
 import { getUser } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import useLoadingService from '@/lib/hooks/useLoadingService';
 import Branch, { BranchTableRow } from '@/models/branch';
 import { Add, RestartAlt } from '@mui/icons-material';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
@@ -16,12 +17,16 @@ const Branches = () => {
   const [branches, setBranches] = useState<BranchTableRow[]>([]);
   const theme = useTheme();
   const handleSnackbarAlert = useSnackbarService();
+  const [load, stop] = useLoadingService();
 
   const fetchData = useCallback(async () => {
     try {
+      load();
       setBranches(await getBranchTableRows());
+      stop();
     } catch (error) {
       console.log(error);
+      stop();
     }
   }, []);
 
