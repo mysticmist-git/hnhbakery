@@ -1,4 +1,8 @@
+import Batch from '@/models/batch';
+import Bill from '@/models/bill';
+import { MainTabBatch } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
+import { isTemplateExpression } from 'typescript';
 import { Interval, IntervalType } from '../types/report';
 
 const REPORT_CONSTANT = {
@@ -150,4 +154,70 @@ export function getUpdatedRightMonthIntervals(intervals: Interval[]) {
   }
 
   return cloneToUpdateIntervals;
+}
+export function getMainTabData(bills: Bill[], batches: Batch[]) {
+  return {
+    revenue: getMainTabRevenue(bills),
+    batch: getMainTabBatch(bills, batches),
+  };
+}
+
+export function getMainTabRevenue(bills: Bill[]) {
+  return {
+    totalRevenue: bills
+      .map((bill) => bill.total_price)
+      .reduce((a, b) => a + b, 0),
+    saleAmount: bills.map((bill) => bill.sale_price).reduce((a, b) => a + b, 0),
+    finalRevenue: bills
+      .map((bill) => bill.final_price)
+      .reduce((a, b) => a + b, 0),
+  };
+}
+
+export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
+  const totalBatch = batches.length;
+
+  return {
+    soldBatch: 0,
+    expiredBatch: 0,
+    totalBatch: totalBatch,
+  };
+}
+
+export function getRevenueTabChartData(
+  bills: Bill[],
+  interval: Interval
+): number[] {
+  switch (interval.type) {
+    case 'month':
+      const numberOfDays = dayjs(interval.to).diff(dayjs(interval.from), 'day');
+      const revenues = new Array(numberOfDays + 1).fill(0);
+
+      for (let i = 0; i < numberOfDays; i++) {
+        const date = dayjs(interval.from).add(i, 'day');
+        revenues[i] = bills.reduce((acc, cur) => {
+          if (dayjs(cur.created_at).isSame(date, 'day')) {
+            return acc + cur.total_price;
+          }
+          return acc;
+        }, 0);
+      }
+      return revenues;
+    case 'year':
+      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    default:
+      return [0];
+  }
+}
+
+export function getBranchRevenueData(bills: Bill[]): { [key: string]: number } {
+  return bills.reduce((result: { [key: string]: number }, bill) => {
+    if (!result[bill.branch_id]) {
+      result[bill.branch_id] = 0;
+    }
+
+    result[bill.branch_id] += bill.final_price;
+
+    return result;
+  }, {});
 }

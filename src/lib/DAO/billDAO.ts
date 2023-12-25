@@ -26,7 +26,7 @@ import {
 import { COLLECTION_NAME } from '../constants';
 import { getAddress } from './addressDAO';
 import { getBatchById } from './batchDAO';
-import { getBillItems } from './billItemDAO';
+import { getBillItem, getBillItems } from './billItemDAO';
 import { getBookingItemById } from './bookingItemDAO';
 import { getBranchById } from './branchDAO';
 import { getCakeBaseById } from './cakeBaseDAO';
@@ -36,7 +36,7 @@ import { getPaymentMethodById } from './paymentMethodDAO';
 import { getProduct } from './productDAO';
 import { getProductTypeById } from './productTypeDAO';
 import { getSaleById } from './saleDAO';
-import { getUserByUid, getUserRef, getUsers } from './userDAO';
+import { getAllUsers, getUserByUid, getUserRef, getUsers } from './userDAO';
 import { getVariant } from './variantDAO';
 
 export function getBillsRef(
@@ -602,4 +602,34 @@ export function createBillDataFromBillTableRow(
   delete billTableRow.bookingItem;
   delete billTableRow.billItems;
   return billTableRow as Bill;
+}
+
+/**
+ * This is specifically for report page
+ * This also get bill items
+ */
+export async function getBillsForReportPage() {
+  const users = await getAllUsers();
+  const bills = (
+    await Promise.all(
+      users.map(async (user) => {
+        let userBills = await getBills(user.group_id, user.id);
+        userBills = await Promise.all(
+          userBills.map(async (uBill) => {
+            const billItems = await getBillItems(
+              user.group_id,
+              user.id,
+              uBill.id
+            );
+            uBill.bill_items = billItems;
+            return uBill;
+          })
+        );
+
+        return userBills;
+      })
+    )
+  ).flat();
+
+  return bills;
 }
