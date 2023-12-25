@@ -224,168 +224,6 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                 id="email"
               />
             </Grid>
-            <Grid item xs={12}>
-              <Divider
-                sx={{
-                  height: 4,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography
-                variant="body1"
-                fontWeight="bold"
-                color={theme.palette.secondary.main}
-              >
-                Địa chỉ nhận bánh
-              </Typography>
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isUsingUserAddress}
-                    onChange={(_, checked) => setIsUsingUserAddress(checked)}
-                    color="secondary"
-                  />
-                }
-                label="Sử dụng địa chỉ đã lưu"
-                sx={isGuest ? { display: 'none' } : {}}
-              />
-            </Grid>
-
-            {isUsingUserAddress ? (
-              <Grid item xs={12}>
-                <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
-
-                {userAddresses && userAddresses.length > 0 ? (
-                  <List>
-                    {userAddresses.map((address, index) => (
-                      <ListItem key={index} sx={{ px: 0 }}>
-                        <ListItemButton
-                          selected={selectedUserAddressIndex === index}
-                          onClick={() => setSelectedUserAddressIndex(index)}
-                          sx={{
-                            border: (theme) =>
-                              `3px solid ${theme.palette.secondary.main}`,
-                            borderRadius: '8px',
-                          }}
-                        >
-                          <ListItemText
-                            primary={address.address}
-                            secondary={
-                              provinces.find(
-                                (p) => p.id === address.province_id
-                              )?.name ?? 'Không tìm thấy'
-                            }
-                          />
-                          <ListItemIcon
-                            sx={{
-                              visibility:
-                                selectedUserAddressIndex === index
-                                  ? 'visible'
-                                  : 'hidden',
-                            }}
-                          >
-                            <Check color="secondary" />
-                          </ListItemIcon>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography
-                    fontSize={16}
-                    fontStyle={'italic'}
-                    fontWeight={'regular'}
-                  >
-                    Bạn chưa lưu địa chỉ nào!
-                  </Typography>
-                )}
-
-                <Divider sx={{ mt: 1 }} />
-              </Grid>
-            ) : (
-              <Grid item xs={12}>
-                <Typography fontSize={16}>Nhập địa chỉ:</Typography>
-
-                <CustomTextField
-                  placeholder="Địa chỉ"
-                  fullWidth
-                  required
-                  value={form.address}
-                  onChange={(e: any) => setForm('address', e.target.value)}
-                  type="text"
-                  autoComplete="street-address"
-                  name="streetAddress"
-                  id="streetAddress"
-                  disabled={isUsingUserAddress}
-                />
-
-                <Divider sx={{ mt: 1 }} />
-              </Grid>
-            )}
-
-            <Grid item xs={12}>
-              <Typography fontSize={16}>
-                Chọn chi nhánh H&H Bakery khả dụng:
-              </Typography>
-
-              <Autocomplete
-                disabled={isUsingUserAddress}
-                value={provinces.find((p) => p.id === selectedProvinceId)}
-                onChange={(e, value) => setSelectedProvinceId(value?.id ?? '')}
-                options={[null, ...availableProvinces]}
-                getOptionLabel={(p) => p?.name ?? 'Tất cả'}
-                isOptionEqualToValue={(option, value) =>
-                  option?.id === value?.id
-                }
-                sx={[
-                  { width: '100%', mb: 1 },
-                  isUsingUserAddress ? { display: 'none' } : {},
-                ]}
-                size="small"
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="outlined"
-                    size="small"
-                    placeholder="Tỉnh thành"
-                    InputProps={{
-                      ...params.InputProps,
-                      sx: {
-                        border: 3,
-                        borderColor: theme.palette.secondary.main,
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                      },
-                    }}
-                    inputProps={{
-                      ...params.inputProps,
-                      style: {
-                        ...params.inputProps?.style,
-                        border: '0px solid transparent',
-                        fontSize: theme.typography.body2.fontSize,
-                      },
-                    }}
-                  />
-                )}
-              />
-
-              <Divider
-                sx={[{ my: 1 }, isUsingUserAddress ? { display: 'none' } : {}]}
-              />
-
-              <UserAddressResolver
-                selectedProvinceId={
-                  isUsingUserAddress
-                    ? userAddresses[selectedUserAddressIndex]?.province_id ?? 0
-                    : selectedProvinceId
-                }
-                branchId={form.branchId}
-                branches={branches}
-                onBranchIdChange={handleBranchIdChange}
-              />
-            </Grid>
           </Grid>
         </Grid>
 
@@ -535,6 +373,160 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
               </Grid>
             </Grid>
           </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            color={theme.palette.secondary.main}
+          >
+            Địa chỉ nhận bánh
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isUsingUserAddress}
+                onChange={(_, checked) => setIsUsingUserAddress(checked)}
+                color="secondary"
+              />
+            }
+            label="Sử dụng địa chỉ đã lưu"
+            sx={isGuest ? { display: 'none' } : {}}
+          />
+        </Grid>
+
+        {isUsingUserAddress ? (
+          <Grid item xs={12}>
+            <Typography fontSize={16}>Chọn địa chỉ của bạn:</Typography>
+
+            {userAddresses && userAddresses.length > 0 ? (
+              <List>
+                {userAddresses.map((address, index) => (
+                  <ListItem key={index} sx={{ px: 0 }}>
+                    <ListItemButton
+                      selected={selectedUserAddressIndex === index}
+                      onClick={() => setSelectedUserAddressIndex(index)}
+                      sx={{
+                        border: (theme) =>
+                          `3px solid ${theme.palette.secondary.main}`,
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <ListItemText
+                        primary={address.address}
+                        primaryTypographyProps={{ fontSize: 'body2.fontSize' }}
+                        secondary={
+                          provinces.find((p) => p.id === address.province_id)
+                            ?.name ?? 'Không tìm thấy'
+                        }
+                      />
+                      <ListItemIcon
+                        sx={{
+                          visibility:
+                            selectedUserAddressIndex === index
+                              ? 'visible'
+                              : 'hidden',
+                        }}
+                      >
+                        <Check color="secondary" />
+                      </ListItemIcon>
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography
+                fontSize={16}
+                fontStyle={'italic'}
+                fontWeight={'regular'}
+              >
+                Bạn chưa lưu địa chỉ nào!
+              </Typography>
+            )}
+
+            <Divider sx={{ mt: 1 }} />
+          </Grid>
+        ) : (
+          <Grid item xs={12}>
+            <Typography fontSize={16}>Nhập địa chỉ:</Typography>
+
+            <CustomTextField
+              placeholder="Địa chỉ"
+              fullWidth
+              required
+              value={form.address}
+              onChange={(e: any) => setForm('address', e.target.value)}
+              type="text"
+              autoComplete="street-address"
+              name="streetAddress"
+              id="streetAddress"
+              disabled={isUsingUserAddress}
+            />
+
+            <Divider sx={{ mt: 1 }} />
+          </Grid>
+        )}
+
+        <Grid item xs={12}>
+          <Typography fontSize={16}>
+            Chọn chi nhánh H&H Bakery khả dụng:
+          </Typography>
+
+          <Autocomplete
+            disabled={isUsingUserAddress}
+            value={provinces.find((p) => p.id === selectedProvinceId)}
+            onChange={(e, value) => setSelectedProvinceId(value?.id ?? '')}
+            options={[null, ...availableProvinces]}
+            getOptionLabel={(p) => p?.name ?? 'Tất cả'}
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
+            sx={[
+              { width: '100%', mb: 1 },
+              isUsingUserAddress ? { display: 'none' } : {},
+            ]}
+            size="small"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                size="small"
+                placeholder="Tỉnh thành"
+                InputProps={{
+                  ...params.InputProps,
+                  sx: {
+                    border: 3,
+                    borderColor: theme.palette.secondary.main,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  },
+                }}
+                inputProps={{
+                  ...params.inputProps,
+                  style: {
+                    ...params.inputProps?.style,
+                    border: '0px solid transparent',
+                    fontSize: theme.typography.body2.fontSize,
+                  },
+                }}
+              />
+            )}
+          />
+
+          <Divider
+            sx={[{ my: 1 }, isUsingUserAddress ? { display: 'none' } : {}]}
+          />
+
+          <UserAddressResolver
+            selectedProvinceId={
+              isUsingUserAddress
+                ? userAddresses[selectedUserAddressIndex]?.province_id ?? 0
+                : selectedProvinceId
+            }
+            branchId={form.branchId}
+            branches={branches}
+            onBranchIdChange={handleBranchIdChange}
+          />
         </Grid>
       </Grid>
     </Box>

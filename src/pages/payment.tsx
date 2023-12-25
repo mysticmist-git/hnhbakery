@@ -39,11 +39,14 @@ import { DEFAULT_GROUP_ID, GUEST_ID, GUEST_UID } from '@/lib/DAO/groupDAO';
 import BookingItem from '@/models/bookingItem';
 import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
 import { getSales } from '@/lib/DAO/saleDAO';
+import { formatPrice } from '@/lib/utils';
 // #endregion
 
 const Payment = () => {
   //#region States
   const [user] = useAuthState(auth);
+  const [userData, setUserData] = useState<User | undefined>(undefined);
+  //
   const [cart, setCart] = useCartItems();
   const [assembledCartItems, reloadAssembledCartItems] =
     useAssembledCartItems();
@@ -98,22 +101,42 @@ const Payment = () => {
 
   useEffect(() => {
     async function get() {
-      const sales = await getSales();
-      setSales(
-        sales.filter((sale) => {
-          if (!sale.active) {
-            return false;
-          }
-          if (sale.end_at.getTime() < new Date().getTime()) {
-            return false;
-          } else {
-            return true;
-          }
-        })
-      );
+      try {
+        const sales = await getSales();
+        setSales(
+          sales
+            .filter((sale) => {
+              if (!sale.active) {
+                return false;
+              }
+              if (sale.end_at.getTime() < new Date().getTime()) {
+                return false;
+              } else {
+                return true;
+              }
+            })
+            .sort((a, b) => b.percent - a.percent)
+        );
+      } catch (error) {
+        console.log(error);
+      }
     }
     get();
   }, []);
+
+  useEffect(() => {
+    async function get() {
+      try {
+        if (user) {
+          const userData = await getUserByUid(user.uid);
+          setUserData(userData);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    get();
+  }, [user]);
 
   //#endregion
   //#region Methods
@@ -298,7 +321,7 @@ const Payment = () => {
   );
 
   const handleChooseSale = useCallback(
-    function (newChosenSale: Sale) {
+    (newChosenSale: Sale) => {
       if (newChosenSale) {
         if (newChosenSale.id === chosenSale?.id) {
           setChosenSale(() => null);
@@ -499,6 +522,7 @@ const Payment = () => {
   console.log(isBooking);
 
   // #endregion
+
   return (
     <Box component={'div'} sx={{ pb: 16 }}>
       <ImageBackground>
@@ -583,14 +607,41 @@ const Payment = () => {
                     tongBill={finalBillPrice}
                     showDeliveryPrice={shippingFee}
                     //
-                    Sales={sales}
-                    TimKiemMaSale={(saleCode: string) => {
-                      const newSale = sales.find((sale) => {
-                        return sale.code == saleCode;
-                      });
-
-                      if (newSale) {
-                        handleChooseSale(newSale);
+                    Sales={sales
+                      .filter((sale) => {
+                        if (userData && userData?.rankId) {
+                          if (
+                            parseInt(sale.minRankId) > parseInt(userData.rankId)
+                          ) {
+                            return false;
+                          }
+                        } else if (
+                          sale.minRankId != '1' ||
+                          sale.public == false
+                        ) {
+                          return false;
+                        }
+                        return true;
+                      })
+                      .sort(
+                        (a, b) => a.minBillTotalPrice - b.minBillTotalPrice
+                      )}
+                    TimKiemMaSale={(sale: Sale | null) => {
+                      if (sale) {
+                        if (
+                          sale.minBillTotalPrice <=
+                          billPrice - discountAmount
+                        ) {
+                          handleChooseSale(sale);
+                        } else {
+                          handleSnackbarAlert(
+                            'info',
+                            `Cần thêm mua ${formatPrice(
+                              sale.minBillTotalPrice -
+                                (billPrice - discountAmount)
+                            )} để áp dụng mã khuyến mãi này.`
+                          );
+                        }
                       } else {
                         setChosenSale(() => null);
                         setSalePrice(() => 0);

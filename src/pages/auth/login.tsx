@@ -353,7 +353,7 @@ const Login = () => {
                         <Button
                           fullWidth
                           startIcon={<Google />}
-                          variant="outlined"
+                          variant="contained"
                           sx={{
                             py: 1.5,
                             display: 'inline-flex',
@@ -361,11 +361,12 @@ const Login = () => {
                             borderColor: theme.palette.secondary.main,
                             color: theme.palette.secondary.main,
                             bgcolor: theme.palette.common.white,
-                            borderWidth: 3,
+                            border: 3,
                             '&:hover': {
                               color: theme.palette.common.white,
                               bgcolor: theme.palette.secondary.main,
-                              borderWidth: 3,
+                              borderColor: theme.palette.secondary.main,
+                              border: 3,
                             },
                           }}
                           onClick={handleLoginWithGoogle}
