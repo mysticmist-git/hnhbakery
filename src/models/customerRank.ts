@@ -9,7 +9,9 @@ type CustomerRank = {
   id: string;
   name: string;
   minPaidMoney: number;
+  maxPaidMoney: number;
   description: string;
+  image: string;
 };
 
 const customerRankConverter: FirestoreDataConverter<CustomerRank> = {

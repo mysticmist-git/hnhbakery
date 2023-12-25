@@ -6,8 +6,6 @@ import MailDialog from '@/lib/manage/contact/MailDialog/MailDialog';
 
 import { Mail } from '@/lib/types/manage-contact';
 import Contact from '@/models/contact';
-import User from '@/models/user';
-import { ChatWithType } from '@/models/userChat';
 import { Mail as MailIcon, NotificationsRounded } from '@mui/icons-material';
 import {
   Badge,
@@ -90,14 +88,14 @@ const Contacts: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const theme = useTheme();
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const contacts = await getContacts();
-  //     setContacts(contacts);
-  //   }
+  useEffect(() => {
+    async function fetchData() {
+      const contacts = await getContacts();
+      setContacts(contacts);
+    }
 
-  //   fetchData();
-  // }, []);
+    fetchData();
+  }, []);
 
   const handleContactDataChange = (value: Contact) => {
     setContacts((prev) => {

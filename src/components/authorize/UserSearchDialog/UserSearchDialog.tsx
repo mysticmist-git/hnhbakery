@@ -111,6 +111,10 @@ const UserSearchDialog: React.FC<UserSearchDialogProps> = ({
       newUser.uid = userUid;
 
       const { password, ...user } = newUser;
+      if (user.group_id === DEFAULT_GROUP_ID) {
+        user.rankId = '1';
+        user.paidMoney = 0;
+      }
       await createUser(user.group_id, user as User);
       handleSnackbarAlert('success', 'Thêm người dùng thành công!');
       handleAddUser(user);

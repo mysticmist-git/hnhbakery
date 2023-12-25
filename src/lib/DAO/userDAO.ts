@@ -41,6 +41,8 @@ import {
 } from './groupDAO';
 import { getProducts } from './productDAO';
 import { getProductTypes } from './productTypeDAO';
+import CustomerRank from '@/models/customerRank';
+import { getCustomerRank } from './customerRankDAO';
 
 export function getUsersRef(
   groupRef: DocumentReference<Group>
@@ -405,11 +407,18 @@ export async function getUserTableRowByUID(uid: string) {
     a.created_at > b.created_at ? -1 : 1
   );
 
+  let customerRank: CustomerRank | undefined = undefined;
+
+  if (c.rankId) {
+    customerRank = await getCustomerRank(c.rankId);
+  }
+
   finalUser = {
     ...c,
     bills: billTableRows,
     addresses: addresses,
     feedbacks: feedbackTableRows,
+    customerRank: customerRank,
   };
 
   return finalUser;

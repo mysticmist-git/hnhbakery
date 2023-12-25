@@ -161,7 +161,7 @@ export default function MyModal({
               </Grid>
 
               {/* Danh sách hóa đơn */}
-              <Grid item xs={12} alignSelf={'stretch'}>
+              <Grid item xs={7} alignSelf={'stretch'}>
                 <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
                     component={'div'}
@@ -199,7 +199,7 @@ export default function MyModal({
               </Grid>
 
               {/* Danh sách feedback */}
-              <Grid item xs={12} alignSelf={'stretch'}>
+              <Grid item xs={5} alignSelf={'stretch'}>
                 <Box component={'div'} sx={StyleCuaCaiBox}>
                   <Box
                     component={'div'}

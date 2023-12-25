@@ -76,23 +76,13 @@ export default function CustomerTable({
       hideable: false,
     },
     {
-      field: 'totalPaid',
+      field: 'paidMoney',
       headerName: 'Đã thanh toán',
       align: 'left',
       headerAlign: 'center',
       flex: 1,
-
       valueFormatter(params) {
         return formatPrice(params.value);
-      },
-      valueGetter(params) {
-        var total = 0;
-        params.row.bills.forEach((item: any) => {
-          if (item.state == 'paid') {
-            return (total += item.final_price);
-          }
-        });
-        return total;
       },
     },
     {

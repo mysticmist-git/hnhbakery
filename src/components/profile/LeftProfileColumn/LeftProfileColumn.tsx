@@ -11,10 +11,12 @@ const LeftProfileColumn = ({
   image,
   userId,
   onUpdateUserData,
+  customerRandImage,
 }: {
   image: string;
   userId: string;
   onUpdateUserData?: (field: keyof User, value: User[keyof User]) => void;
+  customerRandImage?: string;
 }) => {
   const theme = useTheme();
 
@@ -46,21 +48,18 @@ const LeftProfileColumn = ({
       <Grid item xs={12}>
         <Box
           component={'div'}
-          sx={{ p: { xs: 2, sm: 2, md: 2, lg: 4 }, width: '100%' }}
+          sx={{
+            overflow: 'visible',
+          }}
         >
           <ProfileAvatar
             image={image}
             onUpdateUserData={onUpdateUserData}
             onUploadImage={handleUploadImage}
+            customerRandImage={customerRandImage}
           />
         </Box>
       </Grid>
-
-      {/* Basic Information */}
-
-      {/* <Grid item xs={12}>
-        <LeftProfileBasicInformation {...props.LeftProfileBasicInfo} />
-      </Grid> */}
     </Grid>
   );
 };
