@@ -431,14 +431,14 @@ export async function getBillTableRows(
   ).then((bills) => {
     const allBills = bills.flat();
     filterBills = branch
-      ? allBills.filter((b) => b.branch_id == branch.id)
+      ? allBills.filter((b) => b.branch_id === branch.id)
       : allBills;
   });
 
   await Promise.all(
     filterBills.map(
       async (b) =>
-        await getBillTableRow(customers.find((c) => c.id == b.customer_id)!, b)
+        await getBillTableRow(customers.find((c) => c.id === b.customer_id)!, b)
     )
   ).then((billTableRows) => {
     finalBills = billTableRows;
@@ -455,19 +455,17 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
   const billitems = await getBillItems(c.group_id, c.id, b.id);
 
   let billTableRows: BillTableRow['billItems'] = [];
-  let batchData: Batch[] = [];
-  await Promise.all(
+
+  const batches = await Promise.all(
     billitems.map(async (bi) => await getBatchById(bi.batch_id))
   ).then((batches) => {
-    batches.map((b) => {
-      if (b) {
-        batchData.push(b);
-      }
-    });
+    return batches.filter((b) => b !== undefined) as Batch[];
   });
 
   for (let bi of billitems) {
-    const batch = batchData.find((b) => b.id == bi.batch_id);
+    console.log(bi);
+    const batch = batches.find((b) => b.id === bi.batch_id);
+    console.log(batch);
 
     let productType: ProductType | undefined = undefined;
     let product: Product | undefined = undefined;
@@ -475,9 +473,9 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
 
     if (
       batch &&
-      batch.product_type_id != '' &&
-      batch.product_id != '' &&
-      batch.variant_id != ''
+      batch.product_type_id !== '' &&
+      batch.product_id !== '' &&
+      batch.variant_id !== ''
     ) {
       productType = await getProductTypeById(batch.product_type_id);
       product = await getProduct(batch.product_type_id, batch.product_id);
@@ -497,27 +495,27 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
     });
   }
 
-  const sale = b.sale_id == '' ? undefined : await getSaleById(b.sale_id);
+  const sale = b.sale_id === '' ? undefined : await getSaleById(b.sale_id);
 
   let delivery: Delivery | undefined = undefined;
-  if (b.delivery_id != '') {
+  if (b.delivery_id !== '') {
     delivery = await getDeliveryById(b.delivery_id);
   }
 
   let address: Address | undefined = undefined;
-  if (delivery?.address && delivery.address != '') {
+  if (delivery?.address && delivery.address !== '') {
     address = await getAddress(c.group_id, c.id, delivery.address);
   }
 
   const bookingItem =
-    b.booking_item_id == ''
+    b.booking_item_id === ''
       ? undefined
       : await getBookingItemById(b.booking_item_id);
 
   finalBill = {
     ...b,
     paymentMethod:
-      b.payment_method_id == ''
+      b.payment_method_id === ''
         ? undefined
         : await getPaymentMethodById(b.payment_method_id),
     customer: { ...c },
@@ -529,12 +527,12 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
         }
       : undefined,
     billItems: billTableRows,
-    branch: b.branch_id == '' ? undefined : await getBranchById(b.branch_id),
+    branch: b.branch_id === '' ? undefined : await getBranchById(b.branch_id),
     bookingItem: bookingItem
       ? {
           ...bookingItem,
           cakeBase:
-            bookingItem.cake_base_id == ''
+            bookingItem.cake_base_id === ''
               ? undefined
               : await getCakeBaseById(bookingItem.cake_base_id),
         }
@@ -547,7 +545,7 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
 export async function getBillTableRowsByUserId(
   userId: string
 ): Promise<BillTableRow[]> {
-  if (userId == '') {
+  if (userId === '') {
     return [];
   }
   let finalBills: BillTableRow[] = [];
@@ -574,7 +572,7 @@ export async function getBillTableRowById(
   userId: string,
   id: string
 ): Promise<BillTableRow | undefined> {
-  if (userId == '') {
+  if (userId === '') {
     return undefined;
   }
 
@@ -606,34 +604,4 @@ export function createBillDataFromBillTableRow(
   delete billTableRow.bookingItem;
   delete billTableRow.billItems;
   return billTableRow as Bill;
-}
-
-/**
- * This is specifically for report page
- * This also get bill items
- */
-export async function getBillsForReportPage() {
-  const users = await getAllUsers();
-  const bills = (
-    await Promise.all(
-      users.map(async (user) => {
-        let userBills = await getBills(user.group_id, user.id);
-        userBills = await Promise.all(
-          userBills.map(async (uBill) => {
-            const billItems = await getBillItems(
-              user.group_id,
-              user.id,
-              uBill.id
-            );
-            uBill.bill_items = billItems;
-            return uBill;
-          })
-        );
-
-        return userBills;
-      })
-    )
-  ).flat();
-
-  return bills;
 }

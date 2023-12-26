@@ -5,9 +5,9 @@ import {
   SnapshotOptions,
 } from 'firebase/firestore';
 import WithCreatedUpdated from './created_updated';
+import { ProductTableRow } from './product';
 import WithActive from './withActive';
 import WithId from './withId';
-import { ProductTableRow } from './product';
 
 /**
  * Product type
@@ -49,5 +49,5 @@ const productTypeConverter: FirestoreDataConverter<ProductType> = {
 };
 
 export default ProductType;
-export type { ProductType, ProductTypeTableRow };
 export { productTypeConverter };
+export type { ProductType, ProductTypeTableRow };

@@ -1,5 +1,5 @@
 import { Interval, IntervalType, TimeRange } from '@/lib/types/report';
-import { ArrowLeft, ArrowRight } from '@mui/icons-material';
+import { ArrowLeft, ArrowRight, SyncAlt } from '@mui/icons-material';
 import {
   Button,
   ButtonGroup,
@@ -11,6 +11,8 @@ import {
   Typography,
   styled,
 } from '@mui/material';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
 
 const IntervalNavigateIconButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
@@ -22,7 +24,12 @@ const IntervalNavigateIconButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-type TimeRangeInput = {
+export type CustomFromTo = {
+  from: Date;
+  to: Date;
+};
+
+type TimeRangeInputProps = {
   timeRangeType: TimeRange;
   handleTimeRangeTypeChange: (value: TimeRange) => void;
   currentIntervalType: IntervalType;
@@ -31,7 +38,17 @@ type TimeRangeInput = {
   handleCurrentIntervalIndexChange: (value: number) => void;
   intervals: Interval[];
   fromDateToDateText: string;
+  customFrom: Date;
+  customTo: Date;
+  handleCustomFromToChange: (value: CustomFromTo) => void;
 };
+
+export function initCustomFromTo() {
+  return {
+    from: dayjs().startOf('month').toDate(),
+    to: dayjs().endOf('month').toDate(),
+  };
+}
 
 export default function TimeRangeInput({
   timeRangeType,
@@ -42,7 +59,10 @@ export default function TimeRangeInput({
   handleCurrentIntervalIndexChange,
   intervals,
   fromDateToDateText,
-}: TimeRangeInput) {
+  customFrom,
+  customTo,
+  handleCustomFromToChange,
+}: TimeRangeInputProps) {
   return (
     <Grid container rowSpacing={2}>
       <Grid item xs={12} display="flex" justifyContent={'center'}>
@@ -98,7 +118,6 @@ export default function TimeRangeInput({
                   handleIntervalTypeChange(e.target.value as IntervalType)
                 }
               >
-                <MenuItem value="day">Ngày</MenuItem>
                 <MenuItem value="week">Tuần</MenuItem>
                 <MenuItem value="month">Tháng</MenuItem>
                 <MenuItem value="year">Năm</MenuItem>
@@ -114,7 +133,34 @@ export default function TimeRangeInput({
             </IntervalNavigateIconButton>
           </>
         )}
-        {timeRangeType === 'custom' && <></>}
+        {timeRangeType === 'custom' && (
+          <>
+            <Stack>
+              <Typography typography="body2">Ngày bắt đầu</Typography>
+              <DatePicker
+                value={dayjs(customFrom)}
+                onChange={(date) =>
+                  handleCustomFromToChange({
+                    from: date?.toDate() ?? customFrom,
+                    to: customTo,
+                  })
+                }
+              />
+            </Stack>
+            <Stack>
+              <Typography typography="body2">Ngày kết thúc</Typography>
+              <DatePicker
+                value={dayjs(customTo)}
+                onChange={(date) =>
+                  handleCustomFromToChange({
+                    from: customFrom,
+                    to: date?.toDate() ?? customTo,
+                  })
+                }
+              />
+            </Stack>
+          </>
+        )}
       </Grid>
       <Grid item xs={12}>
         <Typography
