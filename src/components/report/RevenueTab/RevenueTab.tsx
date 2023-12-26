@@ -14,6 +14,8 @@ import Branch from '@/models/branch';
 import { ChevronLeft, KeyboardArrowDown } from '@mui/icons-material';
 import {
   Box,
+  Button,
+  ButtonGroup,
   Card,
   Divider,
   Grid,
@@ -24,6 +26,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { ChartData, ChartOptions } from 'chart.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
@@ -33,10 +36,33 @@ function resolveRevenueChartLabels(
   data: number[]
 ): string[] {
   switch (intervalType) {
+    case 'week':
+      return [
+        'Chủ nhật',
+        'Thứ hai',
+        'Thứ ba',
+        'Thứ tư',
+        'Thứ năm',
+        'Thứ sáu',
+        'Thứ bảy',
+      ];
     case 'month':
       return data.map((_, index) => `Ngày ${index + 1}`);
     case 'year':
-      return data.map((_, index) => `Tháng ${index + 1}`);
+      return [
+        'Tháng 1',
+        'Tháng 2',
+        'Tháng 3',
+        'Tháng 4',
+        'Tháng 5',
+        'Tháng 6',
+        'Tháng 7',
+        'Tháng 8',
+        'Tháng 9',
+        'Tháng 10',
+        'Tháng 11',
+        'Tháng 12',
+      ];
     default:
       return [];
   }
@@ -54,11 +80,12 @@ export default function RevenueTab({
   onClickBack,
 }: RevenueTabProps) {
   const branches = useBranches();
-
-  const data: number[] = useMemo(() => {
-    return billTableRows.length > 0
-      ? getRevenueTabChartData(billTableRows, interval)
-      : [];
+  const [totalRevenue, saleAmounts, finalRevenues]: [
+    number[],
+    number[],
+    number[]
+  ] = useMemo(() => {
+    return getRevenueTabChartData(billTableRows, interval);
   }, [billTableRows, interval]);
   const branchData = useMemo(() => {
     return billTableRows.length > 0 ? getBranchRevenueData(billTableRows) : {};
@@ -71,25 +98,27 @@ export default function RevenueTab({
 
   const revenueChartData: ChartData<'line', number[], string> = useMemo(
     () => ({
-      labels: resolveRevenueChartLabels(interval.type, data),
+      labels: resolveRevenueChartLabels(interval.type, totalRevenue),
       datasets: [
         {
-          data: data,
+          label: 'Tổng doanh thu',
+          data: totalRevenue,
+        },
+        {
+          label: 'Khuyến mãi',
+          data: saleAmounts,
+        },
+        {
+          label: 'Doanh thu thực',
+          data: finalRevenues,
         },
       ],
     }),
-    [data, interval]
+    [finalRevenues, interval.type, saleAmounts, totalRevenue]
   );
   const revenueChartOptions: ChartOptions<'line'> = useMemo(
     () => ({
       scales: {
-        x: {
-          ticks: {
-            callback: (value) => {
-              return `Ngày ${value}`;
-            },
-          },
-        },
         y: {
           ticks: {
             callback: (value) => {
@@ -107,7 +136,12 @@ export default function RevenueTab({
           },
         },
         legend: {
-          display: false,
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
         },
         tooltip: {
           callbacks: {
@@ -163,6 +197,14 @@ export default function RevenueTab({
             size: 20,
           },
         },
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
+        },
         tooltip: {
           callbacks: {
             label: (context) => {
@@ -184,6 +226,14 @@ export default function RevenueTab({
             size: 20,
           },
         },
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
+        },
         tooltip: {
           callbacks: {
             label: (context) => {
@@ -195,6 +245,74 @@ export default function RevenueTab({
     }),
     []
   );
+
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  const datagridRows = useMemo(() => {
+    const rows: {
+      id: string;
+      label: string;
+      totalRevenue: number;
+      saleAmount: number;
+      finalRevenue: number;
+    }[] = [];
+    const labels = resolveRevenueChartLabels(interval.type, totalRevenue);
+    for (let i = 0; i < labels.length; i++) {
+      rows.push({
+        id: (i + 1).toString(),
+        label: labels[i],
+        totalRevenue: totalRevenue[i],
+        finalRevenue: finalRevenues[i],
+        saleAmount: saleAmounts[i],
+      });
+    }
+    return rows;
+  }, [interval.type, totalRevenue, finalRevenues, saleAmounts]);
+  const datagridColumns: GridColDef[] = useMemo(() => {
+    let label = '';
+    switch (interval.type) {
+      case 'week':
+        label = 'Tuần';
+        break;
+      case 'month':
+        label = 'Tháng';
+        break;
+      case 'year':
+        label = 'Năm';
+        break;
+    }
+    const columns: GridColDef[] = [
+      {
+        field: 'label',
+        headerName: label,
+        flex: 1,
+      },
+      {
+        field: 'saleAmount',
+        headerName: 'Khuyến mãi',
+        flex: 1,
+        valueFormatter: (params) => {
+          return formatPrice(params.value);
+        },
+      },
+      {
+        field: 'totalRevenue',
+        headerName: 'Tổng doanh thu',
+        flex: 1,
+        valueFormatter: (params) => {
+          return formatPrice(params.value);
+        },
+      },
+      {
+        field: 'finalRevenue',
+        headerName: 'Doanh thu thực',
+        flex: 1,
+        valueFormatter: (params) => {
+          return formatPrice(params.value);
+        },
+      },
+    ];
+    return columns;
+  }, [interval.type]);
 
   return (
     <>
@@ -229,8 +347,34 @@ export default function RevenueTab({
         </Typography>
       </Grid>
       <Grid item xs={12}>
+        <ButtonGroup>
+          <Button
+            variant="contained"
+            color={viewMode === 'chart' ? 'secondary' : 'primary'}
+            onClick={() => setViewMode('chart')}
+          >
+            Biểu đồ
+          </Button>
+          <Button
+            variant="contained"
+            color={viewMode === 'table' ? 'secondary' : 'primary'}
+            onClick={() => setViewMode('table')}
+          >
+            Bảng
+          </Button>
+        </ButtonGroup>
+      </Grid>
+      <Grid item xs={12}>
         <Card sx={{ borderRadius: 4, p: 2 }}>
-          <Line data={revenueChartData} options={revenueChartOptions} />
+          {viewMode === 'chart' ? (
+            <Line data={revenueChartData} options={revenueChartOptions} />
+          ) : (
+            <DataGrid
+              rows={datagridRows}
+              columns={datagridColumns}
+              sx={{ minHeight: 240 }}
+            />
+          )}
         </Card>
       </Grid>
       {/* Theo chi nhánh */}
@@ -336,7 +480,8 @@ function BranchRevenueItem({
       />
       <Divider orientation="vertical" />
       <ListItemText
-        primary={`${formatPrice(data.revenue)} (${data.percent}%)`}
+        primary={`${formatPrice(data.revenue)}`}
+        secondary={`${data.percent}%`}
       />
     </ListItem>
   ) : (

@@ -118,7 +118,6 @@ export default function TimeRangeInput({
                   handleIntervalTypeChange(e.target.value as IntervalType)
                 }
               >
-                <MenuItem value="day">Ngày</MenuItem>
                 <MenuItem value="week">Tuần</MenuItem>
                 <MenuItem value="month">Tháng</MenuItem>
                 <MenuItem value="year">Năm</MenuItem>
