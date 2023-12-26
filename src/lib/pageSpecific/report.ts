@@ -197,47 +197,75 @@ export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
     totalBatch: totalBatch,
   };
 }
+
+/**
+ * @returns [totalRevenues, saleAmounts, finalRevenues]
+ */
 export function getRevenueTabChartData(
   bills: BillTableRow[],
   interval: Interval
-): number[] {
+): [number[], number[], number[]] {
   switch (interval.type) {
     case 'week':
     case 'month': {
       const numberOfDays = dayjs(interval.to).diff(dayjs(interval.from), 'day');
-      const revenues = new Array(numberOfDays + 1).fill(0);
+      const totalRevenues = new Array(numberOfDays + 1).fill(0);
+      const saleAmounts = new Array(numberOfDays + 1).fill(0);
+      const finalRevenues = new Array(numberOfDays + 1).fill(0);
 
       for (let i = 0; i < numberOfDays; i++) {
         const date = dayjs(interval.from).add(i, 'day');
-        revenues[i] = bills.reduce((acc, cur) => {
-          if (dayjs(cur.created_at).isSame(date, 'day')) {
-            return acc + cur.total_price;
-          }
-          return acc;
-        }, 0);
+        const [totalRevenue, saleAmount, finalRevenue] = bills.reduce(
+          (acc, cur) => {
+            if (dayjs(cur.created_at).isSame(date, 'day')) {
+              return [
+                acc[0] + cur.total_price,
+                acc[1] + cur.sale_price,
+                acc[2] + cur.final_price,
+              ];
+            }
+            return acc;
+          },
+          [0, 0, 0]
+        );
+        totalRevenues[i] = totalRevenue;
+        saleAmounts[i] = saleAmount;
+        finalRevenues[i] = finalRevenue;
       }
-      return revenues;
+      return [totalRevenues, saleAmounts, finalRevenues];
     }
     case 'year': {
       const numberOfDays = dayjs(interval.to).diff(
         dayjs(interval.from),
         'month'
       );
-      const revenues = new Array(numberOfDays + 1).fill(0);
+      const totalRevenues = new Array(numberOfDays + 1).fill(0);
+      const saleAmounts = new Array(numberOfDays + 1).fill(0);
+      const finalRevenues = new Array(numberOfDays + 1).fill(0);
 
       for (let i = 0; i < numberOfDays; i++) {
         const date = dayjs(interval.from).add(i, 'month');
-        revenues[i] = bills.reduce((acc, cur) => {
-          if (dayjs(cur.created_at).isSame(date, 'month')) {
-            return acc + cur.total_price;
-          }
-          return acc;
-        }, 0);
+        const [totalRevenue, saleAmount, finalRevenue] = bills.reduce(
+          (acc, cur) => {
+            if (dayjs(cur.created_at).isSame(date, 'month')) {
+              return [
+                acc[0] + cur.total_price,
+                acc[1] + cur.sale_price,
+                acc[2] + cur.final_price,
+              ];
+            }
+            return acc;
+          },
+          [0, 0, 0]
+        );
+        totalRevenues[i] = totalRevenue;
+        saleAmounts[i] = saleAmount;
+        finalRevenues[i] = finalRevenue;
       }
-      return revenues;
+      return [totalRevenues, saleAmounts, finalRevenues];
     }
     default:
-      return [0];
+      return [[0], [0], [0]];
   }
 }
 export function getBranchRevenueData(bills: BillTableRow[]): BranchRevenue {

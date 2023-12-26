@@ -80,7 +80,11 @@ export default function RevenueTab({
   onClickBack,
 }: RevenueTabProps) {
   const branches = useBranches();
-  const data: number[] = useMemo(() => {
+  const [totalRevenue, saleAmounts, finalRevenues]: [
+    number[],
+    number[],
+    number[]
+  ] = useMemo(() => {
     return getRevenueTabChartData(billTableRows, interval);
   }, [billTableRows, interval]);
   const branchData = useMemo(() => {
@@ -94,14 +98,23 @@ export default function RevenueTab({
 
   const revenueChartData: ChartData<'line', number[], string> = useMemo(
     () => ({
-      labels: resolveRevenueChartLabels(interval.type, data),
+      labels: resolveRevenueChartLabels(interval.type, totalRevenue),
       datasets: [
         {
-          data: data,
+          label: 'Tổng doanh thu',
+          data: totalRevenue,
+        },
+        {
+          label: 'Khuyến mãi',
+          data: saleAmounts,
+        },
+        {
+          label: 'Doanh thu thực',
+          data: finalRevenues,
         },
       ],
     }),
-    [data, interval.type]
+    [finalRevenues, interval.type, saleAmounts, totalRevenue]
   );
   const revenueChartOptions: ChartOptions<'line'> = useMemo(
     () => ({
@@ -123,7 +136,12 @@ export default function RevenueTab({
           },
         },
         legend: {
-          display: false,
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
         },
         tooltip: {
           callbacks: {
@@ -179,6 +197,14 @@ export default function RevenueTab({
             size: 20,
           },
         },
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
+        },
         tooltip: {
           callbacks: {
             label: (context) => {
@@ -200,6 +226,14 @@ export default function RevenueTab({
             size: 20,
           },
         },
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: 16,
+            },
+          },
+        },
         tooltip: {
           callbacks: {
             label: (context) => {
@@ -214,17 +248,25 @@ export default function RevenueTab({
 
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   const datagridRows = useMemo(() => {
-    const rows: { id: string; label: string; data: number }[] = [];
-    const labels = resolveRevenueChartLabels(interval.type, data);
+    const rows: {
+      id: string;
+      label: string;
+      totalRevenue: number;
+      saleAmount: number;
+      finalRevenue: number;
+    }[] = [];
+    const labels = resolveRevenueChartLabels(interval.type, totalRevenue);
     for (let i = 0; i < labels.length; i++) {
       rows.push({
         id: (i + 1).toString(),
         label: labels[i],
-        data: data[i],
+        totalRevenue: totalRevenue[i],
+        finalRevenue: finalRevenues[i],
+        saleAmount: saleAmounts[i],
       });
     }
     return rows;
-  }, [data, interval.type]);
+  }, [interval.type, totalRevenue, finalRevenues, saleAmounts]);
   const datagridColumns: GridColDef[] = useMemo(() => {
     let label = '';
     switch (interval.type) {
@@ -245,8 +287,24 @@ export default function RevenueTab({
         flex: 1,
       },
       {
-        field: 'data',
-        headerName: 'Doanh thu',
+        field: 'saleAmount',
+        headerName: 'Khuyến mãi',
+        flex: 1,
+        valueFormatter: (params) => {
+          return formatPrice(params.value);
+        },
+      },
+      {
+        field: 'totalRevenue',
+        headerName: 'Tổng doanh thu',
+        flex: 1,
+        valueFormatter: (params) => {
+          return formatPrice(params.value);
+        },
+      },
+      {
+        field: 'finalRevenue',
+        headerName: 'Doanh thu thực',
         flex: 1,
         valueFormatter: (params) => {
           return formatPrice(params.value);
@@ -422,7 +480,8 @@ function BranchRevenueItem({
       />
       <Divider orientation="vertical" />
       <ListItemText
-        primary={`${formatPrice(data.revenue)} (${data.percent}%)`}
+        primary={`${formatPrice(data.revenue)}`}
+        secondary={`${data.percent}%`}
       />
     </ListItem>
   ) : (
