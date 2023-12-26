@@ -4,6 +4,7 @@ import {
   createDeliveryDataFromBillTableRow,
   updateDelivery,
 } from '@/lib/DAO/deliveryDAO';
+import { getSaleById, updateSale } from '@/lib/DAO/saleDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import { updateDocToFirestore } from '@/lib/firestore';
@@ -154,6 +155,16 @@ export default function ModalState({
                       billData.id,
                       billData
                     );
+
+                    // Cập nhật Sale khi hủy đơn
+                    if (billState.sale) {
+                      const usedTurn: number =
+                        parseInt(billState.sale.usedTurn.toString()) - 1;
+                      await updateSale(billState.sale_id, {
+                        ...billState.sale,
+                        usedTurn: parseInt(usedTurn.toString()),
+                      });
+                    }
 
                     if (!billState.deliveryTableRow) {
                       return;

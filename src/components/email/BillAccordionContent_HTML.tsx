@@ -66,7 +66,7 @@ function BillAccordionContent_HTML({
           <Column style={{ ...body1 }}>Khuyến mãi:</Column>
           <Column style={{ ...body1, ...alignRight }}>
             {(bill.total_discount == 0 ? '' : '-') +
-              formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
+              formatPrice(bill.sale_price, ' đồng') ?? 'Trống'}
           </Column>
         </Row>
 
@@ -168,6 +168,20 @@ function BillAccordionContent_HTML({
               src={promotionSrc}
             />
           </Row>
+
+          <Row>
+            <Column style={{ ...body1 }}>Mã code:</Column>
+            <Column
+              style={{
+                ...body1,
+                ...alignRight,
+                color: '#ff1744',
+              }}
+            >
+              {bill.sale?.code ?? 'Trống'}
+            </Column>
+          </Row>
+
           <Row>
             <Column style={{ ...body1 }}>Tên khuyến mãi:</Column>
             <Column style={{ ...body1, ...alignRight }}>
@@ -183,18 +197,15 @@ function BillAccordionContent_HTML({
               )}` ?? 'Trống'}
             </Column>
           </Row>
+
           <Row>
-            <Column style={{ ...body1 }}>Mã code:</Column>
-            <Column
-              style={{
-                ...body1,
-                ...alignRight,
-                color: '#ff1744',
-              }}
-            >
-              {bill.sale?.code ?? 'Trống'}
+            <Column style={{ ...body1 }}>Hóa đơn tối thiểu:</Column>
+            <Column style={{ ...body1, ...alignRight }}>
+              {`${formatPrice(bill.sale?.minBillTotalPrice, ' đồng')}` ??
+                'Trống'}
             </Column>
           </Row>
+
           <Row>
             <Column style={{ ...body1 }}>Thời gian áp dụng:</Column>
             <Column style={{ ...body1, ...alignRight }}>

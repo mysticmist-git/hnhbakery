@@ -32,6 +32,7 @@ export function BillItemsContent({ item }: { item: BillItemTableRow }) {
 
     getImage();
   }, [item.product?.images[0]]);
+  console.log(item);
 
   return (
     <>

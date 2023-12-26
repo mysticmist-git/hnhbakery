@@ -39,6 +39,8 @@ const PaymentResult = () => {
     undefined
   );
 
+  const [hasRun, setHasRun] = useState(false);
+
   //#endregion
 
   //#region Gửi mail
@@ -96,6 +98,7 @@ const PaymentResult = () => {
 
     if (uid && uid != '' && billId && billId != '' && billData == undefined) {
       fetchData();
+      setHasRun(true);
     }
   }, [uid, billId]);
 
@@ -199,7 +202,7 @@ const PaymentResult = () => {
           </>
         )}
 
-        {billData == null && (
+        {billData == null && hasRun && (
           <Typography
             align="center"
             variant="body1"
@@ -211,6 +214,19 @@ const PaymentResult = () => {
             Hệ thống đang xảy ra sự cố.
             <br />
             Vui lòng quay lại sau!
+          </Typography>
+        )}
+
+        {billData == null && !hasRun && (
+          <Typography
+            align="center"
+            variant="body1"
+            fontWeight={'bold'}
+            sx={{
+              color: 'grey.600',
+            }}
+          >
+            Hệ thống đang xử lý...
           </Typography>
         )}
 

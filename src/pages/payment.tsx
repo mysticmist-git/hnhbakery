@@ -38,7 +38,7 @@ import { ref, uploadBytes } from 'firebase/storage';
 import { DEFAULT_GROUP_ID, GUEST_ID, GUEST_UID } from '@/lib/DAO/groupDAO';
 import BookingItem from '@/models/bookingItem';
 import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
-import { getSales } from '@/lib/DAO/saleDAO';
+import { getSales, updateSale } from '@/lib/DAO/saleDAO';
 import { formatPrice } from '@/lib/utils';
 // #endregion
 
@@ -109,11 +109,14 @@ const Payment = () => {
               if (!sale.active) {
                 return false;
               }
-              if (sale.end_at.getTime() < new Date().getTime()) {
+              if (sale.end_at.getTime() <= new Date().getTime()) {
                 return false;
-              } else {
-                return true;
               }
+              if (sale.usedTurn >= sale.limitTurn) {
+                return false;
+              }
+
+              return true;
             })
             .sort((a, b) => b.percent - a.percent)
         );
@@ -282,6 +285,14 @@ const Payment = () => {
         // Deelte localStorage cart
         setCart([]);
         setCartNote('');
+        localStorage.removeItem('hasRun');
+
+        if (chosenSale) {
+          await updateSale(chosenSale.id, {
+            ...chosenSale,
+            usedTurn: chosenSale.usedTurn + 1,
+          });
+        }
 
         if (type === 'Tiền mặt') {
           router.push(`/tienmat-result?billId=${billData.id}`);
@@ -518,8 +529,6 @@ const Payment = () => {
       return;
     }
   }, [deliveryForm]);
-
-  console.log(isBooking);
 
   // #endregion
 

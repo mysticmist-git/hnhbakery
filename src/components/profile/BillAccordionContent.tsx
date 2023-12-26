@@ -96,7 +96,7 @@ export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
 
                       <Typography {...TypoStyle}>
                         {(bill.total_discount == 0 ? '' : '-') +
-                          formatPrice(bill.total_discount, ' đồng') ?? 'Trống'}
+                          formatPrice(bill.sale_price, ' đồng') ?? 'Trống'}
                       </Typography>
                     </Box>
 
@@ -211,6 +211,18 @@ export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                     />
 
                     <Box component={'div'} sx={BoxStyle}>
+                      <Typography {...TypoStyle}>Mã code:</Typography>
+
+                      <Typography
+                        {...TypoStyle}
+                        fontWeight={'bold'}
+                        color={'error'}
+                      >
+                        {bill.sale?.code ?? 'Trống'}
+                      </Typography>
+                    </Box>
+
+                    <Box component={'div'} sx={BoxStyle}>
                       <Typography {...TypoStyle}>Tên khuyến mãi:</Typography>
 
                       <Typography {...TypoStyle}>
@@ -232,14 +244,13 @@ export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
                     </Box>
 
                     <Box component={'div'} sx={BoxStyle}>
-                      <Typography {...TypoStyle}>Mã code:</Typography>
+                      <Typography {...TypoStyle}>Hóa đơn tối thiểu:</Typography>
 
-                      <Typography
-                        {...TypoStyle}
-                        fontWeight={'bold'}
-                        color={'error'}
-                      >
-                        {bill.sale?.code ?? 'Trống'}
+                      <Typography {...TypoStyle}>
+                        {`${formatPrice(
+                          bill.sale?.minBillTotalPrice,
+                          ' đồng'
+                        )}` ?? 'Trống'}
                       </Typography>
                     </Box>
 
