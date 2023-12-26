@@ -456,7 +456,7 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
 
   let billTableRows: BillTableRow['billItems'] = [];
 
-  const batches = await Promise.all(
+  const batchData: Batch[] = await Promise.all(
     billitems.map(async (bi) => await getBatchById(bi.batch_id))
   ).then((batches) => {
     return batches.filter((b) => b !== undefined) as Batch[];
@@ -464,7 +464,7 @@ async function getBillTableRow(c: User, b: Bill): Promise<BillTableRow> {
 
   for (let bi of billitems) {
     console.log(bi);
-    const batch = batches.find((b) => b.id === bi.batch_id);
+    const batch = batchData.find((b) => b.id === bi.batch_id);
     console.log(batch);
 
     let productType: ProductType | undefined = undefined;
