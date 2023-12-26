@@ -51,70 +51,77 @@ const UserAddressResolver: FC<UserAddressResolverProps> = ({
   return (
     <>
       {filteredBranches && filteredBranches.length > 0 ? (
-        <Stack gap={1}>
+        <Stack
+          direction="row"
+          flexWrap={'wrap'}
+          sx={{ m: -1, maxHeight: '300px', overflowY: 'auto' }}
+        >
           {filteredBranches.map((b, i) => (
-            <Box
-              key={i}
-              component="button"
-              onClick={(e) => {
-                e.preventDefault();
-                handleSelectBranch(b);
-              }}
-              sx={{
-                backgroundColor: 'white',
-                border: 3,
-                borderColor: 'secondary.main',
-                borderRadius: 2,
-                padding: 2,
-                py: 1,
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                  cursor: 'pointer',
-                },
-                transition: 'all 0.2 ease-in-out',
-              }}
-            >
-              <Stack
-                direction="row"
-                justifyContent={'space-between'}
-                alignItems={'center'}
+            <Box component={'div'} key={i} sx={{ width: '50%', p: 1 }}>
+              <Box
+                component="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSelectBranch(b);
+                }}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'white',
+                  border: 3,
+                  borderColor: 'secondary.main',
+                  borderRadius: 2,
+                  padding: 2,
+                  py: 1,
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                    cursor: 'pointer',
+                  },
+                  transition: 'all 0.2 ease-in-out',
+                }}
               >
-                <Stack alignItems="start">
-                  <Stack>
-                    <Stack direction="row" alignItems={'center'} gap={1}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'grey.800',
-                        }}
-                      >
-                        Chi nhánh:
-                      </Typography>
-                      <Typography variant="body2" fontWeight={'bold'}>
-                        {b.name}
-                      </Typography>
+                <Stack
+                  direction="row"
+                  justifyContent={'space-between'}
+                  alignItems={'center'}
+                >
+                  <Stack alignItems="start">
+                    <Stack>
+                      <Stack direction="row" alignItems={'center'} gap={1}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'grey.800',
+                          }}
+                        >
+                          Chi nhánh:
+                        </Typography>
+                        <Typography variant="body2" fontWeight={'bold'}>
+                          {b.name}
+                        </Typography>
+                      </Stack>
                     </Stack>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 'light',
+                        color: 'grey.800',
+                        textAlign: 'start',
+                      }}
+                    >
+                      {b.address}
+                    </Typography>
                   </Stack>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 'light',
-                      color: 'grey.800',
-                      textAlign: 'start',
-                    }}
-                  >
-                    {b.address}
-                  </Typography>
+                  <Check
+                    color="secondary"
+                    sx={
+                      !branchId || branchId !== b.id
+                        ? { visibility: 'hidden' }
+                        : {}
+                    }
+                  />
                 </Stack>
-                <Check
-                  color="secondary"
-                  sx={
-                    !branchId || branchId !== b.id
-                      ? { visibility: 'hidden' }
-                      : {}
-                  }
-                />
-              </Stack>
+              </Box>
             </Box>
           ))}
         </Stack>

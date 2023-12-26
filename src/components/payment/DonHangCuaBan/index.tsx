@@ -6,8 +6,19 @@ import RenderSale from '../RenderSale';
 import { useState } from 'react';
 import RenderSaleItem from '../RenderSale/RenderSaleItem';
 import { useSnackbarService } from '@/lib/contexts';
+import Sale from '@/models/sale';
+import { Stack } from '@mui/system';
 
-export default function DonHangCuaBan(props: any) {
+export default function DonHangCuaBan(props: {
+  tamTinh: number;
+  khuyenMai: number;
+  tongBill: number;
+  Sales: Sale[];
+  TimKiemMaSale: (sale: Sale | null) => void;
+  showDeliveryPrice: number;
+  handleChooseSale: (newChosenSale: Sale) => void;
+  chosenSale: Sale | null;
+}) {
   const {
     tamTinh,
     khuyenMai,
@@ -20,8 +31,11 @@ export default function DonHangCuaBan(props: any) {
   } = props;
   const theme = useTheme();
 
+  console.log(tamTinh);
+
   const [saleCode, setSaleCode] = useState('');
   const handleSnackbarAlert = useSnackbarService();
+
   return (
     <>
       <Grid
@@ -41,7 +55,12 @@ export default function DonHangCuaBan(props: any) {
                 handleSnackbarAlert('warning', 'Mã khuyến mãi đang trống!');
                 return;
               }
-              TimKiemMaSale(saleCode);
+              const sale = Sales.find((sale) => sale.code === saleCode);
+              if (sale) {
+                TimKiemMaSale(sale);
+              } else {
+                TimKiemMaSale(null);
+              }
             }}
           >
             <Grid
@@ -92,20 +111,41 @@ export default function DonHangCuaBan(props: any) {
             spacing={1}
           >
             {chosenSale && (
-              <RenderSaleItem
-                sale={chosenSale}
-                chosenSale={chosenSale}
-                handleChooseSale={handleChooseSale}
-              />
+              <Grid item xs={12}>
+                <RenderSaleItem
+                  sale={chosenSale}
+                  chosenSale={chosenSale}
+                  handleChooseSale={handleChooseSale}
+                  tamTinh={tamTinh}
+                />
+              </Grid>
             )}
 
-            {/* <RenderSale
-              Sales={Sales}
-              chosenSale={chosenSale}
-              handleChooseSale={handleChooseSale}
-            />
+            <Grid item xs={12}>
+              <Stack
+                direction={'column'}
+                spacing={1}
+                sx={{
+                  height: '300px',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                }}
+              >
+                {Sales.filter(
+                  (sale) => sale.public === true && sale.id !== chosenSale?.id
+                ).map((sale) => (
+                  <RenderSaleItem
+                    key={sale.id}
+                    sale={sale}
+                    chosenSale={chosenSale}
+                    handleChooseSale={handleChooseSale}
+                    tamTinh={tamTinh}
+                  />
+                ))}
+              </Stack>
+            </Grid>
 
-            {Sales.length <= 0 && (
+            {Sales.filter((sale) => sale.public === true).length <= 0 && (
               <Typography
                 variant="body2"
                 color={theme.palette.text.secondary}
@@ -115,7 +155,7 @@ export default function DonHangCuaBan(props: any) {
               >
                 Không tồn tại khuyến mãi công khai nào
               </Typography>
-            )} */}
+            )}
 
             <Grid item xs={12}>
               <Box

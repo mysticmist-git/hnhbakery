@@ -10,12 +10,18 @@ import {
 } from '@mui/material';
 import { ref } from 'firebase/storage';
 import Image from 'next/image';
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
 import promotionImage from '@/assets/promotion.png';
-function RenderSaleItem(props: any) {
+import Sale from '@/models/sale';
+function RenderSaleItem(props: {
+  sale: Sale;
+  chosenSale: Sale | null;
+  handleChooseSale: (newChosenSale: Sale) => void;
+  tamTinh: number;
+}) {
   const theme = useTheme();
-  const { sale, chosenSale, handleChooseSale } = props;
+  const { sale, chosenSale, handleChooseSale, tamTinh } = props;
   const {
     id,
     name,
@@ -34,9 +40,7 @@ function RenderSaleItem(props: any) {
 
   const [isHover, setIsHover] = useState(false);
 
-  // const [downloadURL, loading, error] = useDownloadURL(
-  //   image && image !== '' ? ref(storage, image) : undefined
-  // );
+  const [canClick, setCanClick] = useState(false);
 
   const [downloadURL, loading, error] = useDownloadURL(
     ref(storage, '/sales/sale-img.jpg')
@@ -44,27 +48,44 @@ function RenderSaleItem(props: any) {
 
   const style = {
     normal: {
-      objectFit: 'cover',
+      objectFit: 'contain',
       transition: 'all 0.3s ease-in-out',
     },
     hover: {
-      objectFit: 'cover',
+      objectFit: 'contain',
       transition: 'all 0.3s ease-in-out',
       transform: 'scale(1.5) rotate(5deg)',
     },
   };
 
+  useEffect(() => {
+    if (sale.minBillTotalPrice <= tamTinh) {
+      setCanClick(true);
+    } else {
+      setCanClick(false);
+    }
+  }, [sale, tamTinh]);
+
   return (
     <>
-      <Grid item xs={12}>
+      <Box
+        component={'div'}
+        sx={{
+          borderTop: 1.5,
+          borderColor: 'grey.100',
+          py: 1.5,
+          position: 'relative',
+          opacity: canClick ? 1 : 0.6,
+        }}
+        onMouseOver={() => setIsHover(true && canClick)}
+        onMouseOut={() => setIsHover(false)}
+      >
         <Grid
           container
           direction={'row'}
           justifyContent={'center'}
           alignItems={'start'}
           spacing={1}
-          onMouseOver={() => setIsHover(true)}
-          onMouseOut={() => setIsHover(false)}
         >
           <Grid item xs={5} alignSelf={'stretch'}>
             <Box
@@ -101,7 +122,6 @@ function RenderSaleItem(props: any) {
           <Grid item xs={true}>
             <Grid
               container
-              spacing={0.5}
               direction={'row'}
               alignItems={'start'}
               justifyContent={'center'}
@@ -111,32 +131,56 @@ function RenderSaleItem(props: any) {
             >
               <Grid item xs={12}>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
                     fontWeight: 'bold',
+                    color: canClick ? 'secondary.main' : 'grey.500',
                   }}
-                  color={theme.palette.secondary.main}
                 >
                   {name}
                 </Typography>
               </Grid>
 
               <Grid item xs={12}>
-                <Typography variant="body2" color={theme.palette.common.black}>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.black}
+                  fontWeight={'regular'}
+                >
                   {'Mã code: ' + code}
                 </Typography>
               </Grid>
 
               <Grid item xs={12}>
-                <Typography variant="body2" color={theme.palette.common.black}>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.black}
+                  fontWeight={'regular'}
+                >
                   {'Giảm: ' +
                     percent +
                     '%, tối đa ' +
                     formatPrice(limit, ' đồng')}
                 </Typography>
               </Grid>
+
               <Grid item xs={12}>
-                <Typography variant="body2" color={theme.palette.common.black}>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.black}
+                  fontWeight={'regular'}
+                >
+                  {'Đơn hàng tối thiểu: ' +
+                    formatPrice(sale.minBillTotalPrice, ' đồng')}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.common.black}
+                  fontWeight={'regular'}
+                >
                   {'Hạn sử dụng: ' + formatDateString(new Date(end_at))}
                 </Typography>
               </Grid>
@@ -146,14 +190,15 @@ function RenderSaleItem(props: any) {
             <Checkbox
               sx={{ color: theme.palette.secondary.main }}
               color="secondary"
-              checked={chosenSale && id === chosenSale.id}
+              checked={chosenSale ? sale.id === chosenSale.id : false}
+              disabled={!canClick}
               onChange={() => {
-                // handleChooseSale(sale);
+                handleChooseSale(sale);
               }}
             />
           </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </>
   );
 }

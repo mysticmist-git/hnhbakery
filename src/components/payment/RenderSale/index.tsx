@@ -1,10 +1,13 @@
-import { SaleObject } from '@/lib/models';
 import { useTheme } from '@mui/material';
 import RenderSaleItem from './RenderSaleItem';
-export default function RenderSale(props: any) {
+import Sale from '@/models/sale';
+export default function RenderSale(props: {
+  Sales: Sale[];
+  handleChooseSale: (newChosenSale: Sale) => void;
+  chosenSale: Sale | null;
+}) {
   const theme = useTheme();
-  const { handleChooseSale, chosenSale } = props;
-  const { Sales = [] }: { Sales: SaleObject[] } = props;
+  const { Sales, handleChooseSale, chosenSale } = props;
 
   return (
     <>
