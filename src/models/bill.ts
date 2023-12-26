@@ -47,7 +47,6 @@ type Bill = WithCreatedUpdated &
     paid_time?: Date;
     branch_id: string;
     booking_item_id: string;
-    bill_items?: BillItem[];
   };
 
 type BillTableRow = Bill & {
