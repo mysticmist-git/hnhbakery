@@ -1,7 +1,10 @@
 import BatchTab from '@/components/report/BatchTab';
 import MainTab from '@/components/report/MainTab';
 import RevenueTab from '@/components/report/RevenueTab';
-import TimeRangeInput from '@/components/report/TimeRangeInput/TimeRangeInput';
+import TimeRangeInput, {
+  CustomFromTo,
+  initCustomFromTo,
+} from '@/components/report/TimeRangeInput/TimeRangeInput';
 import { getBillTableRows } from '@/lib/DAO/billDAO';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import useBranches from '@/lib/hooks/useBranches';
@@ -9,6 +12,7 @@ import {
   ProductRevenue,
   VariantRevenue,
   getBranchRevenueData,
+  getFromDateToDateText,
   getMainTabData,
   getProductTypeRevenueData,
   getRevenueTabChartData,
@@ -72,9 +76,13 @@ const cachedGetAllBills = withHashCacheAsync(getBillTableRows);
 
 async function getBillsInRange(from: Date, to: Date) {
   const bills = await cachedGetAllBills();
-  return bills.filter(
-    (bill) => bill.created_at >= from && bill.created_at <= to
+  const filter = bills.filter(
+    (bill) =>
+      dayjs(bill.created_at).isAfter(dayjs(from)) &&
+      dayjs(bill.created_at).isBefore(dayjs(to))
   );
+  console.log(filter);
+  return filter;
 }
 
 const DEFAULT_MAIN_TAB_DATA = {
@@ -100,6 +108,13 @@ function Report() {
   const [currentIntervalIndex, setCurrentIntervalIndex] = useState<number>(0); // 0 mean today | this week | this month | this year
   const [intervals, setIntervals] = useState<Interval[]>([]);
 
+  const [customFromTo, setCustomFromTo] = useState<CustomFromTo>(
+    initCustomFromTo()
+  );
+  const handleCustomFromToChange = useCallback((value: CustomFromTo) => {
+    setCustomFromTo(value);
+  }, []);
+
   const fromDateToDateText = useMemo(() => {
     const currentInterval = intervals.find(
       (interval) => interval.index === currentIntervalIndex
@@ -109,13 +124,12 @@ function Report() {
       return 'Đang tải khoảng thời gian...';
     }
 
-    return ` Từ ${dayjs(currentInterval.from).format('DD/MM/YYYY')} - Tới
-            ${dayjs(currentInterval.to).format('DD/MM/YYYY')}`;
+    return getFromDateToDateText(currentInterval.from, currentInterval.to);
   }, [currentIntervalIndex, intervals]);
 
   useEffect(() => {
-    // Init it if it's empty
-    if (intervals.length <= 0) {
+    // Init it if it's empty or the interval type is changed
+    if (intervals.length <= 0 || currentIntervalType !== intervals[0].type) {
       setIntervals(initIntervals(currentIntervalType));
       return;
     }
@@ -136,32 +150,45 @@ function Report() {
   const [billTableRows, setBillTableRows] = useState<BillTableRow[]>([]);
 
   const fetchData = useCallback(async () => {
-    const currentInterval = intervals.find(
-      (interval) => interval.index === currentIntervalIndex
-    );
-    if (!currentInterval) {
-      setBillTableRows([]);
-      return;
+    let from: Date;
+    let to: Date;
+    if (timeRangeType === 'interval') {
+      const currentInterval = intervals.find(
+        (interval) => interval.index === currentIntervalIndex
+      );
+      if (!currentInterval) {
+        setBillTableRows([]);
+        return;
+      }
+      from = currentInterval.from;
+      to = currentInterval.to;
+    } else {
+      from = customFromTo.from;
+      to = customFromTo.to;
     }
 
     try {
       const bills = await getBillsInRange(
-        dayjs(currentInterval.from).startOf('month').toDate(),
-        dayjs(currentInterval.to).endOf('month').toDate()
+        dayjs(from).toDate(),
+        dayjs(to).toDate()
       );
       setBillTableRows(bills);
     } catch (error) {
       console.log(error);
     }
-  }, [currentIntervalIndex, intervals]);
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, [currentIntervalIndex, intervals]);
+  }, [
+    currentIntervalIndex,
+    customFromTo.from,
+    customFromTo.to,
+    intervals,
+    timeRangeType,
+  ]);
 
   useEffect(() => {
-    if (billTableRows.length <= 0) return;
+    fetchData();
+  }, [currentIntervalIndex, fetchData, intervals, timeRangeType]);
 
+  useEffect(() => {
     const mainTabData = getMainTabData(billTableRows);
     setMainTabData(mainTabData);
   }, [billTableRows, billTableRows.length]);
@@ -179,12 +206,7 @@ function Report() {
   return (
     <>
       <Grid container p={2} rowSpacing={2} columnSpacing={2}>
-        <Grid>
-          <Button variant="contained" onClick={fetchData}>
-            DEBUG
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} height={200}>
           <TimeRangeInput
             timeRangeType={timeRangeType}
             handleTimeRangeTypeChange={function (value: TimeRange): void {
@@ -200,6 +222,9 @@ function Report() {
             }}
             intervals={intervals}
             fromDateToDateText={fromDateToDateText}
+            customFrom={customFromTo.from}
+            customTo={customFromTo.to}
+            handleCustomFromToChange={handleCustomFromToChange}
           />
         </Grid>
         <Grid item xs={12}>

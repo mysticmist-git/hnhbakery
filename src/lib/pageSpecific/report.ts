@@ -2,13 +2,25 @@ import Batch from '@/models/batch';
 import Bill, { BillTableRow } from '@/models/bill';
 import { MainTabBatch } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
 import { isTemplateExpression } from 'typescript';
 import { Interval, IntervalType } from '../types/report';
+dayjs.extend(weekOfYear);
 
 const REPORT_CONSTANT = {
   EACH_INTERVAL_RANGE: 5,
 };
 
+export function getFromDateToDateText(from: Date, to: Date) {
+  // Check null
+  if (!from || !to) return 'Đang tải khoảng thời gian';
+  if (dayjs(from).isSame(to, 'day')) {
+    return `Ngày ${dayjs(from).format('DD/MM/YYYY')}`;
+  }
+  return `${dayjs(from).format('DD/MM/YYYY')} - ${dayjs(to).format(
+    'DD/MM/YYYY'
+  )}`;
+}
 export function resolveIntervalLabel(
   index: number,
   type: IntervalType
@@ -26,12 +38,19 @@ export function resolveIntervalLabel(
       return `Lỗi!`;
   }
 }
-
 export function resolveDayIntervalLabel(index: number): string {
-  return `Day ${index}`;
+  if (index === 0) return 'Hôm nay';
+  if (index === -1) return 'Hôm qua';
+  if (index === 1) return 'Ngày mai';
+
+  return dayjs().add(index, 'day').format('DD/MM/YYYY');
 }
 export function resolveWeekIntervalLabel(index: number): string {
-  return `Week ${index}`;
+  if (index === 0) return 'Tuần này';
+  if (index === -1) return 'Tuần trước';
+  if (index === 1) return 'Tuần sau';
+
+  return `W${dayjs().add(index, 'week').week()}`;
 }
 export function resolveMonthIntervalLabel(index: number): string {
   if (index === 0) return 'Tháng này';
@@ -41,14 +60,44 @@ export function resolveMonthIntervalLabel(index: number): string {
   return dayjs().add(index, 'month').format('MM/YYYY');
 }
 export function resolveYearIntervalLabel(index: number): string {
-  return `Year ${index}`;
+  if (index === 0) return 'Năm nay';
+  if (index === -1) return 'Năm trước';
+  if (index === 1) return 'Năm sau';
+
+  return dayjs().add(index, 'year').format('YYYY');
 }
 export function initIntervals(intervalType: IntervalType): Interval[] {
   const initializedIntervals: Interval[] = [];
   switch (intervalType) {
     case 'day':
+      for (
+        let i = -REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i <= REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i++
+      ) {
+        initializedIntervals.push({
+          index: i,
+          type: 'day',
+          label: resolveIntervalLabel(i, 'day'),
+          from: dayjs().add(i, 'day').startOf('day').toDate(),
+          to: dayjs().add(i, 'day').endOf('day').toDate(),
+        });
+      }
       break;
     case 'week':
+      for (
+        let i = -REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i <= REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i++
+      ) {
+        initializedIntervals.push({
+          index: i,
+          type: 'week',
+          label: resolveIntervalLabel(i, 'week'),
+          from: dayjs().add(i, 'week').startOf('week').toDate(),
+          to: dayjs().add(i, 'week').endOf('week').toDate(),
+        });
+      }
       break;
     case 'month':
       for (
@@ -66,13 +115,25 @@ export function initIntervals(intervalType: IntervalType): Interval[] {
       }
       break;
     case 'year':
+      for (
+        let i = -REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i <= REPORT_CONSTANT.EACH_INTERVAL_RANGE;
+        i++
+      ) {
+        initializedIntervals.push({
+          index: i,
+          type: 'year',
+          label: resolveIntervalLabel(i, 'year'),
+          from: dayjs().add(i, 'year').startOf('year').toDate(),
+          to: dayjs().add(i, 'year').endOf('year').toDate(),
+        });
+      }
       break;
     default:
       break;
   }
   return initializedIntervals;
 }
-
 export function getUpdatedIntervals(
   intervalType: IntervalType,
   intervals: Interval[],
@@ -82,42 +143,18 @@ export function getUpdatedIntervals(
   let change = false;
 
   if (intervalIndex <= intervals[0].index) {
-    switch (intervalType) {
-      case 'day':
-        updatedIntervals = [];
-        break;
-      case 'week':
-        updatedIntervals = [];
-      case 'month':
-        updatedIntervals = getUpdatedLeftMonthIntervals(intervals);
-        break;
-      case 'year':
-        updatedIntervals = [];
-        break;
-    }
+    updatedIntervals = getUpdatedLeftIntervals(intervals);
     change = true;
   } else if (intervalIndex >= intervals[intervals.length - 1].index) {
-    switch (intervalType) {
-      case 'day':
-        updatedIntervals = [];
-      case 'week':
-        updatedIntervals = [];
-      case 'month':
-        updatedIntervals = getUpdatedRightMonthIntervals(intervals);
-        break;
-      case 'year':
-        updatedIntervals = [];
-        break;
-    }
+    updatedIntervals = getUpdatedRightIntervals(intervals);
     change = true;
   }
 
   return [change, updatedIntervals];
 }
-
-export function getUpdatedLeftMonthIntervals(intervals: Interval[]) {
+export function getUpdatedLeftIntervals(intervals: Interval[]) {
   const cloneToUpdateIntervals = [...intervals];
-
+  const type = intervals[0].type;
   for (
     let i = intervals[0].index - 1;
     i >= intervals[0].index - REPORT_CONSTANT.EACH_INTERVAL_RANGE;
@@ -125,19 +162,18 @@ export function getUpdatedLeftMonthIntervals(intervals: Interval[]) {
   ) {
     cloneToUpdateIntervals.unshift({
       index: i,
-      type: 'month',
-      label: resolveIntervalLabel(i, 'month'),
-      from: dayjs().add(i, 'month').startOf('month').toDate(),
-      to: dayjs().add(i, 'month').endOf('month').toDate(),
+      type: type,
+      label: resolveIntervalLabel(i, type),
+      from: dayjs().add(i, type).startOf(type).toDate(),
+      to: dayjs().add(i, type).endOf(type).toDate(),
     });
   }
 
   return cloneToUpdateIntervals;
 }
-
-export function getUpdatedRightMonthIntervals(intervals: Interval[]) {
+export function getUpdatedRightIntervals(intervals: Interval[]) {
   const cloneToUpdateIntervals = [...intervals];
-
+  const type = intervals[intervals.length - 1].type;
   for (
     let i = intervals[intervals.length - 1].index + 1;
     i <=
@@ -146,16 +182,16 @@ export function getUpdatedRightMonthIntervals(intervals: Interval[]) {
   ) {
     cloneToUpdateIntervals.push({
       index: i,
-      type: 'month',
-      label: resolveIntervalLabel(i, 'month'),
-      from: dayjs().add(i, 'month').startOf('month').toDate(),
-      to: dayjs().add(i, 'month').endOf('month').toDate(),
+      type: type,
+      label: resolveIntervalLabel(i, type),
+      from: dayjs().add(i, type).startOf(type).toDate(),
+      to: dayjs().add(i, type).endOf(type).toDate(),
     });
   }
 
   return cloneToUpdateIntervals;
 }
-export function getMainTabData(bills: Bill[]) {
+export function getMainTabData(bills: BillTableRow[]) {
   return {
     revenue: getMainTabRevenue(bills),
     // TODO: todo
@@ -166,8 +202,7 @@ export function getMainTabData(bills: Bill[]) {
     },
   };
 }
-
-export function getMainTabRevenue(bills: Bill[]) {
+export function getMainTabRevenue(bills: BillTableRow[]) {
   return {
     totalRevenue: bills
       .map((bill) => bill.total_price)
@@ -178,7 +213,6 @@ export function getMainTabRevenue(bills: Bill[]) {
       .reduce((a, b) => a + b, 0),
   };
 }
-
 export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
   const totalBatch = batches.length;
 
@@ -188,7 +222,6 @@ export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
     totalBatch: totalBatch,
   };
 }
-
 export function getRevenueTabChartData(
   bills: BillTableRow[],
   interval: Interval
@@ -214,14 +247,6 @@ export function getRevenueTabChartData(
       return [0];
   }
 }
-
-type BranchRevenue = {
-  [key: string]: {
-    revenue: number;
-    percent: number;
-  };
-};
-
 export function getBranchRevenueData(bills: BillTableRow[]): BranchRevenue {
   let result = bills.reduce((result: BranchRevenue, bill) => {
     if (!result[bill.branch_id]) {
@@ -244,12 +269,16 @@ export function getBranchRevenueData(bills: BillTableRow[]): BranchRevenue {
   });
   return result;
 }
-
-type RevenueAndPercent = {
+export type BranchRevenue = {
+  [key: string]: {
+    revenue: number;
+    percent: number;
+  };
+};
+export type RevenueAndPercent = {
   revenue: number;
   percent: number;
 };
-
 export type ProductTypeRevenue = {
   [key: string]: RevenueAndPercent & { name: string; image: string } & {
     products: ProductRevenue;
@@ -263,7 +292,6 @@ export type ProductRevenue = {
 export type VariantRevenue = {
   [key: string]: RevenueAndPercent & { material: string; size: string };
 };
-
 export function getProductTypeRevenueData(
   bills: BillTableRow[]
 ): ProductTypeRevenue {
