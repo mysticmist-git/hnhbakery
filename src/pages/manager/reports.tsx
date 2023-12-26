@@ -6,16 +6,9 @@ import TimeRangeInput, {
   initCustomFromTo,
 } from '@/components/report/TimeRangeInput/TimeRangeInput';
 import { getBillTableRows } from '@/lib/DAO/billDAO';
-import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
-import useBranches from '@/lib/hooks/useBranches';
 import {
-  ProductRevenue,
-  VariantRevenue,
-  getBranchRevenueData,
   getFromDateToDateText,
   getMainTabData,
-  getProductTypeRevenueData,
-  getRevenueTabChartData,
   getUpdatedIntervals,
   initIntervals,
 } from '@/lib/pageSpecific/report';
@@ -25,32 +18,12 @@ import {
   ReportTab,
   TimeRange,
 } from '@/lib/types/report';
-import { formatPrice } from '@/lib/utils';
 import { BillTableRow } from '@/models/bill';
-import Branch from '@/models/branch';
 import { withHashCacheAsync } from '@/utils/withHashCache';
-import {
-  ChevronLeft,
-  ChevronRight,
-  KeyboardArrowDown,
-} from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  Card,
-  Divider,
-  Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography,
-} from '@mui/material';
-import Chart, { ChartData, ChartOptions } from 'chart.js/auto';
+import { Divider, Grid } from '@mui/material';
+import Chart from 'chart.js/auto';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Line, Pie } from 'react-chartjs-2';
 Chart.register();
 
 //#region Top part
@@ -214,6 +187,7 @@ function Report() {
             }}
             currentIntervalType={currentIntervalType}
             handleIntervalTypeChange={function (value: IntervalType): void {
+              setCurrentIntervalIndex(0);
               setCurrentIntervalType(value);
             }}
             currentIntervalIndex={currentIntervalIndex}

@@ -3,7 +3,6 @@ import Bill, { BillTableRow } from '@/models/bill';
 import { MainTabBatch } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
-import { isTemplateExpression } from 'typescript';
 import { Interval, IntervalType } from '../types/report';
 dayjs.extend(weekOfYear);
 
@@ -26,8 +25,6 @@ export function resolveIntervalLabel(
   type: IntervalType
 ): string {
   switch (type) {
-    case 'day':
-      return resolveDayIntervalLabel(index);
     case 'week':
       return resolveWeekIntervalLabel(index);
     case 'month':
@@ -37,13 +34,6 @@ export function resolveIntervalLabel(
     default:
       return `Lỗi!`;
   }
-}
-export function resolveDayIntervalLabel(index: number): string {
-  if (index === 0) return 'Hôm nay';
-  if (index === -1) return 'Hôm qua';
-  if (index === 1) return 'Ngày mai';
-
-  return dayjs().add(index, 'day').format('DD/MM/YYYY');
 }
 export function resolveWeekIntervalLabel(index: number): string {
   if (index === 0) return 'Tuần này';
@@ -69,21 +59,6 @@ export function resolveYearIntervalLabel(index: number): string {
 export function initIntervals(intervalType: IntervalType): Interval[] {
   const initializedIntervals: Interval[] = [];
   switch (intervalType) {
-    case 'day':
-      for (
-        let i = -REPORT_CONSTANT.EACH_INTERVAL_RANGE;
-        i <= REPORT_CONSTANT.EACH_INTERVAL_RANGE;
-        i++
-      ) {
-        initializedIntervals.push({
-          index: i,
-          type: 'day',
-          label: resolveIntervalLabel(i, 'day'),
-          from: dayjs().add(i, 'day').startOf('day').toDate(),
-          to: dayjs().add(i, 'day').endOf('day').toDate(),
-        });
-      }
-      break;
     case 'week':
       for (
         let i = -REPORT_CONSTANT.EACH_INTERVAL_RANGE;
@@ -227,7 +202,8 @@ export function getRevenueTabChartData(
   interval: Interval
 ): number[] {
   switch (interval.type) {
-    case 'month':
+    case 'week':
+    case 'month': {
       const numberOfDays = dayjs(interval.to).diff(dayjs(interval.from), 'day');
       const revenues = new Array(numberOfDays + 1).fill(0);
 
@@ -241,8 +217,25 @@ export function getRevenueTabChartData(
         }, 0);
       }
       return revenues;
-    case 'year':
-      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+    case 'year': {
+      const numberOfDays = dayjs(interval.to).diff(
+        dayjs(interval.from),
+        'month'
+      );
+      const revenues = new Array(numberOfDays + 1).fill(0);
+
+      for (let i = 0; i < numberOfDays; i++) {
+        const date = dayjs(interval.from).add(i, 'month');
+        revenues[i] = bills.reduce((acc, cur) => {
+          if (dayjs(cur.created_at).isSame(date, 'month')) {
+            return acc + cur.total_price;
+          }
+          return acc;
+        }, 0);
+      }
+      return revenues;
+    }
     default:
       return [0];
   }
