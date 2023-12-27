@@ -12,6 +12,8 @@ import {
 type Size = {
   id: string;
   name: string;
+  image: string;
+  orderAppear: number;
 };
 
 const sizeConverter: FirestoreDataConverter<Size> = {

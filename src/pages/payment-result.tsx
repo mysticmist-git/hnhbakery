@@ -32,6 +32,11 @@ import { BillAccordionContent } from '../components/profile/BillAccordionContent
 import { sendBillToEmail } from '@/lib/services/MailService';
 import { updateSale } from '@/lib/DAO/saleDAO';
 import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
+import {
+  getCustomerReference,
+  updateCustomerReferenceByBillTableRow,
+} from '@/lib/DAO/customerReferenceDAO';
+import { GUEST_UID } from '@/lib/DAO/groupDAO';
 
 const resolveResponseCode = (responseCode: string) => {
   switch (responseCode) {
@@ -203,9 +208,9 @@ const PaymentResult = () => {
         }
       }
 
-      const data = await getBillTableRowById(userData.uid, responseBillId);
-      if (data) {
-        setBillData(data);
+      const bill = await getBillTableRowById(userData.uid, responseBillId);
+      if (bill) {
+        setBillData(bill);
 
         const hasRunBefore = localStorage.getItem('hasRun') == 'true';
 
@@ -220,25 +225,36 @@ const PaymentResult = () => {
           );
         }
 
+        // Cập nhật customer reference
+        if (
+          bill.customer &&
+          bill.customer.uid != GUEST_UID &&
+          !hasRunBefore &&
+          ['00', '07'].includes(responseCode as string) &&
+          bill.billItems
+        ) {
+          await updateCustomerReferenceByBillTableRow(bill);
+        }
+
         // Cập nhật Sale khi thanh toán thành công
-        if (data.sale && !hasRunBefore) {
+        if (bill.sale && !hasRunBefore) {
           const usedTurn: number = ['00', '07'].includes(responseCode as string)
-            ? data.sale.usedTurn
-            : data.sale.usedTurn - 1;
+            ? bill.sale.usedTurn
+            : bill.sale.usedTurn - 1;
 
           console.log(usedTurn);
 
           const totalSalePrice: number = ['00', '07'].includes(
             responseCode as string
           )
-            ? parseFloat(data.sale.totalSalePrice.toString()) +
-              parseFloat(data.sale_price.toString())
-            : data.sale.totalSalePrice;
+            ? parseFloat(bill.sale.totalSalePrice.toString()) +
+              parseFloat(bill.sale_price.toString())
+            : bill.sale.totalSalePrice;
 
           console.log(totalSalePrice);
 
-          await updateSale(data.sale_id, {
-            ...data.sale,
+          await updateSale(bill.sale_id, {
+            ...bill.sale,
             usedTurn: parseInt(usedTurn.toString()),
             totalSalePrice: parseInt(totalSalePrice.toString()),
           });
@@ -246,28 +262,30 @@ const PaymentResult = () => {
 
         // Cập nhật User
         if (
-          data.customer &&
-          data.customer.paidMoney &&
-          data.customer.rankId &&
+          bill.customer &&
+          bill.customer.paidMoney &&
+          bill.customer.rankId &&
           !hasRunBefore &&
           ['00', '07'].includes(responseCode as string)
         ) {
           const paidMoney: number =
-            parseFloat(data.customer.paidMoney.toString()) +
-            parseFloat(data.final_price.toString());
+            parseFloat(bill.customer.paidMoney.toString()) +
+            parseFloat(bill.final_price.toString());
 
           console.log(paidMoney);
 
-          const customerRank = await getCustomerRank(data.customer.rankId);
-          const rankId =
+          const customerRank = await getCustomerRank(bill.customer.rankId);
+          let rankId =
             paidMoney >= customerRank!.maxPaidMoney
-              ? parseInt(data.customer.rankId) + 1
-              : data.customer.rankId;
+              ? parseInt(bill.customer.rankId) + 1
+              : bill.customer.rankId;
+
+          rankId = bill.customer.uid != GUEST_UID ? rankId : '1';
 
           console.log(rankId);
 
-          await updateUser(data.customer.group_id, data.customer.id, {
-            ...data.customer,
+          await updateUser(bill.customer.group_id, bill.customer.id, {
+            ...bill.customer,
             paidMoney: parseInt(paidMoney.toString()),
             rankId: rankId.toString(),
           });

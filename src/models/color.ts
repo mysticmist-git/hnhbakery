@@ -14,6 +14,7 @@ type Color = WithId & {
   value: string;
   hex: string;
   name: string;
+  image: string;
 };
 
 const colorConverter: FirestoreDataConverter<Color> = {

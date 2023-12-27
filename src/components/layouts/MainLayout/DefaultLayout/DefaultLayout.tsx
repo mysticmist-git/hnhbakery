@@ -13,7 +13,7 @@ const Layout = ({ children }: { children: any }) => {
       <Box
         component={'div'}
         sx={{
-          minHeight: '60vh',
+          minHeight: '50vh',
         }}
       >
         {children}

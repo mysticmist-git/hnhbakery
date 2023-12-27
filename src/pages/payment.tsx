@@ -5,7 +5,7 @@ import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, storage } from '@/firebase/config';
 import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
-import { createBill } from '@/lib/DAO/billDAO';
+import { createBill, getBills } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
 import { createDelivery } from '@/lib/DAO/deliveryDAO';
 import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
@@ -53,7 +53,7 @@ const Payment = () => {
   const [cartNote, setCartNote] = useCartNote();
   //
   const [sales, setSales] = useState<Sale[]>([]);
-  const [salePrice, setSalePrice] = useState(0);
+  const [salePrice, setSalePrice] = useState<number>(0);
   const [chosenSale, setChosenSale] = useState<Sale | null>(null);
   //
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -133,6 +133,22 @@ const Payment = () => {
         if (user) {
           const userData = await getUserByUid(user.uid);
           setUserData(userData);
+
+          if (sales && userData) {
+            const usedSale_ids = await getBills(
+              userData.group_id,
+              userData.id
+            ).then((bills) => bills.map((bill) => bill.sale_id));
+
+            setSales(
+              sales.filter((sale) => {
+                if (sale.isDisposable && usedSale_ids.includes(sale.id)) {
+                  return false;
+                }
+                return true;
+              })
+            );
+          }
         }
       } catch (error) {
         console.log(error);

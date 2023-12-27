@@ -137,32 +137,45 @@ export async function getProductTypeTableRows() {
   return productTypeTableRows;
 }
 
-export async function getAvailableProductTypeTableRows() {
-  const productTypeTableRows: ProductTypeTableRow[] = [];
-  const productTypes = (await getProductTypes()).filter((pro) => pro.active);
+export async function getAvailableProductTypeTableRows(ids?: string[]) {
+  let productTypes: ProductType[] = [];
 
-  for (let pro of productTypes) {
-    const productTableRows: ProductTableRow[] = [];
-    const products = (await getProducts(pro.id)).filter((p) => p.active);
+  if (ids) {
+    productTypes = await Promise.all(
+      ids.map(async (id) => await getProductTypeById(id))
+    ).then(
+      (res) =>
+        res.filter((pro) => pro !== undefined && pro.active) as ProductType[]
+    );
+  } else productTypes = (await getProductTypes()).filter((pro) => pro.active);
 
-    for (let p of products) {
-      const variants = (await getVariants(pro.id, p.id)).filter(
-        (v) => v.active
-      );
-      const feedbacks = await getFeedbacks(pro.id, p.id);
+  const products = await Promise.all(
+    productTypes.map(async (pro) => await getProducts(pro.id))
+  ).then((res) => res.flat());
 
-      productTableRows.push({
-        ...p,
+  const productTableRows: ProductTableRow[] = await Promise.all(
+    products.map(async (pro) => {
+      const variants = await getVariants(pro.product_type_id, pro.id);
+      const feedbacks = await getFeedbacks(pro.product_type_id, pro.id);
+      return {
+        ...pro,
         variants: variants,
         feedbacks: feedbacks,
-      });
-    }
+      } as ProductTableRow;
+    })
+  );
 
-    productTypeTableRows.push({
-      ...pro,
-      products: productTableRows,
-    });
-  }
+  const productTypeTableRows: ProductTypeTableRow[] = await Promise.all(
+    productTypes.map(async (pro) => {
+      const products = productTableRows.filter(
+        (product) => product.product_type_id === pro.id
+      );
+      return {
+        ...pro,
+        products: products,
+      } as ProductTypeTableRow;
+    })
+  );
 
   return productTypeTableRows;
 }

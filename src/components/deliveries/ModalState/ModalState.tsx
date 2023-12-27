@@ -20,6 +20,7 @@ import { updateBill } from '@/lib/DAO/billDAO';
 import { updateSale } from '@/lib/DAO/saleDAO';
 import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
 import { updateUser } from '@/lib/DAO/userDAO';
+import { GUEST_UID } from '@/lib/DAO/groupDAO';
 
 export default function ModalState({
   open,
@@ -144,7 +145,7 @@ export default function ModalState({
                       deliveryState!.state =
                         billState == 'paid' ? 'refunded' : 'cancelled';
 
-                      // Cập nhật Sale khi thanh toán thành công
+                      // Cập nhật Sale khi refunded
                       if (deliveryState && deliveryState.sale) {
                         const usedTurn: number =
                           parseInt(deliveryState.sale.usedTurn.toString()) - 1;
@@ -182,10 +183,15 @@ export default function ModalState({
                         const customerRank = await getCustomerRank(
                           deliveryState.customer.rankId
                         );
-                        const rankId =
+                        let rankId =
                           paidMoney < customerRank!.minPaidMoney
                             ? parseInt(deliveryState.customer.rankId) - 1
                             : deliveryState.customer.rankId;
+
+                        rankId =
+                          deliveryState.customer.uid != GUEST_UID
+                            ? rankId
+                            : '1';
 
                         await updateUser(
                           deliveryState.customer.group_id,
