@@ -5,7 +5,9 @@ import TimeRangeInput, {
   CustomFromTo,
   initCustomFromTo,
 } from '@/components/report/TimeRangeInput/TimeRangeInput';
+import { getBatches } from '@/lib/DAO/batchDAO';
 import { getBillTableRows } from '@/lib/DAO/billDAO';
+import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import {
   getFromDateToDateText,
   getMainTabData,
@@ -18,7 +20,9 @@ import {
   ReportTab,
   TimeRange,
 } from '@/lib/types/report';
+import Batch from '@/models/batch';
 import { BillTableRow } from '@/models/bill';
+import { ProductTypeTableRow } from '@/models/productType';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import { Divider, Grid } from '@mui/material';
 import Chart from 'chart.js/auto';
@@ -41,24 +45,34 @@ export type MainTabRevenue = {
 
 export type MainTabBatch = {
   totalBatch: number;
-  soldBatch: number;
-  expiredBatch: number;
+  quantity: number;
+  soldCake: number;
+  soldCakePercent: number;
 };
 
-const cachedGetAllBills = withHashCacheAsync(getBillTableRows);
+const cachedGetBillTableRows = withHashCacheAsync(getBillTableRows);
+const cachedGetBatches = withHashCacheAsync(getBatches);
 
 async function getBillsInRange(from: Date, to: Date) {
-  const bills = await cachedGetAllBills();
+  const bills = await cachedGetBillTableRows();
   const filter = bills.filter(
     (bill) =>
       dayjs(bill.created_at).isAfter(dayjs(from)) &&
       dayjs(bill.created_at).isBefore(dayjs(to))
   );
-  console.log(filter);
   return filter;
 }
+async function getBatchesInRange(from: Date, to: Date) {
+  const [dayjsFrom, dayjsTo] = [dayjs(from), dayjs(to)];
+  const batches = await cachedGetBatches();
+  return batches.filter(
+    (batch) =>
+      dayjs(batch.created_at).isAfter(dayjsFrom) &&
+      dayjs(batch.created_at).isBefore(dayjsTo)
+  );
+}
 
-const DEFAULT_MAIN_TAB_DATA = {
+const DEFAULT_MAIN_TAB_DATA: MainTabData = {
   revenue: {
     totalRevenue: 0,
     saleAmount: 0,
@@ -66,8 +80,9 @@ const DEFAULT_MAIN_TAB_DATA = {
   },
   batch: {
     totalBatch: 0,
-    soldBatch: 0,
-    expiredBatch: 0,
+    quantity: 0,
+    soldCake: 0,
+    soldCakePercent: 0,
   },
 };
 
@@ -121,8 +136,9 @@ function Report() {
 
   const [currentTab, setCurrentTab] = useState<ReportTab>('main');
   const [billTableRows, setBillTableRows] = useState<BillTableRow[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
 
-  const fetchData = useCallback(async () => {
+  const resolveTimeRange = useCallback((): [Date, Date] => {
     let from: Date;
     let to: Date;
     if (timeRangeType === 'interval') {
@@ -131,7 +147,7 @@ function Report() {
       );
       if (!currentInterval) {
         setBillTableRows([]);
-        return;
+        throw new Error('Invalid interval');
       }
       from = currentInterval.from;
       to = currentInterval.to;
@@ -140,15 +156,7 @@ function Report() {
       to = customFromTo.to;
     }
 
-    try {
-      const bills = await getBillsInRange(
-        dayjs(from).toDate(),
-        dayjs(to).toDate()
-      );
-      setBillTableRows(bills);
-    } catch (error) {
-      console.log(error);
-    }
+    return [from, to];
   }, [
     currentIntervalIndex,
     customFromTo.from,
@@ -157,14 +165,38 @@ function Report() {
     timeRangeType,
   ]);
 
+  const fetchData = useCallback(async () => {
+    let from: Date;
+    let to: Date;
+    try {
+      [from, to] = resolveTimeRange();
+    } catch {
+      return;
+    }
+    try {
+      const bills = await getBillsInRange(
+        dayjs(from).toDate(),
+        dayjs(to).toDate()
+      );
+      const batches = await getBatchesInRange(
+        dayjs(from).toDate(),
+        dayjs(to).toDate()
+      );
+      setBillTableRows(bills);
+      setBatches(batches);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [resolveTimeRange]);
+
   useEffect(() => {
     fetchData();
   }, [currentIntervalIndex, fetchData, intervals, timeRangeType]);
 
   useEffect(() => {
-    const mainTabData = getMainTabData(billTableRows);
+    const mainTabData = getMainTabData(billTableRows, batches);
     setMainTabData(mainTabData);
-  }, [billTableRows, billTableRows.length]);
+  }, [batches, billTableRows, billTableRows.length]);
 
   //#region Main Tab
 

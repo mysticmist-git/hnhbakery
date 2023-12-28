@@ -31,6 +31,49 @@ import { ChartData, ChartOptions } from 'chart.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
 
+const colors: [number, number, number][] = [
+  [0, 0, 0],
+  [255, 255, 255],
+  [255, 0, 0],
+  [0, 255, 0],
+  [0, 0, 255],
+  [255, 255, 0],
+  [255, 0, 255],
+  [0, 255, 255],
+  [128, 128, 128],
+  [192, 192, 192],
+  [255, 165, 0],
+  [255, 215, 0],
+  [0, 128, 0],
+  [0, 176, 80],
+  [0, 255, 127],
+  [0, 0, 128],
+  [0, 0, 192],
+  [128, 0, 128],
+  [128, 0, 192],
+  [128, 128, 0],
+  [128, 128, 64],
+  [192, 192, 128],
+  [255, 255, 128],
+  [255, 255, 192],
+  [128, 64, 0],
+  [128, 128, 128],
+  [255, 0, 128],
+  [255, 0, 192],
+  [0, 128, 128],
+  [0, 128, 192],
+  [0, 192, 128],
+  [0, 192, 192],
+  [128, 128, 192],
+  [255, 128, 128],
+  [255, 128, 192],
+];
+function getRgba(alpha?: number): string {
+  const randomIndex = Math.floor(Math.random() * colors.length);
+  const [r, g, b] = colors[randomIndex];
+  return `rgba(${r}, ${g}, ${b}, ${alpha || 1})`;
+}
+
 function resolveRevenueChartLabels(
   intervalType: IntervalType,
   data: number[]
@@ -164,9 +207,8 @@ export default function RevenueTab({
         {
           label: '% Doanh thu',
           data: entries.map((entry) => entry[1].percent),
-          backgroundColor: entries.map(
-            () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
-          ),
+          backgroundColor: entries.map(() => getRgba()),
+          borderColor: entries.map(() => getRgba(0.8)),
         },
       ],
     };
@@ -180,9 +222,8 @@ export default function RevenueTab({
           {
             label: '% Doanh thu',
             data: entries.map((entry) => entry[1].percent),
-            backgroundColor: entries.map(
-              () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
-            ),
+            backgroundColor: entries.map(() => getRgba(0.6)),
+            borderColor: entries.map(() => getRgba(0.8)),
           },
         ],
       };

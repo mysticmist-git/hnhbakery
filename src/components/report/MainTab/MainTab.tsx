@@ -22,6 +22,7 @@ export default function MainTab({
           sx={{
             borderRadius: 4,
             display: 'flex',
+            height: 240,
           }}
         >
           <Grid container>
@@ -59,10 +60,11 @@ export default function MainTab({
           sx={{
             borderRadius: 4,
             display: 'flex',
+            height: 240,
           }}
         >
           <Grid container>
-            <Grid item xs={12} textAlign="center" px={4} pt={4}>
+            <Grid item xs={12} textAlign={'center'} pt={4} px={4}>
               <Typography typography="h5">Lô bánh làm ra</Typography>
               <Typography>{data.batch.totalBatch}</Typography>
             </Grid>
@@ -70,15 +72,15 @@ export default function MainTab({
               <Divider />
             </Grid>
             <Grid item xs={6} textAlign={'center'} pl={4} pb={4}>
-              <Typography typography="h5">Lô bánh đã bán</Typography>
+              <Typography typography="h5">Tổng bánh đã bán</Typography>
               <Typography color="success.main">
-                {data.batch.soldBatch}
+                {data.batch.soldCake}
               </Typography>
             </Grid>
             <Grid item xs={6} textAlign={'center'} pr={4} pb={4}>
-              <Typography typography="h5">Lô bánh hết hạn</Typography>
+              <Typography typography="h5">Tỉ lệ bán</Typography>
               <Typography color="error.main">
-                {data.batch.expiredBatch}
+                {data.batch.soldCakePercent}%
               </Typography>
             </Grid>
           </Grid>

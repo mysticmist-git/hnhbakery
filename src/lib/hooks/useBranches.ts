@@ -2,18 +2,21 @@ import Branch from '@/models/branch';
 import { useEffect, useState } from 'react';
 import { getBranches } from '../DAO/branchDAO';
 
+let branches: Branch[] | null = null;
 function useBranches() {
-  const [branches, setBranches] = useState<Branch[]>([]);
-
+  const [localBranches, setLocalBranches] = useState<Branch[]>([]);
   useEffect(() => {
     async function getData() {
-      setBranches((await getBranches()) ?? []);
+      if (!branches) {
+        branches = await getBranches();
+      }
+      setLocalBranches(branches);
     }
 
     getData();
   }, []);
 
-  return branches;
+  return localBranches;
 }
 
 export default useBranches;

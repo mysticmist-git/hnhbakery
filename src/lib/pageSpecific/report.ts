@@ -1,6 +1,7 @@
 import Batch from '@/models/batch';
 import Bill, { BillTableRow } from '@/models/bill';
-import { MainTabBatch } from '@/pages/manager/reports';
+import { ProductTypeTableRow } from '@/models/productType';
+import { MainTabBatch, MainTabData } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import { Interval, IntervalType } from '../types/report';
@@ -166,16 +167,15 @@ export function getUpdatedRightIntervals(intervals: Interval[]) {
 
   return cloneToUpdateIntervals;
 }
-export function getMainTabData(bills: BillTableRow[]) {
-  return {
+export function getMainTabData(
+  bills: BillTableRow[],
+  batches: Batch[]
+): MainTabData {
+  const mainTabData: MainTabData = {
     revenue: getMainTabRevenue(bills),
-    // TODO: todo
-    batch: {
-      soldBatch: 0,
-      expiredBatch: 0,
-      totalBatch: 0,
-    },
+    batch: getMainTabBatch(batches),
   };
+  return mainTabData;
 }
 export function getMainTabRevenue(bills: BillTableRow[]) {
   return {
@@ -188,13 +188,16 @@ export function getMainTabRevenue(bills: BillTableRow[]) {
       .reduce((a, b) => a + b, 0),
   };
 }
-export function getMainTabBatch(bills: Bill[], batches: Batch[]): MainTabBatch {
-  const totalBatch = batches.length;
-
+export function getMainTabBatch(batches: Batch[]): MainTabBatch {
+  const [sold, quantity] = batches.reduce(
+    (acc, cur) => [acc[0] + cur.sold, acc[1] + cur.quantity],
+    [0, 0]
+  );
   return {
-    soldBatch: 0,
-    expiredBatch: 0,
-    totalBatch: totalBatch,
+    totalBatch: batches.length,
+    quantity: quantity,
+    soldCake: sold,
+    soldCakePercent: Math.floor((sold / quantity) * 100) || 0,
   };
 }
 
