@@ -126,6 +126,7 @@ const Payment = () => {
     }
     get();
   }, []);
+  console.log(sales);
 
   useEffect(() => {
     async function get() {
@@ -134,7 +135,7 @@ const Payment = () => {
           const userData = await getUserByUid(user.uid);
           setUserData(userData);
 
-          if (sales && userData) {
+          if (sales && sales.length > 0 && userData) {
             const usedSale_ids = await getBills(
               userData.group_id,
               userData.id
