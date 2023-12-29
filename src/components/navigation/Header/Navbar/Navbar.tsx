@@ -218,6 +218,7 @@ function Navbar() {
   //#endregion
   //#region Scroll
   const [isScrolled, setIsScrolled] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   const handleScroll = () => {
     const currentScrollPos = window.pageYOffset;
@@ -226,18 +227,6 @@ function Navbar() {
     } else {
       setIsScrolled(false);
     }
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  //#endregion
-  //#region CartCount Hên ở đây nè Hên!
-
-  const [cartCount, setCartCount] = useState(0);
-
-  useEffect(() => {
     const currentLocalCart = localStorage.getItem(LOCAL_CART_KEY);
     if (!currentLocalCart) {
       if (cartCount != 0) {
@@ -254,8 +243,12 @@ function Navbar() {
         setCartCount(total);
       }
     }
-  }, [cartCount]);
+  };
 
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   //#endregion
 
   return (

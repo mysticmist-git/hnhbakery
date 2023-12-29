@@ -69,12 +69,26 @@ export function isVNPhoneNumber(number: string) {
 
 export function formatPrice(
   price: number | undefined,
-  unitFormat: string = 'đồng'
+  unitFormat: string = 'đồng',
+  short: boolean = false
 ): string {
   if (!price) {
     return '0' + ' ' + unitFormat;
   }
   const formatter = new Intl.NumberFormat('vi-VN');
+  if (short) {
+    let result = '';
+    if (price >= 1000000000) {
+      result = formatter.format(price / 1000000000) + ' tỷ';
+    } else if (price >= 1000000) {
+      result = formatter.format(price / 1000000) + ' triệu';
+    } else if (price >= 1000) {
+      result = formatter.format(price / 1000) + ' nghìn';
+    } else {
+      result = formatter.format(price);
+    }
+    return result + ' ' + unitFormat;
+  }
   return `${formatter.format(price)} ${unitFormat}`;
 }
 export function filterDuplicates<T>(array: T[]) {

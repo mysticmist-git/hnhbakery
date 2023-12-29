@@ -17,6 +17,10 @@ import { CustomIconButton } from '../../buttons';
 import Bill, { BillTableRow } from '@/models/bill';
 import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
 import { updateBill } from '@/lib/DAO/billDAO';
+import { updateSale } from '@/lib/DAO/saleDAO';
+import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
+import { updateUser } from '@/lib/DAO/userDAO';
+import { GUEST_UID } from '@/lib/DAO/groupDAO';
 
 export default function ModalState({
   open,
@@ -140,6 +144,65 @@ export default function ModalState({
                       );
                       deliveryState!.state =
                         billState == 'paid' ? 'refunded' : 'cancelled';
+
+                      // Cập nhật Sale khi refunded
+                      if (deliveryState && deliveryState.sale) {
+                        const usedTurn: number =
+                          parseInt(deliveryState.sale.usedTurn.toString()) - 1;
+
+                        const totalSalePrice: number =
+                          deliveryState.state == 'refunded'
+                            ? parseFloat(
+                                deliveryState.sale.totalSalePrice.toString()
+                              ) -
+                              parseFloat(deliveryState.sale_price.toString())
+                            : deliveryState.sale.totalSalePrice;
+
+                        await updateSale(deliveryState.sale_id, {
+                          ...deliveryState.sale,
+                          usedTurn: parseInt(usedTurn.toString()),
+                          totalSalePrice: parseFloat(totalSalePrice.toString()),
+                        });
+                      }
+
+                      // Cập nhật User
+                      if (
+                        deliveryState &&
+                        deliveryState.customer &&
+                        deliveryState.customer.paidMoney &&
+                        deliveryState.customer.rankId
+                      ) {
+                        const paidMoney: number =
+                          deliveryState.state == 'refunded'
+                            ? parseFloat(
+                                deliveryState.customer.paidMoney.toString()
+                              ) -
+                              parseFloat(deliveryState.final_price.toString())
+                            : deliveryState.customer.paidMoney;
+
+                        const customerRank = await getCustomerRank(
+                          deliveryState.customer.rankId
+                        );
+                        let rankId =
+                          paidMoney < customerRank!.minPaidMoney
+                            ? parseInt(deliveryState.customer.rankId) - 1
+                            : deliveryState.customer.rankId;
+
+                        rankId =
+                          deliveryState.customer.uid != GUEST_UID
+                            ? rankId
+                            : '1';
+
+                        await updateUser(
+                          deliveryState.customer.group_id,
+                          deliveryState.customer.id,
+                          {
+                            ...deliveryState.customer,
+                            paidMoney: parseFloat(paidMoney.toString()),
+                            rankId: rankId.toString(),
+                          }
+                        );
+                      }
                     }
 
                     handleSnackbarAlert('success', 'Hủy giao hàng thành công!');

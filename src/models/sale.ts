@@ -29,6 +29,7 @@ type Sale = WithCreatedUpdated &
     minBillTotalPrice: number;
     minRankId: string;
     public: boolean;
+    isDisposable: boolean;
   };
 
 const saleConverter: FirestoreDataConverter<Sale> = {
@@ -81,6 +82,7 @@ export function InitSale() {
     created_at: new Date(),
     updated_at: new Date(),
     active: true,
+    isDisposable: false,
   };
   return data;
 }

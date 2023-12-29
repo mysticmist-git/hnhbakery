@@ -5,7 +5,7 @@ import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, storage } from '@/firebase/config';
 import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
-import { createBill } from '@/lib/DAO/billDAO';
+import { createBill, getBills } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
 import { createDelivery } from '@/lib/DAO/deliveryDAO';
 import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
@@ -38,7 +38,7 @@ import { ref, uploadBytes } from 'firebase/storage';
 import { DEFAULT_GROUP_ID, GUEST_ID, GUEST_UID } from '@/lib/DAO/groupDAO';
 import BookingItem from '@/models/bookingItem';
 import { createBookingItem, updateBookingItem } from '@/lib/DAO/bookingItemDAO';
-import { getSales } from '@/lib/DAO/saleDAO';
+import { getSales, updateSale } from '@/lib/DAO/saleDAO';
 import { formatPrice } from '@/lib/utils';
 // #endregion
 
@@ -53,7 +53,7 @@ const Payment = () => {
   const [cartNote, setCartNote] = useCartNote();
   //
   const [sales, setSales] = useState<Sale[]>([]);
-  const [salePrice, setSalePrice] = useState(0);
+  const [salePrice, setSalePrice] = useState<number>(0);
   const [chosenSale, setChosenSale] = useState<Sale | null>(null);
   //
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -109,11 +109,14 @@ const Payment = () => {
               if (!sale.active) {
                 return false;
               }
-              if (sale.end_at.getTime() < new Date().getTime()) {
+              if (sale.end_at.getTime() <= new Date().getTime()) {
                 return false;
-              } else {
-                return true;
               }
+              if (sale.usedTurn >= sale.limitTurn) {
+                return false;
+              }
+
+              return true;
             })
             .sort((a, b) => b.percent - a.percent)
         );
@@ -123,6 +126,7 @@ const Payment = () => {
     }
     get();
   }, []);
+  console.log(sales);
 
   useEffect(() => {
     async function get() {
@@ -130,6 +134,22 @@ const Payment = () => {
         if (user) {
           const userData = await getUserByUid(user.uid);
           setUserData(userData);
+
+          if (sales && sales.length > 0 && userData) {
+            const usedSale_ids = await getBills(
+              userData.group_id,
+              userData.id
+            ).then((bills) => bills.map((bill) => bill.sale_id));
+
+            setSales(
+              sales.filter((sale) => {
+                if (sale.isDisposable && usedSale_ids.includes(sale.id)) {
+                  return false;
+                }
+                return true;
+              })
+            );
+          }
         }
       } catch (error) {
         console.log(error);
@@ -282,6 +302,14 @@ const Payment = () => {
         // Deelte localStorage cart
         setCart([]);
         setCartNote('');
+        localStorage.removeItem('hasRun');
+
+        if (chosenSale) {
+          await updateSale(chosenSale.id, {
+            ...chosenSale,
+            usedTurn: chosenSale.usedTurn + 1,
+          });
+        }
 
         if (type === 'Tiền mặt') {
           router.push(`/tienmat-result?billId=${billData.id}`);
@@ -518,8 +546,6 @@ const Payment = () => {
       return;
     }
   }, [deliveryForm]);
-
-  console.log(isBooking);
 
   // #endregion
 

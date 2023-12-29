@@ -190,23 +190,6 @@ export default function MyModalAdd({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
-                <Outlined_TextField
-                  textStyle={textStyle}
-                  label="Mã code"
-                  value={modalSale?.code}
-                  onChange={(e: any) => {
-                    setModalSale({ ...modalSale, code: e.target.value });
-                  }}
-                  InputProps={{
-                    readOnly: false,
-                    style: {
-                      pointerEvents: 'auto',
-                      borderRadius: '8px',
-                    },
-                  }}
-                />
-              </Grid>
 
               <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
                 <Outlined_TextField
@@ -229,6 +212,24 @@ export default function MyModalAdd({
                     endAdornment: (
                       <InputAdornment position="end">%</InputAdornment>
                     ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Mã code"
+                  value={modalSale?.code}
+                  onChange={(e: any) => {
+                    setModalSale({ ...modalSale, code: e.target.value });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
                   }}
                 />
               </Grid>
@@ -261,7 +262,7 @@ export default function MyModalAdd({
               <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
                 <Outlined_TextField
                   textStyle={textStyle}
-                  label="Sử dụng tối đa"
+                  label="Tổng lượt có thể sử dụng"
                   type="number"
                   value={modalSale?.limitTurn}
                   onChange={(e: any) => {
@@ -311,7 +312,7 @@ export default function MyModalAdd({
               <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
                 <Outlined_TextField
                   textStyle={textStyle}
-                  label="Bậc tối thiểu"
+                  label="Bậc sử dụng tối thiểu"
                   select
                   value={
                     customerRankData.find(
@@ -417,6 +418,7 @@ export default function MyModalAdd({
                   }}
                 />
               </Grid>
+
               <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
                 <DatePicker
                   label="Kết thúc"
@@ -452,6 +454,45 @@ export default function MyModalAdd({
                   }}
                 />
               </Grid>
+
+              <Grid item xs={12} md={6} lg={12} alignSelf={'stretch'}>
+                <Outlined_TextField
+                  textStyle={textStyle}
+                  label="Cho phép mỗi tài khoản sử dụng nhiều lần"
+                  select
+                  value={
+                    !modalSale?.isDisposable ? 'Cho phép' : 'Không cho phép'
+                  }
+                  onChange={(e: any) => {
+                    setModalSale({
+                      ...modalSale,
+                      isDisposable:
+                        e.target.value == 'Không cho phép' ? true : false,
+                    });
+                  }}
+                  InputProps={{
+                    readOnly: false,
+                    style: {
+                      pointerEvents: 'auto',
+                      borderRadius: '8px',
+                    },
+                  }}
+                >
+                  <MenuItem
+                    value={'Cho phép'}
+                    sx={{ fontSize: 'body2.fontSize' }}
+                  >
+                    Cho phép
+                  </MenuItem>
+                  <MenuItem
+                    value={'Không cho phép'}
+                    sx={{ fontSize: 'body2.fontSize' }}
+                  >
+                    Không cho phép
+                  </MenuItem>
+                </Outlined_TextField>
+              </Grid>
+
               <Grid item xs={12} alignSelf={'stretch'}>
                 <Outlined_TextField
                   textStyle={textStyle}

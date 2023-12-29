@@ -1,5 +1,5 @@
 import bg2 from '@/assets/Decorate/bg2.png';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Modal, Typography, useTheme } from '@mui/material';
 import React, { memo, useEffect, useState } from 'react';
 
 import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
@@ -23,80 +23,112 @@ import {
 // import { ProductObject, ProductTypeObject } from '@/lib/models';
 import { getBatches } from '@/lib/DAO/batchDAO';
 import { getProduct } from '@/lib/DAO/productDAO';
-import { getProductTypes } from '@/lib/DAO/productTypeDAO';
+import {
+  getAvailableProductTypeTableRows,
+  getProductTypes,
+} from '@/lib/DAO/productTypeDAO';
 import Batch from '@/models/batch';
-import Product from '@/models/product';
-import ProductType from '@/models/productType';
+import Product, { ProductTableRow } from '@/models/product';
+import ProductType, { ProductTypeTableRow } from '@/models/productType';
 import { alpha } from '@mui/system';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import KhuyenNghiSanPhamDialog from '@/components/home/KhuyenNghiSanPhamDialog';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase/config';
+import { getCustomerReference } from '@/lib/DAO/customerReferenceDAO';
+import CustomerReference from '@/models/CustomerReference';
 
 function Home() {
-  //#region States
-
   const [carouselImagesState, setCarouselImagesState] = useState<
     CarouselImageItem[]
   >([]);
   const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
-
-  //#endregion
-
-  //#region Hooks
-
+  const [recommends, setRecommends] = useState<Product[]>([]);
+  const [user, userLoading, userError] = useAuthState(auth);
   const theme = useTheme();
 
+  //#region Gợi ý sản phẩm
+  const [openThamGiaKhaoSat, setOpenThamGiaKhaoSat] = React.useState(false);
+  const handleClose = () => setOpenThamGiaKhaoSat(false);
   //#endregion
 
   //#region UseEffects
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const [productTypesPromise, bestSellersPromise] =
-  //         await Promise.allSettled([
-  //           await getHomeProductTypes(),
-  //           await getHomeBestSellers(),
-  //         ]);
-  //       const productTypes =
-  //         productTypesPromise.status === 'fulfilled'
-  //           ? productTypesPromise.value
-  //           : [];
-  //       const bestSellers =
-  //         bestSellersPromise.status === 'fulfilled'
-  //           ? bestSellersPromise.value
-  //           : [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productTypesPromise, bestSellersPromise] =
+          await Promise.allSettled([
+            await getHomeProductTypes(),
+            await getHomeBestSellers(),
+          ]);
+        const productTypes =
+          productTypesPromise.status === 'fulfilled'
+            ? productTypesPromise.value
+            : [];
+        const bestSellers =
+          bestSellersPromise.status === 'fulfilled'
+            ? bestSellersPromise.value
+            : [];
 
-  //       setProductTypes(productTypes);
-  //       setBestSellers(bestSellers);
-  //     } catch (error: any) {
-  //       console.log(error);
-  //     }
-  //   };
+        setProductTypes(productTypes);
+        setBestSellers(bestSellers);
+        if (!user) {
+          setOpenThamGiaKhaoSat(true);
+          setRecommends([]);
+          return;
+        }
+      } catch (error: any) {
+        console.log(error);
+      }
+    };
 
-  //   fetchData();
+    fetchData();
 
-  //   //--------------
+    //--------------
 
-  //   const importImages = async () => {
-  //     const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
+    const importImages = async () => {
+      const imagePaths = ['1.jpg', '2.jpg', '3.jpg', '4.jpg'];
 
-  //     const images = await Promise.all(
-  //       imagePaths.map((path) => import(`@/assets/Carousel/${path}`))
-  //     );
+      const images = await Promise.all(
+        imagePaths.map((path) => import(`@/assets/Carousel/${path}`))
+      );
 
-  //     setCarouselImagesState(() =>
-  //       images.map(function (image) {
-  //         return {
-  //           src: image.default.src,
-  //           alt: '',
-  //           href: '#',
-  //         };
-  //       })
-  //     );
-  //   };
+      setCarouselImagesState(() =>
+        images.map(function (image) {
+          return {
+            src: image.default.src,
+            alt: '',
+            href: '#',
+          };
+        })
+      );
+    };
 
-  //   importImages();
-  // }, []);
+    importImages();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!user) {
+          setRecommends([]);
+          return;
+        }
+        const cusrefer = await getCustomerReference(user.uid);
+        if (cusrefer) {
+          const data = await getRecommendProducts(cusrefer);
+          setRecommends(data);
+        } else {
+          setOpenThamGiaKhaoSat(true);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [user]);
 
   //#endregion
 
@@ -141,6 +173,31 @@ function Home() {
             </TopSlideInDiv>
 
             <BottomSlideInDiv>
+              {recommends.length > 0 && (
+                <FadeDiv>
+                  <Box
+                    component={'div'}
+                    sx={{
+                      py: 8,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <CustomCardSlider
+                      duration={1000}
+                      imageHeight="184px"
+                      descriptionHeight="32px"
+                      CustomCard={CustomCardWithButton}
+                      title={'Gợi ý cho bạn'}
+                      productList={recommends}
+                      buttonOnclick={() => {}}
+                    />
+                  </Box>
+                </FadeDiv>
+              )}
+
               <FadeDiv>
                 <Box
                   component={'div'}
@@ -203,6 +260,11 @@ function Home() {
               </FadeDiv>
             </BottomSlideInDiv>
           </Box>
+
+          <KhuyenNghiSanPhamDialog
+            open={openThamGiaKhaoSat}
+            handleClose={handleClose}
+          />
         </Box>
       </HomeContext.Provider>
     </>
@@ -262,17 +324,67 @@ async function getBestSellerProducts(): Promise<Product[]> {
   }
   batchesResult.sort((a, b) => b.sold - a.sold).slice(0, queryLimit);
 
-  const productResult: Product[] = [];
-  for (let batch of batchesResult) {
-    const product = await getProduct(batch.product_type_id, batch.product_id);
-    if (product) {
-      productResult.push(product);
-    }
-  }
-
-  return productResult.filter(
-    (product) => product.images.length > 0 && product.active
+  const productResult: Product[] = await Promise.all(
+    batchesResult.map(
+      async (batch) => await getProduct(batch.product_type_id, batch.product_id)
+    )
+  ).then(
+    (products) =>
+      products.filter(
+        (product) =>
+          product != undefined && product.images.length > 0 && product.active
+      ) as Product[]
   );
+
+  return productResult;
+}
+
+async function getRecommendProducts(
+  customerReference: CustomerReference
+): Promise<Product[]> {
+  const queryLimit = 7;
+
+  const productTypes: ProductTypeTableRow[] =
+    await getAvailableProductTypeTableRows(customerReference.productTypeIds);
+  let products: ProductTableRow[] = productTypes
+    .flatMap((productType) => productType.products)
+    .filter(
+      (product) =>
+        product != undefined && product.images.length > 0 && product.active
+    ) as ProductTableRow[];
+
+  const recommendProducts: Product[] = products.filter((product) => {
+    if (!product) {
+      return false;
+    }
+    const prices = product.variants
+      ?.map((variant) => variant.price)
+      .filter((price) => price != undefined);
+
+    const price = prices?.some(
+      (price) =>
+        price <= customerReference.prices.max &&
+        price >= customerReference.prices.min
+    );
+    if (!price) {
+      return false;
+    }
+
+    const color = product.colors.some((color) =>
+      customerReference.colors.includes(color)
+    );
+    if (!color) {
+      return false;
+    }
+    const sizes = product.variants?.map((variant) => variant.size);
+    const size = sizes?.some((size) => customerReference.sizes.includes(size));
+    if (!size) {
+      return false;
+    }
+    return true;
+  });
+
+  return recommendProducts.slice(0, queryLimit);
 }
 
 //#endregion

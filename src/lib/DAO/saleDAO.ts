@@ -9,7 +9,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { COLLECTION_NAME } from '../constants';
 

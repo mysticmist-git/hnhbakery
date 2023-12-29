@@ -1,8 +1,13 @@
 import ImageBackground from '@/components/Imagebackground';
 import { CaiKhungCoTitle } from '@/components/layouts';
 import { auth } from '@/firebase/config';
-import { getBillTableRowById, updateBillField } from '@/lib/DAO/billDAO';
-import { getGuestUser, getUserByUid } from '@/lib/DAO/userDAO';
+import {
+  getBill,
+  getBillTableRowById,
+  updateBill,
+  updateBillField,
+} from '@/lib/DAO/billDAO';
+import { getGuestUser, getUserByUid, updateUser } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import User from '@/models/user';
 import {
@@ -25,6 +30,13 @@ import { ExpandMore } from '@mui/icons-material';
 import { formatDateString } from '@/lib/utils';
 import { BillAccordionContent } from '../components/profile/BillAccordionContent';
 import { sendBillToEmail } from '@/lib/services/MailService';
+import { updateSale } from '@/lib/DAO/saleDAO';
+import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
+import {
+  getCustomerReference,
+  updateCustomerReferenceByBillTableRow,
+} from '@/lib/DAO/customerReferenceDAO';
+import { GUEST_UID } from '@/lib/DAO/groupDAO';
 
 const resolveResponseCode = (responseCode: string) => {
   switch (responseCode) {
@@ -61,7 +73,6 @@ const resolveResponseCode = (responseCode: string) => {
 
 const PaymentResult = () => {
   //#region Hooks
-
   const theme = useTheme();
   const handlerSnackbarAlert = useSnackbarService();
   const [load, stop] = useLoadingService();
@@ -71,7 +82,7 @@ const PaymentResult = () => {
   //#endregion
   //#region States
 
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<User | undefined | null>(undefined);
   const [isSuccess, setIsSuccess] = useState<boolean>(true);
   const [responseMessage, setResponseMessage] = useState<string>('');
   const [isProcessed, setIsProcessed] = useState(false);
@@ -143,7 +154,8 @@ const PaymentResult = () => {
         !responseCode ||
         !responseBillId ||
         responseCode === '' ||
-        responseBillId === ''
+        responseBillId === '' ||
+        typeof responseBillId !== 'string'
       )
         return;
 
@@ -196,12 +208,13 @@ const PaymentResult = () => {
         }
       }
 
-      const responseMessage = resolveResponseCode(responseCode as string);
-      setResponseMessage(() => responseMessage);
+      const bill = await getBillTableRowById(userData.uid, responseBillId);
+      if (bill) {
+        setBillData(bill);
 
-      if (['00', '07'].includes(responseCode as string)) {
-        // Update payment time
-        try {
+        const hasRunBefore = localStorage.getItem('hasRun') == 'true';
+
+        if (!hasRunBefore) {
           await updateBillField(
             userData.group_id,
             userData.id,
@@ -210,28 +223,83 @@ const PaymentResult = () => {
               paid_time: new Date(),
             }
           );
-
-          setIsProcessed(true);
-        } catch (error) {
-          console.log(error);
         }
 
+        // Cập nhật customer reference
         if (
-          userData &&
-          responseBillId &&
-          typeof responseBillId === 'string' &&
-          responseBillId !== ''
+          bill.customer &&
+          bill.customer.uid != GUEST_UID &&
+          !hasRunBefore &&
+          ['00', '07'].includes(responseCode as string) &&
+          bill.billItems
         ) {
-          const data = await getBillTableRowById(userData.uid, responseBillId);
-          if (data) {
-            setBillData(data);
-          } else {
-            setBillData(null);
-          }
-        } else {
-          setBillData(null);
+          await updateCustomerReferenceByBillTableRow(bill);
         }
+
+        // Cập nhật Sale khi thanh toán thành công
+        if (bill.sale && !hasRunBefore) {
+          const usedTurn: number = ['00', '07'].includes(responseCode as string)
+            ? bill.sale.usedTurn
+            : bill.sale.usedTurn - 1;
+
+          console.log(usedTurn);
+
+          const totalSalePrice: number = ['00', '07'].includes(
+            responseCode as string
+          )
+            ? parseFloat(bill.sale.totalSalePrice.toString()) +
+              parseFloat(bill.sale_price.toString())
+            : bill.sale.totalSalePrice;
+
+          console.log(totalSalePrice);
+
+          await updateSale(bill.sale_id, {
+            ...bill.sale,
+            usedTurn: parseInt(usedTurn.toString()),
+            totalSalePrice: parseInt(totalSalePrice.toString()),
+          });
+        }
+
+        // Cập nhật User
+        if (
+          bill.customer &&
+          bill.customer.paidMoney &&
+          bill.customer.rankId &&
+          !hasRunBefore &&
+          ['00', '07'].includes(responseCode as string)
+        ) {
+          const paidMoney: number =
+            parseFloat(bill.customer.paidMoney.toString()) +
+            parseFloat(bill.final_price.toString());
+
+          console.log(paidMoney);
+
+          const customerRank = await getCustomerRank(bill.customer.rankId);
+          let rankId =
+            paidMoney >= customerRank!.maxPaidMoney
+              ? parseInt(bill.customer.rankId) + 1
+              : bill.customer.rankId;
+
+          rankId = bill.customer.uid != GUEST_UID ? rankId : '1';
+
+          console.log(rankId);
+
+          await updateUser(bill.customer.group_id, bill.customer.id, {
+            ...bill.customer,
+            paidMoney: parseInt(paidMoney.toString()),
+            rankId: rankId.toString(),
+          });
+        }
+
+        localStorage.setItem('hasRun', 'true');
+      } else {
+        setBillData(null);
       }
+
+      setIsProcessed(true);
+
+      const responseMessage = resolveResponseCode(responseCode as string);
+      setResponseMessage(() => responseMessage);
     };
 
     if (isProcessed) return;
@@ -353,7 +421,7 @@ const PaymentResult = () => {
           </>
         )}
 
-        {billData == null && (
+        {billData == null && isProcessed && (
           <Typography
             align="center"
             variant="body1"
@@ -365,6 +433,19 @@ const PaymentResult = () => {
             Hệ thống đang xảy ra sự cố.
             <br />
             Vui lòng quay lại sau!
+          </Typography>
+        )}
+
+        {billData == null && !isProcessed && (
+          <Typography
+            align="center"
+            variant="body1"
+            fontWeight={'bold'}
+            sx={{
+              color: 'grey.600',
+            }}
+          >
+            Hệ thống đang xử lý...
           </Typography>
         )}
 

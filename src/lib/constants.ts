@@ -43,6 +43,7 @@ export const COLLECTION_NAME = {
   USER_CHATS: 'user_chats',
   CHATS: 'chats',
   CUSTOMER_RANKS: 'customer_ranks',
+  CUSTOMER_REFERENCES: 'customer_references',
   NONE: 'none',
 };
 

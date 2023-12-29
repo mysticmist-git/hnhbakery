@@ -24,6 +24,11 @@ import { getDeliveryById, updateDelivery } from '@/lib/DAO/deliveryDAO';
 import { updateBill } from '@/lib/DAO/billDAO';
 import { sendBillToEmail } from '@/lib/services/MailService';
 import Delivery from '@/models/delivery';
+import { updateSale } from '@/lib/DAO/saleDAO';
+import { getCustomerRank } from '@/lib/DAO/customerRankDAO';
+import { updateUser } from '@/lib/DAO/userDAO';
+import { GUEST_ID, GUEST_UID } from '@/lib/DAO/groupDAO';
+import { updateCustomerReferenceByBillTableRow } from '@/lib/DAO/customerReferenceDAO';
 
 export default function MyModal({
   open,
@@ -126,6 +131,58 @@ export default function MyModal({
           bill.id,
           bill
         );
+
+        // Cập nhật customer reference
+        if (
+          modalDelivery.customer &&
+          modalDelivery.customer.uid != GUEST_UID &&
+          modalDelivery.billItems
+        ) {
+          await updateCustomerReferenceByBillTableRow(modalDelivery);
+        }
+
+        // Cập nhật Sale khi đơn thành công
+        if (modalDelivery.sale) {
+          const totalSalePrice: number =
+            parseFloat(modalDelivery.sale.totalSalePrice.toString()) +
+            parseFloat(modalDelivery.sale_price.toString());
+          await updateSale(modalDelivery.sale_id, {
+            ...modalDelivery.sale,
+            totalSalePrice: parseFloat(totalSalePrice.toString()),
+          });
+        }
+
+        // Cập nhật User rank và tiền đã thanh toán
+        if (
+          modalDelivery.customer &&
+          modalDelivery.customer.paidMoney &&
+          modalDelivery.customer.rankId
+        ) {
+          const paidMoney: number =
+            parseFloat(modalDelivery.customer.paidMoney.toString()) +
+            parseFloat(modalDelivery.final_price.toString());
+
+          const customerRank = await getCustomerRank(
+            modalDelivery.customer.rankId
+          );
+          let rankId =
+            paidMoney >= customerRank!.maxPaidMoney
+              ? parseInt(modalDelivery.customer.rankId) + 1
+              : modalDelivery.customer.rankId;
+
+          rankId = modalDelivery.customer.uid != GUEST_UID ? rankId : '1';
+
+          await updateUser(
+            modalDelivery.customer.group_id,
+            modalDelivery.customer.id,
+            {
+              ...modalDelivery.customer,
+              paidMoney: parseFloat(paidMoney.toString()),
+              rankId: rankId.toString(),
+            }
+          );
+        }
+
         modalDelivery.state = 'paid';
       }
 

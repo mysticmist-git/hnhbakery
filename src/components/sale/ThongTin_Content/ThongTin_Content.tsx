@@ -319,6 +319,20 @@ export default function ThongTin_Content({
               />
             </Grid>
 
+            <Grid item xs={12} md={6} lg={12} alignSelf={'stretch'}>
+              <Outlined_TextField
+                textStyle={textStyle}
+                label="Cho phép mỗi tài khoản sử dụng nhiều lần"
+                value={
+                  modalSale
+                    ? modalSale.isDisposable
+                      ? 'Không cho phép'
+                      : 'Cho phép'
+                    : 'Trống'
+                }
+              />
+            </Grid>
+
             <Grid item xs={12} md={6} lg={6} alignSelf={'stretch'}>
               <Outlined_TextField
                 textStyle={textStyle}
