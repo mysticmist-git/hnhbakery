@@ -1,280 +1,63 @@
 import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import useBatches from '@/lib/hooks/useBatches';
-import { ProductRevenue, VariantRevenue } from '@/lib/pageSpecific/report';
-import { BatchDataManagerStrategy } from '@/lib/strategies/DataManagerStrategy';
-import { formatPrice } from '@/lib/utils';
+import useBranches from '@/lib/hooks/useBranches';
+import {
+  BatchTabData,
+  ProductBatchData,
+  ProductTypeBatchData,
+  VariantBatchData,
+  getBatchTabData,
+} from '@/lib/pageSpecific/report';
 import Batch from '@/models/batch';
 import Branch from '@/models/branch';
 import { ProductTypeTableRow } from '@/models/productType';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import { ChevronLeft, KeyboardArrowDown } from '@mui/icons-material';
 import {
+  Autocomplete,
   Box,
   Card,
   CardContent,
   CardHeader,
+  Collapse,
   Divider,
   Grid,
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemButton,
   ListItemText,
+  Stack,
+  TextField,
   Typography,
 } from '@mui/material';
-import { ChildProcess } from 'child_process';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Type } from 'typescript';
 
 type BatchTabProps = {
+  types: ProductTypeTableRow[];
+  batches: Batch[];
   onClickBack(): void;
 };
 
-const cachedProductTypesTableRow = withHashCacheAsync(getProductTypeTableRows);
-function useProductTypeTableRows() {
-  const [productTypes, setProductTypes] = useState<ProductTypeTableRow[]>([]);
-  useEffect(() => {
-    async function fetchData() {
-      const types = await cachedProductTypesTableRow();
-      setProductTypes(types);
-    }
-    fetchData();
-  }, []);
+export default function BatchTab({
+  types,
+  batches,
+  onClickBack,
+}: BatchTabProps) {
+  const branches = useBranches();
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
 
-  return productTypes;
-}
-
-type GeneralBatchItemData = {
-  id: string;
-  name: string;
-  image?: string;
-  data: GeneralBatchData;
-};
-type GeneralBatchData = {
-  totalBatch: number;
-  totalBatchPercent: number;
-  quantity: number;
-  quantityPercent: number;
-  soldCake: number;
-  soldCakeToQuantityPercent: number;
-  soldCakePercent: number;
-};
-
-type WithGeneralBatchData<T> = T & GeneralBatchItemData;
-
-type BatchTabData = Pick<
-  GeneralBatchData,
-  'totalBatch' | 'quantity' | 'soldCake' | 'soldCakePercent'
-> & { productTypes: ProductTypeBatchData[] };
-type ProductTypeBatchData = WithGeneralBatchData<{
-  products: ProductBatchData[];
-}>;
-type ProductBatchData = WithGeneralBatchData<{
-  variants: VariantBatchData[];
-}>;
-type VariantBatchData = Omit<
-  WithGeneralBatchData<{
-    id: string;
-    material: string;
-    size: string;
-    batches: Batch[];
-  }>,
-  'name' | 'image'
->;
-
-function getBatchTabData(
-  productTypes: ProductTypeTableRow[],
-  batches: Batch[]
-): BatchTabData {
-  const groupedBatches = getGroupedBatches(batches);
-
-  const batchTabData = getDefaultBatchTabData(productTypes); // We will fill this data later
-
-  for (let i = 0; i < batchTabData.productTypes.length; i++) {
-    const type = batchTabData.productTypes[i];
-    if (!groupedBatches.has(type.id)) continue;
-
-    for (let j = 0; j < type.products!.length; j++) {
-      const product = type.products![j];
-      if (!groupedBatches.get(type.id)!.has(product.id)) continue;
-
-      for (let k = 0; k < productTypes[i].products![j].variants!.length; k++) {
-        const variant = product.variants![k];
-        if (
-          !groupedBatches.get(type.id)!.get(product.id)!.has(variant.id) ||
-          groupedBatches.get(type.id)!.get(product.id)!.get(variant.id)!
-            .length <= 0
-        )
-          continue;
-
-        variant.batches =
-          groupedBatches.get(type.id)!.get(product.id)!.get(variant.id)! || [];
-
-        // Calculate sold cake percent
-        variant.data.totalBatch = variant.batches.length;
-        [variant.data.soldCake, variant.data.quantity] = variant.batches.reduce(
-          (acc, cur) => [acc[0] + cur.sold, acc[1] + cur.quantity],
-          [0, 0]
-        );
-        variant.data.soldCakeToQuantityPercent =
-          Math.floor((variant.data.soldCake / variant.data.quantity) * 100) ??
-          0;
-
-        // Update product data
-        product.data.totalBatch += variant.data.totalBatch;
-        product.data.soldCake += variant.data.soldCake;
-        product.data.quantity += variant.data.quantity;
+  const data = useMemo(() => {
+    const filteredBatches = batches.filter((batch) => {
+      if (!selectedBranch) {
+        return true;
       }
-      // Calculate children percent data after parent gets needed data
-      for (let k = 0; k < productTypes[i].products![j].variants!.length; k++) {
-        const variant = product.variants![k];
-        if (!groupedBatches.get(type.id)!.get(product.id)!.has(variant.id))
-          continue;
-        variant.data.totalBatchPercent =
-          Math.floor(
-            (variant.data.totalBatch / product.data.totalBatch) * 100
-          ) ?? 0;
-        variant.data.quantityPercent =
-          Math.floor((variant.data.quantity / product.data.quantity) * 100) ??
-          0;
-        variant.data.soldCakePercent =
-          Math.floor((variant.data.soldCake / product.data.soldCake) * 100) ??
-          0;
-      }
-
-      // Update type data
-      type.data.totalBatch += product.data.totalBatch;
-      type.data.soldCake += product.data.soldCake;
-      type.data.quantity += product.data.quantity;
-    }
-    // Calculate children percent data after parent gets needed data
-    for (let j = 0; j < productTypes[i].products!.length; j++) {
-      const product = type.products![j];
-      if (!groupedBatches.get(type.id)!.has(product.id)) continue;
-
-      product.data.totalBatchPercent =
-        Math.floor((product.data.totalBatch / type.data.totalBatch) * 100) ?? 0;
-      product.data.quantityPercent =
-        Math.floor((product.data.quantity / type.data.quantity) * 100) ?? 0;
-      product.data.soldCakePercent =
-        Math.floor((product.data.soldCake / type.data.soldCake) * 100) ?? 0;
-    }
-
-    // Update batch data
-    batchTabData.totalBatch += type.data.totalBatch;
-    batchTabData.quantity += type.data.quantity;
-    batchTabData.soldCake += type.data.soldCake;
-  }
-  // Calculate children percent data after parent gets needed data
-  for (let i = 0; i < productTypes.length; i++) {
-    const type = batchTabData.productTypes[i];
-    if (!groupedBatches.has(type.id)) continue;
-
-    type.data.totalBatchPercent =
-      Math.floor((type.data.totalBatch / batchTabData.totalBatch) * 100) ?? 0;
-    type.data.quantityPercent =
-      Math.floor((type.data.quantity / batchTabData.quantity) * 100) ?? 0;
-    type.data.soldCakePercent =
-      Math.floor((type.data.soldCake / batchTabData.soldCake) * 100) ?? 0;
-  }
-
-  batchTabData.soldCakePercent =
-    Math.floor((batchTabData.soldCake / batchTabData.quantity) * 100) ?? 0;
-
-  return batchTabData;
-}
-function getDefaultBatchTabData(
-  productTypes: ProductTypeTableRow[]
-): BatchTabData {
-  const types = productTypes.map(
-    (type) =>
-      ({
-        id: type.id,
-        name: type.name,
-        image: type.image,
-        data: getDefaultGeneralBatchData(),
-        products: type.products?.map(
-          (product) =>
-            ({
-              id: product.id,
-              name: product.name,
-              image: product.images[0],
-              data: getDefaultGeneralBatchData(),
-              variants: product.variants?.map(
-                (variant) =>
-                  ({
-                    id: variant.id,
-                    material: variant.material,
-                    size: variant.size,
-                    data: getDefaultGeneralBatchData(),
-                    batches: [],
-                  } as VariantBatchData)
-              ),
-            } as ProductBatchData)
-        ),
-      } as ProductTypeBatchData)
-  );
-  return {
-    totalBatch: 0,
-    quantity: 0,
-    soldCake: 0,
-    soldCakePercent: 0,
-    productTypes: types,
-  } as BatchTabData;
-}
-function getDefaultGeneralBatchData() {
-  const data: GeneralBatchData = {
-    totalBatch: 0,
-    totalBatchPercent: 0,
-    quantity: 0,
-    quantityPercent: 0,
-    soldCake: 0,
-    soldCakeToQuantityPercent: 0,
-    soldCakePercent: 0,
-  };
-  return data;
-}
-function getGroupedBatches(batches: Batch[]) {
-  const groupedBatches: Map<
-    string,
-    Map<string, Map<string, Batch[]>>
-  > = new Map();
-  batches.forEach((batch) => {
-    if (groupedBatches.has(batch.product_type_id)) {
-      const productType = groupedBatches.get(batch.product_type_id);
-      if (productType) {
-        const product = productType.get(batch.product_id);
-        if (product) {
-          const variant = product.get(batch.variant_id);
-          if (variant) {
-            variant.push(batch);
-          } else {
-            product.set(batch.variant_id, [batch]);
-          }
-        } else {
-          productType.set(
-            batch.product_id,
-            new Map([[batch.variant_id, [batch]]])
-          );
-        }
-      }
-    } else {
-      groupedBatches.set(
-        batch.product_type_id,
-        new Map([[batch.product_id, new Map([[batch.variant_id, [batch]]])]])
-      );
-    }
-  });
-  return groupedBatches;
-}
-export default function BatchTab({ onClickBack }: BatchTabProps) {
-  const types = useProductTypeTableRows();
-  const batches = useBatches();
-  const [data, setData] = useState<BatchTabData>();
-  useEffect(() => {
-    setData(getBatchTabData(types, batches));
-  }, [batches, types]);
+      return batch.branch_id === selectedBranch.id;
+    });
+    return getBatchTabData(types, filteredBatches);
+  }, [batches, selectedBranch, types]);
 
   return (
     <>
@@ -309,7 +92,35 @@ export default function BatchTab({ onClickBack }: BatchTabProps) {
         </Typography>
       </Grid>
       <Grid item xs={12}>
-        <Card sx={{ borderRadius: 4, height: 200 }}></Card>
+        <Autocomplete
+          value={selectedBranch}
+          options={[null, ...branches]}
+          getOptionLabel={(option) => option?.name || 'Tất cả'}
+          onChange={(_, value) => setSelectedBranch(value)}
+          renderInput={(params) => (
+            <TextField {...params} label="Chi nhánh" color="secondary" />
+          )}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Card sx={{ borderRadius: 4, p: 4 }}>
+          <Grid container textAlign={'center'}>
+            <Grid item xs={4}>
+              <Typography typography="h5">Tổng lô bánh</Typography>
+              <Typography>{data?.totalBatch}</Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography typography="h5">Tổng bánh bán được</Typography>
+              <Typography>
+                {data?.soldCake} / {data?.quantity}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography typography="h5">Tỉ lệ bán</Typography>
+              <Typography>{data?.soldCakePercent}</Typography>
+            </Grid>
+          </Grid>
+        </Card>
       </Grid>
       <Grid item xs={12}>
         <Card sx={{ borderRadius: 4 }}>
@@ -319,8 +130,11 @@ export default function BatchTab({ onClickBack }: BatchTabProps) {
           />
           <CardContent>
             <List>
-              {types.map((type) => (
-                <ListItemButton key={type.id}></ListItemButton>
+              {data?.productTypes.map((type) => (
+                <>
+                  <ProductTypeBatchItem key={type.id} {...type} />
+                  <Divider />
+                </>
               ))}
             </List>
           </CardContent>
@@ -330,28 +144,18 @@ export default function BatchTab({ onClickBack }: BatchTabProps) {
   );
 }
 
-type ProductTypeBatchItemProps = {
-  name: string;
-  image: string;
-  totalBatch: number;
-  soldCake: number;
-  totalBatchPercent: number;
-  soldCakeToTotalPercent: number;
-  soldCakePercent: number;
-};
-
+type ProductTypeBatchItemProps = ProductTypeBatchData;
 function ProductTypeBatchItem({
   name,
   image,
-  totalBatch,
-  totalBatchPercent,
-  soldCake,
-  soldCakeToTotalPercent,
-  soldCakePercent,
+  data,
+  products,
 }: ProductTypeBatchItemProps) {
   const [img, setImg] = useState('');
   useEffect(() => {
-    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    image
+      ? getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url))
+      : setImg('');
   }, [image]);
 
   const [open, setOpen] = useState(false);
@@ -377,15 +181,28 @@ function ProductTypeBatchItem({
           }}
         />
         <ListItemText primary={name} />
-        <ListItemText
-          primary={formatPrice(totalBatch)}
-          secondary={`${totalBatchPercent}%`}
-        />
-        <ListItemText
-          primary={formatPrice(soldCake)}
-          secondary={`${soldCakeToTotalPercent}%`}
-        />
-        <ListItemText primary={formatPrice(soldCakePercent)} />
+        {data.quantity !== 0 ? (
+          <>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tổng lô bánh</Typography>
+              <Typography>
+                {data.totalBatch} ({data.totalBatchPercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Bánh bán được</Typography>
+              <Typography>
+                {data.soldCake}/{data.quantity} ({data.soldCakePercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tỉ lệ bán hết</Typography>
+              <Typography>{data.soldCakeToQuantityPercent}%</Typography>
+            </Stack>
+          </>
+        ) : (
+          <Typography>Không có lô bánh nào</Typography>
+        )}
         {/* toggle icon */}
         <KeyboardArrowDown
           sx={{
@@ -395,30 +212,30 @@ function ProductTypeBatchItem({
           }}
         />
       </ListItemButton>
-      {/* {open &&
-        Object.entries(products).map((entry, index) => (
-          <ProductBatchItem key={index} {...entry[1]} />
-        ))} */}
+      <Collapse in={open}>
+        {products.map((product) => (
+          <>
+            <ProductBatchItem key={product.id} {...product} />
+            <Divider />
+          </>
+        ))}
+      </Collapse>
     </>
   );
 }
 
+type ProductBatchItemProps = ProductBatchData;
 function ProductBatchItem({
   name,
   image,
-  revenue,
-  percent,
+  data,
   variants,
-}: {
-  name: string;
-  image: string;
-  revenue: number;
-  percent: number;
-  variants: VariantRevenue;
-}) {
+}: ProductBatchItemProps) {
   const [img, setImg] = useState('');
   useEffect(() => {
-    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    image
+      ? getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url))
+      : setImg('');
   }, [image]);
 
   const [open, setOpen] = useState(false);
@@ -445,10 +262,28 @@ function ProductBatchItem({
           }}
         />
         <ListItemText primary={name} />
-        <ListItemText
-          primary={formatPrice(revenue)}
-          secondary={`${percent}%`}
-        />
+        {data.totalBatch !== 0 ? (
+          <>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tổng lô bánh</Typography>
+              <Typography>
+                {data.totalBatch} ({data.totalBatchPercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Bánh bán được</Typography>
+              <Typography>
+                {data.soldCake}/{data.quantity} ({data.soldCakePercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tỉ lệ bán hết</Typography>
+              <Typography>{data.soldCakeToQuantityPercent}%</Typography>
+            </Stack>
+          </>
+        ) : (
+          <Typography>Không có lô bánh nào</Typography>
+        )}
         {/* toggle icon */}
         <KeyboardArrowDown
           sx={{
@@ -458,16 +293,95 @@ function ProductBatchItem({
           }}
         />
       </ListItemButton>
-      {open &&
-        Object.values(variants).map((value, index) => (
-          <ListItem key={index} sx={{ ml: 8 }}>
-            <ListItemText primary={value.material} secondary={value.size} />
-            <ListItemText
-              primary={formatPrice(value.revenue)}
-              secondary={`${value.percent}%`}
-            />
-          </ListItem>
+      <Collapse in={open}>
+        {variants.map((variant) => (
+          <>
+            <VariantBatchItem key={variant.id} {...variant} />
+            <Divider />
+          </>
         ))}
+      </Collapse>
     </>
+  );
+}
+
+type VariantBatchItemProps = VariantBatchData;
+function VariantBatchItem({
+  material,
+  size,
+  data,
+  batches,
+}: VariantBatchItemProps) {
+  const [open, setOpen] = useState(false);
+  const toggleOpen = useCallback(
+    (value?: boolean) => {
+      value ? setOpen(value) : setOpen(!open);
+    },
+    [open]
+  );
+
+  return (
+    <>
+      <ListItemButton onClick={() => toggleOpen()}>
+        <ListItemText primary={material} secondary={size} sx={{ ml: 8 }} />
+        {data.quantity !== 0 ? (
+          <>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tổng lô bánh</Typography>
+              <Typography>
+                {data.totalBatch} ({data.totalBatchPercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Bánh bán được</Typography>
+              <Typography>
+                {data.soldCake}/{data.quantity} ({data.soldCakePercent}%)
+              </Typography>
+            </Stack>
+            <Stack alignItems="center" px={2}>
+              <Typography typography="h5">Tỉ lệ bán hết</Typography>
+              <Typography>{data.soldCakeToQuantityPercent}%</Typography>
+            </Stack>
+          </>
+        ) : (
+          <Typography>Không có lô bánh nào</Typography>
+        )}
+        {/* toggle icon */}
+        <KeyboardArrowDown
+          sx={{
+            mr: 2,
+            transform: open ? 'rotate(-180deg)' : 'rotate(0)',
+            transition: '0.2s',
+          }}
+        />
+      </ListItemButton>
+      <Collapse in={open}>
+        {batches.map((batch) => (
+          <BatchBatchItem key={batch.id} {...batch} />
+        ))}
+      </Collapse>
+    </>
+  );
+}
+
+type BatchBatchItemProps = VariantBatchData['batches'][0];
+function BatchBatchItem(data: BatchBatchItemProps) {
+  return (
+    <ListItem sx={{ pr: 7 }}>
+      <Stack alignItems="center" px={2} ml={12} flex={1} justifyContent="start">
+        <Typography typography="h5">Mã lô</Typography>
+        <Typography>{data.id}</Typography>
+      </Stack>
+      <Stack alignItems="center" px={2}>
+        <Typography typography="h5">Bánh bán được</Typography>
+        <Typography>
+          {data.sold}/{data.quantity} ({data.soldCakePercent}%)
+        </Typography>
+      </Stack>
+      <Stack alignItems="center" px={2}>
+        <Typography typography="h5">Tỉ lệ bán hết</Typography>
+        <Typography>{data.soldCakeToQuantityPercent}%</Typography>
+      </Stack>
+    </ListItem>
   );
 }

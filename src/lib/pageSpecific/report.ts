@@ -423,3 +423,254 @@ export function getProductTypeRevenueData(
 
   return productTypeRevenue;
 }
+
+export type GeneralBatchItemData = {
+  id: string;
+  name: string;
+  image?: string;
+  data: GeneralBatchData;
+};
+export type GeneralBatchData = {
+  totalBatch: number;
+  totalBatchPercent: number;
+  quantity: number;
+  quantityPercent: number;
+  soldCake: number;
+  soldCakeToQuantityPercent: number;
+  soldCakePercent: number;
+};
+
+export type WithGeneralBatchData<T> = T & GeneralBatchItemData;
+
+export type BatchTabData = Pick<
+  GeneralBatchData,
+  'totalBatch' | 'quantity' | 'soldCake' | 'soldCakePercent'
+> & { productTypes: ProductTypeBatchData[] };
+export type ProductTypeBatchData = WithGeneralBatchData<{
+  products: ProductBatchData[];
+}>;
+export type ProductBatchData = WithGeneralBatchData<{
+  variants: VariantBatchData[];
+}>;
+export type VariantBatchData = Omit<
+  WithGeneralBatchData<{
+    id: string;
+    material: string;
+    size: string;
+    batches: (Batch & {
+      quantityPercent: number;
+      soldCakePercent: number;
+      soldCakeToQuantityPercent: number;
+    })[];
+  }>,
+  'name' | 'image'
+>;
+
+export function getBatchTabData(
+  productTypes: ProductTypeTableRow[],
+  batches: Batch[]
+): BatchTabData {
+  const groupedBatches = getGroupedBatches(batches);
+
+  const batchTabData = getDefaultBatchTabData(productTypes); // We will fill this data later
+
+  for (let i = 0; i < batchTabData.productTypes.length; i++) {
+    const type = batchTabData.productTypes[i];
+    if (!groupedBatches.has(type.id)) continue;
+
+    for (let j = 0; j < type.products!.length; j++) {
+      const product = type.products![j];
+      if (!groupedBatches.get(type.id)!.has(product.id)) continue;
+
+      for (let k = 0; k < productTypes[i].products![j].variants!.length; k++) {
+        const variant = product.variants![k];
+        if (
+          !groupedBatches.get(type.id)!.get(product.id)!.has(variant.id) ||
+          groupedBatches.get(type.id)!.get(product.id)!.get(variant.id)!
+            .length <= 0
+        )
+          continue;
+
+        variant.batches =
+          groupedBatches
+            .get(type.id)!
+            .get(product.id)!
+            .get(variant.id)!
+            .map((batch) => {
+              variant.data.soldCake += batch.sold;
+              variant.data.quantity += batch.quantity;
+              return {
+                ...batch,
+                soldCakeToQuantityPercent: Math.floor(
+                  (batch.sold / batch.quantity) * 100
+                ),
+              } as (typeof variant.batches)[0];
+            }) || [];
+
+        // Calculate sold cake percent
+        variant.data.totalBatch = variant.batches.length;
+        variant.data.soldCakeToQuantityPercent =
+          Math.floor((variant.data.soldCake / variant.data.quantity) * 100) ||
+          0;
+
+        variant.batches = variant.batches.map((batch) => {
+          batch.quantityPercent =
+            Math.floor((batch.quantity / variant.data.quantity) * 100) || 0;
+          batch.soldCakePercent =
+            Math.floor((batch.sold / variant.data.quantity) * 100) || 0;
+          return batch;
+        });
+
+        // Update product data
+        product.data.totalBatch += variant.data.totalBatch;
+        product.data.soldCake += variant.data.soldCake;
+        product.data.quantity += variant.data.quantity;
+      }
+      // Calculate children percent data after parent gets needed data
+      for (let k = 0; k < productTypes[i].products![j].variants!.length; k++) {
+        const variant = product.variants![k];
+        if (!groupedBatches.get(type.id)!.get(product.id)!.has(variant.id))
+          continue;
+        variant.data.totalBatchPercent =
+          Math.floor(
+            (variant.data.totalBatch / product.data.totalBatch) * 100
+          ) || 0;
+        variant.data.quantityPercent =
+          Math.floor((variant.data.quantity / product.data.quantity) * 100) ||
+          0;
+        variant.data.soldCakePercent =
+          Math.floor((variant.data.soldCake / product.data.soldCake) * 100) ||
+          0;
+      }
+
+      product.data.soldCakeToQuantityPercent =
+        Math.floor((product.data.soldCake / product.data.quantity) * 100) || 0;
+
+      // Update type data
+      type.data.totalBatch += product.data.totalBatch;
+      type.data.soldCake += product.data.soldCake;
+      type.data.quantity += product.data.quantity;
+    }
+    // Calculate children percent data after parent gets needed data
+    for (let j = 0; j < productTypes[i].products!.length; j++) {
+      const product = type.products![j];
+      if (!groupedBatches.get(type.id)!.has(product.id)) continue;
+
+      product.data.totalBatchPercent =
+        Math.floor((product.data.totalBatch / type.data.totalBatch) * 100) || 0;
+      product.data.quantityPercent =
+        Math.floor((product.data.quantity / type.data.quantity) * 100) || 0;
+      product.data.soldCakePercent =
+        Math.floor((product.data.soldCake / type.data.soldCake) * 100) || 0;
+    }
+
+    type.data.soldCakeToQuantityPercent =
+      Math.floor((type.data.soldCake / type.data.quantity) * 100) || 0;
+
+    // Update batch data
+    batchTabData.totalBatch += type.data.totalBatch;
+    batchTabData.quantity += type.data.quantity;
+    batchTabData.soldCake += type.data.soldCake;
+  }
+  // Calculate children percent data after parent gets needed data
+  for (let i = 0; i < productTypes.length; i++) {
+    const type = batchTabData.productTypes[i];
+    if (!groupedBatches.has(type.id)) continue;
+
+    type.data.totalBatchPercent =
+      Math.floor((type.data.totalBatch / batchTabData.totalBatch) * 100) || 0;
+    type.data.quantityPercent =
+      Math.floor((type.data.quantity / batchTabData.quantity) * 100) || 0;
+    type.data.soldCakePercent =
+      Math.floor((type.data.soldCake / batchTabData.soldCake) * 100) || 0;
+  }
+
+  batchTabData.soldCakePercent =
+    Math.floor((batchTabData.soldCake / batchTabData.quantity) * 100) || 0;
+
+  return batchTabData;
+}
+export function getDefaultBatchTabData(
+  productTypes: ProductTypeTableRow[]
+): BatchTabData {
+  const types = productTypes.map(
+    (type) =>
+      ({
+        id: type.id,
+        name: type.name,
+        image: type.image,
+        data: getDefaultGeneralBatchData(),
+        products: type.products?.map(
+          (product) =>
+            ({
+              id: product.id,
+              name: product.name,
+              image: product.images[0],
+              data: getDefaultGeneralBatchData(),
+              variants: product.variants?.map(
+                (variant) =>
+                  ({
+                    id: variant.id,
+                    material: variant.material,
+                    size: variant.size,
+                    data: getDefaultGeneralBatchData(),
+                    batches: [],
+                  } as VariantBatchData)
+              ),
+            } as ProductBatchData)
+        ),
+      } as ProductTypeBatchData)
+  );
+  return {
+    totalBatch: 0,
+    quantity: 0,
+    soldCake: 0,
+    soldCakePercent: 0,
+    productTypes: types,
+  } as BatchTabData;
+}
+export function getDefaultGeneralBatchData() {
+  const data: GeneralBatchData = {
+    totalBatch: 0,
+    totalBatchPercent: 0,
+    quantity: 0,
+    quantityPercent: 0,
+    soldCake: 0,
+    soldCakeToQuantityPercent: 0,
+    soldCakePercent: 0,
+  };
+  return data;
+}
+export function getGroupedBatches(batches: Batch[]) {
+  const groupedBatches: Map<
+    string,
+    Map<string, Map<string, Batch[]>>
+  > = new Map();
+  batches.forEach((batch) => {
+    if (groupedBatches.has(batch.product_type_id)) {
+      const productType = groupedBatches.get(batch.product_type_id);
+      if (productType) {
+        const product = productType.get(batch.product_id);
+        if (product) {
+          const variant = product.get(batch.variant_id);
+          if (variant) {
+            variant.push(batch);
+          } else {
+            product.set(batch.variant_id, [batch]);
+          }
+        } else {
+          productType.set(
+            batch.product_id,
+            new Map([[batch.variant_id, [batch]]])
+          );
+        }
+      }
+    } else {
+      groupedBatches.set(
+        batch.product_type_id,
+        new Map([[batch.product_id, new Map([[batch.variant_id, [batch]]])]])
+      );
+    }
+  });
+  return groupedBatches;
+}

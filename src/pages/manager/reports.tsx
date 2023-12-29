@@ -8,7 +8,10 @@ import TimeRangeInput, {
 import { getBatches } from '@/lib/DAO/batchDAO';
 import { getBillTableRows } from '@/lib/DAO/billDAO';
 import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
+import useProductTypeTableRows from '@/lib/hooks/useProductTypeTableRows';
 import {
+  BatchTabData,
+  getBatchTabData,
   getFromDateToDateText,
   getMainTabData,
   getUpdatedIntervals,
@@ -138,6 +141,7 @@ function Report() {
   const [billTableRows, setBillTableRows] = useState<BillTableRow[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
 
+  const types = useProductTypeTableRows();
   const resolveTimeRange = useCallback((): [Date, Date] => {
     let from: Date;
     let to: Date;
@@ -255,7 +259,11 @@ function Report() {
           />
         )}
         {currentTab === 'batch' && (
-          <BatchTab onClickBack={() => setCurrentTab('main')} />
+          <BatchTab
+            types={types}
+            batches={batches}
+            onClickBack={() => setCurrentTab('main')}
+          />
         )}
       </Grid>
     </>
