@@ -4,12 +4,17 @@ import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import User from '@/models/user';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Grid, Tab, Tabs } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 
 export default function StockTransfer() {
+  //#region Tabs
+
+  const [tab, setTab] = useState(0);
+
+  //#endregion
   //#region Other service hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -89,29 +94,35 @@ export default function StockTransfer() {
   return (
     <>
       {canBeAccessed ? (
-        <Grid container p={4}>
-          <Grid item xs={12}>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={openCreateNewExport}
-            >
-              Thêm xuất
-            </Button>
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={openCreateNewImport}
-            >
-              Thêm nhập
-            </Button>
-          </Grid>
-        </Grid>
+        <>
+          <Tabs
+            centered
+            value={tab}
+            onChange={(_, value) => setTab(value)}
+            textColor="secondary"
+            indicatorColor="secondary"
+          >
+            <Tab label="Nhập hàng" />
+            <Tab label="Xuất hàng" />
+          </Tabs>
+          <TabPanel value={tab} index={0}>
+            <p>Hello</p>
+          </TabPanel>
+          <TabPanel value={tab} index={1}>
+            <p>Hello 2</p>
+          </TabPanel>
+        </>
       ) : (
         <CanNotAccess />
       )}
     </>
   );
+}
+
+function TabPanel({
+  children,
+  value,
+  index,
+}: PropsWithChildren<{ value: number; index: number }>) {
+  return <>{value === index && children}</>;
 }

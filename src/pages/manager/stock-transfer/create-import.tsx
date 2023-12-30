@@ -3,15 +3,11 @@ import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
-import Product, { ProductTableRow } from '@/models/product';
 import { ProductTypeTableRow } from '@/models/productType';
-import StockImport from '@/models/stockImport';
 import User from '@/models/user';
-import { VariantTableRow } from '@/models/variant';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import { ArrowLeft } from '@mui/icons-material';
 import {
-  Autocomplete,
   Breadcrumbs,
   Button,
   Card,
@@ -30,7 +26,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
-import { types } from 'util';
 
 export default function CreateImport() {
   //#region Other service hooks
