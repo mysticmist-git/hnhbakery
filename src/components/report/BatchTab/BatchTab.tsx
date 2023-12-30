@@ -1,9 +1,6 @@
-import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
-import useBatches from '@/lib/hooks/useBatches';
 import useBranches from '@/lib/hooks/useBranches';
 import {
-  BatchTabData,
   ProductBatchData,
   ProductTypeBatchData,
   VariantBatchData,
@@ -12,7 +9,6 @@ import {
 import Batch from '@/models/batch';
 import Branch from '@/models/branch';
 import { ProductTypeTableRow } from '@/models/productType';
-import { withHashCacheAsync } from '@/utils/withHashCache';
 import { ChevronLeft, KeyboardArrowDown } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -33,7 +29,6 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Type } from 'typescript';
 
 type BatchTabProps = {
   types: ProductTypeTableRow[];
