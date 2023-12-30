@@ -7,7 +7,6 @@ import {
   createBatchImport,
   getBatchImportRefById,
 } from '@/lib/DAO/batchImportDAO';
-import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import BatchExchange from '@/models/batchExchange';
 import BatchImport, {
@@ -16,51 +15,48 @@ import BatchImport, {
 } from '@/models/batchImport';
 import { ProductTypeTableRow } from '@/models/productType';
 import User from '@/models/user';
-import { withHashCacheAsync } from '@/utils/withHashCache';
-import { ArrowLeft, Cancel, Delete } from '@mui/icons-material';
+import { Cancel } from '@mui/icons-material';
 import {
   Breadcrumbs,
   Button,
   Card,
   CardContent,
   CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
-  IconButton,
-  Link,
   MenuItem,
+  Modal,
   Select,
   TextField,
   Typography,
 } from '@mui/material';
-import {
-  DataGrid,
-  GridActionsCell,
-  GridActionsCellItem,
-  GridColDef,
-} from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import {
-  FieldValue,
   arrayUnion,
-  getDoc,
   onSnapshot,
   runTransaction,
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 
-type CreateImportProps = {
+type BatchImportProps = {
+  productTypeTableRows: ProductTypeTableRow[];
   branchId: string | undefined | null;
   userData: User | undefined | null;
 };
-export default function CreateBatchImport({
+export default function BatchImport({
+  productTypeTableRows,
   branchId,
   userData,
-}: CreateImportProps) {
+}: BatchImportProps) {
   //#region Other service hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -68,15 +64,6 @@ export default function CreateBatchImport({
 
   //#endregion
   //#region Items to select
-
-  const [productTypesTableRows, setProductTypeTableRows] = useState<
-    ProductTypeTableRow[]
-  >([]);
-  useEffect(() => {
-    cachedGetProductTypeTableRows()
-      .then((types) => setProductTypeTableRows(types || []))
-      .catch(() => setProductTypeTableRows([]));
-  }, []);
 
   const [selectedProductTypeId, setSelectedProductTypeId] =
     useState<string>('');
@@ -94,8 +81,8 @@ export default function CreateBatchImport({
   }
 
   const productTypes = useMemo(() => {
-    return productTypesTableRows.filter((type) => type.active);
-  }, [productTypesTableRows]);
+    return productTypeTableRows.filter((type) => type.active);
+  }, [productTypeTableRows]);
   const products = useMemo(() => {
     return (
       productTypes
@@ -243,7 +230,7 @@ export default function CreateBatchImport({
       field: 'product_type_id',
       headerName: 'Loại bánh',
       valueFormatter(params) {
-        const productType = productTypesTableRows.find(
+        const productType = productTypeTableRows.find(
           (productType) => productType.id === params.value
         );
         if (productType) {
@@ -258,7 +245,7 @@ export default function CreateBatchImport({
       headerName: 'Bánh',
       valueFormatter(params) {
         const productTypeId = params.api.getRow(params.id!).product_type_id;
-        const product = productTypesTableRows
+        const product = productTypeTableRows
           .find((type) => type.id === productTypeId)
           ?.products?.find((product) => product.id === params.value);
         if (product) {
@@ -273,7 +260,7 @@ export default function CreateBatchImport({
       headerName: 'Biến thể',
       valueFormatter(params) {
         const { product_type_id, product_id } = params.api.getRow(params.id!);
-        const variant = productTypesTableRows
+        const variant = productTypeTableRows
           .find((type) => type.id === product_type_id)
           ?.products?.find((product) => product.id === product_id)
           ?.variants?.find((variant) => variant.id === params.value);
@@ -345,169 +332,202 @@ export default function CreateBatchImport({
             disabled={(
               ['pending', 'success', 'cancel'] as ImportState[]
             ).includes(params.row.state)}
-            onClick={() => handleCancelImport(params.id as string)}
+            onClick={() => alertCancelImport(params.row.id as string)}
           />,
         ];
       },
     },
   ];
+  function alertCancelImport(id: string) {
+    setCancelDialogOpen(true);
+    setCancelingImportId(id);
+  }
 
   //#endregion
   //#region Event handlers
 
   async function handleCancelImport(id: string) {
+    if (!id) return;
     try {
       await updateDoc(getBatchImportRefById(id), { state: 'cancel' });
       handleSnackbarAlert('success', 'Hủy yêu cầu nhập lô bánh thành công!');
       setRefreshFlag((prev) => prev + 1);
     } catch {
       handleSnackbarAlert('warning', 'Hủy yêu cầu nhập lô bánh thất bại!');
+    } finally {
+      setCancelDialogOpen(false);
+      setCancelingImportId('');
     }
+  }
+
+  //#endregion
+  //#region Modal
+
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelingImportId, setCancelingImportId] = useState('');
+  function handleCancelDialogClose() {
+    setCancelDialogOpen(false);
   }
 
   //#endregion
 
   return (
-    <Grid container p={4} gap={2}>
-      <Grid item xs={12} display="flex" alignItems="center" gap={1}>
-        <NextLink href={'/manager/stock-transfer'}>
-          <IconButton
-            sx={{
-              borderRadius: 2,
-              color: 'white',
-              backgroundColor: 'secondary.main',
-              ':hover': {
-                backgroundColor: 'secondary.dark',
-              },
-            }}
-          >
-            <ArrowLeft />
-          </IconButton>
-        </NextLink>
-        <Breadcrumbs aria-label="breadcrumb">
-          <NextLink href={'/manager/stock-transfer'} passHref legacyBehavior>
-            <Link underline="hover" color="inherit">
-              Lưu thông chi nhánh
-            </Link>
-          </NextLink>
-          <Typography color="text.primary">Nhập lô bánh</Typography>
-        </Breadcrumbs>
-      </Grid>
-      <Grid item xs={12}>
-        <Card sx={{ borderRadius: 4 }}>
-          <CardHeader
-            title="Chọn sản phẩm"
-            titleTypographyProps={{
-              typography: 'h5',
-            }}
-          />
-          <Divider />
-          <CardContent>
-            <Grid container columnSpacing={1}>
-              <Grid item xs={4}>
-                <Typography typography="h6">Loại bánh</Typography>
-                <Select
-                  value={selectedProductTypeId}
-                  onChange={(e) =>
-                    handleSelectProductType(e.target.value || '')
-                  }
-                  fullWidth
-                  placeholder="Loại bánh"
-                  color="secondary"
-                  displayEmpty
-                >
-                  <MenuItem value="">Chọn loại bánh</MenuItem>
-                  {productTypes.map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
-                      {type.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography typography="h6">Bánh</Typography>
-                <Select
-                  value={selectedProductId}
-                  onChange={(e) => handleSelectedProduct(e.target.value || '')}
-                  fullWidth
-                  placeholder="Bánh"
-                  color="secondary"
-                  displayEmpty
-                >
-                  <MenuItem key="default" value="">
-                    Chọn bánh
-                  </MenuItem>
-                  {products.map((product) => (
-                    <MenuItem key={product.id} value={product.id}>
-                      {product.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography typography="h6">Biến thể</Typography>
-                <Select
-                  value={selectedVariantId}
-                  onChange={(e) => handleSelectedVariant(e.target.value || '')}
-                  fullWidth
-                  placeholder="Biến thể"
-                  color="secondary"
-                  displayEmpty
-                >
-                  <MenuItem value="">Chọn biến thể</MenuItem>
-                  {variants.map((variant) => (
-                    <MenuItem key={variant.id} value={variant.id}>
-                      {variant.material} - {variant.size}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-            </Grid>
-          </CardContent>
-          <Divider />
-          <CardContent>
-            <Typography typography="h6">Số lượng bánh</Typography>
-            <TextField
-              type="number"
-              placeholder="Số lượng bánh"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+    <>
+      <Grid container p={4} gap={2}>
+        <Grid item xs={12} display="flex" alignItems="center" gap={1}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Typography color="text.primary"> Lưu thông chi nhánh</Typography>
+            <Typography color="text.primary">Nhập lô bánh</Typography>
+          </Breadcrumbs>
+        </Grid>
+        <Grid item xs={12}>
+          <Card sx={{ borderRadius: 4 }}>
+            <CardHeader
+              title="Chọn sản phẩm"
+              titleTypographyProps={{
+                typography: 'h5',
+              }}
             />
-          </CardContent>
-          <Divider />
-          <CardContent sx={{ display: 'flex', justifyContent: 'end', gap: 1 }}>
-            <Button variant="contained" size="large">
-              Hủy
-            </Button>
-            <Button
-              color="secondary"
-              variant="contained"
-              size="large"
-              onClick={confirmImport}
+            <Divider />
+            <CardContent>
+              <Grid container columnSpacing={1}>
+                <Grid item xs={4}>
+                  <Typography typography="h6">Loại bánh</Typography>
+                  <Select
+                    value={selectedProductTypeId}
+                    onChange={(e) =>
+                      handleSelectProductType(e.target.value || '')
+                    }
+                    fullWidth
+                    placeholder="Loại bánh"
+                    color="secondary"
+                    displayEmpty
+                  >
+                    <MenuItem value="">Chọn loại bánh</MenuItem>
+                    {productTypes.map((type) => (
+                      <MenuItem key={type.id} value={type.id}>
+                        {type.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography typography="h6">Bánh</Typography>
+                  <Select
+                    value={selectedProductId}
+                    onChange={(e) =>
+                      handleSelectedProduct(e.target.value || '')
+                    }
+                    fullWidth
+                    placeholder="Bánh"
+                    color="secondary"
+                    displayEmpty
+                  >
+                    <MenuItem key="default" value="">
+                      Chọn bánh
+                    </MenuItem>
+                    {products.map((product) => (
+                      <MenuItem key={product.id} value={product.id}>
+                        {product.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography typography="h6">Biến thể</Typography>
+                  <Select
+                    value={selectedVariantId}
+                    onChange={(e) =>
+                      handleSelectedVariant(e.target.value || '')
+                    }
+                    fullWidth
+                    placeholder="Biến thể"
+                    color="secondary"
+                    displayEmpty
+                  >
+                    <MenuItem value="">Chọn biến thể</MenuItem>
+                    {variants.map((variant) => (
+                      <MenuItem key={variant.id} value={variant.id}>
+                        {variant.material} - {variant.size}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+              </Grid>
+            </CardContent>
+            <Divider />
+            <CardContent>
+              <Typography typography="h6">Số lượng bánh</Typography>
+              <TextField
+                type="number"
+                placeholder="Số lượng bánh"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+              />
+            </CardContent>
+            <Divider />
+            <CardContent
+              sx={{ display: 'flex', justifyContent: 'end', gap: 1 }}
             >
-              Xác nhận
-            </Button>
-          </CardContent>
-        </Card>
+              <Button variant="contained" size="large">
+                Hủy
+              </Button>
+              <Button
+                color="secondary"
+                variant="contained"
+                size="large"
+                onClick={confirmImport}
+              >
+                Xác nhận
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12}>
+          <Card sx={{ borderRadius: 4 }}>
+            <CardHeader
+              title="Chọn sản phẩm"
+              titleTypographyProps={{
+                typography: 'h5',
+              }}
+            />
+            <Divider />
+            <CardContent>
+              <DataGrid rows={batchImports} columns={columns} />
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-      <Grid item xs={12}>
-        <Card sx={{ borderRadius: 4 }}>
-          <CardHeader
-            title="Chọn sản phẩm"
-            titleTypographyProps={{
-              typography: 'h5',
-            }}
-          />
-          <Divider />
-          <CardContent>
-            <DataGrid rows={batchImports} columns={columns} />
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+      <Dialog
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Hủy yêu cầu</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc muốn hủy yêu cầu nhập lô bánh?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            onClick={() => handleCancelImport(cancelingImportId)}
+            variant="contained"
+            color="secondary"
+          >
+            Hủy yêu cầu
+          </Button>
+          <Button onClick={handleCancelDialogClose} variant="contained">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
-
-const cachedGetProductTypeTableRows = withHashCacheAsync(
-  getProductTypeTableRows
-);

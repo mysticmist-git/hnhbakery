@@ -1,11 +1,15 @@
-import CreateBatchImport from '@/components/StockTransfer/CreateImport';
+import BatchExport from '@/components/StockTransfer/BatchExport';
+import BatchImport from '@/components/StockTransfer/BatchImport';
 import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import { auth } from '@/firebase/config';
 import { getBranchByManager } from '@/lib/DAO/branchDAO';
+import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import Branch from '@/models/branch';
+import { ProductTypeTableRow } from '@/models/productType';
 import User from '@/models/user';
+import { withHashCacheAsync } from '@/utils/withHashCache';
 import { Tab, Tabs } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { PropsWithChildren, useEffect, useState } from 'react';
@@ -84,6 +88,18 @@ export default function BatchTransfer() {
   }, [userData]);
 
   //#endregion
+  //#region Product Type Table Rows
+
+  const [productTypesTableRows, setProductTypeTableRows] = useState<
+    ProductTypeTableRow[]
+  >([]);
+  useEffect(() => {
+    cachedGetProductTypeTableRows()
+      .then((types) => setProductTypeTableRows(types || []))
+      .catch(() => setProductTypeTableRows([]));
+  }, []);
+
+  //#endregion
 
   return (
     <>
@@ -100,10 +116,18 @@ export default function BatchTransfer() {
             <Tab label="Xuất hàng" />
           </Tabs>
           <TabPanel value={tab} index={0}>
-            <CreateBatchImport branchId={branch?.id} userData={userData} />
+            <BatchImport
+              branchId={branch?.id}
+              userData={userData}
+              productTypeTableRows={productTypesTableRows}
+            />
           </TabPanel>
           <TabPanel value={tab} index={1}>
-            <p>Hello 2</p>
+            <BatchExport
+              branchId={branch?.id}
+              userData={userData}
+              productTypeTableRows={productTypesTableRows}
+            />
           </TabPanel>
         </>
       ) : (
@@ -120,3 +144,7 @@ function TabPanel({
 }: PropsWithChildren<{ value: number; index: number }>) {
   return <>{value === index && children}</>;
 }
+
+const cachedGetProductTypeTableRows = withHashCacheAsync(
+  getProductTypeTableRows
+);
