@@ -72,12 +72,18 @@ export default function TimeRangeInput({
         >
           <Button
             color={timeRangeType === 'interval' ? 'secondary' : 'primary'}
+            sx={{
+              width: '200px',
+            }}
             onClick={() => handleTimeRangeTypeChange('interval')}
           >
             Khoảng thời gian
           </Button>
           <Button
             color={timeRangeType === 'custom' ? 'secondary' : 'primary'}
+            sx={{
+              width: '200px',
+            }}
             onClick={() => handleTimeRangeTypeChange('custom')}
           >
             Tùy chỉnh
@@ -95,8 +101,18 @@ export default function TimeRangeInput({
               <ArrowLeft />
             </IntervalNavigateIconButton>
 
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              gap={1}
+              sx={{
+                flexGrow: 1,
+              }}
+            >
               <Select
+                color="secondary"
+                sx={{
+                  flexGrow: 1,
+                }}
                 size="small"
                 value={currentIntervalIndex}
                 onChange={(e) =>
@@ -112,6 +128,10 @@ export default function TimeRangeInput({
                 ))}
               </Select>
               <Select
+                color="secondary"
+                sx={{
+                  flexGrow: 1,
+                }}
                 size="small"
                 value={currentIntervalType}
                 onChange={(e) =>
@@ -162,11 +182,20 @@ export default function TimeRangeInput({
           </>
         )}
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={12} justifyContent={'center'} display={'flex'}>
         <Typography
+          sx={{
+            bgcolor: 'secondary.main',
+            p: 0.5,
+            px: 4,
+            borderRadius: 4,
+            width: 'fit-content',
+            color: 'white',
+            boxShadow: 3,
+          }}
           textAlign={'center'}
+          fontWeight={'bold'}
           typography="body2"
-          fontStyle={'italic'}
         >
           {fromDateToDateText}
         </Typography>
