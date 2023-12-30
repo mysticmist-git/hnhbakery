@@ -214,7 +214,13 @@ function Report() {
 
   return (
     <>
-      <Grid container p={2} rowSpacing={2} columnSpacing={2}>
+      <Grid
+        container
+        p={2}
+        rowSpacing={2}
+        columnSpacing={2}
+        justifyContent={'center'}
+      >
         <Grid item xs={12} height={200}>
           <TimeRangeInput
             timeRangeType={timeRangeType}

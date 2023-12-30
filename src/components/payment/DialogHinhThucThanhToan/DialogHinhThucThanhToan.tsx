@@ -52,7 +52,7 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
     const getPayments = async () => {
       const payments = await getPaymentMethods();
 
-      setPTTTs(payments);
+      setPTTTs(payments.filter((item) => item.active));
     };
     getPayments();
   }, []);
@@ -109,7 +109,7 @@ const DialogHinhThucThanhToan: FC<DialogHinhThucThanhToanProps> = ({
           spacing={2}
         >
           {PTTTs.map((item, index) => (
-            <Grid item key={index} xs={4}>
+            <Grid item key={index} xs={12 / PTTTs.length}>
               <PTTT_item
                 item={item}
                 onClick={() => handlePayment(item.id, item.name)}
