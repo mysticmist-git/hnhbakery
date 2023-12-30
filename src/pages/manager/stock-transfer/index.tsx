@@ -71,9 +71,15 @@ export default function StockTransfer() {
   //#endregion
   //#region Create new transfer
 
-  const openCreateNewTransfer = useCallback(
+  const openCreateNewExport = useCallback(
     function () {
-      router.push('/manager/stock-transfer/create');
+      router.push('/manager/stock-transfer/create-export');
+    },
+    [router]
+  );
+  const openCreateNewImport = useCallback(
+    function () {
+      router.push('/manager/stock-transfer/create-import');
     },
     [router]
   );
@@ -88,9 +94,18 @@ export default function StockTransfer() {
             <Button
               color="secondary"
               variant="contained"
-              onClick={openCreateNewTransfer}
+              onClick={openCreateNewExport}
             >
-              Thêm
+              Thêm xuất
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={openCreateNewImport}
+            >
+              Thêm nhập
             </Button>
           </Grid>
         </Grid>

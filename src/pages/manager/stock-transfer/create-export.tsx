@@ -6,6 +6,7 @@ import { getProductTypeById } from '@/lib/DAO/productTypeDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { getVariant } from '@/lib/DAO/variantDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import useBranches from '@/lib/hooks/useBranches';
 import Batch from '@/models/batch';
 import Branch from '@/models/branch';
 import Product from '@/models/product';
@@ -22,7 +23,9 @@ import {
 import {
   Breadcrumbs,
   Card,
+  CardContent,
   CardHeader,
+  Checkbox,
   Collapse,
   Divider,
   Grid,
@@ -33,13 +36,15 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Radio,
   Typography,
 } from '@mui/material';
+import dayjs from 'dayjs';
 import { onAuthStateChanged } from 'firebase/auth';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 
-export default function StockTransferCreate() {
+export default function CreateExport() {
   //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
@@ -114,12 +119,28 @@ export default function StockTransferCreate() {
   //#endregion
   //#region Branch batches logics
 
-  const batches = useBranchBatches(branch?.id);
-  const tree = useProductTypeTree(batches);
+  const tree = useProductTypeTree(branch?.id);
 
   //#endregion
+  //#region Branch Selection
 
-  console.log(tree);
+  const branches = useBranches();
+
+  //#endregion
+  //#region Batches selection
+
+  const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
+  function updateChecked(id: string, isChecked: boolean) {
+    if (isChecked && !selectedBatches.includes(id)) {
+      setSelectedBatches((selectedBatches) => [...selectedBatches, id]);
+    } else if (!isChecked && selectedBatches.includes(id)) {
+      setSelectedBatches((selectedBatches) =>
+        selectedBatches.filter((id) => id !== id)
+      );
+    }
+  }
+
+  //#endregion
 
   return (
     <Grid container p={4} gap={2}>
@@ -144,11 +165,11 @@ export default function StockTransferCreate() {
               Lưu thông chi nhánh
             </Link>
           </NextLink>
-          <Typography color="text.primary">Thêm lưu thông</Typography>
+          <Typography color="text.primary">Xuất lô bánh</Typography>
         </Breadcrumbs>
       </Grid>
       <Grid item xs={12}>
-        <Card sx={{ borderRadius: 4, height: 200 }}>
+        <Card sx={{ borderRadius: 4 }}>
           <CardHeader
             title="Chi nhánh chuyến tới"
             titleTypographyProps={{
@@ -156,6 +177,18 @@ export default function StockTransferCreate() {
             }}
           />
           <Divider />
+          <CardContent>
+            <List>
+              {branches.map((_branch) => {
+                if (!branch || _branch.id === branch.id) {
+                  return null;
+                }
+                return (
+                  <BranchListItem key={_branch.id} item={_branch} selected />
+                );
+              })}
+            </List>
+          </CardContent>
         </Card>
       </Grid>
       <Grid item xs={12}>
@@ -167,18 +200,60 @@ export default function StockTransferCreate() {
             }}
           />
           <Divider />
-          <List>
-            {tree.map((treeItem) => (
-              <ProductTypeListItem key={treeItem.data.id} item={treeItem} />
-            ))}
-          </List>
+          <CardContent sx={{ p: 0 }}>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary={`Đã chọn ${
+                    selectedBatches.length
+                  } lô bánh: ${selectedBatches
+                    .map((batch) => batch)
+                    .join(', ')}`}
+                  primaryTypographyProps={{ variant: 'body2' }}
+                />
+              </ListItem>
+            </List>
+            <Divider />
+            <List>
+              {tree.map((treeItem) => (
+                <ProductTypeListItem
+                  key={treeItem.data.id}
+                  item={treeItem}
+                  checked={selectedBatches}
+                  onCheckedChange={updateChecked}
+                />
+              ))}
+            </List>
+          </CardContent>
         </Card>
       </Grid>
     </Grid>
   );
 }
 
-function ProductTypeListItem({ item }: { item: ProductTypeTree }) {
+function BranchListItem({
+  item,
+  selected: checked = false,
+}: {
+  item: Branch;
+  selected: boolean;
+}) {
+  return (
+    <ListItem secondaryAction={<Radio checked={checked} />}>
+      <ListItemText primary={item.name} secondary={item.address} />
+    </ListItem>
+  );
+}
+
+function ProductTypeListItem({
+  item,
+  checked,
+  onCheckedChange,
+}: {
+  item: ProductTypeTree;
+  checked?: string[];
+  onCheckedChange?: CheckedChangeHandler;
+}) {
   const [open, setOpen] = useState<boolean>(false);
 
   return (
@@ -196,14 +271,27 @@ function ProductTypeListItem({ item }: { item: ProductTypeTree }) {
       <Collapse in={open}>
         <List>
           {item.children.map((treeItem) => (
-            <ProductListItem key={treeItem.data.id} item={treeItem} />
+            <ProductListItem
+              key={treeItem.data.id}
+              item={treeItem}
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+            />
           ))}
         </List>
       </Collapse>
     </>
   );
 }
-function ProductListItem({ item }: { item: ProductTree }) {
+function ProductListItem({
+  item,
+  checked,
+  onCheckedChange,
+}: {
+  item: ProductTree;
+  checked?: string[];
+  onCheckedChange?: CheckedChangeHandler;
+}) {
   const [open, setOpen] = useState<boolean>(false);
 
   return (
@@ -224,15 +312,35 @@ function ProductListItem({ item }: { item: ProductTree }) {
       <Collapse in={open}>
         <List>
           {item.children.map((treeItem) => (
-            <VariantListItem key={treeItem.data.id} item={treeItem} />
+            <VariantListItem
+              key={treeItem.data.id}
+              item={treeItem}
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+            />
           ))}
         </List>
       </Collapse>
     </>
   );
 }
-function VariantListItem({ item }: { item: VariantTree }) {
+function VariantListItem({
+  item,
+  checked,
+  onCheckedChange,
+}: {
+  item: VariantTree;
+  checked?: string[];
+  onCheckedChange?: CheckedChangeHandler;
+}) {
   const [open, setOpen] = useState<boolean>(false);
+  function isChecked(id: string) {
+    if (!checked) return false;
+    return checked.includes(id);
+  }
+  function updateChecked(id: string, isChecked: boolean) {
+    onCheckedChange && onCheckedChange(id, isChecked);
+  }
 
   return (
     <>
@@ -252,27 +360,71 @@ function VariantListItem({ item }: { item: VariantTree }) {
       <Collapse in={open}>
         <List>
           {item.children.map((treeItem) => (
-            <BatchListItem key={treeItem.id} item={treeItem} />
+            <BatchListItem
+              key={treeItem.id}
+              item={treeItem}
+              checked={isChecked(treeItem.id)}
+              onChange={(isChecked) => updateChecked(treeItem.id, isChecked)}
+            />
           ))}
         </List>
       </Collapse>
     </>
   );
 }
-function BatchListItem({ item }: { item: Batch }) {
-  const [checked, setChecked] = useState(false);
+
+type BatchListItemProps = {
+  item: Batch;
+  checked?: boolean;
+  onChange?: (value: boolean) => void;
+};
+function BatchListItem({
+  item,
+  checked = false,
+  onChange,
+}: BatchListItemProps) {
+  function handleOnCheckedChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) {
+    onChange && onChange(checked);
+  }
+  function handleCheckedToggled() {
+    onChange && onChange(!checked);
+  }
 
   return (
     <>
-      <ListItemButton>
-        <ListItemIcon sx={{ ml: 2 }}>
-          <Circle fontSize="small" />
-        </ListItemIcon>
-        {item.id}
-      </ListItemButton>
+      <ListItem
+        secondaryAction={
+          <Checkbox
+            checked={checked}
+            edge="end"
+            onChange={handleOnCheckedChange}
+            color="secondary"
+            sx={{ mr: 1 }}
+          />
+        }
+      >
+        <ListItemButton onClick={handleCheckedToggled}>
+          <ListItemIcon sx={{ ml: 2 }}>
+            <Circle fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary={item.id} />
+          <ListItemText primary={`Số lượng: ${item.sold}/${item.quantity}`} />
+          <ListItemText
+            primary={`Hạn sử dụng: ${dayjs(item.discount.start_at).format(
+              'HH:MM - DD/MM/YYYY'
+            )}`}
+            secondary={`Khuyến mãi: ${item.discount.percent}%`}
+          />
+        </ListItemButton>
+      </ListItem>
     </>
   );
 }
+
+type CheckedChangeHandler = (id: string, isChecked: boolean) => void;
 
 let cached: Batch[] | null = null;
 function filterBranchBatches(
@@ -302,8 +454,9 @@ function useBranchBatches(branchId: string | undefined | null) {
   return batches;
 }
 
-function useProductTypeTree(batches: Batch[]): Tree {
+function useProductTypeTree(branchId: string | null | undefined): Tree {
   const [tree, setTree] = useState<Tree>([]);
+  const batches = useBranchBatches(branchId);
 
   useEffect(() => {
     const map: TreeMap = new Map();
