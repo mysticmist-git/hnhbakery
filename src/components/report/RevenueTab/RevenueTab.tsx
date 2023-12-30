@@ -17,6 +17,7 @@ import {
   Button,
   ButtonGroup,
   Card,
+  Collapse,
   Divider,
   Grid,
   IconButton,
@@ -584,10 +585,11 @@ function ProductTypeRevenueItem({
           }}
         />
       </ListItemButton>
-      {open &&
-        Object.entries(products).map((entry, index) => (
+      <Collapse in={open}>
+        {Object.entries(products).map((entry, index) => (
           <ProductRevenueItem key={index} {...entry[1]} />
         ))}
+      </Collapse>
     </>
   );
 }
@@ -647,8 +649,8 @@ function ProductRevenueItem({
           }}
         />
       </ListItemButton>
-      {open &&
-        Object.values(variants).map((value, index) => (
+      <Collapse in={open}>
+        {Object.values(variants).map((value, index) => (
           <ListItem key={index} sx={{ ml: 8 }}>
             <ListItemText primary={value.material} secondary={value.size} />
             <ListItemText
@@ -657,6 +659,7 @@ function ProductRevenueItem({
             />
           </ListItem>
         ))}
+      </Collapse>
     </>
   );
 }

@@ -287,6 +287,19 @@ export const MainListItems = ({ open }: { open: boolean }) => {
           />
 
           <GrantedListItem
+            label="Lưu thông"
+            code={PermissionCode.LT}
+            visible={grantedPermissions.includes(
+              permissionEnumToCodeMap.get(PermissionCode.LT) ?? ''
+            )}
+            onClick={() => router.push(PERMISSION_ROUTES[PermissionCode.LT])}
+            iconSxProps={iconSxProps('stock-transfer')}
+            typographySxProps={typographySxProps('stock-transfer')}
+            open={open}
+            isActive={isActive('stock-transfer')}
+          />
+
+          <GrantedListItem
             label="Các chi nhánh"
             code={PermissionCode.CN1}
             visible={grantedPermissions.includes(

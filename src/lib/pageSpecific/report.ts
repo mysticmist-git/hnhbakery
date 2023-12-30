@@ -200,10 +200,6 @@ export function getMainTabBatch(batches: Batch[]): MainTabBatch {
     soldCakePercent: Math.floor((sold / quantity) * 100) || 0,
   };
 }
-
-/**
- * @returns [totalRevenues, saleAmounts, finalRevenues]
- */
 export function getRevenueTabChartData(
   bills: BillTableRow[],
   interval: Interval
