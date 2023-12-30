@@ -8,27 +8,25 @@ import {
 import WithId from './withId';
 
 /**
- * Imports
+ * Exports
  */
-type StockImport = WithId & {
-  product_type_id: string;
-  product_id: string;
-  variant_id: string;
-  quantity: number;
-  state: ImportState;
+type BatchExport = WithId & {
+  batch_id: string;
+  state: ExportState;
   branch_id: string;
-  export_id: string | null;
+  import_id: string;
+  quantity: number;
   staff_id: string;
   staff_group_id: string;
   created_at: Date;
   updated_at: Date;
 };
 
-type ImportState = 'issued' | 'pending' | 'success' | 'cancel';
+type ExportState = 'pending' | 'success';
 
-const importConverter: FirestoreDataConverter<StockImport> = {
+const batchExportConverter: FirestoreDataConverter<BatchExport> = {
   toFirestore: function (
-    modelObject: WithFieldValue<StockImport>
+    modelObject: WithFieldValue<BatchExport>
   ): DocumentData {
     const { id, ...obj } = modelObject;
 
@@ -37,17 +35,17 @@ const importConverter: FirestoreDataConverter<StockImport> = {
   fromFirestore: function (
     snapshot: QueryDocumentSnapshot<DocumentData>,
     options?: SnapshotOptions | undefined
-  ): StockImport {
+  ): BatchExport {
     const data = snapshot.data(options);
-    const convertedData: StockImport = {
+    const convertedData: BatchExport = {
       ...data,
       id: snapshot.id,
       created_at: data.created_at.toDate(),
       updated_at: data.updated_at.toDate(),
-    } as StockImport;
+    } as BatchExport;
     return convertedData;
   },
 };
 
-export default StockImport;
-export { importConverter };
+export default BatchExport;
+export { batchExportConverter };

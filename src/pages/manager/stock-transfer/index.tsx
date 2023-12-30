@@ -1,4 +1,4 @@
-import CreateImport from '@/components/StockTransfer/CreateImport';
+import CreateBatchImport from '@/components/StockTransfer/CreateImport';
 import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import { auth } from '@/firebase/config';
 import { getBranchByManager } from '@/lib/DAO/branchDAO';
@@ -10,7 +10,7 @@ import { Tab, Tabs } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { PropsWithChildren, useEffect, useState } from 'react';
 
-export default function StockTransfer() {
+export default function BatchTransfer() {
   //#region Tabs
 
   const [tab, setTab] = useState(0);
@@ -100,7 +100,7 @@ export default function StockTransfer() {
             <Tab label="Xuất hàng" />
           </Tabs>
           <TabPanel value={tab} index={0}>
-            <CreateImport branchId={branch?.id} userData={userData} />
+            <CreateBatchImport branchId={branch?.id} userData={userData} />
           </TabPanel>
           <TabPanel value={tab} index={1}>
             <p>Hello 2</p>

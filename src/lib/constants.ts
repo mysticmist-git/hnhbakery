@@ -45,6 +45,9 @@ export const COLLECTION_NAME = {
   CUSTOMER_RANKS: 'customer_ranks',
   CUSTOMER_REFERENCES: 'customer_references',
   NONE: 'none',
+  BATCH_IMPORTS: 'batch_imports',
+  BATCH_EXPORTS: 'batch_exports',
+  BATCH_EXCHANGES: 'batch_exchanges',
 };
 
 export const LOCAL_CART_KEY: string = 'cart';

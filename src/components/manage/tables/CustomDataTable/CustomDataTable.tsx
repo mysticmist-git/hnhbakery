@@ -1,24 +1,14 @@
 import { getProducts } from '@/lib/DAO/productDAO';
 import { getProductTypes } from '@/lib/DAO/productTypeDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
-import { getCollection } from '@/lib/firestore';
 import { statusTextResolver } from '@/lib/manage/manage';
-import {
-  BaseObject,
-  ProductObject,
-  ProductTypeObject,
-  StorageBatchObject,
-} from '@/lib/models';
+import { BaseObject, StorageBatchObject } from '@/lib/models';
 import { DeleteRowHandler, ViewRowHandler } from '@/lib/types/manage';
 import { formatPrice } from '@/lib/utils';
 import Product from '@/models/product';
 import ProductType from '@/models/productType';
 import { StorageBatch } from '@/models/storageModels';
-import {
-  ConnectingAirportsOutlined,
-  Delete,
-  Visibility,
-} from '@mui/icons-material';
+import { Delete, Visibility } from '@mui/icons-material';
 import {
   Checkbox,
   LinearProgress,
