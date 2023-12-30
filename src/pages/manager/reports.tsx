@@ -212,8 +212,6 @@ function Report() {
 
   //#endregion
 
-  console.log('huy');
-
   return (
     <>
       <Grid
