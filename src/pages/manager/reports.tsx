@@ -7,11 +7,8 @@ import TimeRangeInput, {
 } from '@/components/report/TimeRangeInput/TimeRangeInput';
 import { getBatches } from '@/lib/DAO/batchDAO';
 import { getBillTableRows } from '@/lib/DAO/billDAO';
-import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
 import useProductTypeTableRows from '@/lib/hooks/useProductTypeTableRows';
 import {
-  BatchTabData,
-  getBatchTabData,
   getFromDateToDateText,
   getMainTabData,
   getUpdatedIntervals,
@@ -25,8 +22,6 @@ import {
 } from '@/lib/types/report';
 import Batch from '@/models/batch';
 import { BillTableRow } from '@/models/bill';
-import { ProductTypeTableRow } from '@/models/productType';
-import { withHashCacheAsync } from '@/utils/withHashCache';
 import { Divider, Grid } from '@mui/material';
 import Chart from 'chart.js/auto';
 import dayjs from 'dayjs';
@@ -53,15 +48,29 @@ export type MainTabBatch = {
   soldCakePercent: number;
 };
 
-const cachedGetBillTableRows = withHashCacheAsync(getBillTableRows);
-const cachedGetBatches = withHashCacheAsync(getBatches);
+// TODO: Remove this - This is just a temporary solution
+function tempLocalCache<TResult>(fn: () => Promise<TResult>) {
+  let cache: TResult;
+
+  return async () => {
+    if (!cache) {
+      cache = await fn();
+    }
+    return cache;
+  };
+}
+
+// FIX: This doesn't seem to work with no args functions
+const cachedGetBillTableRows = tempLocalCache(getBillTableRows);
+const cachedGetBatches = tempLocalCache(getBatches);
 
 async function getBillsInRange(from: Date, to: Date) {
   const bills = await cachedGetBillTableRows();
   const filter = bills.filter(
     (bill) =>
       dayjs(bill.created_at).isAfter(dayjs(from)) &&
-      dayjs(bill.created_at).isBefore(dayjs(to))
+      dayjs(bill.created_at).isBefore(dayjs(to)) &&
+      bill.state === 'paid'
   );
   return filter;
 }
@@ -264,6 +273,8 @@ function Report() {
             }
             billTableRows={billTableRows}
             onClickBack={() => setCurrentTab('main')}
+            customFromTo={customFromTo}
+            timeRangeType={timeRangeType}
           />
         )}
         {currentTab === 'batch' && (
