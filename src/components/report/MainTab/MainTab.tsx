@@ -16,7 +16,7 @@ export default function MainTab({
 }: MainTabProps) {
   return (
     <>
-      <Grid item xs={6}>
+      <Grid item xs={10}>
         <Card
           elevation={4}
           sx={{
@@ -25,7 +25,7 @@ export default function MainTab({
             height: 240,
           }}
         >
-          <Grid container>
+          <Grid container justifyContent={'center'} alignItems={'center'}>
             <Grid item xs={6} textAlign={'center'} pl={4} pt={4}>
               <Typography typography="h5">Tổng doanh thu</Typography>
               <Typography color="success.main">
@@ -54,7 +54,7 @@ export default function MainTab({
           </IconButton>
         </Card>
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={10}>
         <Card
           elevation={4}
           sx={{
@@ -63,7 +63,7 @@ export default function MainTab({
             height: 240,
           }}
         >
-          <Grid container>
+          <Grid container justifyContent={'center'} alignItems={'center'}>
             <Grid item xs={12} textAlign={'center'} pt={4} px={4}>
               <Typography typography="h5">Lô bánh làm ra</Typography>
               <Typography>{data.batch.totalBatch}</Typography>

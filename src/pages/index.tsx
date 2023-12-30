@@ -74,11 +74,6 @@ function Home() {
 
         setProductTypes(productTypes);
         setBestSellers(bestSellers);
-        if (!user) {
-          setOpenThamGiaKhaoSat(true);
-          setRecommends([]);
-          return;
-        }
       } catch (error: any) {
         console.log(error);
       }
