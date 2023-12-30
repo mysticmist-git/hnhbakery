@@ -155,6 +155,11 @@ export enum PermissionCode {
   GH,
 
   /**
+   * Lưu thông
+   */
+  LT,
+
+  /**
    * Liên hệ
    */
   LH,
@@ -188,6 +193,7 @@ export const permissionToCodeMap = new Map<PermissionCode, string>([
   [PermissionCode.KH, 'KH'],
   [PermissionCode.BC, 'BC'],
   [PermissionCode.GH, 'GH'],
+  [PermissionCode.LT, 'LT'],
   [PermissionCode.LH, 'LH'],
   [PermissionCode.KM, 'KM'],
   [PermissionCode.FB, 'FB'],
@@ -203,6 +209,7 @@ export const PERMISSION_ROUTES = {
   [PermissionCode.KH]: '/manager/customers',
   [PermissionCode.BC]: '/manager/reports',
   [PermissionCode.GH]: '/manager/deliveries',
+  [PermissionCode.LT]: '/manager/stock-transfer',
   [PermissionCode.LH]: '/manager/contacts',
   [PermissionCode.KM]: '/manager/sales',
   [PermissionCode.FB]: '/manager/feedbacks',
@@ -218,6 +225,7 @@ export const permissionRouteMap = new Map([
   [PermissionCode.KH, PERMISSION_ROUTES[PermissionCode.KH]],
   [PermissionCode.BC, PERMISSION_ROUTES[PermissionCode.BC]],
   [PermissionCode.GH, PERMISSION_ROUTES[PermissionCode.GH]],
+  [PermissionCode.LT, PERMISSION_ROUTES[PermissionCode.LT]],
   [PermissionCode.LH, PERMISSION_ROUTES[PermissionCode.LH]],
   [PermissionCode.KM, PERMISSION_ROUTES[PermissionCode.KM]],
   [PermissionCode.FB, PERMISSION_ROUTES[PermissionCode.FB]],
