@@ -50,13 +50,9 @@ export default function CreateExport() {
   const handleSnackbarAlert = useSnackbarService();
 
   //#endregion
-  //#region Branch Data
+  //#region Client Authorization & Branch Data
 
   const [branch, setBranch] = useState<Branch | null>(null);
-
-  //#endregion
-  //#region Client Authorization
-
   const [userData, setUserData] = useState<User | null>(null);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

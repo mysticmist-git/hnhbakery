@@ -1,13 +1,14 @@
+import CreateImport from '@/components/StockTransfer/CreateImport';
 import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import { auth } from '@/firebase/config';
 import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
+import Branch from '@/models/branch';
 import User from '@/models/user';
-import { Box, Button, Grid, Tab, Tabs } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useRouter } from 'next/router';
-import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 
 export default function StockTransfer() {
   //#region Tabs
@@ -15,14 +16,14 @@ export default function StockTransfer() {
   const [tab, setTab] = useState(0);
 
   //#endregion
-  //#region Other service hooks
+  //#region Hooks
 
   const handleSnackbarAlert = useSnackbarService();
-  const router = useRouter();
 
   //#endregion
-  //#region Client Authorization
+  //#region Client Authorization & Branch Data
 
+  const [branch, setBranch] = useState<Branch | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -58,7 +59,16 @@ export default function StockTransfer() {
         return true;
       }
     }
-    async function fetchData() {}
+    async function fetchData() {
+      if (!userData) {
+        return;
+      }
+      getBranchByManager(userData).then((branch) => {
+        if (branch) {
+          setBranch(branch);
+        }
+      });
+    }
 
     if (!userData) {
       return;
@@ -72,22 +82,6 @@ export default function StockTransfer() {
         if (canAccess) fetchData();
       });
   }, [userData]);
-
-  //#endregion
-  //#region Create new transfer
-
-  const openCreateNewExport = useCallback(
-    function () {
-      router.push('/manager/stock-transfer/create-export');
-    },
-    [router]
-  );
-  const openCreateNewImport = useCallback(
-    function () {
-      router.push('/manager/stock-transfer/create-import');
-    },
-    [router]
-  );
 
   //#endregion
 
@@ -106,7 +100,7 @@ export default function StockTransfer() {
             <Tab label="Xuất hàng" />
           </Tabs>
           <TabPanel value={tab} index={0}>
-            <p>Hello</p>
+            <CreateImport branchId={branch?.id} userData={userData} />
           </TabPanel>
           <TabPanel value={tab} index={1}>
             <p>Hello 2</p>

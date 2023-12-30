@@ -1,9 +1,7 @@
-import { auth } from '@/firebase/config';
-import { getBranchByManager } from '@/lib/DAO/branchDAO';
 import { getProductTypeTableRows } from '@/lib/DAO/productTypeDAO';
-import { getUserByUid } from '@/lib/DAO/userDAO';
 import { useSnackbarService } from '@/lib/contexts';
 import { ProductTypeTableRow } from '@/models/productType';
+import StockImport from '@/models/stockImport';
 import User from '@/models/user';
 import { withHashCacheAsync } from '@/utils/withHashCache';
 import { ArrowLeft } from '@mui/icons-material';
@@ -22,71 +20,25 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { onAuthStateChanged } from 'firebase/auth';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 
-export default function CreateImport() {
+type CreateImportProps = {
+  branchId: string | undefined | null;
+  userData: User | undefined | null;
+};
+export default function CreateImport({
+  branchId,
+  userData,
+}: CreateImportProps) {
   //#region Other service hooks
 
   const handleSnackbarAlert = useSnackbarService();
   const router = useRouter();
 
   //#endregion
-  //#region Client Authorization
-
-  const [userData, setUserData] = useState<User | null>(null);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        setUserData(null);
-        return;
-      }
-
-      getUserByUid(user.uid)
-        .then((user) => setUserData(user ?? null))
-        .catch(() => setUserData(null));
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [handleSnackbarAlert]);
-
-  const [canBeAccessed, setCanBeAccessed] = useState<boolean | undefined>();
-  useEffect(() => {
-    async function checkUserAccess(userData: User): Promise<boolean> {
-      try {
-        const branch = await getBranchByManager(userData);
-
-        if (!branch) {
-          setCanBeAccessed(false);
-          return false;
-        }
-        setCanBeAccessed(true);
-        return true;
-      } catch {
-        setCanBeAccessed(false);
-        return true;
-      }
-    }
-    async function fetchData() {}
-
-    if (!userData) {
-      return;
-    }
-
-    checkUserAccess(userData)
-      .then((canAccess) => {
-        if (canAccess) fetchData();
-      })
-      .catch((canAccess) => {
-        if (canAccess) fetchData();
-      });
-  }, [userData]);
-
-  //#endregion
+  //#region Items to select
 
   const [productTypesTableRows, setProductTypeTableRows] = useState<
     ProductTypeTableRow[]
@@ -130,7 +82,57 @@ export default function CreateImport() {
     );
   }, [products, selectedProductId]);
 
-  function confirmImport() {}
+  const [quantity, setQuantity] = useState(0);
+
+  //#endregion
+  //#region Confirmation Logics
+
+  function confirmImport() {
+    if (!validate()) return;
+    const stockImport: Omit<StockImport, 'id'> = {
+      product_type_id: selectedProductTypeId,
+      product_id: selectedProductId,
+      variant_id: selectedVariantId,
+      quantity: quantity,
+      state: 'issued',
+      branch_id: branchId as string,
+      staff_group_id: userData?.group_id as string,
+      staff_id: userData?.id as string,
+      export_id: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    console.log(stockImport);
+  }
+  function validate() {
+    if (!selectedProductTypeId) {
+      handleSnackbarAlert('warning', 'Vui lòng chọn loại bánh!');
+      return false;
+    }
+    if (!selectedProductId) {
+      handleSnackbarAlert('warning', 'Vui lòng chọn bánh!');
+      return false;
+    }
+    if (!selectedVariantId) {
+      handleSnackbarAlert('warning', 'Vui lòng chọn biến thể!');
+      return false;
+    }
+    if (!quantity || quantity <= 0) {
+      handleSnackbarAlert('warning', 'Vui lòng nhập số lượng!');
+      return false;
+    }
+    if (!branchId) {
+      handleSnackbarAlert('warning', 'Thông tin chi nhánh bị sai!');
+      return false;
+    }
+    if (!userData) {
+      handleSnackbarAlert('warning', 'Thông tin quản lý bị sai!');
+      return false;
+    }
+    return true;
+  }
+
+  //#endregion
 
   return (
     <Grid container p={4} gap={2}>
@@ -232,14 +234,24 @@ export default function CreateImport() {
           <Divider />
           <CardContent>
             <Typography typography="h6">Số lượng bánh</Typography>
-            <TextField type="number" placeholder="Số lượng bánh" />
+            <TextField
+              type="number"
+              placeholder="Số lượng bánh"
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+            />
           </CardContent>
           <Divider />
           <CardContent sx={{ display: 'flex', justifyContent: 'end', gap: 1 }}>
             <Button variant="contained" size="large">
               Hủy
             </Button>
-            <Button color="secondary" variant="contained" size="large">
+            <Button
+              color="secondary"
+              variant="contained"
+              size="large"
+              onClick={confirmImport}
+            >
               Xác nhận
             </Button>
           </CardContent>
