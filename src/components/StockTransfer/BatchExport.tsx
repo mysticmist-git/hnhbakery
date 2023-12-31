@@ -499,12 +499,10 @@ export default function BatchExportTab({
       quantity: batchExport.quantity,
     };
 
-    batch.set(
-      doc(collection(db, COLLECTION_NAME.BATCHES)).withConverter(
-        batchConverter
-      ),
-      exchangedBatch
-    );
+    const exchangedBatchRef = doc(
+      collection(db, COLLECTION_NAME.BATCHES)
+    ).withConverter(batchConverter);
+    batch.set(exchangedBatchRef, exchangedBatch);
 
     const toExchangeBatchRef = getBatchRefById(toExchangeBatchId);
     batch.update(toExchangeBatchRef, {
@@ -519,6 +517,7 @@ export default function BatchExportTab({
     batch.update(batchImportRef, {
       state: 'success',
       export_id: batchExportRef.id,
+      exchanged_batch: exchangedBatchRef.id,
       updated_at: new Date(),
     });
     await batch.commit();

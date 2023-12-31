@@ -109,6 +109,7 @@ export default function BatchImport({
       staff_group_id: userData?.group_id as string,
       staff_id: userData?.id as string,
       export_id: null,
+      exchanged_batch: null,
       created_at: new Date(),
       updated_at: new Date(),
     };
