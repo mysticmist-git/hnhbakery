@@ -1,4 +1,4 @@
-import BatchExport from '@/components/StockTransfer/BatchExport';
+import BatchExportTab from '@/components/StockTransfer/BatchExport';
 import BatchImport from '@/components/StockTransfer/BatchImport';
 import { CanNotAccess } from '@/components/cannotAccess/CanNotAccess';
 import { auth } from '@/firebase/config';
@@ -123,7 +123,7 @@ export default function BatchTransfer() {
             />
           </TabPanel>
           <TabPanel value={tab} index={1}>
-            <BatchExport
+            <BatchExportTab
               branchId={branch?.id}
               userData={userData}
               productTypeTableRows={productTypesTableRows}
