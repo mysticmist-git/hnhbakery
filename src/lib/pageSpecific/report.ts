@@ -240,10 +240,11 @@ export function getRevenueTabChartData(
   switch (interval.type) {
     case 'week':
     case 'month': {
-      const numberOfDays = dayjs(interval.to).diff(dayjs(interval.from), 'day');
-      const totalRevenues = new Array(numberOfDays + 1).fill(0);
-      const saleAmounts = new Array(numberOfDays + 1).fill(0);
-      const finalRevenues = new Array(numberOfDays + 1).fill(0);
+      const numberOfDays =
+        dayjs(interval.to).diff(dayjs(interval.from), 'day') + 1;
+      const totalRevenues = new Array(numberOfDays).fill(0);
+      const saleAmounts = new Array(numberOfDays).fill(0);
+      const finalRevenues = new Array(numberOfDays).fill(0);
 
       for (let i = 0; i < numberOfDays; i++) {
         const date = dayjs(interval.from).add(i, 'day');
@@ -267,17 +268,15 @@ export function getRevenueTabChartData(
       return [totalRevenues, saleAmounts, finalRevenues];
     }
     case 'year': {
-      const numberOfMonths = dayjs(interval.to).diff(
-        dayjs(interval.from),
-        'month'
-      );
-      const totalRevenues = new Array(numberOfMonths + 1).fill(0);
-      const saleAmounts = new Array(numberOfMonths + 1).fill(0);
-      const finalRevenues = new Array(numberOfMonths + 1).fill(0);
+      const numberOfMonths =
+        dayjs(interval.to).diff(dayjs(interval.from), 'month') + 1;
+      const totalRevenues = new Array(numberOfMonths).fill(0);
+      const saleAmounts = new Array(numberOfMonths).fill(0);
+      const finalRevenues = new Array(numberOfMonths).fill(0);
 
       for (let i = 0; i < numberOfMonths; i++) {
         const date = dayjs(interval.from).add(i, 'month');
-        if (i === 11) console.log(date);
+        console.log(i, date);
         const [totalRevenue, saleAmount, finalRevenue] = bills.reduce(
           (acc, cur) => {
             if (dayjs(cur.created_at).isSame(date, 'month')) {
