@@ -20,6 +20,7 @@ type BatchImport = WithId & {
   export_id: string | null;
   staff_id: string;
   staff_group_id: string;
+  exchanged_batch: string | null;
   created_at: Date;
   updated_at: Date;
 };

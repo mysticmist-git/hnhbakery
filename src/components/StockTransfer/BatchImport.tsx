@@ -1,14 +1,10 @@
 import { db } from '@/firebase/config';
 import {
-  getBatchExchangeRefById,
-  getBatchExchangesSnapshotById,
-} from '@/lib/DAO/batchExchangeDAO';
-import {
   createBatchImport,
   getBatchImportRefById,
 } from '@/lib/DAO/batchImportDAO';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import BatchExchange from '@/models/batchExchange';
 import BatchImport, {
   ImportState,
   batchImportConverter,
@@ -30,7 +26,6 @@ import {
   Divider,
   Grid,
   MenuItem,
-  Modal,
   Select,
   TextField,
   Typography,
@@ -38,11 +33,11 @@ import {
 import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import {
-  arrayUnion,
+  collection,
   onSnapshot,
-  runTransaction,
-  setDoc,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -104,8 +99,6 @@ export default function BatchImport({
   //#region Confirmation Logics
 
   async function confirmImport() {
-    if (!validate()) return;
-
     const batchImport: Omit<BatchImport, 'id'> = {
       product_type_id: selectedProductTypeId,
       product_id: selectedProductId,
@@ -116,28 +109,18 @@ export default function BatchImport({
       staff_group_id: userData?.group_id as string,
       staff_id: userData?.id as string,
       export_id: null,
+      exchanged_batch: null,
       created_at: new Date(),
       updated_at: new Date(),
     };
     try {
-      const importRef = await createBatchImport(batchImport);
-      const exchange = await getBatchExchangesSnapshotById(branchId as string);
-      if (exchange.exists()) {
-        await updateDoc(exchange.ref, {
-          imports: arrayUnion(importRef),
-        });
-      } else {
-        await setDoc<Omit<BatchExchange, 'id'>>(exchange.ref, {
-          imports: arrayUnion(importRef),
-          exports: [],
-        });
-      }
-
+      await createBatchImport(batchImport);
       handleSnackbarAlert('success', 'Yêu cầu nhập lô bánh đã được tạo!');
       clearForm();
     } catch {
       handleSnackbarAlert('warning', 'Yêu cầu nhập lô bánh không được tạo!');
     }
+    setConfirmCreateImportDialogOpen(false);
   }
   function validate() {
     if (!selectedProductTypeId) {
@@ -176,50 +159,31 @@ export default function BatchImport({
   //#endregion
   //#region Batch Imports data
 
-  const [exchange, setExchange] = useState<BatchExchange | null>(null);
-  useEffect(() => {
-    if (!branchId) {
-      setExchange(null);
-      return;
-    }
-    const unsub = onSnapshot(
-      getBatchExchangeRefById(branchId as string),
-      (doc) => {
-        doc.exists()
-          ? setExchange(doc.data() as BatchExchange)
-          : setExchange(null);
-      }
-    );
-    return () => unsub();
-  }, [branchId]);
   const [batchImports, setBatchImports] = useState<BatchImport[]>([]);
   const [refreshFlag, setRefreshFlag] = useState(0);
   useEffect(() => {
-    async function fetchBatchImports() {
-      if (!exchange) {
-        setBatchImports([]);
-        return;
-      }
-      let imports: BatchImport[] = [];
-      await runTransaction(db, async (transaction) => {
-        await Promise.all(
-          exchange.imports.map(async (importRef) => {
-            const snapshot = await transaction.get(
-              importRef.withConverter(batchImportConverter)
-            );
-            if (snapshot.exists()) {
-              imports.push(snapshot.data() as BatchImport);
-            }
-          })
-        );
-      });
-      imports = imports.sort((a, b) =>
-        dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1
-      );
-      setBatchImports(imports);
+    if (!branchId) {
+      return;
     }
-    fetchBatchImports();
-  }, [exchange, refreshFlag]);
+    const batchImportsQuery = query(
+      collection(db, COLLECTION_NAME.BATCH_IMPORTS).withConverter(
+        batchImportConverter
+      ),
+      where('branch_id', '==', branchId)
+    );
+    const unSub = onSnapshot(batchImportsQuery, (snapshot) => {
+      if (snapshot.empty) {
+        setBatchImports([]);
+      } else {
+        const docs = snapshot.docs.map((doc) => {
+          return doc.data();
+        });
+        setBatchImports(docs);
+      }
+    });
+
+    return () => unSub();
+  }, [branchId, refreshFlag]);
 
   //#endregion
   //#region Datagrid
@@ -325,15 +289,18 @@ export default function BatchImport({
       type: 'actions',
       getActions(params) {
         return [
-          <GridActionsCellItem
+          <Button
             key="cancel"
-            icon={<Cancel />}
-            label="Hủy"
+            variant="contained"
+            color="secondary"
+            startIcon={<Cancel />}
             disabled={(
               ['pending', 'success', 'cancel'] as ImportState[]
             ).includes(params.row.state)}
             onClick={() => alertCancelImport(params.row.id as string)}
-          />,
+          >
+            Hủy
+          </Button>,
         ];
       },
     },
@@ -361,7 +328,7 @@ export default function BatchImport({
   }
 
   //#endregion
-  //#region Modal
+  //#region Dialogs
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelingImportId, setCancelingImportId] = useState('');
@@ -369,16 +336,20 @@ export default function BatchImport({
     setCancelDialogOpen(false);
   }
 
+  const [confirmCreateImportDialogOpen, setConfirmCreateImportDialogOpen] =
+    useState(false);
+  function handleConfirmImportDialog() {
+    if (!validate()) return;
+    setConfirmCreateImportDialogOpen(true);
+  }
+
   //#endregion
 
   return (
     <>
       <Grid container p={4} gap={2}>
-        <Grid item xs={12} display="flex" alignItems="center" gap={1}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Typography color="text.primary"> Lưu thông chi nhánh</Typography>
-            <Typography color="text.primary">Nhập lô bánh</Typography>
-          </Breadcrumbs>
+        <Grid item xs={12}>
+          <Divider />
         </Grid>
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 4 }}>
@@ -469,14 +440,11 @@ export default function BatchImport({
             <CardContent
               sx={{ display: 'flex', justifyContent: 'end', gap: 1 }}
             >
-              <Button variant="contained" size="large">
-                Hủy
-              </Button>
               <Button
                 color="secondary"
                 variant="contained"
                 size="large"
-                onClick={confirmImport}
+                onClick={() => handleConfirmImportDialog()}
               >
                 Xác nhận
               </Button>
@@ -486,18 +454,59 @@ export default function BatchImport({
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 4 }}>
             <CardHeader
-              title="Chọn sản phẩm"
+              title="Danh sách nhập hàng"
               titleTypographyProps={{
                 typography: 'h5',
               }}
             />
             <Divider />
             <CardContent>
-              <DataGrid rows={batchImports} columns={columns} />
+              <DataGrid
+                rows={batchImports}
+                columns={columns}
+                sx={{
+                  height: 400,
+                }}
+              />
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+      {/* Dialog tạo yêu cầu */}
+      <Dialog
+        open={confirmCreateImportDialogOpen}
+        onClose={() => setConfirmCreateImportDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Tạo yêu cầu nhập lô bánh</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText>
+            Xác nhận tạo yêu cầu nhập lô bánh?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            onClick={() => confirmImport()}
+            variant="contained"
+            color="secondary"
+          >
+            Xác nhận
+          </Button>
+          <Button
+            onClick={() => setConfirmCreateImportDialogOpen(false)}
+            variant="contained"
+          >
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog hủy yêu cầu */}
       <Dialog
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
