@@ -1,10 +1,11 @@
+import { CustomFromTo } from '@/components/report/TimeRangeInput/TimeRangeInput';
 import Batch from '@/models/batch';
 import Bill, { BillTableRow } from '@/models/bill';
 import { ProductTypeTableRow } from '@/models/productType';
 import { MainTabBatch, MainTabData } from '@/pages/manager/reports';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
-import { Interval, IntervalType } from '../types/report';
+import { Interval, IntervalType, TimeRange } from '../types/report';
 dayjs.extend(weekOfYear);
 
 const REPORT_CONSTANT = {
@@ -202,15 +203,48 @@ export function getMainTabBatch(batches: Batch[]): MainTabBatch {
 }
 export function getRevenueTabChartData(
   bills: BillTableRow[],
-  interval: Interval
+  interval: Interval,
+  timeRangeType: TimeRange,
+  customFromTo: CustomFromTo
 ): [number[], number[], number[]] {
+  if (timeRangeType === 'custom') {
+    const numberOfDays = dayjs(customFromTo.to).diff(
+      dayjs(customFromTo.from),
+      'day'
+    );
+    const totalRevenues = new Array(numberOfDays + 1).fill(0);
+    const saleAmounts = new Array(numberOfDays + 1).fill(0);
+    const finalRevenues = new Array(numberOfDays + 1).fill(0);
+
+    for (let i = 0; i < numberOfDays; i++) {
+      const date = dayjs(interval.from).add(i, 'day');
+      const [totalRevenue, saleAmount, finalRevenue] = bills.reduce(
+        (acc, cur) => {
+          if (dayjs(cur.created_at).isSame(date, 'day')) {
+            return [
+              acc[0] + cur.total_price,
+              acc[1] + cur.sale_price,
+              acc[2] + cur.final_price,
+            ];
+          }
+          return acc;
+        },
+        [0, 0, 0]
+      );
+      totalRevenues[i] = totalRevenue;
+      saleAmounts[i] = saleAmount;
+      finalRevenues[i] = finalRevenue;
+    }
+    return [totalRevenues, saleAmounts, finalRevenues];
+  }
   switch (interval.type) {
     case 'week':
     case 'month': {
-      const numberOfDays = dayjs(interval.to).diff(dayjs(interval.from), 'day');
-      const totalRevenues = new Array(numberOfDays + 1).fill(0);
-      const saleAmounts = new Array(numberOfDays + 1).fill(0);
-      const finalRevenues = new Array(numberOfDays + 1).fill(0);
+      const numberOfDays =
+        dayjs(interval.to).diff(dayjs(interval.from), 'day') + 1;
+      const totalRevenues = new Array(numberOfDays).fill(0);
+      const saleAmounts = new Array(numberOfDays).fill(0);
+      const finalRevenues = new Array(numberOfDays).fill(0);
 
       for (let i = 0; i < numberOfDays; i++) {
         const date = dayjs(interval.from).add(i, 'day');
@@ -234,16 +268,15 @@ export function getRevenueTabChartData(
       return [totalRevenues, saleAmounts, finalRevenues];
     }
     case 'year': {
-      const numberOfDays = dayjs(interval.to).diff(
-        dayjs(interval.from),
-        'month'
-      );
-      const totalRevenues = new Array(numberOfDays + 1).fill(0);
-      const saleAmounts = new Array(numberOfDays + 1).fill(0);
-      const finalRevenues = new Array(numberOfDays + 1).fill(0);
+      const numberOfMonths =
+        dayjs(interval.to).diff(dayjs(interval.from), 'month') + 1;
+      const totalRevenues = new Array(numberOfMonths).fill(0);
+      const saleAmounts = new Array(numberOfMonths).fill(0);
+      const finalRevenues = new Array(numberOfMonths).fill(0);
 
-      for (let i = 0; i < numberOfDays; i++) {
+      for (let i = 0; i < numberOfMonths; i++) {
         const date = dayjs(interval.from).add(i, 'month');
+        console.log(i, date);
         const [totalRevenue, saleAmount, finalRevenue] = bills.reduce(
           (acc, cur) => {
             if (dayjs(cur.created_at).isSame(date, 'month')) {

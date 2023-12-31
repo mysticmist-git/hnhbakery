@@ -7,7 +7,7 @@ import {
   getProductTypeRevenueData,
   getRevenueTabChartData,
 } from '@/lib/pageSpecific/report';
-import { Interval, IntervalType } from '@/lib/types/report';
+import { Interval, IntervalType, TimeRange } from '@/lib/types/report';
 import { formatPrice } from '@/lib/utils';
 import { BillTableRow } from '@/models/bill';
 import Branch from '@/models/branch';
@@ -31,6 +31,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { ChartData, ChartOptions } from 'chart.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
+import { CustomFromTo } from '../TimeRangeInput/TimeRangeInput';
 
 const colors: [number, number, number][] = [
   [0, 0, 0],
@@ -77,8 +78,13 @@ function getRgba(alpha?: number): string {
 
 function resolveRevenueChartLabels(
   intervalType: IntervalType,
-  data: number[]
+  data: number[],
+  timeRangeType: TimeRange
 ): string[] {
+  if (timeRangeType === 'custom') {
+    console.log(data.length);
+    return data.map((_, index) => `Ngày ${index + 1}`);
+  }
   switch (intervalType) {
     case 'week':
       return [
@@ -116,21 +122,37 @@ type RevenueTabProps = {
   interval: Interval;
   billTableRows: BillTableRow[];
   onClickBack(): void;
+  timeRangeType: TimeRange;
+  customFromTo: CustomFromTo;
 };
 
 export default function RevenueTab({
   interval,
   billTableRows,
   onClickBack,
+  timeRangeType,
+  customFromTo,
 }: RevenueTabProps) {
+  //#region Purely UI stuffs
+
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+
+  //#endregion
+  //#region Data
+
   const branches = useBranches();
   const [totalRevenue, saleAmounts, finalRevenues]: [
     number[],
     number[],
     number[]
   ] = useMemo(() => {
-    return getRevenueTabChartData(billTableRows, interval);
-  }, [billTableRows, interval]);
+    return getRevenueTabChartData(
+      billTableRows,
+      interval,
+      timeRangeType,
+      customFromTo
+    );
+  }, [billTableRows, customFromTo, interval, timeRangeType]);
   const branchData = useMemo(() => {
     return billTableRows.length > 0 ? getBranchRevenueData(billTableRows) : {};
   }, [billTableRows]);
@@ -140,9 +162,14 @@ export default function RevenueTab({
       : {};
   }, [billTableRows]);
 
+  // Chart data (maybe datagrid too)
   const revenueChartData: ChartData<'line', number[], string> = useMemo(
     () => ({
-      labels: resolveRevenueChartLabels(interval.type, totalRevenue),
+      labels: resolveRevenueChartLabels(
+        interval.type,
+        totalRevenue,
+        timeRangeType
+      ),
       datasets: [
         {
           label: 'Tổng doanh thu',
@@ -158,8 +185,43 @@ export default function RevenueTab({
         },
       ],
     }),
-    [finalRevenues, interval.type, saleAmounts, totalRevenue]
+    [finalRevenues, interval.type, saleAmounts, timeRangeType, totalRevenue]
   );
+  const branchChartData: ChartData<'pie', number[], string> = useMemo(() => {
+    const entries = Object.entries(branchData);
+    return {
+      labels: entries.map(
+        (e) => branches.find((b) => b.id === e[0])?.name ?? 'Không xác định'
+      ),
+      datasets: [
+        {
+          label: '% Doanh thu',
+          data: entries.map((entry) => entry[1].percent),
+          backgroundColor: entries.map(() => getRgba()),
+          borderColor: entries.map(() => getRgba(0.8)),
+        },
+      ],
+    };
+  }, [branchData, branches]);
+  const productTypeChartData: ChartData<'pie', number[], string> =
+    useMemo(() => {
+      const entries = Object.entries(productTypeRevenueData);
+      return {
+        labels: entries.map((entry) => entry[1].name),
+        datasets: [
+          {
+            label: '% Doanh thu',
+            data: entries.map((entry) => entry[1].percent),
+            backgroundColor: entries.map(() => getRgba(0.6)),
+            borderColor: entries.map(() => getRgba(0.8)),
+          },
+        ],
+      };
+    }, [productTypeRevenueData]);
+
+  //#endregion
+  //#region Charts configs and optiosn
+
   const revenueChartOptions: ChartOptions<'line'> = useMemo(
     () => ({
       scales: {
@@ -198,37 +260,6 @@ export default function RevenueTab({
     }),
     []
   );
-  const branchChartData: ChartData<'pie', number[], string> = useMemo(() => {
-    const entries = Object.entries(branchData);
-    return {
-      labels: entries.map(
-        (e) => branches.find((b) => b.id === e[0])?.name ?? 'Không xác định'
-      ),
-      datasets: [
-        {
-          label: '% Doanh thu',
-          data: entries.map((entry) => entry[1].percent),
-          backgroundColor: entries.map(() => getRgba()),
-          borderColor: entries.map(() => getRgba(0.8)),
-        },
-      ],
-    };
-  }, [branchData, branches]);
-  const productTypeChartData: ChartData<'pie', number[], string> =
-    useMemo(() => {
-      const entries = Object.entries(productTypeRevenueData);
-      return {
-        labels: entries.map((entry) => entry[1].name),
-        datasets: [
-          {
-            label: '% Doanh thu',
-            data: entries.map((entry) => entry[1].percent),
-            backgroundColor: entries.map(() => getRgba(0.6)),
-            borderColor: entries.map(() => getRgba(0.8)),
-          },
-        ],
-      };
-    }, [productTypeRevenueData]);
   const branchChartOptions: ChartOptions<'pie'> = useMemo(
     () => ({
       plugins: {
@@ -288,7 +319,9 @@ export default function RevenueTab({
     []
   );
 
-  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  //#endregion
+  //#region Datagrid
+
   const datagridRows = useMemo(() => {
     const rows: {
       id: string;
@@ -297,7 +330,11 @@ export default function RevenueTab({
       saleAmount: number;
       finalRevenue: number;
     }[] = [];
-    const labels = resolveRevenueChartLabels(interval.type, totalRevenue);
+    const labels = resolveRevenueChartLabels(
+      interval.type,
+      totalRevenue,
+      timeRangeType
+    );
     for (let i = 0; i < labels.length; i++) {
       rows.push({
         id: (i + 1).toString(),
@@ -308,7 +345,7 @@ export default function RevenueTab({
       });
     }
     return rows;
-  }, [interval.type, totalRevenue, finalRevenues, saleAmounts]);
+  }, [finalRevenues, interval.type, saleAmounts, timeRangeType, totalRevenue]);
   const datagridColumns: GridColDef[] = useMemo(() => {
     let label = '';
     switch (interval.type) {
@@ -355,6 +392,8 @@ export default function RevenueTab({
     ];
     return columns;
   }, [interval.type]);
+
+  //#endregion
 
   return (
     <>
@@ -546,7 +585,9 @@ function ProductTypeRevenueItem({
 }) {
   const [img, setImg] = useState('');
   useEffect(() => {
-    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    if (image)
+      getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    else setImg('');
   }, [image]);
 
   const [open, setOpen] = useState(false);
@@ -609,7 +650,9 @@ function ProductRevenueItem({
 }) {
   const [img, setImg] = useState('');
   useEffect(() => {
-    getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    if (image)
+      getDownloadUrlFromFirebaseStorage(image).then((url) => setImg(url));
+    else setImg('');
   }, [image]);
 
   const [open, setOpen] = useState(false);
