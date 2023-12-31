@@ -493,7 +493,13 @@ export default function BatchImport({
             />
             <Divider />
             <CardContent>
-              <DataGrid rows={batchImports} columns={columns} />
+              <DataGrid
+                rows={batchImports}
+                columns={columns}
+                sx={{
+                  height: 400,
+                }}
+              />
             </CardContent>
           </Card>
         </Grid>
