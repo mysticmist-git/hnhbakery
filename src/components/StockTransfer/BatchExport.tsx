@@ -28,6 +28,11 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   Tab,
@@ -324,13 +329,8 @@ export default function BatchExportTab({
   //#region Action
 
   async function confirmBatchExport() {
-    const selectedImport = batchImports.find(
-      (batchImport) => batchImport.id === rowSelectionModel[0]
-    );
-    const selectedExportBatch = branchBatches.find(
-      (batch) => batch.id === branchBatchSelectionModel[0]
-    );
-    if (!validate(selectedImport, selectedExportBatch)) return;
+    const [valid, selectedImport, selectedExportBatch] = validate();
+    if (!valid) return;
 
     const batchExport: Omit<BatchExport, 'id'> = {
       batch_id: selectedExportBatch!.id as string,
@@ -355,28 +355,41 @@ export default function BatchExportTab({
     } catch {
       handleSnackbarAlert('warning', 'Yêu cầu nhập lô bánh không được tạo!');
     }
+
+    setConfirmExchangeDialogOpen(false);
   }
-  function validate(
-    selectedImport: BatchImport | undefined | null,
-    selectedExportBatch: Batch | undefined | null
-  ): boolean {
+  function validate(): [boolean, BatchImport | null, Batch | null] {
+    let result: [boolean, BatchImport | null, Batch | null] = [
+      false,
+      null,
+      null,
+    ];
+    const selectedImport = batchImports.find(
+      (batchImport) => batchImport.id === rowSelectionModel[0]
+    );
+    const selectedExportBatch = branchBatches.find(
+      (batch) => batch.id === branchBatchSelectionModel[0]
+    );
+
     if (!selectedImport) {
       handleSnackbarAlert('warning', 'Vui lòng chọn loại bánh!');
-      return false;
+      return result;
     }
     if (!selectedExportBatch) {
       handleSnackbarAlert('warning', 'Vui lòng chọn lô để xuất!');
-      return false;
+      return result;
     }
     if (!branchId) {
       handleSnackbarAlert('warning', 'Thông tin chi nhánh bị sai!');
-      return false;
+      return result;
     }
     if (!userData) {
       handleSnackbarAlert('warning', 'Thông tin quản lý bị sai!');
-      return false;
+      return result;
     }
-    return true;
+
+    result = [true, selectedImport, selectedExportBatch];
+    return result;
   }
 
   //#endregion
@@ -437,14 +450,21 @@ export default function BatchExportTab({
     {
       field: 'actions',
       type: 'actions',
+      flex: 1,
       getActions(params) {
         return [
-          <GridActionsCellItem
+          <Button
             key="success"
-            icon={<Check />}
-            label="Hoàn thành"
-            onClick={() => finishExchange(params.id as string)}
-          />,
+            variant="contained"
+            color="secondary"
+            startIcon={<Check />}
+            onClick={() =>
+              handleConfirmToSuccessExportRequest(params.id as string)
+            }
+            disabled={params.row.state !== 'pending'}
+          >
+            Đã giao
+          </Button>,
         ];
       },
     },
@@ -502,12 +522,34 @@ export default function BatchExportTab({
       updated_at: new Date(),
     });
     await batch.commit();
+    handleSnackbarAlert('success', 'Đã giao lô bánh thành công!');
+    setConfirmExportSuccessDialogOpen(false);
   }
 
   //#endregion
   //#region Tabs
 
   const [tab, setTab] = useState(0);
+
+  //#endregion
+  //#region Dialogs
+
+  const [confirmExchangeDialogOpen, setConfirmExchangeDialogOpen] =
+    useState(false);
+  function handleConfirmExchange() {
+    const [valid] = validate();
+    if (!valid) return;
+    setConfirmExchangeDialogOpen(true);
+  }
+
+  const [confirmExportSuccessDialogOpen, setConfirmExportSuccessDialogOpen] =
+    useState(false);
+  const [confirmToSuccessExportRequestId, setConfirmToSuccessExportRequestId] =
+    useState('');
+  function handleConfirmToSuccessExportRequest(id: string) {
+    setConfirmToSuccessExportRequestId(id);
+    setConfirmExportSuccessDialogOpen(true);
+  }
 
   //#endregion
 
@@ -644,13 +686,81 @@ export default function BatchExportTab({
             <Button
               variant="contained"
               color="secondary"
-              onClick={confirmBatchExport}
+              onClick={() => handleConfirmExchange()}
             >
-              Chấp nhận xuất hàng
+              Xuất bánh
             </Button>
           </Grid>
         </Grid>
       </TabPanel>
+      {/* Dialog xác nhận xuất lô */}
+      <Dialog
+        open={confirmExchangeDialogOpen}
+        onClose={() => setConfirmExchangeDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Xác nhận xuất lô</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc muốn xuất lô hàng này?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            onClick={() => confirmBatchExport()}
+            variant="contained"
+            color="secondary"
+          >
+            Xác nhận
+          </Button>
+          <Button
+            onClick={() => setConfirmExchangeDialogOpen(false)}
+            variant="contained"
+          >
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog xác nhận ĐÃ xuất lô*/}
+      <Dialog
+        open={confirmExportSuccessDialogOpen}
+        onClose={() => setConfirmExportSuccessDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Xác nhận xuất lô</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText>
+            Xác nhận đã hoàn thành xuất lô bánh?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            onClick={() => finishExchange(confirmToSuccessExportRequestId)}
+            variant="contained"
+            color="secondary"
+          >
+            Xác nhận
+          </Button>
+          <Button
+            onClick={() => setConfirmExportSuccessDialogOpen(false)}
+            variant="contained"
+          >
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

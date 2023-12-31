@@ -99,8 +99,6 @@ export default function BatchImport({
   //#region Confirmation Logics
 
   async function confirmImport() {
-    if (!validate()) return;
-
     const batchImport: Omit<BatchImport, 'id'> = {
       product_type_id: selectedProductTypeId,
       product_id: selectedProductId,
@@ -121,6 +119,7 @@ export default function BatchImport({
     } catch {
       handleSnackbarAlert('warning', 'Yêu cầu nhập lô bánh không được tạo!');
     }
+    setConfirmCreateImportDialogOpen(false);
   }
   function validate() {
     if (!selectedProductTypeId) {
@@ -162,7 +161,7 @@ export default function BatchImport({
   const [batchImports, setBatchImports] = useState<BatchImport[]>([]);
   const [refreshFlag, setRefreshFlag] = useState(0);
   useEffect(() => {
-    if (!branchId || !userData) {
+    if (!branchId) {
       return;
     }
     const batchImportsQuery = query(
@@ -289,15 +288,18 @@ export default function BatchImport({
       type: 'actions',
       getActions(params) {
         return [
-          <GridActionsCellItem
+          <Button
             key="cancel"
-            icon={<Cancel />}
-            label="Hủy"
+            variant="contained"
+            color="secondary"
+            startIcon={<Cancel />}
             disabled={(
               ['pending', 'success', 'cancel'] as ImportState[]
             ).includes(params.row.state)}
             onClick={() => alertCancelImport(params.row.id as string)}
-          />,
+          >
+            Hủy
+          </Button>,
         ];
       },
     },
@@ -325,12 +327,19 @@ export default function BatchImport({
   }
 
   //#endregion
-  //#region Modal
+  //#region Dialogs
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelingImportId, setCancelingImportId] = useState('');
   function handleCancelDialogClose() {
     setCancelDialogOpen(false);
+  }
+
+  const [confirmCreateImportDialogOpen, setConfirmCreateImportDialogOpen] =
+    useState(false);
+  function handleConfirmImportDialog() {
+    if (!validate()) return;
+    setConfirmCreateImportDialogOpen(true);
   }
 
   //#endregion
@@ -433,14 +442,11 @@ export default function BatchImport({
             <CardContent
               sx={{ display: 'flex', justifyContent: 'end', gap: 1 }}
             >
-              <Button variant="contained" size="large">
-                Hủy
-              </Button>
               <Button
                 color="secondary"
                 variant="contained"
                 size="large"
-                onClick={confirmImport}
+                onClick={() => handleConfirmImportDialog()}
               >
                 Xác nhận
               </Button>
@@ -468,6 +474,41 @@ export default function BatchImport({
           </Card>
         </Grid>
       </Grid>
+      {/* Dialog tạo yêu cầu */}
+      <Dialog
+        open={confirmCreateImportDialogOpen}
+        onClose={() => setConfirmCreateImportDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Tạo yêu cầu nhập lô bánh</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText>
+            Xác nhận tạo yêu cầu nhập lô bánh?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            onClick={() => confirmImport()}
+            variant="contained"
+            color="secondary"
+          >
+            Xác nhận
+          </Button>
+          <Button
+            onClick={() => setConfirmCreateImportDialogOpen(false)}
+            variant="contained"
+          >
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog hủy yêu cầu */}
       <Dialog
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
