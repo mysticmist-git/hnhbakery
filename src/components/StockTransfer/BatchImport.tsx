@@ -109,6 +109,7 @@ export default function BatchImport({
       staff_group_id: userData?.group_id as string,
       staff_id: userData?.id as string,
       export_id: null,
+      exchanged_batch: null,
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -347,11 +348,8 @@ export default function BatchImport({
   return (
     <>
       <Grid container p={4} gap={2}>
-        <Grid item xs={12} display="flex" alignItems="center" gap={1}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Typography color="text.primary"> Lưu thông chi nhánh</Typography>
-            <Typography color="text.primary">Nhập lô bánh</Typography>
-          </Breadcrumbs>
+        <Grid item xs={12}>
+          <Divider />
         </Grid>
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 4 }}>
@@ -456,7 +454,7 @@ export default function BatchImport({
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 4 }}>
             <CardHeader
-              title="Chọn sản phẩm"
+              title="Danh sách nhập hàng"
               titleTypographyProps={{
                 typography: 'h5',
               }}

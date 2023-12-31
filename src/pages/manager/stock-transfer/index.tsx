@@ -10,7 +10,7 @@ import Branch from '@/models/branch';
 import { ProductTypeTableRow } from '@/models/productType';
 import User from '@/models/user';
 import { withHashCacheAsync } from '@/utils/withHashCache';
-import { Tab, Tabs } from '@mui/material';
+import { Divider, Tab, Tabs } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { PropsWithChildren, useEffect, useState } from 'react';
 

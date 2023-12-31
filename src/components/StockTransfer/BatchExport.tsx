@@ -499,12 +499,10 @@ export default function BatchExportTab({
       quantity: batchExport.quantity,
     };
 
-    batch.set(
-      doc(collection(db, COLLECTION_NAME.BATCHES)).withConverter(
-        batchConverter
-      ),
-      exchangedBatch
-    );
+    const exchangedBatchRef = doc(
+      collection(db, COLLECTION_NAME.BATCHES)
+    ).withConverter(batchConverter);
+    batch.set(exchangedBatchRef, exchangedBatch);
 
     const toExchangeBatchRef = getBatchRefById(toExchangeBatchId);
     batch.update(toExchangeBatchRef, {
@@ -519,6 +517,7 @@ export default function BatchExportTab({
     batch.update(batchImportRef, {
       state: 'success',
       export_id: batchExportRef.id,
+      exchanged_batch: exchangedBatchRef.id,
       updated_at: new Date(),
     });
     await batch.commit();
@@ -565,9 +564,11 @@ export default function BatchExportTab({
         <Tab label="Danh sách xuất hàng" />
         <Tab label="Nhận yêu cầu xuất hàng" />
       </Tabs>
-
       <TabPanel value={tab} index={0}>
         <Grid container p={4} gap={2}>
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 4 }}>
               <CardHeader
@@ -592,6 +593,9 @@ export default function BatchExportTab({
       </TabPanel>
       <TabPanel value={tab} index={1}>
         <Grid container p={4} gap={2}>
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 4 }}>
               <CardHeader
