@@ -1,14 +1,10 @@
 import { db } from '@/firebase/config';
 import {
-  getBatchExchangeRefById,
-  getBatchExchangesSnapshotById,
-} from '@/lib/DAO/batchExchangeDAO';
-import {
   createBatchImport,
   getBatchImportRefById,
 } from '@/lib/DAO/batchImportDAO';
+import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
-import BatchExchange from '@/models/batchExchange';
 import BatchImport, {
   ImportState,
   batchImportConverter,
@@ -30,7 +26,6 @@ import {
   Divider,
   Grid,
   MenuItem,
-  Modal,
   Select,
   TextField,
   Typography,
@@ -38,11 +33,11 @@ import {
 import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import {
-  arrayUnion,
+  collection,
   onSnapshot,
-  runTransaction,
-  setDoc,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -120,19 +115,7 @@ export default function BatchImport({
       updated_at: new Date(),
     };
     try {
-      const importRef = await createBatchImport(batchImport);
-      const exchange = await getBatchExchangesSnapshotById(branchId as string);
-      if (exchange.exists()) {
-        await updateDoc(exchange.ref, {
-          imports: arrayUnion(importRef),
-        });
-      } else {
-        await setDoc<Omit<BatchExchange, 'id'>>(exchange.ref, {
-          imports: arrayUnion(importRef),
-          exports: [],
-        });
-      }
-
+      await createBatchImport(batchImport);
       handleSnackbarAlert('success', 'Yêu cầu nhập lô bánh đã được tạo!');
       clearForm();
     } catch {
@@ -176,50 +159,31 @@ export default function BatchImport({
   //#endregion
   //#region Batch Imports data
 
-  const [exchange, setExchange] = useState<BatchExchange | null>(null);
-  useEffect(() => {
-    if (!branchId) {
-      setExchange(null);
-      return;
-    }
-    const unsub = onSnapshot(
-      getBatchExchangeRefById(branchId as string),
-      (doc) => {
-        doc.exists()
-          ? setExchange(doc.data() as BatchExchange)
-          : setExchange(null);
-      }
-    );
-    return () => unsub();
-  }, [branchId]);
   const [batchImports, setBatchImports] = useState<BatchImport[]>([]);
   const [refreshFlag, setRefreshFlag] = useState(0);
   useEffect(() => {
-    async function fetchBatchImports() {
-      if (!exchange) {
-        setBatchImports([]);
-        return;
-      }
-      let imports: BatchImport[] = [];
-      await runTransaction(db, async (transaction) => {
-        await Promise.all(
-          exchange.imports.map(async (importRef) => {
-            const snapshot = await transaction.get(
-              importRef.withConverter(batchImportConverter)
-            );
-            if (snapshot.exists()) {
-              imports.push(snapshot.data() as BatchImport);
-            }
-          })
-        );
-      });
-      imports = imports.sort((a, b) =>
-        dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1
-      );
-      setBatchImports(imports);
+    if (!branchId || !userData) {
+      return;
     }
-    fetchBatchImports();
-  }, [exchange, refreshFlag]);
+    const batchImportsQuery = query(
+      collection(db, COLLECTION_NAME.BATCH_IMPORTS).withConverter(
+        batchImportConverter
+      ),
+      where('branch_id', '==', branchId)
+    );
+    const unSub = onSnapshot(batchImportsQuery, (snapshot) => {
+      if (snapshot.empty) {
+        setBatchImports([]);
+      } else {
+        const docs = snapshot.docs.map((doc) => {
+          return doc.data();
+        });
+        setBatchImports(docs);
+      }
+    });
+
+    return () => unSub();
+  }, [branchId, refreshFlag]);
 
   //#endregion
   //#region Datagrid

@@ -22,7 +22,7 @@ type BatchExport = WithId & {
   updated_at: Date;
 };
 
-type ExportState = 'pending' | 'success';
+export type ExportState = 'pending' | 'success';
 
 const batchExportConverter: FirestoreDataConverter<BatchExport> = {
   toFirestore: function (

@@ -1,26 +1,29 @@
 import { db } from '@/firebase/config';
-import { getBatchExchangesSnapshotById } from '@/lib/DAO/batchExchangeDAO';
-import { createBatchExport } from '@/lib/DAO/batchExportDAO';
-import { getBatchImportSnapshotById } from '@/lib/DAO/batchImportDAO';
-import { getBranchById } from '@/lib/DAO/branchDAO';
+import { getBatchRefById } from '@/lib/DAO/batchDAO';
+import {
+  createBatchExport,
+  getBatchExportRefById,
+} from '@/lib/DAO/batchExportDAO';
+import {
+  getBatchImportRefById,
+  getBatchImportSnapshotById,
+} from '@/lib/DAO/batchImportDAO';
 import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import useBranches from '@/lib/hooks/useBranches';
-import useProductTypeTableRows from '@/lib/hooks/useProductTypeTableRows';
 import Batch, { batchConverter } from '@/models/batch';
-import BatchExchange from '@/models/batchExchange';
-import BatchExport, { batchExportConverter } from '@/models/batchExport';
+import BatchExport, {
+  ExportState,
+  batchExportConverter,
+} from '@/models/batchExport';
 import BatchImport, {
   ImportState,
   batchImportConverter,
 } from '@/models/batchImport';
-import Branch from '@/models/branch';
-import Product from '@/models/product';
 import { ProductTypeTableRow } from '@/models/productType';
 import User from '@/models/user';
-import { withHashCacheAsync } from '@/utils/withHashCache';
+import { Check } from '@mui/icons-material';
 import {
-  Breadcrumbs,
   Button,
   Card,
   CardContent,
@@ -31,17 +34,25 @@ import {
   Tabs,
   Typography,
 } from '@mui/material';
-import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import {
   arrayUnion,
   collection,
+  doc,
   getDocs,
+  increment,
   onSnapshot,
   query,
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
@@ -88,11 +99,7 @@ export default function BatchExportTab({
         setBatchImports([]);
         return;
       } else {
-        setBatchImports(
-          snapshot.docs
-            .map((doc) => doc.data())
-            .filter((batchImport) => batchImport.state === 'issued')
-        );
+        setBatchImports(snapshot.docs.map((doc) => doc.data()));
       }
     });
     const exportUnsub = onSnapshot(exportQuery, (snapshot) => {
@@ -244,6 +251,7 @@ export default function BatchExportTab({
 
   const [branchBatches, setBranchBatches] = useState<Batch[]>([]);
   useEffect(() => {
+    if (!branchId) return;
     const branchBatchesQuery = query(
       collection(db, COLLECTION_NAME.BATCHES),
       where('branch_id', '==', branchId)
@@ -337,20 +345,7 @@ export default function BatchExportTab({
     };
 
     try {
-      const exportRef = await createBatchExport(batchExport);
-      const exchange = await getBatchExchangesSnapshotById(
-        selectedImport?.branch_id as string
-      );
-      if (exchange.exists()) {
-        await updateDoc(exchange.ref, {
-          imports: arrayUnion(exportRef),
-        });
-      } else {
-        await setDoc<Omit<BatchExchange, 'id'>>(exchange.ref, {
-          imports: arrayUnion(exportRef),
-          exports: [],
-        });
-      }
+      await createBatchExport(batchExport);
       const importRef = await getBatchImportSnapshotById(
         selectedImport?.id as string
       );
@@ -402,7 +397,12 @@ export default function BatchExportTab({
       field: 'import_id',
       headerName: 'Chi nhánh nhập',
       valueFormatter(params) {
-        const branch = branches.find((branch) => branch.id === params.value);
+        const batchImport = batchImports.find(
+          (batchImport) => batchImport.id === params.value
+        );
+        const branch = branches.find(
+          (branch) => branch.id === batchImport?.branch_id
+        );
         return branch ? branch.name : 'Không xác định';
       },
       flex: 1,
@@ -411,8 +411,98 @@ export default function BatchExportTab({
       field: 'state',
       headerName: 'Trạng thái',
       flex: 1,
+      renderCell(params) {
+        switch (params.value as ExportState) {
+          case 'pending':
+            return (
+              <Typography typography="body2" color="info.main">
+                Đang xuất
+              </Typography>
+            );
+          case 'success':
+            return (
+              <Typography typography="body2" color="success.main">
+                Thành công
+              </Typography>
+            );
+          default:
+            return (
+              <Typography typography="body2" color="warning.main">
+                Không xác định
+              </Typography>
+            );
+        }
+      },
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      getActions(params) {
+        return [
+          <GridActionsCellItem
+            key="success"
+            icon={<Check />}
+            label="Hoàn thành"
+            onClick={() => finishExchange(params.id as string)}
+          />,
+        ];
+      },
     },
   ];
+  async function finishExchange(id: string) {
+    const batch = writeBatch(db);
+
+    const batchExport = batchExports.find(
+      (batchExport) => batchExport.id === id
+    );
+    const toExchangeBatch = branchBatches.find(
+      (batch) => batch.id === batchExport?.batch_id
+    );
+
+    if (!batchExport || !toExchangeBatch) return;
+
+    const batchImport = batchImports.find(
+      (bImport) => bImport.id === batchExport.import_id
+    );
+    if (!batchImport) return;
+
+    const batchExportRef = getBatchExportRefById(batchExport.id);
+    const batchImportRef = getBatchImportRefById(batchExport.import_id);
+
+    const { id: toExchangeBatchId, ...toExchangeBatchData } = toExchangeBatch;
+    const exchangedBatch: Omit<Batch, 'id'> = {
+      ...toExchangeBatchData,
+      branch_id: batchImport.branch_id,
+      created_at: new Date(),
+      updated_at: new Date(),
+      sold: 0,
+      quantity: batchExport.quantity,
+    };
+
+    batch.set(
+      doc(collection(db, COLLECTION_NAME.BATCHES)).withConverter(
+        batchConverter
+      ),
+      exchangedBatch
+    );
+
+    const toExchangeBatchRef = getBatchRefById(toExchangeBatchId);
+    batch.update(toExchangeBatchRef, {
+      quantity: increment(-1 * batchExport.quantity),
+      updated_at: new Date(),
+    });
+
+    batch.update(batchExportRef, {
+      state: 'success',
+      updated_at: new Date(),
+    });
+    batch.update(batchImportRef, {
+      state: 'success',
+      export_id: batchExportRef.id,
+      updated_at: new Date(),
+    });
+    await batch.commit();
+  }
 
   //#endregion
   //#region Tabs
@@ -469,7 +559,9 @@ export default function BatchExportTab({
               <Divider />
               <CardContent>
                 <DataGrid
-                  rows={batchImports}
+                  rows={batchImports.filter(
+                    (bImport) => bImport.state === 'issued'
+                  )}
                   columns={batchImportColumns}
                   sx={{ height: 400 }}
                   rowSelectionModel={rowSelectionModel}
