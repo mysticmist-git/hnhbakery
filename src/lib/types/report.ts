@@ -7,4 +7,4 @@ export type Interval = {
   from: Date;
   to: Date;
 };
-export type ReportTab = 'revenue' | 'batch' | 'main';
+export type ReportTab = 'revenue' | 'batchCreated' | 'batchSold' | 'main';

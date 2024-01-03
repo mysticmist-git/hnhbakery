@@ -4,7 +4,7 @@ import { CaiKhungCoTitle } from '@/components/layouts';
 import { DanhSachSanPham, DonHangCuaBan } from '@/components/payment';
 import DialogHinhThucThanhToan from '@/components/payment/DialogHinhThucThanhToan';
 import { auth, storage } from '@/firebase/config';
-import { increaseDecreaseBatchQuantity } from '@/lib/DAO/batchDAO';
+import { increaseDecreaseBatchSold } from '@/lib/DAO/batchDAO';
 import { createBill, getBills } from '@/lib/DAO/billDAO';
 import { createBillItem } from '@/lib/DAO/billItemDAO';
 import { createDelivery } from '@/lib/DAO/deliveryDAO';
@@ -256,7 +256,7 @@ const Payment = () => {
       );
 
       for (const item of assembledCartItems) {
-        await increaseDecreaseBatchQuantity(item.batchId, -item.quantity);
+        await increaseDecreaseBatchSold(item.batchId, item.quantity);
       }
 
       return { ...billData, id: billRef.id };

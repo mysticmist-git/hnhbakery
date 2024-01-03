@@ -170,11 +170,13 @@ export function getUpdatedRightIntervals(intervals: Interval[]) {
 }
 export function getMainTabData(
   bills: BillTableRow[],
-  batches: Batch[]
+  batches: Batch[],
+  batchesSold: Batch[]
 ): MainTabData {
   const mainTabData: MainTabData = {
     revenue: getMainTabRevenue(bills),
     batch: getMainTabBatch(batches),
+    batchSold: getMainTabBatch(batchesSold),
   };
   return mainTabData;
 }

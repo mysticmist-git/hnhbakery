@@ -1,3 +1,4 @@
+import BatchSoldTab from '@/components/report/BatchSoldTab';
 import BatchTab from '@/components/report/BatchTab';
 import MainTab from '@/components/report/MainTab';
 import RevenueTab from '@/components/report/RevenueTab';
@@ -33,6 +34,7 @@ Chart.register();
 export type MainTabData = {
   revenue: MainTabRevenue;
   batch: MainTabBatch;
+  batchSold: MainTabBatch;
 };
 
 export type MainTabRevenue = {
@@ -96,6 +98,12 @@ const DEFAULT_MAIN_TAB_DATA: MainTabData = {
     soldCake: 0,
     soldCakePercent: 0,
   },
+  batchSold: {
+    totalBatch: 0,
+    quantity: 0,
+    soldCake: 0,
+    soldCakePercent: 0,
+  },
 };
 
 //#endregion
@@ -144,11 +152,13 @@ function Report() {
   }, [currentIntervalIndex, currentIntervalType, intervals]);
 
   //#endregion
+
   //#region Tabs zone
 
   const [currentTab, setCurrentTab] = useState<ReportTab>('main');
   const [billTableRows, setBillTableRows] = useState<BillTableRow[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [batchesSold, setBatchesSold] = useState<Batch[]>([]);
 
   const types = useProductTypeTableRows();
   const resolveTimeRange = useCallback((): [Date, Date] => {
@@ -195,8 +205,24 @@ function Report() {
         dayjs(from).toDate(),
         dayjs(to).toDate()
       );
+
+      console.log(batches);
+
+      const batchesSold: Batch[] = bills
+        .map(
+          (bill) =>
+            bill.billItems
+              ?.map((billItem) => billItem.batch)
+              .filter((batch) => batch) || []
+        )
+        .flat()
+        .filter((batch) => batch) as Batch[];
+
+      console.log(batchesSold);
+
       setBillTableRows(bills);
       setBatches(batches);
+      setBatchesSold(batchesSold);
     } catch (error) {
       console.log(error);
     }
@@ -207,7 +233,7 @@ function Report() {
   }, [currentIntervalIndex, fetchData, intervals, timeRangeType]);
 
   useEffect(() => {
-    const mainTabData = getMainTabData(billTableRows, batches);
+    const mainTabData = getMainTabData(billTableRows, batches, batchesSold);
     setMainTabData(mainTabData);
   }, [batches, billTableRows, billTableRows.length]);
 
@@ -252,16 +278,20 @@ function Report() {
             handleCustomFromToChange={handleCustomFromToChange}
           />
         </Grid>
+
         <Grid item xs={12}>
           <Divider />
         </Grid>
+
         {currentTab === 'main' && (
           <MainTab
             data={mainTabData}
             onClickRevenueTab={() => setCurrentTab('revenue')}
-            onClickBatchTab={() => setCurrentTab('batch')}
+            onClickBatchTab={() => setCurrentTab('batchCreated')}
+            onClickBatchSoldTab={() => setCurrentTab('batchSold')}
           />
         )}
+
         {currentTab === 'revenue' && (
           <RevenueTab
             interval={
@@ -275,7 +305,16 @@ function Report() {
             timeRangeType={timeRangeType}
           />
         )}
-        {currentTab === 'batch' && (
+
+        {currentTab == 'batchSold' && (
+          <BatchSoldTab
+            types={types}
+            batches={batchesSold}
+            onClickBack={() => setCurrentTab('main')}
+          />
+        )}
+
+        {currentTab === 'batchCreated' && (
           <BatchTab
             types={types}
             batches={batches}

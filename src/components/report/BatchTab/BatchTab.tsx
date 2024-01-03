@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-type BatchTabProps = {
+export type BatchTabProps = {
   types: ProductTypeTableRow[];
   batches: Batch[];
   onClickBack(): void;
@@ -83,7 +83,7 @@ export default function BatchTab({
             },
           }}
         >
-          Lô hàng
+          Lô bánh làm ra
         </Typography>
       </Grid>
       <Grid item xs={12}>
@@ -140,7 +140,7 @@ export default function BatchTab({
 }
 
 type ProductTypeBatchItemProps = ProductTypeBatchData;
-function ProductTypeBatchItem({
+export function ProductTypeBatchItem({
   name,
   image,
   data,
