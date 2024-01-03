@@ -1,5 +1,5 @@
 import { ChatContext } from '@/lib/contexts/chatContext';
-import { MessageRounded, Try } from '@mui/icons-material';
+import { MessageRounded, RecommendRounded, Try } from '@mui/icons-material';
 import {
   Badge,
   Box,
@@ -7,6 +7,7 @@ import {
   IconButton,
   IconButtonProps,
   Slide,
+  Stack,
   SvgIconProps,
   Typography,
   Zoom,
@@ -43,7 +44,6 @@ export function LiveChat() {
   const theme = useTheme();
   const { state, dispatch } = useContext(ChatContext);
   console.log(state);
-
   const [isNew, setIsNew] = useState(false);
 
   useEffect(() => {

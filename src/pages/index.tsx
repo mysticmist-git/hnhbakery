@@ -1,5 +1,12 @@
 import bg2 from '@/assets/Decorate/bg2.png';
-import { Box, Modal, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Modal,
+  Typography,
+  Zoom,
+  useTheme,
+} from '@mui/material';
 import React, { memo, useEffect, useState } from 'react';
 
 import BottomSlideInDiv from '@/components/animations/appear/BottomSlideInDiv';
@@ -37,6 +44,12 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/config';
 import { getCustomerReference } from '@/lib/DAO/customerReferenceDAO';
 import CustomerReference from '@/models/CustomerReference';
+import { RecommendRounded } from '@mui/icons-material';
+import RecommendDialog, {
+  cam,
+  gradientReconmend,
+  hong,
+} from '@/components/recommend/RecommendDialog';
 
 function Home() {
   const [carouselImagesState, setCarouselImagesState] = useState<
@@ -44,13 +57,21 @@ function Home() {
   >([]);
   const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
-  const [recommends, setRecommends] = useState<Product[]>([]);
   const [user, userLoading, userError] = useAuthState(auth);
   const theme = useTheme();
 
   //#region Gợi ý sản phẩm
   const [openThamGiaKhaoSat, setOpenThamGiaKhaoSat] = React.useState(false);
   const handleClose = () => setOpenThamGiaKhaoSat(false);
+
+  const [openKhuyenNghiSanPham, setOpenKhuyenNghiSanPham] =
+    React.useState(false);
+  const handleCloseKhuyenNghiSanPham = () => setOpenKhuyenNghiSanPham(false);
+  const handleOpenKhuyenNghiSanPham = () => setOpenKhuyenNghiSanPham(true);
+
+  const [customerReferenceData, setCustomerReferenceData] = useState<
+    CustomerReference | undefined
+  >(undefined);
   //#endregion
 
   //#region UseEffects
@@ -108,13 +129,11 @@ function Home() {
     const fetchData = async () => {
       try {
         if (!user) {
-          setRecommends([]);
           return;
         }
         const cusrefer = await getCustomerReference(user.uid);
         if (cusrefer) {
-          const data = await getRecommendProducts(cusrefer);
-          setRecommends(data);
+          setCustomerReferenceData(cusrefer);
         } else {
           setOpenThamGiaKhaoSat(true);
         }
@@ -168,31 +187,6 @@ function Home() {
             </TopSlideInDiv>
 
             <BottomSlideInDiv>
-              {recommends.length > 0 && (
-                <FadeDiv>
-                  <Box
-                    component={'div'}
-                    sx={{
-                      py: 8,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <CustomCardSlider
-                      duration={1000}
-                      imageHeight="184px"
-                      descriptionHeight="32px"
-                      CustomCard={CustomCardWithButton}
-                      title={'Gợi ý cho bạn'}
-                      productList={recommends}
-                      buttonOnclick={() => {}}
-                    />
-                  </Box>
-                </FadeDiv>
-              )}
-
               <FadeDiv>
                 <Box
                   component={'div'}
@@ -259,6 +253,44 @@ function Home() {
           <KhuyenNghiSanPhamDialog
             open={openThamGiaKhaoSat}
             handleClose={handleClose}
+          />
+
+          <Box
+            component={'div'}
+            sx={{
+              position: 'fixed',
+              bottom: theme.spacing(13),
+              right: theme.spacing(3),
+              zIndex: theme.zIndex.drawer,
+            }}
+          >
+            <Zoom in={true}>
+              <Box component={'div'}>
+                <IconButton
+                  onClick={handleOpenKhuyenNghiSanPham}
+                  sx={{
+                    height: theme.spacing(8),
+                    width: theme.spacing(8),
+                    background: gradientReconmend,
+                    color: 'white',
+                    boxShadow: ' 0 3px 5px 2px rgba(255, 105, 135, .3)',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.15) rotate(360deg)',
+                      boxShadow: 0,
+                    },
+                  }}
+                >
+                  <RecommendRounded color="inherit" />
+                </IconButton>
+              </Box>
+            </Zoom>
+          </Box>
+
+          <RecommendDialog
+            open={openKhuyenNghiSanPham}
+            handleClose={handleCloseKhuyenNghiSanPham}
+            customerReferenceData={customerReferenceData}
           />
         </Box>
       </HomeContext.Provider>
@@ -336,11 +368,10 @@ async function getBestSellerProducts(): Promise<Product[]> {
 
 async function getRecommendProducts(
   customerReference: CustomerReference
-): Promise<Product[]> {
-  const queryLimit = 7;
-
+): Promise<ProductTableRow[]> {
   const productTypes: ProductTypeTableRow[] =
     await getAvailableProductTypeTableRows(customerReference.productTypeIds);
+
   let products: ProductTableRow[] = productTypes
     .flatMap((productType) => productType.products)
     .filter(
@@ -348,7 +379,7 @@ async function getRecommendProducts(
         product != undefined && product.images.length > 0 && product.active
     ) as ProductTableRow[];
 
-  const recommendProducts: Product[] = products.filter((product) => {
+  const recommendProducts: ProductTableRow[] = products.filter((product) => {
     if (!product) {
       return false;
     }
@@ -379,7 +410,7 @@ async function getRecommendProducts(
     return true;
   });
 
-  return recommendProducts.slice(0, queryLimit);
+  return recommendProducts;
 }
 
 //#endregion
