@@ -33,7 +33,7 @@ async function handleSendMessage(
     console.log('Rỗng');
     return;
   }
-  const data = new Date();
+  const date = new Date();
 
   // Upload hình
   let imagesUrl: string[] = [];
@@ -65,7 +65,7 @@ async function handleSendMessage(
     text == '' ? [...imagesUrl] : [text, ...imagesUrl];
   let message: Message = {
     id: '',
-    date: data,
+    date: date,
     sender: {
       name: sender.name ?? '',
       uid: sender.uid,
@@ -103,7 +103,7 @@ async function handleSendMessage(
     message.text.length > 0 ? message.text[message.text.length - 1] : '';
   const chatWith: ChatWithType = {
     id: combileId,
-    date: data,
+    date: date,
     userInfor: {
       uid: receiver.uid,
       name: receiver.name ?? '',
