@@ -19,6 +19,7 @@ import {
   HolidayVillageRounded,
   LocalShippingRounded,
   Security,
+  UnarchiveRounded,
 } from '@mui/icons-material';
 import { default as BarChartIcon } from '@mui/icons-material/BarChart';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
@@ -72,7 +73,7 @@ const MainListItemIcon: React.FC<{
     case PermissionCode.CN2:
       return <BungalowRounded sx={sx} />;
     default:
-      return <Inventory2RoundedIcon sx={sx} />;
+      return <UnarchiveRounded sx={sx} />;
   }
 };
 
