@@ -1,6 +1,5 @@
 import { useSnackbarService } from '@/lib/contexts';
-import { Chip, Typography, useTheme } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Chip, Stack, Typography, useTheme } from '@mui/material';
 import {
   ForwardedRef,
   forwardRef,

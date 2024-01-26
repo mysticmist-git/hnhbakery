@@ -1,7 +1,6 @@
 import { ChatContext } from '@/lib/contexts/chatContext';
 import { LocalPhoneRounded, RemoveRounded } from '@mui/icons-material';
-import { Box, IconButton, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
 import { iconButtonProp, iconProp } from './LiveChat';
 

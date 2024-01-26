@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import BatchSoldTab from '@/components/report/BatchSoldTab';
 import BatchTab from '@/components/report/BatchTab';
 import MainTab from '@/components/report/MainTab';
@@ -23,6 +24,7 @@ import {
 } from '@/lib/types/report';
 import Batch from '@/models/batch';
 import { BillTableRow } from '@/models/bill';
+import { ProductTableRow } from '@/models/product';
 import { Divider, Grid } from '@mui/material';
 import Chart from 'chart.js/auto';
 import dayjs from 'dayjs';
@@ -48,6 +50,12 @@ export type MainTabBatch = {
   quantity: number;
   soldCake: number;
   soldCakePercent: number;
+};
+
+export type SanPhamDoanhThuType = Batch & {
+  revenue: number;
+  percentage: number;
+  product: ProductTableRow;
 };
 
 // TODO: Remove this - This is just a temporary solution
@@ -152,7 +160,6 @@ function Report() {
   }, [currentIntervalIndex, currentIntervalType, intervals]);
 
   //#endregion
-
   //#region Tabs zone
 
   const [currentTab, setCurrentTab] = useState<ReportTab>('main');

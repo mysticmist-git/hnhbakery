@@ -1,8 +1,7 @@
 import { AssembledCartItem } from '@/@types/cart';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { formatDateString, formatPrice } from '@/lib/utils';
-import { Grid, Skeleton, Typography, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, Grid, Skeleton, Typography, useTheme } from '@mui/material';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 

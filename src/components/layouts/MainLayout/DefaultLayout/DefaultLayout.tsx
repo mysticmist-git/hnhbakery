@@ -1,7 +1,6 @@
 import Footer from '@/components/navigation/Footer';
 import { Navbar } from '@/components/navigation/Header';
 import { Box } from '@mui/material';
-import { styled } from '@mui/system';
 import { memo } from 'react';
 import { LiveChat } from '../../../livechat/LiveChat';
 

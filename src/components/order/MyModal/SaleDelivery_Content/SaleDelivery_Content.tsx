@@ -1,11 +1,10 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
 import { formatPrice } from '@/lib/utils';
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
-import { InputAdornment, Tooltip, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
-import Outlined_TextField from '../Outlined_TextField';
 import { BillTableRow } from '@/models/bill';
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import { Box, InputAdornment, Tooltip, useTheme } from '@mui/material';
+import Outlined_TextField from '../Outlined_TextField';
 
 export default function SaleDelivery_Content({
   textStyle,

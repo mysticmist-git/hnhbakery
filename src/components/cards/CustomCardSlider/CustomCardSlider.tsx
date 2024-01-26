@@ -1,7 +1,6 @@
 import Product, { ProductTableRow } from '@/models/product';
 import ProductType from '@/models/productType';
-import { Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, Grid, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
 

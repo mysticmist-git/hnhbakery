@@ -1,6 +1,5 @@
 import { Add } from '@mui/icons-material';
-import { Divider, ButtonBase, Input } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, ButtonBase, Divider, Input } from '@mui/material';
 import { memo } from 'react';
 
 const NewValueChip = ({

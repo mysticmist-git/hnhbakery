@@ -1,15 +1,22 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import logo from '@/assets/Logo.png';
 import { getChatRefById } from '@/lib/DAO/chatDAO';
+import { getUserChatRefByUid } from '@/lib/DAO/userChatDAO';
 import { ChatContext } from '@/lib/contexts/chatContext';
 import Chat, { Message } from '@/models/chat';
-import { Avatar, Box, DialogContent, Typography } from '@mui/material';
-import { Stack, useTheme } from '@mui/system';
+import {
+  Avatar,
+  Box,
+  DialogContent,
+  Stack,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { onSnapshot } from 'firebase/firestore';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { isWebUri } from 'valid-url';
 import { ChatImage } from './ChatImage';
 import { ChatImageDialog } from './ChatImageDialog';
-import logo from '@/assets/Logo.png';
-import { getUserChatRefByUid } from '@/lib/DAO/userChatDAO';
 
 export function ChatBody() {
   const theme = useTheme();

@@ -13,6 +13,7 @@ import User from '@/models/user';
 import { Check } from '@mui/icons-material';
 import {
   Autocomplete,
+  Box,
   Divider,
   FormControlLabel,
   Grid,
@@ -27,7 +28,6 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { Box } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -280,8 +280,9 @@ function FormGiaoHang({ form, setForm }: FormGiaoHangProps) {
                           setForm('deliveryDate', value?.toDate() ?? new Date())
                         }
                         sx={{
-                          border: (theme) =>
-                            `3px solid ${theme.palette.secondary.main}`,
+                          border: (theme: {
+                            palette: { secondary: { main: any } };
+                          }) => `3px solid ${theme.palette.secondary.main}`,
                           borderRadius: '8px',
                         }}
                       />

@@ -1,5 +1,7 @@
+import promotionImage from '@/assets/promotion.png';
 import { storage } from '@/firebase/config';
 import { formatDateString, formatPrice } from '@/lib/utils';
+import Sale from '@/models/sale';
 import {
   Box,
   Checkbox,
@@ -12,13 +14,11 @@ import { ref } from 'firebase/storage';
 import Image from 'next/image';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
-import promotionImage from '@/assets/promotion.png';
-import Sale from '@/models/sale';
 function RenderSaleItem(props: {
   sale: Sale;
   chosenSale: Sale | null;
   handleChooseSale: (newChosenSale: Sale) => void;
-  tamTinh: number;
+  tamTinh?: number;
 }) {
   const theme = useTheme();
   const { sale, chosenSale, handleChooseSale, tamTinh } = props;
@@ -59,6 +59,8 @@ function RenderSaleItem(props: {
   };
 
   useEffect(() => {
+    if (!tamTinh) return setCanClick(false);
+
     if (sale.minBillTotalPrice <= tamTinh) {
       setCanClick(true);
     } else {

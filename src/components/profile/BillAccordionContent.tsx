@@ -9,12 +9,11 @@ import {
   deliveryStateColorParse,
   deliveryStateContentParse,
 } from '@/models/delivery';
-import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Box, Divider, Grid, Stack, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { BookingItemContent } from './BookingItemContent';
-import { BillItemsContent } from './BillItemsContent';
 import { BoxStyle, TypoStyle } from '../../pages/profile';
+import { BillItemsContent } from './BillItemsContent';
+import { BookingItemContent } from './BookingItemContent';
 
 export function BillAccordionContent({ bill }: { bill: BillTableRow }) {
   const theme = useTheme();

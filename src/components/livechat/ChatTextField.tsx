@@ -1,22 +1,28 @@
+import { storage } from '@/firebase/config';
+import { createChat, getChat, updateChat } from '@/lib/DAO/chatDAO';
+import { getUserChat, updateUserChat } from '@/lib/DAO/userChatDAO';
+import { getUserByUid } from '@/lib/DAO/userDAO';
+import { ChatContext } from '@/lib/contexts/chatContext';
+import Chat, { Message } from '@/models/chat';
+import User from '@/models/user';
+import UserChat, { ChatWithType } from '@/models/userChat';
 import {
   AddPhotoAlternateRounded,
   CloseRounded,
   SendRounded,
 } from '@mui/icons-material';
-import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
-import { iconButtonProp, iconProp } from './LiveChat';
-import { useCallback, useContext, useRef, useState } from 'react';
-import { ChatContext } from '@/lib/contexts/chatContext';
-import { getUserChat, updateUserChat } from '@/lib/DAO/userChatDAO';
-import UserChat, { ChatWithType } from '@/models/userChat';
-import User from '@/models/user';
-import { getUserByUid } from '@/lib/DAO/userDAO';
-import { createChat, getChat, updateChat } from '@/lib/DAO/chatDAO';
-import Chat, { Message } from '@/models/chat';
-import { Stack, useTheme } from '@mui/system';
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  useTheme,
+} from '@mui/material';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from '@/firebase/config';
+import { useCallback, useContext, useRef, useState } from 'react';
 import * as uuid from 'uuid';
+import { iconButtonProp, iconProp } from './LiveChat';
 
 async function handleSendMessage(
   sender: { uid: string; name?: string },
@@ -194,6 +200,7 @@ export function ChatTextField() {
       >
         {imageArray.map((item, index) => (
           <Box
+            key={index}
             component={'div'}
             sx={{
               width: 'calc(100% / 4)',

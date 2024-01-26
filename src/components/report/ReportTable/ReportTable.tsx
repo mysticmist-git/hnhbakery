@@ -1,8 +1,5 @@
 import { formatPrice } from '@/lib/utils';
-import Batch from '@/models/batch';
-import ReportTableRow from '@/models/report';
 import { CustomLinearProgres } from '@/pages/manager/orders';
-import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 import { Checkbox, useTheme } from '@mui/material';
 import {
   DataGrid,
@@ -12,14 +9,7 @@ import {
   GridToolbarFilterButton,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  All_All_All,
-  All_All_So,
-  All_So_All,
-  All_So_So,
-  So_So_So,
-} from '../HamXuLy/HamXuLy';
+import React from 'react';
 
 export type dataRow = {
   id: string;

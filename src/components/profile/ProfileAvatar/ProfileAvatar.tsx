@@ -1,17 +1,16 @@
+import bronzeRank from '@/assets/bronzeRank.png';
 import defaultAva from '@/assets/defaultAva.jpg';
 import { CustomIconButton } from '@/components/buttons';
 import { storage } from '@/firebase/config';
 import { UserObject } from '@/lib/models';
 import User from '@/models/user';
 import { CameraAlt } from '@mui/icons-material';
-import { Box, useTheme } from '@mui/material';
-import { alpha } from '@mui/system';
+import { Box, alpha, useTheme } from '@mui/material';
 import { ref } from 'firebase/storage';
 import { url } from 'inspector';
 import Image from 'next/image';
 import { ChangeEventHandler, useRef, useState } from 'react';
 import { useDownloadURL } from 'react-firebase-hooks/storage';
-import bronzeRank from '@/assets/bronzeRank.png';
 
 function ProfileAvatar({
   image,

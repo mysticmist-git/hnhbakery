@@ -1,6 +1,5 @@
 import theme from '@/styles/themes/lightTheme';
-import { Typography } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Stack, Typography } from '@mui/material';
 import { StaticImageData } from 'next/image';
 import { memo, useEffect, useState } from 'react';
 import MyGalleryImage from './MyGalleryImage';

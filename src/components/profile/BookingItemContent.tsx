@@ -1,9 +1,8 @@
-import { SizeNameParse } from '@/models/size';
-import { Box, Grid, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
-import React, { useEffect, useState } from 'react';
-import BookingItem from '@/models/bookingItem';
 import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
+import BookingItem from '@/models/bookingItem';
+import { SizeNameParse } from '@/models/size';
+import { Box, Grid, Stack, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { BoxStyle, TypoStyle } from '../../pages/profile';
 
 export function BookingItemContent({ item }: { item: BookingItem }) {

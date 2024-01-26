@@ -2,6 +2,7 @@ import CustomButton from '@/components/buttons/CustomButton';
 import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import { MocGioGiaoHang } from '@/lib/constants';
 import {
+  Box,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   alpha,
   useTheme,
 } from '@mui/material';
-import { Box } from '@mui/system';
 import { useState } from 'react';
 
 const ChooseTime = (props: any) => {

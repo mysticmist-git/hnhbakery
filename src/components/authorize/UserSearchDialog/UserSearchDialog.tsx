@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import CustomTextFieldPassWord from '@/components/inputs/textFields/CustomTextFieldPassword';
 import { auth2, db } from '@/firebase/config';
 import {
@@ -22,10 +23,10 @@ import {
   List,
   ListItem,
   ListItemText,
+  Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { Stack } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';

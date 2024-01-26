@@ -1,12 +1,12 @@
+import { CloseRounded } from '@mui/icons-material';
 import {
   Box,
   Dialog,
   DialogTitle,
   IconButton,
+  Stack,
   Typography,
 } from '@mui/material';
-import { Stack } from '@mui/system';
-import { CloseRounded } from '@mui/icons-material';
 
 export function ChatImageDialog({
   open,

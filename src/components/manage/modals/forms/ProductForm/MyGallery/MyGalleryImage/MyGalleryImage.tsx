@@ -1,6 +1,5 @@
 import { Close } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, IconButton } from '@mui/material';
 import Image from 'next/image';
 import { memo } from 'react';
 

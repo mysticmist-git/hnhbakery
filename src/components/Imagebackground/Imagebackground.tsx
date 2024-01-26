@@ -1,8 +1,7 @@
 import banh1 from '@/assets/Carousel/3.jpg';
 import TopSlideInDiv_Appear from '@/components/animations/appear/TopSlideInDiv';
 import TopSlideInDiv_Loof from '@/components/animations/loof/TopSlideInDiv';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { alpha } from '@mui/system';
+import { Box, Grid, Typography, alpha, useTheme } from '@mui/material';
 import React, { memo } from 'react';
 import { SolidUpWhite } from '../decorates/DecorateDivider/DecorateDivider';
 

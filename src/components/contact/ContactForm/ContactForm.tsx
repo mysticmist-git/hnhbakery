@@ -4,8 +4,7 @@ import CustomTextField from '@/components/inputs/textFields/CustomTextField';
 import { useSnackbarService } from '@/lib/contexts';
 import { sendContact } from '@/lib/firestore';
 import Contact from '@/models/contact';
-import theme from '@/styles/themes/lightTheme';
-import * as material from '@mui/material';
+import { Grid, Stack, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { memo, useRef } from 'react';
 
@@ -24,6 +23,7 @@ const ContactForm = () => {
 
   const handleSnackbarAlert = useSnackbarService();
   const router = useRouter();
+  const theme = useTheme();
 
   // #endregion
 
@@ -82,7 +82,7 @@ const ContactForm = () => {
   // #endregion
 
   return (
-    <material.Grid
+    <Grid
       container
       justifyContent={'center'}
       alignItems={'start'}
@@ -91,23 +91,20 @@ const ContactForm = () => {
       component={'form'}
       onSubmit={handleSubmit}
     >
-      <material.Grid item xs={12}>
-        <material.Grid
+      <Grid item xs={12}>
+        <Grid
           container
           justifyContent={'center'}
           alignItems={'start'}
           direction={'row'}
           spacing={1}
         >
-          <material.Grid item xs={12}>
-            <material.Typography
-              variant="button"
-              color={theme.palette.common.black}
-            >
+          <Grid item xs={12}>
+            <Typography variant="button" color={theme.palette.common.black}>
               Thông tin liên hệ
-            </material.Typography>
-          </material.Grid>
-          <material.Grid item xs={12}>
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
             <CustomTextField
               ref={nameRef}
               error={nameRef?.current?.value === ''}
@@ -118,8 +115,8 @@ const ContactForm = () => {
               name="name"
               type="text"
             />
-          </material.Grid>
-          <material.Grid item xs={6}>
+          </Grid>
+          <Grid item xs={6}>
             <CustomTextField
               ref={phoneRef}
               error={phoneRef?.current?.value === ''}
@@ -129,8 +126,8 @@ const ContactForm = () => {
               type="tel"
               autoComplete="tel"
             />
-          </material.Grid>
-          <material.Grid item xs={6}>
+          </Grid>
+          <Grid item xs={6}>
             <CustomTextField
               ref={emailRef}
               error={emailRef?.current?.value === ''}
@@ -140,27 +137,24 @@ const ContactForm = () => {
               type="email"
               autoComplete="email"
             />
-          </material.Grid>
-        </material.Grid>
-      </material.Grid>
+          </Grid>
+        </Grid>
+      </Grid>
 
-      <material.Grid item xs={12}>
-        <material.Grid
+      <Grid item xs={12}>
+        <Grid
           container
           justifyContent={'center'}
           alignItems={'start'}
           direction={'row'}
           spacing={1}
         >
-          <material.Grid item xs={12}>
-            <material.Typography
-              variant="button"
-              color={theme.palette.common.black}
-            >
+          <Grid item xs={12}>
+            <Typography variant="button" color={theme.palette.common.black}>
               Nội dung liên hệ
-            </material.Typography>
-          </material.Grid>
-          <material.Grid item xs={12}>
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
             <CustomTextField
               ref={titleRef}
               error={titleRef?.current?.value === ''}
@@ -169,15 +163,15 @@ const ContactForm = () => {
               name="title"
               type="text"
             />
-          </material.Grid>
-          <material.Grid item xs={12}>
-            <material.Box
+          </Grid>
+          <Grid item xs={12}>
+            <Stack
               sx={{
                 border: 3,
                 borderColor: theme.palette.secondary.main,
                 borderRadius: '8px',
                 overflow: 'hidden',
-                bgcolor: theme.palette.common.white,
+                bgColor: theme.palette.common.white,
               }}
             >
               <CustomTextarea
@@ -190,21 +184,18 @@ const ContactForm = () => {
                   minHeight: '132px',
                 }}
               />
-            </material.Box>
-          </material.Grid>
-        </material.Grid>
-      </material.Grid>
-      <material.Grid item xs={'auto'}>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item xs={'auto'}>
         <CustomButton type="submit" sx={{ px: 8 }}>
-          <material.Typography
-            variant="button"
-            color={theme.palette.common.white}
-          >
+          <Typography variant="button" color={theme.palette.common.white}>
             Gửi
-          </material.Typography>
+          </Typography>
         </CustomButton>
-      </material.Grid>
-    </material.Grid>
+      </Grid>
+    </Grid>
   );
 };
 

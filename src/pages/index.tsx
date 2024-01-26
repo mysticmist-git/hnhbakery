@@ -5,6 +5,7 @@ import {
   Modal,
   Typography,
   Zoom,
+  alpha,
   useTheme,
 } from '@mui/material';
 import React, { memo, useEffect, useState } from 'react';
@@ -28,28 +29,27 @@ import {
 } from '@/lib/contexts/homeContext';
 // import { getBestSellterProducts as getBestSellerProducts, getCollection } from '@/lib/firestore';
 // import { ProductObject, ProductTypeObject } from '@/lib/models';
-import { getBatches } from '@/lib/DAO/batchDAO';
-import { getProduct } from '@/lib/DAO/productDAO';
-import {
-  getAvailableProductTypeTableRows,
-  getProductTypes,
-} from '@/lib/DAO/productTypeDAO';
-import Batch from '@/models/batch';
-import Product, { ProductTableRow } from '@/models/product';
-import ProductType, { ProductTypeTableRow } from '@/models/productType';
-import { alpha } from '@mui/system';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import KhuyenNghiSanPhamDialog from '@/components/home/KhuyenNghiSanPhamDialog';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/firebase/config';
-import { getCustomerReference } from '@/lib/DAO/customerReferenceDAO';
-import CustomerReference from '@/models/CustomerReference';
-import { RecommendRounded } from '@mui/icons-material';
 import RecommendDialog, {
   cam,
   gradientReconmend,
   hong,
 } from '@/components/recommend/RecommendDialog';
+import { auth } from '@/firebase/config';
+import { getBatches } from '@/lib/DAO/batchDAO';
+import { getCustomerReference } from '@/lib/DAO/customerReferenceDAO';
+import { getProduct } from '@/lib/DAO/productDAO';
+import {
+  getAvailableProductTypeTableRows,
+  getProductTypes,
+} from '@/lib/DAO/productTypeDAO';
+import CustomerReference from '@/models/CustomerReference';
+import Batch from '@/models/batch';
+import Product, { ProductTableRow } from '@/models/product';
+import ProductType, { ProductTypeTableRow } from '@/models/productType';
+import { RecommendRounded } from '@mui/icons-material';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 function Home() {
   const [carouselImagesState, setCarouselImagesState] = useState<

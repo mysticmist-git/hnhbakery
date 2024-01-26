@@ -1,23 +1,23 @@
-import AccountTable from '@/components/authorize/AccountTable.tsx';
 import NewUserGroupDialog from '@/components/authorize/NewUserGroupDialog';
 import PermissionTable from '@/components/authorize/PermissionTable';
 import UserGroupAccordions from '@/components/authorize/UserGroupAccordions';
-import { db } from '@/firebase/config';
-import { createGroup, getGroupTableRows, getGroups } from '@/lib/DAO/groupDAO';
+import { createGroup, getGroupTableRows } from '@/lib/DAO/groupDAO';
 import { getPermissions } from '@/lib/DAO/permissionDAO';
-import { getUsers } from '@/lib/DAO/userDAO';
-import { COLLECTION_NAME } from '@/lib/constants';
 import { useSnackbarService } from '@/lib/contexts';
 import useLoadingService from '@/lib/hooks/useLoadingService';
 import { AuthorizeContext } from '@/lib/pageSpecific/authorize';
 import Group, { GroupTableRow } from '@/models/group';
 import Permission from '@/models/permission';
-import User from '@/models/user';
-import { Button, Divider, Tab, Tabs, Typography } from '@mui/material';
-import { Box, Stack } from '@mui/system';
-import { addDoc, collection, query, where } from 'firebase/firestore';
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 // interface AuthorizeProps {
 //   userGroups: UserGroup[];
@@ -45,6 +45,7 @@ const Authorize = () => {
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [newGroup, setNewGroup] = useState<Group | null>(null);

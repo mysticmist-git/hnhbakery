@@ -1,6 +1,6 @@
 import { useSnackbarService } from '@/lib/contexts';
 import { Add } from '@mui/icons-material';
-import { SxProps, Box } from '@mui/system';
+import { Box, SxProps } from '@mui/material';
 import { memo } from 'react';
 
 const MyGalleryImageNewButton = ({

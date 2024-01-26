@@ -1,11 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import promotionImage from '@/assets/promotion.png';
+import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { formatDateString, formatPrice } from '@/lib/utils';
 import { BillItemTableRow } from '@/models/billItem';
 import { SizeNameParse } from '@/models/size';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { Stack } from '@mui/system';
+import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { getDownloadUrlFromFirebaseStorage } from '@/lib/firestore';
 import { BoxStyle, TypoStyle } from '../../pages/profile';
 
 export function BillItemsContent({ item }: { item: BillItemTableRow }) {

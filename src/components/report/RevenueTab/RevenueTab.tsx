@@ -25,6 +25,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Stack,
   Typography,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -503,11 +504,11 @@ export default function RevenueTab({
       {/* Theo sản phẩm */}
       <Grid item xs={7}>
         <Card sx={{ borderRadius: 4 }}>
-          <Box p={2}>
+          <Stack p={2}>
             <Typography typography="h6">Doanh thu theo sản phẩm</Typography>
-          </Box>
+          </Stack>
           <Divider />
-          <Box>
+          <Stack>
             <List>
               <ListItem>
                 <ListItemText primary="Tổng doanh thu" />
@@ -534,7 +535,7 @@ export default function RevenueTab({
                 />
               ))}
             </List>
-          </Box>
+          </Stack>
         </Card>
       </Grid>
       <Grid item xs={5} sx={{ borderRadius: 4 }}>

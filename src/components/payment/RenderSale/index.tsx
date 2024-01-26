@@ -17,7 +17,7 @@ export default function RenderSale(props: {
           sale={sale}
           chosenSale={chosenSale}
           handleChooseSale={handleChooseSale}
-
+          tamTinh={0}
         />
       ))}
     </>

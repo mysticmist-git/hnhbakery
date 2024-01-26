@@ -1,11 +1,11 @@
 import { CustomIconButton } from '@/components/buttons';
 import { useSnackbarService } from '@/lib/contexts';
 import { formatDateString } from '@/lib/utils';
+import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 import { ContentCopyRounded } from '@mui/icons-material';
 import { InputAdornment, Tooltip, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Outlined_TextField from '../../order/MyModal/Outlined_TextField';
-import { SanPhamDoanhThuType } from '@/pages/manager/reports';
 
 export default function SanPhamHaoHut({
   spHaoHut,
@@ -42,7 +42,7 @@ export default function SanPhamHaoHut({
 
   const getLabel = (item: SanPhamDoanhThuType) => {
     const variant = item.product?.variants?.find(
-      (variant) => variant.id === item.variant_id
+      (variant: { id: any }) => variant.id === item.variant_id
     );
     return (
       item.product.name +

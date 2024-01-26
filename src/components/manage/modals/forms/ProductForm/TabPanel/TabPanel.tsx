@@ -1,6 +1,5 @@
 import theme from '@/styles/themes/lightTheme';
-import { Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, Typography } from '@mui/material';
 import React, { memo } from 'react';
 
 export interface TabPanelProps {
