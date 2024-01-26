@@ -1,6 +1,6 @@
+import Sale from '@/models/sale';
 import { useTheme } from '@mui/material';
 import RenderSaleItem from './RenderSaleItem';
-import Sale from '@/models/sale';
 export default function RenderSale(props: {
   Sales: Sale[];
   handleChooseSale: (newChosenSale: Sale) => void;
@@ -17,6 +17,7 @@ export default function RenderSale(props: {
           sale={sale}
           chosenSale={chosenSale}
           handleChooseSale={handleChooseSale}
+
         />
       ))}
     </>
