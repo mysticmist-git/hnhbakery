@@ -1,4 +1,4 @@
-import { Box, Skeleton } from '@mui/material';
+import { Skeleton, Stack } from '@mui/material';
 import React, { memo } from 'react';
 
 const Skeleton_img = (props: any) => {
@@ -13,8 +13,8 @@ const Skeleton_img = (props: any) => {
       {!isLoaded && (
         <Skeleton variant="rectangular" width="100%" height="100%" />
       )}
-      <Box
-        style={{ display: isLoaded ? 'block' : 'none' }}
+      <Stack
+        sx={{ display: isLoaded ? 'block' : 'none' }}
         height={'100%'}
         width={'100%'}
         component={'img'}
